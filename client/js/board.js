@@ -11,10 +11,11 @@ import { renderMarkdownInto } from "./markdown.js";
 import { createWidgetFrame } from "./widgets.js";
 import { drawDecoration } from "./decorations.js";
 
-const COL_W = 460;
-const GAP_X = 28;
-const GAP_Y = 18;
-const PAD = 32;
+const COL_W = 560;
+const GAP_X = 40;
+const GAP_Y = 14;
+const PAD = 48;
+const TITLE_H = 90;
 
 export class Whiteboard {
   constructor(viewportEl, canvasEl) {
@@ -48,7 +49,7 @@ export class Whiteboard {
   }
 
   newColumn() {
-    this.columns.push({ height: PAD + (this._pageEl ? 48 : 0) });
+    this.columns.push({ height: PAD + (this._pageEl && this.columns.length === 0 ? TITLE_H : 0) });
     this.active = this.columns.length - 1;
     return this.active;
   }
@@ -86,13 +87,13 @@ export class Whiteboard {
     this.canvas.style.height = `${h}px`;
   }
 
-  addBoard({ uid, title, markdown, layout, gate }) {
+  addBoard({ uid, title, markdown, layout, gate, hook = false }) {
     const el = document.createElement("div");
-    el.className = "wb-card";
+    el.className = hook ? "wb-card hook" : "wb-card";
     el.dataset.uid = uid;
     el.innerHTML = `<div class="wb-card-title"></div><div class="wb-card-content"></div>`;
     const t = el.querySelector(".wb-card-title");
-    if (title) t.textContent = title; else t.remove();
+    if (title && !hook) t.textContent = title; else t.remove();
     renderMarkdownInto(el.querySelector(".wb-card-content"), markdown);
     el.querySelectorAll(".wb-card-content > *").forEach((b, i) => b.style.setProperty("--i", i));
     const item = this._place(el, layout, gate, "board");
@@ -136,6 +137,30 @@ export class Whiteboard {
       body.textContent = `图表渲染失败：${e.message}`;
     }
     const item = this._place(el, layout, gate, "graph");
+    this.items.set(uid, item);
+    if (gate == null) this._reveal(item, 0);
+    return item;
+  }
+
+  addIllustration({ uid, caption, svg, imageUrl, layout, gate }) {
+    const el = document.createElement("div");
+    el.className = "wb-card wb-illustration";
+    el.dataset.uid = uid;
+    const fig = document.createElement("div");
+    fig.className = "figure";
+    if (svg) {
+      fig.innerHTML = window.DOMPurify ? window.DOMPurify.sanitize(svg, { USE_PROFILES: { svg: true, svgFilters: true } }) : "";
+    } else if (imageUrl) {
+      const img = document.createElement("img");
+      img.src = imageUrl;
+      img.alt = caption || "illustration";
+      fig.appendChild(img);
+    }
+    const cap = document.createElement("div");
+    cap.className = "caption";
+    cap.textContent = caption || "";
+    el.append(fig, cap);
+    const item = this._place(el, layout, gate, "illustration");
     this.items.set(uid, item);
     if (gate == null) this._reveal(item, 0);
     return item;

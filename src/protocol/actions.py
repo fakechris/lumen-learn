@@ -114,6 +114,19 @@ class NewPage(BaseModel):
     page_id: str
 
 
+class Illustration(BaseModel):
+    """Static pedagogical figure: inline SVG (LLM-drawn, exact labels) or a
+    generated raster image; shown with a handwritten caption."""
+    type: Literal["illustration"] = "illustration"
+    step_id: int
+    board_uid: int
+    caption: str = ""
+    svg: Optional[str] = None
+    image_url: Optional[str] = None
+    layout: Layout = "follow"
+    reveal_gate_step: Optional[int] = None
+
+
 class AnimationPending(BaseModel):
     """Placeholder for a widget that is being generated asynchronously."""
     type: Literal["animation_pending"] = "animation_pending"
@@ -157,13 +170,13 @@ class Done(BaseModel):
 Action = Annotated[
     Union[
         Speak, TtsSegment, Board, Decoration, Graph, Ask, NewColumn, NewPage,
-        AnimationPending, GeneratedAnimation, AnimationFailed, RewardUser, Done,
+        Illustration, AnimationPending, GeneratedAnimation, AnimationFailed, RewardUser, Done,
     ],
     Field(discriminator="type"),
 ]
 
 # Actions the runtime waits on before sending the next one.
-ACK_REQUIRED = {"tts_segment", "board", "graph", "generated_animation", "new_page"}
+ACK_REQUIRED = {"tts_segment", "board", "graph", "illustration", "generated_animation", "new_page"}
 
 
 # --------------------------------------------------------------------------- #

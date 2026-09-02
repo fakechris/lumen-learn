@@ -91,6 +91,17 @@ class WidgetSpec(BaseModel):
     layout: Literal["follow", "newcol"] = "newcol"
 
 
+class IllustrationSpec(BaseModel):
+    kind: Literal["svg", "image"] = "svg"
+    caption: str = ""
+    brief: str = Field("", description="Exactly what to draw: elements, counts, labels, comparison")
+    svg: Optional[str] = None
+    svg_path: Optional[str] = None
+    image_path: Optional[str] = None
+    image_url: Optional[str] = None
+    layout: Literal["follow", "newcol"] = "follow"
+
+
 class QuestionSpec(BaseModel):
     mode: Literal["choice", "open"] = "choice"
     question: str
@@ -119,6 +130,7 @@ class StepSpec(BaseModel):
     spoken_text: str
     boards: List[BoardSpec] = Field(default_factory=list)
     decorations: List[DecorationSpec] = Field(default_factory=list)
+    illustration: Optional[IllustrationSpec] = None
     widget: Optional[WidgetSpec] = None
     question: Optional[QuestionSpec] = None
     reward: Optional[RewardSpec] = None

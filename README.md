@@ -2,7 +2,7 @@
 
 An open, protocol-driven re-creation of the Lumen Learn-style "Socratic whiteboard" tutor:
 a lecture note goes in, and out comes an interactive lesson where a tutor voice narrates,
-board cards appear in sync with the speech, formulas get circled as they are mentioned,
+handwritten notes appear line by line in sync with the speech, formulas get circled as they are mentioned,
 a sandboxed 3D manipulative shows the geometry, and the tutor stops to ask you questions.
 You can interrupt at any time and ask your own.
 
@@ -62,6 +62,13 @@ Key decisions:
   labelled `heuristic` instead of pretending.
 - **Widgets are sandboxed.** `sandbox="allow-scripts"` only, with an injected shim that reports
   runtime errors back to the host.
+- **Figures are drawn, not painted.** Pedagogical diagrams need exact counts and labels, so the
+  default illustration is an LLM-drawn SVG (`kind: "svg"`); MiniMax `image-01` is available for
+  scene metaphors (`kind: "image"`, `MINIMAX_API_KEY`).
+- **The board is one handwritten page**, not cards: telegraphic notes with indentation, a
+  highlighted page title, figures with handwritten captions, and a centered subtitle. The
+  session-synthesis prompt encodes this and ships a hand-authored exemplar
+  (`examples/authored/`), which is what moved model output from lecture prose to the target.
 
 ## Layout
 

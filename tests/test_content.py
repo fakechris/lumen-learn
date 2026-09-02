@@ -135,3 +135,28 @@ def test_widget_static_check():
     assert "three.js" in static_check(good.replace(THREE_CDN, "x"))
     assert "modules" in static_check(good.replace("<script>", '<script type="module">'))
     assert "render loop" in static_check(good.replace("requestAnimationFrame", "setTimeout"))
+
+
+def test_illustration_compiles_and_svg_check():
+    from src.content.illustration_generator import svg_check
+    from src.protocol.session import IllustrationSpec
+
+    ok = '<svg viewBox="0 0 800 520" xmlns="http://www.w3.org/2000/svg"><text x="10" y="20">四个格子</text></svg>'
+    assert svg_check(ok) is None
+    assert "script" in svg_check(ok.replace("<text", "<script>alert(1)</script><text"))
+    assert "viewBox" in svg_check('<svg><rect/></svg>')
+    assert "external" in svg_check('<svg viewBox="0 0 1 1"><image href="https://x/y.png"/></svg>')
+
+    step = StepSpec(spoken_text="看右边这张图。", boards=[BoardSpec(markdown="a")],
+                    illustration=IllustrationSpec(caption="对比", brief="2x2 vs 8x8", svg=ok))
+    script = SessionScript(session_id="s", course_id="c", title="t", steps=[step])
+    compiled = compile_session(script, {0: StepAudio(None, 3000, 5, 0)})
+    types = [a.type for a in compiled.actions]
+    assert types == ["board", "illustration", "speak", "tts_segment", "done"]
+    fig = compiled.actions[1]
+    assert fig.reveal_gate_step == compiled.actions[2].step_id and fig.svg == ok and fig.board_uid == 2
+
+    # an unfilled illustration (generation failed) is simply omitted
+    step2 = step.model_copy(update={"illustration": IllustrationSpec(caption="x", brief="y")})
+    compiled2 = compile_session(SessionScript(session_id="s", course_id="c", title="t", steps=[step2]), {})
+    assert "illustration" not in [a.type for a in compiled2.actions]

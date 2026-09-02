@@ -45,3 +45,14 @@ DOM-located snippet decorations, sandboxed widgets with error reporting, ask/int
 - DeepSeek run on `examples/linear_algebra_basis.md`: 3 sessions, 4 Three.js widgets passed static checks, 4 bad snippets/trigger phrases dropped by validators.
 - Headless Chromium: gated reveal in sync with clock, circles located on KaTeX formulas, sandboxed widget interactive, wrong-answer feedback narrated live, interjection streamed + spoken + resumed, pause/speed/navigation, generate modal (heuristic) end to end.
 - Known gaps: no PDF parsing without `pymupdf`; no voice input for interjections; `new_column` action is compiled from `layout: "newcol"` on cards rather than emitted standalone.
+
+## Stage 6: Close the quality gap (2026-09-02, after comparing with real Lumen Learn screenshots)
+**Goal**: Match the reference look and content style: handwritten single page, telegraphic
+boards, narration that points at the page, figures with exact labels, colloquial prediction
+questions; illustration modality (LLM-drawn SVG, optional MiniMax image); prompt with exemplar.
+**Success Criteria**: DeepSeek output on the same lecture reads like the hand-authored baseline;
+rendered page resembles the reference screenshots.
+**Status**: Complete. Verified: boards 3-5 lines, speech points at board/figure, options colloquial,
+SVG figure with labels rendered with caption, circles on formulas and text.
+**Remaining**: widget visual QA loop (headless render check); per-student name in narration
+(needs live TTS or SSML placeholders); voice input for interjections.

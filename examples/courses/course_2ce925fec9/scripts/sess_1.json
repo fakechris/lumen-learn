@@ -1,180 +1,202 @@
 {
   "session_id": "sess_1",
   "course_id": "course_2ce925fec9",
-  "title": "两个向量能张成什么？",
-  "learning_goal": "学生能解释两个非零不平行向量在三维空间中的张成是一个平面，并理解为什么不能张成整个三维空间。",
+  "title": "两个向量能铺出什么？",
+  "learning_goal": "学生能解释两个非零不平行向量在三维空间中的生成集是一个过原点的平面，并理解为什么无法填满整个三维空间。",
   "steps": [
     {
-      "title": "从平面到空间：两个向量的舞台",
-      "spoken_text": "想象你站在三维空间里，手里握着两个非零且不平行的箭头。它们像两根筷子，指向不同的方向。现在我问你：仅靠这两根筷子，你能铺满整个三维空间吗？直觉会告诉你，两根筷子只能撑起一个平面，就像两根木棍只能搭出一个平面框架，却撑不起一个立体的帐篷。我们来看看数学上怎么说。",
+      "title": "两个向量能铺出什么？",
+      "spoken_text": "先看一个直觉问题：在三维空间里，给你两个方向不同的向量，它们能铺出多大的地方？是整片空间，还是一张纸？板书上我写的就是这个问题的答案，先别急着看结论，你猜猜看。",
       "boards": [
         {
-          "title": "两个向量的线性组合",
-          "markdown": "在 $\\mathbb{R}^3$ 中，取非零且不平行的 $\\vec{v}_1, \\vec{v}_2$。\n\n所有线性组合：\n$$c_1 \\vec{v}_1 + c_2 \\vec{v}_2 \\quad (c_1, c_2 \\in \\mathbb{R})$$\n\n记为 $\\text{span}(\\vec{v}_1, \\vec{v}_2)$。",
+          "title": "",
+          "markdown": "- 两个向量 $\\vec{v}_1, \\vec{v}_2$（不平行）\n- 能铺出什么？→ 一张**过原点的平面**",
           "layout": "follow"
         }
       ],
       "decorations": [
         {
           "kind": "circle",
-          "snippet": "c_1 \\vec{v}_1 + c_2 \\vec{v}_2",
+          "snippet": "过原点的平面",
           "board_index": 0,
           "trigger_phrase": null,
           "color": null
         }
       ],
+      "illustration": null,
+      "widget": null,
+      "question": null,
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "线性组合：把向量拼起来",
+      "spoken_text": "怎么把两个向量铺成一张纸？规则很简单：先沿 v1 走 c1 倍，再沿 v2 走 c2 倍，最后到达的位置就是 c1 乘 v1 加 c2 乘 v2。看板书上我写的这个式子，c1 和 c2 是任意实数，你能想到它们能到达的所有点连起来是什么形状吗？",
+      "boards": [
+        {
+          "title": "线性组合",
+          "markdown": "- 组合：$c_1 \\vec{v}_1 + c_2 \\vec{v}_2$\n- $c_1, c_2$ 任意实数\n- 所有可能到达的点 → **一张平面**",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "highlight",
+          "snippet": "c_1 \\vec{v}_1 + c_2 \\vec{v}_2",
+          "board_index": 0,
+          "trigger_phrase": "c1 乘 v1 加 c2 乘 v2",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": null,
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "动手试试：能碰到红球吗？",
+      "spoken_text": "右边这个教具里，红色和蓝色两个向量躺在绿色平面上，你可以拖滑块调 c1 和 c2，紫色箭头就是它们的组合。注意那个悬在平面正上方的红球，它到平面有一段垂直距离。你试着拖一拖，紫色箭头的尖能碰到红球吗？",
+      "boards": [
+        {
+          "title": "观察",
+          "markdown": "- 紫色箭头 = $c_1 \\vec{v}_1 + c_2 \\vec{v}_2$\n- 红球在平面**上方**\n- 箭头尖能到红球吗？",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "circle",
+          "snippet": "红球在平面**上方**",
+          "board_index": 0,
+          "trigger_phrase": null,
+          "color": null
+        }
+      ],
+      "illustration": {
+        "kind": "svg",
+        "caption": "两个向量张成的平面与悬在上方的红球",
+        "brief": "三维坐标系中，两个不平行向量 v1（红色）、v2（蓝色）张成一个半透明绿色平面，过原点。红球悬在平面正上方，并画有到平面的垂直虚线。紫色箭头表示 c1*v1 + c2*v2，其尖端始终在平面上。",
+        "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 800 520\">\n  <!-- 背景 -->\n  <rect width=\"800\" height=\"520\" fill=\"transparent\"/>\n\n  <!-- 三维坐标系：先画一个斜坐标系 -->\n  <!-- x轴（向右下） -->\n  <line x1=\"180\" y1=\"380\" x2=\"620\" y2=\"440\" stroke=\"#4b4b4b\" stroke-width=\"2\" stroke-linecap=\"round\"/>\n  <!-- y轴（向左下） -->\n  <line x1=\"180\" y1=\"380\" x2=\"80\" y2=\"460\" stroke=\"#4b4b4b\" stroke-width=\"2\" stroke-linecap=\"round\"/>\n  <!-- z轴（向上） -->\n  <line x1=\"180\" y1=\"380\" x2=\"180\" y2=\"80\" stroke=\"#4b4b4b\" stroke-width=\"2\" stroke-linecap=\"round\"/>\n\n  <!-- 轴箭头 -->\n  <polygon points=\"620,440 608,432 612,444\" fill=\"#4b4b4b\"/>\n  <polygon points=\"80,460 92,452 84,444\" fill=\"#4b4b4b\"/>\n  <polygon points=\"180,80 172,92 188,92\" fill=\"#4b4b4b\"/>\n\n  <!-- 轴标签 -->\n  <text x=\"630\" y=\"448\" font-family=\"'LXGW WenKai Lite', sans-serif\" font-size=\"20\" fill=\"#333\">x</text>\n  <text x=\"60\" y=\"472\" font-family=\"'LXGW WenKai Lite', sans-serif\" font-size=\"20\" fill=\"#333\">y</text>\n  <text x=\"188\" y=\"68\" font-family=\"'LXGW WenKai Lite', sans-serif\" font-size=\"20\" fill=\"#333\">z</text>\n\n  <!-- 原点标签 -->\n  <text x=\"160\" y=\"398\" font-family=\"'LXGW WenKai Lite', sans-serif\" font-size=\"18\" fill=\"#333\">O</text>\n\n  <!-- 半透明绿色平行四边形（张成的平面） -->\n  <!-- 平面由 v1=(200,60) 和 v2=(100,140) 张成，过原点 -->\n  <!-- 四个顶点：原点、v1、v2、v1+v2 -->\n  <polygon points=\"180,380 380,340 480,480 280,520\" fill=\"#b8dcc6\" fill-opacity=\"0.45\" stroke=\"#8abfa0\" stroke-width=\"1.5\" stroke-linejoin=\"round\"/>\n\n  <!-- 向量 v1（红色） -->\n  <line x1=\"180\" y1=\"380\" x2=\"380\" y2=\"340\" stroke=\"#e05656\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n  <!-- v1 箭头 -->\n  <polygon points=\"380,340 366,336 372,350\" fill=\"#e05656\"/>\n\n  <!-- 向量 v2（蓝色） -->\n  <line x1=\"180\" y1=\"380\" x2=\"280\" y2=\"520\" stroke=\"#5b8db8\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n  <!-- v2 箭头 -->\n  <polygon points=\"280,520 282,504 268,512\" fill=\"#5b8db8\"/>\n\n  <!-- 向量 v1 标签 -->\n  <text x=\"300\" y=\"330\" font-family=\"'LXGW WenKai Lite', sans-serif\" font-size=\"20\" fill=\"#e05656\">v₁</text>\n  <!-- 向量 v2 标签 -->\n  <text x=\"250\" y=\"540\" font-family=\"'LXGW WenKai Lite', sans-serif\" font-size=\"20\" fill=\"#5b8db8\">v₂</text>\n\n  <!-- 红球位置：在平面中心上方，平面中心约在 (330,430)，上方即 z 方向 -->\n  <!-- 红球 -->\n  <circle cx=\"330\" cy=\"240\" r=\"18\" fill=\"#e05656\" stroke=\"#c04040\" stroke-width=\"1.5\"/>\n\n  <!-- 红球到平面的垂直虚线 -->\n  <line x1=\"330\" y1=\"258\" x2=\"330\" y2=\"430\" stroke=\"#4b4b4b\" stroke-width=\"1.8\" stroke-dasharray=\"6,5\" stroke-linecap=\"round\"/>\n\n  <!-- 垂直符号：小直角标记 -->\n  <polyline points=\"330,420 340,420 340,430\" fill=\"none\" stroke=\"#4b4b4b\" stroke-width=\"1.5\"/>\n\n  <!-- 红球标签 -->\n  <text x=\"355\" y=\"235\" font-family=\"'LXGW WenKai Lite', sans-serif\" font-size=\"20\" fill=\"#e05656\">红球</text>\n\n  <!-- 紫色箭头 c1*v1 + c2*v2，尖端在平面上 -->\n  <!-- 取 c1=0.6, c2=0.5，则位置在 (180+0.6*200+0.5*100, 380+0.6*60+0.5*140) = (180+120+50, 380+36+70) = (350, 486) -->\n  <!-- 从原点画到 (350,486) -->\n  <line x1=\"180\" y1=\"380\" x2=\"350\" y2=\"486\" stroke=\"#9b7bb8\" stroke-width=\"2.5\" stroke-linecap=\"round\"/>\n  <!-- 紫色箭头尖端 -->\n  <polygon points=\"350,486 338,478 340,494\" fill=\"#9b7bb8\"/>\n\n  <!-- 紫色箭头标签 -->\n  <text x=\"260\" y=\"470\" font-family=\"'LXGW WenKai Lite', sans-serif\" font-size=\"19\" fill=\"#9b7bb8\">c₁v₁+c₂v₂</text>\n\n  <!-- 平面标注 -->\n  <text x=\"400\" y=\"440\" font-family=\"'LXGW WenKai Lite', sans-serif\" font-size=\"20\" fill=\"#5a8a6a\">张成的平面</text>\n  <!-- 引线 -->\n  <line x1=\"400\" y1=\"446\" x2=\"420\" y2=\"460\" stroke=\"#5a8a6a\" stroke-width=\"1.5\" stroke-dasharray=\"3,3\"/>\n\n  <!-- 垂直虚线标注 -->\n  <text x=\"345\" y=\"340\" font-family=\"'LXGW WenKai Lite', sans-serif\" font-size=\"18\" fill=\"#666\">垂直</text>\n  <line x1=\"345\" y1=\"346\" x2=\"335\" y2=\"360\" stroke=\"#666\" stroke-width=\"1.2\" stroke-dasharray=\"3,3\"/>\n\n  <!-- 原点小圆点 -->\n  <circle cx=\"180\" cy=\"380\" r=\"3.5\" fill=\"#4b4b4b\"/>\n\n  <!-- 标题 -->\n  <text x=\"400\" y=\"40\" text-anchor=\"middle\" font-family=\"'LXGW WenKai Lite', sans-serif\" font-size=\"24\" fill=\"#333\">两个向量张成的平面与悬在上方的红球</text>\n\n  <!-- 说明文字 -->\n  <text x=\"400\" y=\"70\" text-anchor=\"middle\" font-family=\"'LXGW WenKai Lite', sans-serif\" font-size=\"18\" fill=\"#555\">v₁ 与 v₂ 不平行，其所有线性组合构成一个过原点的平面</text>\n\n  <!-- 小装饰：手绘风格的点缀线 -->\n  <path d=\"M 140 120 Q 145 115 150 120\" fill=\"none\" stroke=\"#c9d8e8\" stroke-width=\"1.5\"/>\n  <path d=\"M 600 100 Q 605 95 610 100\" fill=\"none\" stroke=\"#c9d8e8\" stroke-width=\"1.5\"/>\n</svg>",
+        "svg_path": null,
+        "image_path": null,
+        "image_url": null,
+        "layout": "newcol"
+      },
       "widget": {
         "kind": "threejs",
-        "title": "两个向量的张成",
-        "task": "展示三维空间中的两个非零不平行向量（红色和蓝色），以及它们张成的平面（半透明绿色），平面过原点。鼠标可旋转视角，观察平面只是三维空间中的一个切片。",
-        "html": "<!DOCTYPE html>\n<html lang=\"zh-CN\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>两个向量的张成 · 三维切片</title>\n    <style>\n        body {\n            margin: 0;\n            overflow: hidden;\n            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;\n        }\n        #info {\n            position: absolute;\n            top: 20px;\n            left: 20px;\n            background: rgba(255, 255, 255, 0.9);\n            padding: 8px 16px;\n            border-radius: 30px;\n            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);\n            font-size: 14px;\n            color: #333;\n            pointer-events: none;\n            backdrop-filter: blur(4px);\n            border: 1px solid #ddd;\n            z-index: 100;\n        }\n        #info span {\n            display: inline-block;\n            width: 10px;\n            height: 10px;\n            border-radius: 50%;\n            margin-right: 6px;\n        }\n        .dot-red { background: #e74c3c; }\n        .dot-blue { background: #3498db; }\n        .dot-green { background: #2ecc71; }\n        .label {\n            color: #2c3e50;\n            font-weight: 500;\n            text-shadow: 1px 1px 2px rgba(255,255,255,0.8);\n        }\n    </style>\n</head>\n<body>\n    <div id=\"info\">\n        <span class=\"dot-red\"></span> 向量 a &nbsp;|&nbsp; \n        <span class=\"dot-blue\"></span> 向量 b &nbsp;|&nbsp; \n        <span class=\"dot-green\"></span> 张成平面 (过原点)\n        <span style=\"margin-left: 12px; opacity: 0.6;\">🖱️ 拖拽旋转视角</span>\n    </div>\n\n    <script src=\"https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js\"></script>\n    <script src=\"https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js\"></script>\n\n    <script>\n        (function() {\n            // --- 初始化场景、相机、渲染器 ---\n            const scene = new THREE.Scene();\n            scene.background = new THREE.Color(0xfcfcfc);\n\n            const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);\n            camera.position.set(6, 4, 8);\n            camera.lookAt(0, 0, 0);\n\n            const renderer = new THREE.WebGLRenderer({ antialias: true });\n            renderer.setSize(window.innerWidth, window.innerHeight);\n            renderer.shadowMap.enabled = false; // 不需要阴影\n            renderer.setPixelRatio(window.devicePixelRatio);\n            document.body.appendChild(renderer.domElement);\n\n            // --- 控制器 ---\n            const controls = new THREE.OrbitControls(camera, renderer.domElement);\n            controls.enableDamping = true;\n            controls.dampingFactor = 0.05;\n            controls.autoRotate = false;\n            controls.enableZoom = true;\n            controls.target.set(0, 0, 0);\n\n            // --- 辅助元素：网格与坐标轴 ---\n            const gridHelper = new THREE.GridHelper(10, 20, 0xaaaaaa, 0xcccccc);\n            gridHelper.position.y = 0;\n            scene.add(gridHelper);\n\n            const axesHelper = new THREE.AxesHelper(5);\n            scene.add(axesHelper);\n\n            // --- 定义两个非零不平行向量 (红色 a, 蓝色 b) ---\n            // 选择两个不平行且不共线的向量，使平面明显倾斜\n            const vecA = new THREE.Vector3(2.0, 1.2, 1.5).normalize().multiplyScalar(2.5); // 长度2.5\n            const vecB = new THREE.Vector3(-1.0, 2.0, 1.8).normalize().multiplyScalar(2.5); // 长度2.5\n\n            // 确保它们不平行 (叉积不为零)\n            const cross = new THREE.Vector3().crossVectors(vecA, vecB);\n            if (cross.length() < 0.01) {\n                // 如果意外平行，稍微扰动\n                vecB.x += 0.3;\n                vecB.y -= 0.2;\n                vecB.z += 0.1;\n                vecB.normalize().multiplyScalar(2.5);\n            }\n\n            // --- 绘制向量 (ArrowHelper) ---\n            // 红色向量 a\n            const arrowA = new THREE.ArrowHelper(vecA.clone().normalize(), new THREE.Vector3(0, 0, 0), vecA.length(), 0xe74c3c, 0.4, 0.2);\n            scene.add(arrowA);\n            \n            // 蓝色向量 b\n            const arrowB = new THREE.ArrowHelper(vecB.clone().normalize(), new THREE.Vector3(0, 0, 0), vecB.length(), 0x3498db, 0.4, 0.2);\n            scene.add(arrowB);\n\n            // --- 计算张成平面 (由 vecA 和 vecB 张成) ---\n            // 平面法向量 n = a × b\n            const normal = new THREE.Vector3().crossVectors(vecA, vecB).normalize();\n            \n            // 构建一个覆盖范围较大的四边形平面，使用两个基向量 (a 和 b) 的线性组合\n            // 为了视觉上呈现“无限”平面，我们取较大的系数范围，例如从 -3 到 3\n            const scale = 3.5; // 平面延伸范围\n            \n            // 四个顶点: p1 = -scale*a - scale*b, p2 = scale*a - scale*b, p3 = scale*a + scale*b, p4 = -scale*a + scale*b\n            const p1 = vecA.clone().multiplyScalar(-scale).add(vecB.clone().multiplyScalar(-scale));\n            const p2 = vecA.clone().multiplyScalar(scale).add(vecB.clone().multiplyScalar(-scale));\n            const p3 = vecA.clone().multiplyScalar(scale).add(vecB.clone().multiplyScalar(scale));\n            const p4 = vecA.clone().multiplyScalar(-scale).add(vecB.clone().multiplyScalar(scale));\n\n            // 创建几何体并设置顶点\n            const geometry = new THREE.BufferGeometry();\n            const vertices = new Float32Array([\n                p1.x, p1.y, p1.z,\n                p2.x, p2.y, p2.z,\n                p3.x, p3.y, p3.z,\n                p4.x, p4.y, p4.z\n            ]);\n            geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));\n            \n            // 索引两个三角形 (0-1-2 和 0-2-3)\n            geometry.setIndex([\n                0, 1, 2,\n                0, 2, 3\n            ]);\n            geometry.computeVertexNormals();\n\n            // 半透明绿色材质\n            const material = new THREE.MeshBasicMaterial({\n                color: 0x2ecc71,\n                transparent: true,\n                opacity: 0.25,\n                side: THREE.DoubleSide,\n                depthWrite: false,\n                polygonOffset: true,\n                polygonOffsetFactor: 1,\n                polygonOffsetUnits: 1\n            });\n\n            const planeMesh = new THREE.Mesh(geometry, material);\n            scene.add(planeMesh);\n\n            // 可选：添加平面边缘的线框，帮助视觉感知平面范围 (浅色线)\n            const edges = new THREE.EdgesGeometry(geometry);\n            const lineMat = new THREE.LineBasicMaterial({ color: 0x27ae60, opacity: 0.3, transparent: true });\n            const wireframe = new THREE.LineSegments(edges, lineMat);\n            scene.add(wireframe);\n\n            // --- 添加文字标注 (Canvas Sprite) ---\n            function createLabel(text, color, position, offset = new THREE.Vector3(0.3, 0.3, 0.3)) {\n                const canvas = document.createElement('canvas');\n                canvas.width = 128;\n                canvas.height = 64;\n                const ctx = canvas.getContext('2d');\n                \n                // 背景透明\n                ctx.clearRect(0, 0, canvas.width, canvas.height);\n                \n                // 绘制文字\n                ctx.font = 'Bold 28px \"Segoe UI\", Arial, sans-serif';\n                ctx.textAlign = 'center';\n                ctx.textBaseline = 'middle';\n                \n                // 描边白底增加可读性\n                ctx.shadowColor = 'rgba(255,255,255,0.8)';\n                ctx.shadowBlur = 8;\n                ctx.fillStyle = color;\n                ctx.fillText(text, canvas.width/2, canvas.height/2);\n                \n                // 额外描边\n                ctx.shadowBlur = 0;\n                ctx.strokeStyle = 'rgba(255,255,255,0.9)';\n                ctx.lineWidth = 2;\n                ctx.strokeText(text, canvas.width/2, canvas.height/2);\n                \n                const texture = new THREE.CanvasTexture(canvas);\n                const material = new THREE.SpriteMaterial({ map: texture, depthTest: false, depthWrite: false });\n                const sprite = new THREE.Sprite(material);\n                sprite.scale.set(1.2, 0.6, 1);\n                sprite.position.copy(position).add(offset);\n                scene.add(sprite);\n                return sprite;\n            }\n\n            // 在向量尖端附近标注 a 和 b\n            const tipA = vecA.clone().multiplyScalar(1.1); // 稍微超出尖端\n            const tipB = vecB.clone().multiplyScalar(1.1);\n            createLabel('a', '#e74c3c', tipA, new THREE.Vector3(0.2, 0.2, 0.2));\n            createLabel('b', '#3498db', tipB, new THREE.Vector3(-0.2, 0.3, -0.1));\n\n            // 在平面中心附近标注 \"span(a,b)\"，但避免遮挡原点，放在偏移位置\n            const centerOffset = vecA.clone().add(vecB).multiplyScalar(0.4).add(new THREE.Vector3(0.5, 0.2, 0.5));\n            createLabel('span(a,b)', '#2ecc71', centerOffset, new THREE.Vector3(0, 0.2, 0));\n\n            // 原点小标记 (可选)\n            const originDot = new THREE.Mesh(\n                new THREE.SphereGeometry(0.08, 16, 16),\n                new THREE.MeshBasicMaterial({ color: 0x555555 })\n            );\n            originDot.position.set(0, 0, 0);\n            scene.add(originDot);\n\n            // --- 添加一些辅助点/虚线来强调平面过原点? 不需要，平面本身过原点 ---\n\n            // --- 动画循环 ---\n            function animate() {\n                requestAnimationFrame(animate);\n                \n                controls.update(); // 启用阻尼后必须每帧调用\n                \n                renderer.render(scene, camera);\n            }\n            \n            animate();\n\n            // --- 窗口大小自适应 ---\n            window.addEventListener('resize', onWindowResize, false);\n            function onWindowResize() {\n                camera.aspect = window.innerWidth / window.innerHeight;\n                camera.updateProjectionMatrix();\n                renderer.setSize(window.innerWidth, window.innerHeight);\n            }\n\n            // 首帧内容已经由同步绘制保证，无需额外操作\n        })();\n    </script>\n</body>\n</html>",
+        "title": "试试看：能碰到红球吗？",
+        "task": "三维空间：红色 v1、蓝色 v2 两个不平行向量，它们张成的半透明绿色平面过原点。紫色箭头 = c1·v1 + c2·v2，底部两个滑块调 c1、c2。平面正上方悬一个红球并画出到平面的虚线高度，实时显示紫色箭头尖到红球的高度差，让学生发现永远到不了。复选框可加入橙色 v3 = v1 + v2，看到它躺在平面里。鼠标可旋转。",
+        "html": "<!DOCTYPE html>\n<html lang=\"zh-CN\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>试试看：能碰到红球吗？</title>\n    <style>\n        body { margin: 0; overflow: hidden; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }\n        #info {\n            position: absolute;\n            top: 20px;\n            left: 20px;\n            background: rgba(255, 255, 255, 0.9);\n            padding: 8px 16px;\n            border-radius: 20px;\n            box-shadow: 0 2px 10px rgba(0,0,0,0.1);\n            font-size: 14px;\n            color: #333;\n            pointer-events: none;\n            z-index: 10;\n            border: 1px solid #ccc;\n        }\n        #controls {\n            position: absolute;\n            bottom: 30px;\n            left: 50%;\n            transform: translateX(-50%);\n            background: rgba(255, 255, 255, 0.85);\n            backdrop-filter: blur(5px);\n            padding: 15px 25px;\n            border-radius: 30px;\n            box-shadow: 0 4px 20px rgba(0,0,0,0.15);\n            display: flex;\n            gap: 30px;\n            align-items: center;\n            border: 1px solid #ddd;\n            z-index: 20;\n            flex-wrap: wrap;\n            justify-content: center;\n            pointer-events: auto;\n        }\n        .slider-group {\n            display: flex;\n            align-items: center;\n            gap: 10px;\n            color: #2c3e50;\n            font-weight: 500;\n        }\n        .slider-group label {\n            min-width: 30px;\n            font-weight: 600;\n        }\n        .slider-group input {\n            width: 140px;\n            cursor: pointer;\n            accent-color: #7b2ff7;\n        }\n        .slider-group span {\n            min-width: 40px;\n            text-align: center;\n            background: #f0f0f0;\n            padding: 2px 8px;\n            border-radius: 12px;\n            font-size: 14px;\n        }\n        .checkbox-group {\n            display: flex;\n            align-items: center;\n            gap: 8px;\n            color: #2c3e50;\n            font-weight: 500;\n            background: #f8f0ff;\n            padding: 5px 12px;\n            border-radius: 20px;\n            border: 1px solid #d0bfff;\n        }\n        .checkbox-group input {\n            width: 18px;\n            height: 18px;\n            cursor: pointer;\n            accent-color: #ff8c00;\n        }\n        #height-display {\n            position: absolute;\n            top: 20px;\n            right: 20px;\n            background: rgba(255, 255, 255, 0.9);\n            padding: 10px 18px;\n            border-radius: 16px;\n            box-shadow: 0 2px 10px rgba(0,0,0,0.1);\n            font-size: 16px;\n            color: #2c3e50;\n            border-left: 6px solid #e74c3c;\n            font-weight: 500;\n            z-index: 15;\n            pointer-events: none;\n        }\n        #height-display span {\n            font-weight: 700;\n            color: #e74c3c;\n        }\n        @media (max-width: 900px) {\n            #controls { flex-direction: column; gap: 12px; width: 90%; bottom: 20px; padding: 15px; }\n            .slider-group input { width: 100px; }\n        }\n    </style>\n</head>\n<body>\n    <div id=\"info\">🖱️ 拖拽旋转视角</div>\n    <div id=\"height-display\">高度差: <span id=\"height-value\">0.00</span></div>\n    <div id=\"controls\">\n        <div class=\"slider-group\">\n            <label style=\"color:#e74c3c;\">c₁</label>\n            <input type=\"range\" id=\"c1-slider\" min=\"-2.0\" max=\"2.0\" step=\"0.01\" value=\"0.8\">\n            <span id=\"c1-value\">0.80</span>\n        </div>\n        <div class=\"slider-group\">\n            <label style=\"color:#3498db;\">c₂</label>\n            <input type=\"range\" id=\"c2-slider\" min=\"-2.0\" max=\"2.0\" step=\"0.01\" value=\"0.5\">\n            <span id=\"c2-value\">0.50</span>\n        </div>\n        <div class=\"checkbox-group\">\n            <input type=\"checkbox\" id=\"show-v3\">\n            <label for=\"show-v3\" style=\"color:#e67e22;\">显示 v₃ = v₁+v₂</label>\n        </div>\n    </div>\n\n    <script src=\"https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js\"></script>\n    <script src=\"https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js\"></script>\n\n    <script>\n        (function() {\n            // --- 初始化场景、相机、渲染器 ---\n            const scene = new THREE.Scene();\n            scene.background = new THREE.Color(0xfcfcfc);\n\n            const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);\n            camera.position.set(5, 4, 7);\n            camera.lookAt(0, 0.5, 0);\n\n            const renderer = new THREE.WebGLRenderer({ antialias: true });\n            renderer.setSize(window.innerWidth, window.innerHeight);\n            renderer.shadowMap.enabled = false; // 不需要阴影\n            document.body.appendChild(renderer.domElement);\n\n            // --- 控制器 ---\n            const controls = new THREE.OrbitControls(camera, renderer.domElement);\n            controls.enableDamping = true;\n            controls.dampingFactor = 0.05;\n            controls.target.set(0, 0.5, 0);\n            controls.update();\n\n            // --- 基础辅助: 网格和坐标轴 ---\n            const gridHelper = new THREE.GridHelper(8, 20, 0xaaaaaa, 0xcccccc);\n            gridHelper.position.y = 0;\n            scene.add(gridHelper);\n\n            const axesHelper = new THREE.AxesHelper(3);\n            scene.add(axesHelper);\n\n            // --- 环境光与点光源 (让颜色更鲜明) ---\n            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);\n            scene.add(ambientLight);\n            const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);\n            dirLight.position.set(2, 5, 3);\n            scene.add(dirLight);\n\n            // --- 定义向量 v1, v2 (不平行) ---\n            const v1 = new THREE.Vector3(1.2, 0.4, 0.2).normalize().multiplyScalar(1.5); // 长度1.5\n            const v2 = new THREE.Vector3(-0.3, 0.6, 1.0).normalize().multiplyScalar(1.5); // 长度1.5\n            // 确保不平行: 叉积不为零\n            console.assert(v1.clone().cross(v2).length() > 0.1, \"v1 v2 应不平行\");\n\n            // 平面法向量 n = v1 × v2\n            const normal = new THREE.Vector3().crossVectors(v1, v2).normalize();\n            // 平面过原点，平面方程: normal · P = 0\n\n            // --- 创建半透明绿色平面 (无限大，用大平面近似) ---\n            const planeSize = 6.0;\n            const planeGeometry = new THREE.PlaneGeometry(planeSize, planeSize);\n            const planeMaterial = new THREE.MeshBasicMaterial({\n                color: 0x2ecc71,\n                transparent: true,\n                opacity: 0.25,\n                side: THREE.DoubleSide,\n                depthWrite: false\n            });\n            const planeMesh = new THREE.Mesh(planeGeometry, planeMaterial);\n            // 旋转平面使其法线与 normal 对齐\n            const quaternion = new THREE.Quaternion().setFromUnitVectors(\n                new THREE.Vector3(0, 0, 1), normal\n            );\n            planeMesh.quaternion.copy(quaternion);\n            planeMesh.position.set(0, 0, 0);\n            scene.add(planeMesh);\n\n            // 添加一个半透明的边框线，帮助视觉\n            const planeBorder = new THREE.EdgesGeometry(planeGeometry);\n            const lineMat = new THREE.LineBasicMaterial({ color: 0x27ae60, linewidth: 1 });\n            const wireframe = new THREE.LineSegments(planeBorder, lineMat);\n            wireframe.quaternion.copy(quaternion);\n            wireframe.position.set(0, 0, 0);\n            scene.add(wireframe);\n\n            // --- 红球 (目标点) 位于平面正上方 (沿法线方向偏移) ---\n            const redBallPos = new THREE.Vector3(0.8, 1.2, 0.5); // 任意点，但确保不在平面上\n            // 调整到平面正上方: 投影到平面，然后沿法线偏移\n            const projOnPlane = redBallPos.clone().sub(normal.clone().multiplyScalar(redBallPos.dot(normal)));\n            const heightOffset = 1.2; // 距离平面高度\n            const redBallCenter = projOnPlane.clone().add(normal.clone().multiplyScalar(heightOffset));\n            \n            // 红球\n            const sphereGeo = new THREE.SphereGeometry(0.18, 32, 32);\n            const sphereMat = new THREE.MeshStandardMaterial({ color: 0xe74c3c, emissive: 0x330000 });\n            const redSphere = new THREE.Mesh(sphereGeo, sphereMat);\n            redSphere.position.copy(redBallCenter);\n            scene.add(redSphere);\n\n            // 红球到平面的虚线 (垂直)\n            const dashMaterial = new THREE.LineDashedMaterial({ color: 0xe74c3c, dashSize: 0.08, gapSize: 0.05, linewidth: 1 });\n            const points = [projOnPlane.clone(), redBallCenter.clone()];\n            const lineGeo = new THREE.BufferGeometry().setFromPoints(points);\n            const dashLine = new THREE.Line(lineGeo, dashMaterial);\n            dashLine.computeLineDistances();\n            scene.add(dashLine);\n\n            // 在平面上的投影点加一个小圆点\n            const dotGeo = new THREE.SphereGeometry(0.06, 8, 8);\n            const dotMat = new THREE.MeshBasicMaterial({ color: 0xe74c3c });\n            const dot = new THREE.Mesh(dotGeo, dotMat);\n            dot.position.copy(projOnPlane);\n            scene.add(dot);\n\n            // --- 绘制 v1 (红色) 和 v2 (蓝色) 箭头 ---\n            const arrowLen = 1.5;\n            const arrowHeadLen = 0.25;\n            const arrowHeadWidth = 0.2;\n\n            // v1 红色\n            const arrowV1 = new THREE.ArrowHelper(v1.clone().normalize(), new THREE.Vector3(0,0,0), v1.length(), 0xff0000, arrowHeadLen, arrowHeadWidth);\n            scene.add(arrowV1);\n            // v2 蓝色\n            const arrowV2 = new THREE.ArrowHelper(v2.clone().normalize(), new THREE.Vector3(0,0,0), v2.length(), 0x3498db, arrowHeadLen, arrowHeadWidth);\n            scene.add(arrowV2);\n\n            // 添加标签 v1, v2 (Canvas Sprite)\n            function createLabel(text, color, position) {\n                const canvas = document.createElement('canvas');\n                canvas.width = 128;\n                canvas.height = 64;\n                const ctx = canvas.getContext('2d');\n                ctx.fillStyle = 'rgba(255,255,255,0.0)';\n                ctx.fillRect(0, 0, canvas.width, canvas.height);\n                ctx.font = 'Bold 42px \"Segoe UI\", Arial';\n                ctx.fillStyle = color;\n                ctx.textAlign = 'center';\n                ctx.textBaseline = 'middle';\n                ctx.fillText(text, canvas.width/2, canvas.height/2);\n                const texture = new THREE.CanvasTexture(canvas);\n                const material = new THREE.SpriteMaterial({ map: texture, depthTest: false });\n                const sprite = new THREE.Sprite(material);\n                sprite.scale.set(0.8, 0.4, 1);\n                sprite.position.copy(position);\n                return sprite;\n            }\n\n            const labelV1 = createLabel('v₁', '#e74c3c', v1.clone().multiplyScalar(1.2).add(new THREE.Vector3(0.2,0.2,0)));\n            scene.add(labelV1);\n            const labelV2 = createLabel('v₂', '#2980b9', v2.clone().multiplyScalar(1.2).add(new THREE.Vector3(-0.2,0.2,0)));\n            scene.add(labelV2);\n\n            // --- 紫色箭头 = c1*v1 + c2*v2 (动态更新) ---\n            let purpleArrow = null;\n            const arrowColor = 0x9b59b6;\n\n            // 创建箭头辅助 (初始占位)\n            function updatePurpleArrow(c1, c2) {\n                const vec = new THREE.Vector3().copy(v1).multiplyScalar(c1).add(v2.clone().multiplyScalar(c2));\n                if (purpleArrow) scene.remove(purpleArrow);\n                if (vec.length() < 0.001) {\n                    // 零向量显示一个小点\n                    purpleArrow = new THREE.ArrowHelper(new THREE.Vector3(1,0,0), new THREE.Vector3(0,0,0), 0.001, arrowColor, 0.1, 0.1);\n                } else {\n                    purpleArrow = new THREE.ArrowHelper(vec.clone().normalize(), new THREE.Vector3(0,0,0), vec.length(), arrowColor, 0.25, 0.2);\n                }\n                scene.add(purpleArrow);\n                return vec;\n            }\n\n            // 标签 \"c1v1+c2v2\"\n            let purpleLabel = null;\n            function updatePurpleLabel(vec) {\n                if (purpleLabel) scene.remove(purpleLabel);\n                if (vec.length() > 0.01) {\n                    purpleLabel = createLabel('c₁v₁+c₂v₂', '#8e44ad', vec.clone().multiplyScalar(1.1).add(new THREE.Vector3(0.2,0.3,0)));\n                    scene.add(purpleLabel);\n                }\n            }\n\n            // --- 橙色 v3 = v1 + v2 (可选) ---\n            let v3Arrow = null;\n            let v3Label = null;\n            function updateV3(show) {\n                if (v3Arrow) { scene.remove(v3Arrow); v3Arrow = null; }\n                if (v3Label) { scene.remove(v3Label); v3Label = null; }\n                if (show) {\n                    const v3 = v1.clone().add(v2);\n                    v3Arrow = new THREE.ArrowHelper(v3.clone().normalize(), new THREE.Vector3(0,0,0), v3.length(), 0xe67e22, 0.25, 0.2);\n                    scene.add(v3Arrow);\n                    v3Label = createLabel('v₃', '#d35400', v3.clone().multiplyScalar(1.2).add(new THREE.Vector3(0.2,0.2,0)));\n                    scene.add(v3Label);\n                }\n            }\n\n            // --- 高度差显示 ---\n            const heightSpan = document.getElementById('height-value');\n\n            // --- 滑块与复选框事件 ---\n            const c1Slider = document.getElementById('c1-slider');\n            const c2Slider = document.getElementById('c2-slider');\n            const c1ValSpan = document.getElementById('c1-value');\n            const c2ValSpan = document.getElementById('c2-value');\n            const showV3Check = document.getElementById('show-v3');\n\n            function updateFromSliders() {\n                const c1 = parseFloat(c1Slider.value);\n                const c2 = parseFloat(c2Slider.value);\n                c1ValSpan.textContent = c1.toFixed(2);\n                c2ValSpan.textContent = c2.toFixed(2);\n\n                // 更新紫色箭头\n                const vec = updatePurpleArrow(c1, c2);\n                updatePurpleLabel(vec);\n\n                // 计算紫色箭头尖到红球的高度差 (沿平面法线方向)\n                // 箭头尖位置 = vec (因为箭头从原点出发)\n                const tipPos = vec.clone();\n                // 红球位置 redBallCenter\n                // 高度差 = (tipPos - redBallCenter) · normal\n                const diffVec = tipPos.clone().sub(redBallCenter);\n                const heightDiff = diffVec.dot(normal);\n                heightSpan.textContent = heightDiff.toFixed(3);\n            }\n\n            c1Slider.addEventListener('input', updateFromSliders);\n            c2Slider.addEventListener('input', updateFromSliders);\n            showV3Check.addEventListener('change', () => {\n                updateV3(showV3Check.checked);\n            });\n\n            // 初始化\n            updateFromSliders();\n            updateV3(false); // 默认不显示\n\n            // 添加一些小的辅助点或坐标标记 (可选)\n            // 在原点加一个小球\n            const originSphere = new THREE.Mesh(new THREE.SphereGeometry(0.05, 8, 8), new THREE.MeshBasicMaterial({ color: 0x555555 }));\n            originSphere.position.set(0,0,0);\n            scene.add(originSphere);\n\n            // --- 窗口大小自适应 ---\n            window.addEventListener('resize', onWindowResize, false);\n            function onWindowResize() {\n                camera.aspect = window.innerWidth / window.innerHeight;\n                camera.updateProjectionMatrix();\n                renderer.setSize(window.innerWidth, window.innerHeight);\n            }\n\n            // --- 动画循环 ---\n            function animate() {\n                requestAnimationFrame(animate);\n                controls.update();\n                renderer.render(scene, camera);\n            }\n\n            animate();\n\n            // 首帧内容已经通过 updateFromSliders 绘制\n\n            // 额外: 为了视觉清晰，在平面边缘加一些半透明边框? 已经加了wireframe\n            // 确保虚线始终显示 (因为computeLineDistances 在创建时调用)\n            // 但虚线在动态更新时不改变，所以没问题\n\n            // 如果滑块变化时，虚线不变，但高度差更新\n            // 但注意：红球位置固定，所以虚线固定\n\n            // 为了更清晰，在平面法线方向加一个小指示? 不需要\n\n            // 最后，确保所有箭头和标签都在正确位置\n            // 由于箭头是动态更新，但v1/v2不变，所以没问题\n\n            // 小优化：让平面网格线更明显，但已经ok\n\n            // 启动后立刻更新一次\n            setTimeout(() => {\n                updateFromSliders();\n            }, 50);\n        })();\n    </script>\n</body>\n</html>",
+        "html_path": null,
         "mermaid": null,
         "layout": "newcol"
       },
       "question": {
         "mode": "choice",
-        "question": "两个非零不平行向量在三维空间中的张成是什么？",
+        "question": "拖了半天滑块，紫色箭头的尖能碰到红球吗？",
         "options": [
-          "整个三维空间",
-          "一个过原点的平面"
+          "能，多调几个 c1 c2 总有一组行",
+          "不能，箭头尖永远贴在绿色平面上"
         ],
         "correct_index": 1,
         "misconceptions": [
-          "误以为两个向量可以张成整个三维空间，忽略了维度限制。",
+          "这是最常见的直觉：以为两个参数可以自由到任何地方。但两个参数只能在一张纸上滑动，红球在纸的上方。",
           null
         ],
-        "explanation": "两个向量只能提供两个方向的自由度，所以张成的是二维平面，无法覆盖三维空间。"
+        "explanation": "不管 c1、c2 取多少，尖端始终在绿色平面上，红球在平面上方，高度差永远不为零。"
       },
       "reward": null,
       "new_page_title": null
     },
     {
-      "title": "为什么填不满三维空间？",
-      "spoken_text": "为什么两根筷子撑不起立体帐篷？因为要填满三维空间，你需要三个方向各不相同的向量，比如上下、左右、前后。而你现在只有两个向量，它们只能在一个平面里滑动。就像你只有前后和左右两个方向，却想上下移动，那是不可能的。数学上，这两个向量的所有线性组合都躺在一个过原点的平面上，永远无法产生垂直于这个平面的分量。",
+      "title": "为什么够不到？",
+      "spoken_text": "为什么够不到？看板书最后一行，我圈出来的这个“高度”。两个向量都在绿色平面里，它们的任何组合也都躺在平面里，永远产生不了垂直于平面的分量。所以红球在平面外，就永远碰不到。你能想到，要碰到红球需要几个向量吗？",
       "boards": [
         {
-          "title": "缺少第三个方向",
-          "markdown": "设 $\\vec{v}_1, \\vec{v}_2$ 张成的平面为 $P$。\n\n任意 $\\vec{w} \\in \\text{span}(\\vec{v}_1, \\vec{v}_2)$ 都在 $P$ 内。\n\n若 $\\vec{u} \\notin P$（如垂直于 $P$ 的向量），则 $\\vec{u} \\notin \\text{span}(\\vec{v}_1, \\vec{v}_2)$。\n\n因此无法张成整个 $\\mathbb{R}^3$。",
+          "title": "为什么",
+          "markdown": "- 两个向量都在平面内\n- 组合 $c_1 \\vec{v}_1 + c_2 \\vec{v}_2$ 也在平面内\n- **没有垂直分量** → 碰不到红球",
           "layout": "follow"
         }
       ],
       "decorations": [
         {
           "kind": "circle",
-          "snippet": "\\text{span}(\\vec{v}_1, \\vec{v}_2)",
+          "snippet": "没有垂直分量",
           "board_index": 0,
           "trigger_phrase": null,
           "color": null
         }
       ],
+      "illustration": null,
+      "widget": null,
+      "question": null,
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "生成集：铺出的平面",
+      "spoken_text": "我们把两个向量能到达的所有点组成的集合，叫做它们的生成集，记作 span(v1, v2)。板书上我写了这个记号，它就是一个过原点的平面。注意，虽然我们在三维空间里，但这个平面只有二维，就像一张无限大的纸。你能说出这个平面是几维的吗？",
+      "boards": [
+        {
+          "title": "生成集",
+          "markdown": "- 生成集：$\\text{span}(\\vec{v}_1, \\vec{v}_2)$\n- = 所有 $c_1 \\vec{v}_1 + c_2 \\vec{v}_2$\n- 是一个**过原点的平面**（二维）",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "highlight",
+          "snippet": "\\text{span}(\\vec{v}_1, \\vec{v}_2)",
+          "board_index": 0,
+          "trigger_phrase": "span(v1, v2)",
+          "color": null
+        }
+      ],
+      "illustration": null,
       "widget": null,
       "question": {
         "mode": "choice",
-        "question": "如果两个向量张成一个平面，那么平面外的任意向量（比如垂直于平面的向量）能否由这两个向量线性表示？",
+        "question": "这个生成集是几维的？",
         "options": [
-          "能，因为线性组合可以产生任意方向",
-          "不能，因为缺少第三个方向"
+          "三维，因为我们在三维空间里",
+          "二维，因为它是一张平面"
         ],
         "correct_index": 1,
         "misconceptions": [
-          "误以为线性组合可以产生任意方向，忽略了维度限制。",
+          "把所在空间的维度和生成集的维度搞混了。生成集的维度取决于它能铺出的形状，而不是它所在的空间。",
           null
         ],
-        "explanation": "线性组合只能产生平面内的向量，平面外的向量需要第三个基向量。"
+        "explanation": "生成集是一个平面，平面是二维的，尽管它嵌在三维空间中。"
       },
       "reward": null,
       "new_page_title": null
     },
     {
-      "title": "维度：空间的自由度",
-      "spoken_text": "现在我们引入一个关键概念——维度。维度可以理解为空间中的自由度，也就是你需要多少个独立的参数才能描述空间中的每一个点。在三维空间里，你需要三个坐标，所以维度是三。而两个向量张成的平面，只需要两个参数 c1 和 c2 就能描述平面上的所有点，所以它的维度是二。这就是为什么两个向量只能张成一个二维平面，而不是三维空间。",
+      "title": "总结：两个向量铺出平面",
+      "spoken_text": "最后一步，我们把结论钉在板书上：两个非零不平行向量在三维空间中的生成集是一个过原点的平面，它无法填满整个三维空间，因为缺少垂直方向的分量。记住，生成集的维度由向量的方向决定，而不是由所在空间的维度决定。",
       "boards": [
         {
-          "title": "维度与参数个数",
-          "markdown": "平面上的点：$c_1 \\vec{v}_1 + c_2 \\vec{v}_2$，需要两个参数 $c_1, c_2$。\n\n所以 $\\dim(\\text{span}(\\vec{v}_1, \\vec{v}_2)) = 2$。\n\n而 $\\mathbb{R}^3$ 需要三个参数，所以 $\\dim(\\mathbb{R}^3) = 3$。",
+          "title": "结论",
+          "markdown": "- 两个不平行向量 $\\vec{v}_1, \\vec{v}_2$\n- 生成集 = **过原点的平面**（二维）\n- 无法填满 $\\mathbb{R}^3$，因为**缺少垂直分量**",
           "layout": "follow"
         }
       ],
       "decorations": [
         {
           "kind": "circle",
-          "snippet": "\\dim(\\text{span}(\\vec{v}_1, \\vec{v}_2)) = 2",
+          "snippet": "过原点的平面",
           "board_index": 0,
-          "trigger_phrase": "维度是二",
+          "trigger_phrase": "过原点的平面",
           "color": null
         }
       ],
-      "widget": null,
-      "question": {
-        "mode": "choice",
-        "question": "两个向量张成的子空间的维度是多少？",
-        "options": [
-          "1",
-          "2"
-        ],
-        "correct_index": 1,
-        "misconceptions": [
-          "误以为两个向量就是二维，但这里问的是张成空间的维度，确实是2，但选项1是典型错误，可能混淆了向量个数与维度。",
-          null
-        ],
-        "explanation": "两个不平行向量张成二维平面，所以维度是2。"
-      },
-      "reward": null,
-      "new_page_title": null
-    },
-    {
-      "title": "特殊情况：共线与平行",
-      "spoken_text": "如果两个向量恰好共线，也就是平行，会发生什么？想象两根筷子指向同一个方向，那它们就只能撑起一条直线，而不是平面。这时张成空间就退化为一维的直线。所以，我们强调两个向量必须不平行，才能张成一个平面。如果平行，它们只能张成一条直线。",
-      "boards": [
-        {
-          "title": "共线向量的张成",
-          "markdown": "若 $\\vec{v}_2 = k \\vec{v}_1$（$k \\neq 0$），则\n\n$$\\text{span}(\\vec{v}_1, \\vec{v}_2) = \\{c \\vec{v}_1 : c \\in \\mathbb{R}\\}$$\n\n这是一条过原点的直线，维度为 1。",
-          "layout": "follow"
-        }
-      ],
-      "decorations": [
-        {
-          "kind": "circle",
-          "snippet": "\\text{span}(\\vec{v}_1, \\vec{v}_2) = \\{c \\vec{v}_1 : c \\in \\mathbb{R}\\}",
-          "board_index": 0,
-          "trigger_phrase": "张成空间",
-          "color": null
-        }
-      ],
-      "widget": null,
-      "question": {
-        "mode": "choice",
-        "question": "如果两个向量平行但不为零，它们的张成是什么？",
-        "options": [
-          "一个平面",
-          "一条直线"
-        ],
-        "correct_index": 1,
-        "misconceptions": [
-          "误以为两个向量总能张成平面，忽略了平行情况。",
-          null
-        ],
-        "explanation": "平行向量只能提供同一个方向，所以张成一条直线。"
-      },
-      "reward": null,
-      "new_page_title": null
-    },
-    {
-      "title": "总结：从两个向量到平面",
-      "spoken_text": "让我们回顾一下：两个非零不平行向量在三维空间中的张成是一个过原点的平面，维度为二。它们无法张成整个三维空间，因为缺少第三个方向。如果它们平行，则张成一条直线。这个认知将帮助你理解基、维数以及线性相关性的概念。记住，向量的个数决定了张成空间维度的上限。",
-      "boards": [
-        {
-          "title": "核心结论",
-          "markdown": "两个非零不平行向量 $\\vec{v}_1, \\vec{v}_2$ 在 $\\mathbb{R}^3$ 中张成一个过原点的平面。\n\n- 维度：2\n- 无法张成 $\\mathbb{R}^3$（需要3个独立向量）\n- 若平行，则张成直线（维度1）",
-          "layout": "follow"
-        }
-      ],
-      "decorations": [],
+      "illustration": null,
       "widget": null,
       "question": null,
       "reward": {
-        "title": "Master Concept: 张成与维度",
-        "description": "张成是向量线性组合的集合。在三维空间中，两个不平行向量张成二维平面，三个不共面向量才能张成整个三维空间。维度由独立向量的个数决定，是理解线性代数的基础。"
+        "title": "Master Concept: 生成集与维度",
+        "description": "两个不平行向量的生成集是一个过原点的平面（二维），不能填满三维空间，因为缺少垂直分量。"
       },
       "new_page_title": null
     }

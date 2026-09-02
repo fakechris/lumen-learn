@@ -81,14 +81,19 @@ class CourseStore:
         with open(path, encoding="utf-8") as f:
             return SessionScript.model_validate_json(f.read())
 
-    def resolve_audio(self, course_id: str, rel_path: str) -> Optional[str]:
+    def resolve_asset(self, course_id: str, kind: str, rel_path: str) -> Optional[str]:
+        """Resolve a file under <course>/<kind>/ (audio, images); refuses path escapes."""
         d = self._course_dir(course_id)
-        if not d:
+        if not d or kind not in ("audio", "images"):
             return None
-        full = os.path.abspath(os.path.join(d, "audio", rel_path))
-        if not full.startswith(os.path.join(d, "audio")) or not os.path.isfile(full):
+        root = os.path.join(d, kind)
+        full = os.path.abspath(os.path.join(root, rel_path))
+        if not full.startswith(root + os.sep) or not os.path.isfile(full):
             return None
         return full
+
+    def resolve_audio(self, course_id: str, rel_path: str) -> Optional[str]:
+        return self.resolve_asset(course_id, "audio", rel_path)
 
 
 def write_package(course_dir: str, course: CourseStructure, scripts: List[SessionScript],

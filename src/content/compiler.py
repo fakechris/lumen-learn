@@ -2,7 +2,7 @@
 SessionScript -> CompiledSession.
 
 Per step the emitted order is:
-  new_page? -> boards (gated on the speak step) -> widget (gated) -> speak
+  new_page? -> boards (gated on the speak step) -> illustration -> widget (gated) -> speak
   -> decorations (timed within the speak step) -> tts_segment -> reward? -> ask?
 and a final `done`.
 
@@ -18,7 +18,7 @@ from typing import Dict, List, Optional
 
 from src.protocol.actions import (
     Action, AnimationFailed, Ask, AskOption, Board, Decoration, Done, GeneratedAnimation,
-    Graph, NewPage, RewardUser, Speak, TtsSegment,
+    Graph, Illustration, NewPage, RewardUser, Speak, TtsSegment,
 )
 from src.protocol.session import CompiledSession, GenerationMode, SessionScript, StepSpec
 
@@ -66,6 +66,12 @@ def compile_session(script: SessionScript, audio: Dict[int, StepAudio],
             board_uids.append(board_uid)
             actions.append(Board(step_id=sid(), board_uid=board_uid, title=b.title, board_content=b.markdown,
                                  layout=b.layout, reveal_gate_step=speak_step))
+
+        il = step.illustration
+        if il is not None and (il.svg or il.image_url):
+            board_uid += 1
+            actions.append(Illustration(step_id=sid(), board_uid=board_uid, caption=il.caption, svg=il.svg,
+                                        image_url=il.image_url, layout=il.layout, reveal_gate_step=speak_step))
 
         w = step.widget
         if w is not None:
