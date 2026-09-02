@@ -176,6 +176,10 @@ class App {
   startSession(sessionId, fromStep = null) {
     this.sessionId = sessionId;
     this.markProgress(sessionId, { started: true });
+    $("courseHome").classList.remove("open");
+    this.exercises.close();
+    this.suspended = null;
+    this.interject = null;
     this.clock.stop();
     this.board.clear();
     this.speakText.clear();
