@@ -20,6 +20,7 @@ from src.content.document_parser import ParsedDocument, parse_file, parse_markdo
 from src.content.session_synthesizer import synthesize_session_heuristic, synthesize_session_llm
 from src.content.store import write_package
 from src.content.illustration_generator import fill_illustration
+from src.content.widget_check import available as widget_check_available, render_check
 from src.content.widget_generator import generate_widget_html
 from src.llm.client import LLMClient, make_client
 from src.protocol.session import CompiledSession, CourseStructure, SessionOutline, SessionScript
@@ -114,7 +115,7 @@ class ContentPipeline:
         for outline in outlines:
             script = await self._script_for(outline, course, doc)
             self.progress("script", f"{outline.session_id} {outline.title}: {len(script.steps)} steps")
-            script = await self._fill_widgets(script)
+            script = await self._fill_widgets(script, course_dir)
             script = await self._fill_illustrations(script, course_dir)
             audio = await self._synthesize_audio(script, course_dir)
             session = compile_session(script, audio, generation_mode=course.generation_mode)
@@ -135,19 +136,34 @@ class ContentPipeline:
             return script
         return synthesize_session_heuristic(outline, course, source)
 
-    async def _fill_widgets(self, script: SessionScript) -> SessionScript:
+    async def _fill_widgets(self, script: SessionScript, course_dir: str) -> SessionScript:
         if not self.llm:
             return script
 
+        check = widget_check_available()
+        if not check:
+            self.progress("warn", "widget render check unavailable (needs node + global playwright); skipping")
+
         async def fill(i: int):
             w = script.steps[i].widget
-            if w and w.kind != "mermaid" and not w.html:
-                html = await generate_widget_html(w, self.llm)
-                if html:
-                    script.steps[i].widget = w.model_copy(update={"html": html})
-                    self.progress("widget", f"{script.session_id} step {i + 1}: {w.kind} ok ({len(html)} bytes)")
-                else:
-                    self.progress("warn", f"{script.session_id} step {i + 1}: widget generation failed; degraded")
+            if not w or w.kind == "mermaid" or w.html:
+                return
+            html = await generate_widget_html(w, self.llm)
+            png = os.path.join(course_dir, "widgets", f"{script.session_id}_step_{i + 1}.png")
+            if html and check:
+                res = await render_check(html, png)
+                if not res.ok:
+                    self.progress("warn", f"{script.session_id} step {i + 1}: widget {res.problem}; regenerating")
+                    html = await generate_widget_html(w, self.llm, feedback=res.problem)
+                    res = await render_check(html, png) if html else res
+                    if not res.ok:
+                        html = None
+            if html:
+                script.steps[i].widget = w.model_copy(update={"html": html})
+                self.progress("widget", f"{script.session_id} step {i + 1}: {w.kind} ok ({len(html)} bytes)")
+            else:
+                script.steps[i].widget = None
+                self.progress("warn", f"{script.session_id} step {i + 1}: widget generation failed; dropped")
 
         await asyncio.gather(*(fill(i) for i in range(len(script.steps))))
         return script

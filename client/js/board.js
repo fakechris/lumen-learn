@@ -106,10 +106,10 @@ export class Whiteboard {
     const el = document.createElement("div");
     el.className = "wb-card wb-widget";
     el.dataset.uid = uid;
-    const head = document.createElement("div");
-    head.className = "wb-card-title";
-    head.textContent = title || "交互教具";
-    el.append(head, createWidgetFrame({ html, title }));
+    const cap = document.createElement("div");
+    cap.className = "caption";
+    cap.textContent = title || "";
+    el.append(createWidgetFrame({ html, title }), cap);
     const item = this._place(el, layout, gate, "widget");
     this.items.set(uid, item);
     if (gate == null) this._reveal(item, 0);

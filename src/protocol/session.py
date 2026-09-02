@@ -82,7 +82,7 @@ class DecorationSpec(BaseModel):
 
 
 class WidgetSpec(BaseModel):
-    kind: Literal["threejs", "html", "mermaid"]
+    kind: Literal["explorable", "threejs", "html", "mermaid"]
     title: str = ""
     task: str = Field("", description="What the widget should show (used for generation)")
     html: Optional[str] = None
