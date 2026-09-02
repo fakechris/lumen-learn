@@ -142,6 +142,36 @@ class RewardSpec(BaseModel):
     description: str
 
 
+class ExerciseSpec(BaseModel):
+    """Post-session exercise. fill_blank is graded semantically by the live
+    tutor (exact matches against `accepted` short-circuit); single_choice and
+    interactive compare `correct_index`; interactive embeds a widget."""
+    exercise_id: str = ""
+    kind: Literal["fill_blank", "single_choice", "interactive"]
+    stem: str = Field(..., description="Markdown/KaTeX; fill_blank contains exactly one ____")
+    options: List[str] = Field(default_factory=list)
+    correct_index: Optional[int] = None
+    answer: Optional[str] = None
+    accepted: List[str] = Field(default_factory=list)
+    explanation: str = ""
+    widget: Optional[WidgetSpec] = None
+    widget_hint: str = ""
+
+    @model_validator(mode="after")
+    def _check(self) -> "ExerciseSpec":
+        if self.kind == "fill_blank":
+            if "____" not in self.stem:
+                raise ValueError("fill_blank stem needs a ____ placeholder")
+            if not self.answer:
+                raise ValueError("fill_blank needs an answer")
+        else:
+            if not 2 <= len(self.options) <= 4:
+                raise ValueError("choice exercise needs 2-4 options")
+            if self.correct_index is None or not 0 <= self.correct_index < len(self.options):
+                raise ValueError("choice exercise needs a valid correct_index")
+        return self
+
+
 class StepSpec(BaseModel):
     title: str = ""
     spoken_text: str
@@ -160,6 +190,7 @@ class SessionScript(BaseModel):
     title: str
     learning_goal: str = ""
     steps: List[StepSpec]
+    exercises: List[ExerciseSpec] = Field(default_factory=list)
 
 
 # --------------------------------------------------------------------------- #
@@ -175,6 +206,7 @@ class CompiledSession(BaseModel):
     generation_mode: GenerationMode = "authored"
     total_duration_ms: int = 0
     actions: List[Action]
+    exercises: List[ExerciseSpec] = Field(default_factory=list)
 
     def step_ids(self) -> List[int]:
         return [a.step_id for a in self.actions]

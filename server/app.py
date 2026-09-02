@@ -22,6 +22,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, ValidationError
 
+from src.content.exercise_generator import grade_fill_blank
 from src.content.pipeline import ContentPipeline
 from src.protocol.session import CourseStructure
 from src.content.store import CourseStore
@@ -90,6 +91,61 @@ async def get_script(course_id: str, session_id: str):
     if not script:
         raise HTTPException(404, "script not found")
     return script.model_dump(mode="json")
+
+
+@app.get("/api/v1/courses/{course_id}/sessions/{session_id}/exercises")
+async def get_exercises(course_id: str, session_id: str):
+    session = store.get_session(course_id, session_id)
+    if not session:
+        raise HTTPException(404, "session not found")
+    return {"exercises": [e.model_dump(mode="json") for e in session.exercises]}
+
+
+class GradeRequest(BaseModel):
+    course_id: str
+    session_id: str
+    exercise_id: str
+    answer_text: Optional[str] = None
+    answer_index: Optional[int] = None
+
+
+@app.post("/api/v1/grade")
+async def grade(req: GradeRequest):
+    """Grade one exercise. fill_blank answers are judged semantically by the tutor LLM."""
+    session = store.get_session(req.course_id, req.session_id)
+    if not session:
+        raise HTTPException(404, "session not found")
+    ex = next((e for e in session.exercises if e.exercise_id == req.exercise_id), None)
+    if not ex:
+        raise HTTPException(404, "exercise not found")
+    if ex.kind == "fill_blank":
+        correct, feedback = await grade_fill_blank(ex, req.answer_text or "", llm)
+        return {"correct": correct, "feedback": feedback, "answer": ex.answer, "explanation": ex.explanation,
+                "graded_by": "llm" if (llm and not correct) or (llm and feedback != ex.explanation) else "match"}
+    correct = req.answer_index is not None and req.answer_index == ex.correct_index
+    return {"correct": correct, "feedback": ex.explanation, "answer": ex.options[ex.correct_index] if ex.correct_index is not None else None,
+            "explanation": ex.explanation, "graded_by": "match"}
+
+
+class TtsRequest(BaseModel):
+    text: str
+
+
+@app.post("/api/v1/tts")
+async def tts_on_demand(req: TtsRequest):
+    """Read a piece of text aloud (exercise 朗读). Cached by content hash."""
+    text = req.text.strip()
+    if not text:
+        raise HTTPException(400, "empty text")
+    stem = os.path.join(LIVE_AUDIO_DIR, "tts_" + uuid.uuid5(uuid.NAMESPACE_URL, text).hex[:16])
+    existing = next((stem + ext for ext in (".mp3", ".wav") if os.path.isfile(stem + ext)), None)
+    if existing:
+        from src.tts.spoken_text import estimate_duration_ms
+        return {"audio_url": f"/live/{os.path.basename(existing)}", "duration_ms": estimate_duration_ms(text)}
+    res = await tts.synthesize(text, stem)
+    if not res.audio_path:
+        return {"audio_url": None, "duration_ms": res.duration_ms}
+    return {"audio_url": f"/live/{os.path.basename(res.audio_path)}", "duration_ms": res.duration_ms}
 
 
 @app.get("/courses/{course_id}/{kind}/{rel_path:path}")

@@ -26,9 +26,10 @@ from typing import Callable, Dict, List, Optional
 from src.content.compiler import StepAudio, compile_session
 from src.content.curriculum_planner import plan_course_heuristic, plan_course_llm
 from src.content.document_parser import ParsedDocument, parse_file, parse_markdown
+from src.content.exercise_generator import generate_exercises
 from src.content.illustration_generator import fill_illustration
 from src.content.session_synthesizer import synthesize_session_heuristic, synthesize_session_llm
-from src.content.store import write_package
+from src.content.store import CourseStore, write_package
 from src.content.validators import sanitize_script
 from src.content.widget_check import available as widget_check_available, render_check
 from src.content.widget_generator import generate_widget_html
@@ -144,6 +145,7 @@ class ContentPipeline:
             self.progress("script", f"{outline.session_id} {outline.title}: {len(script.steps)} steps")
             script = await self._fill_widgets(script, course_dir)
             script = await self._fill_illustrations(script, course_dir, doc)
+            script = await self._fill_exercises(script, course_dir)
             audio = await self._synthesize_audio(script, course_dir)
             session = compile_session(script, audio, generation_mode=course.generation_mode)
             scripts.append(script)
@@ -207,7 +209,61 @@ class ContentPipeline:
         self.progress("done", course_dir)
         return course_dir
 
+    async def add_exercises(self, course_id: str, roots: Optional[List[str]] = None) -> str:
+        """Generate exercises for an existing package and rewrite its sessions in place."""
+        store = CourseStore(roots or [self.output_root])
+        course = store.get_course(course_id)
+        if course is None:
+            raise SystemExit(f"course {course_id} not found")
+        course_dir = store._course_dir(course_id)
+        scripts, compiled = [], []
+        for outline in course.all_sessions():
+            script = store.get_script(course_id, outline.session_id)
+            session = store.get_session(course_id, outline.session_id)
+            if script is None or session is None:
+                continue
+            script = await self._fill_exercises(script, course_dir)
+            scripts.append(script)
+            compiled.append(session.model_copy(update={"exercises": list(script.exercises)}))
+        write_package(course_dir, course, scripts, compiled)
+        self.progress("done", course_dir)
+        return course_dir
+
     # ------------------------------------------------------------------ internals
+
+    async def _fill_exercises(self, script: SessionScript, course_dir: str) -> SessionScript:
+        if not self.llm:
+            return script
+        try:
+            exercises, warnings = await generate_exercises(script, self.llm)
+        except Exception as e:  # exercises are optional; never fail the build
+            self.progress("warn", f"{script.session_id}: exercise generation failed: {e}")
+            return script
+        for w in warnings:
+            self.progress("warn", w)
+        check = widget_check_available()
+        for ex in exercises:
+            if ex.kind == "interactive" and ex.widget and not ex.widget.html:
+                html = await generate_widget_html(ex.widget, self.llm)
+                png = os.path.join(course_dir, "widgets", f"{script.session_id}_{ex.exercise_id}.png")
+                if html and check:
+                    res = await render_check(html, png)
+                    if not res.ok:
+                        html = await generate_widget_html(ex.widget, self.llm, feedback=res.problem)
+                        res = await render_check(html, png) if html else res
+                        if not res.ok:
+                            html = None
+                if html:
+                    ex.widget = ex.widget.model_copy(update={"html": html})
+                else:
+                    ex.kind = "single_choice"
+                    ex.widget = None
+                    self.progress("warn", f"{script.session_id} {ex.exercise_id}: interactive widget failed; downgraded to choice")
+        kinds = {}
+        for ex in exercises:
+            kinds[ex.kind] = kinds.get(ex.kind, 0) + 1
+        self.progress("exercise", f"{script.session_id}: {len(exercises)} exercises {kinds}")
+        return script.model_copy(update={"exercises": exercises})
 
     async def _script_for(self, outline: SessionOutline, course: CourseStructure, doc: ParsedDocument) -> SessionScript:
         ids = list(dict.fromkeys(outline.source_sections + [s for seg in outline.segments for s in seg.source_sections]))
@@ -304,7 +360,7 @@ class ContentPipeline:
 
 
 def _print_progress(stage: str, detail: str) -> None:
-    icons = {"parse": "📄", "plan": "🧠", "script": "✍️", "widget": "🎲", "figure": "🖼️", "compile": "🎬", "warn": "⚠️", "done": "✅"}
+    icons = {"parse": "📄", "plan": "🧠", "script": "✍️", "widget": "🎲", "figure": "🖼️", "exercise": "📝", "compile": "🎬", "warn": "⚠️", "done": "✅"}
     print(f"{icons.get(stage, '•')} [{stage}] {detail}", flush=True)
 
 
@@ -315,14 +371,15 @@ def main(argv=None) -> int:
     p.add_argument("--doc", help="Existing doc key under <output>/_docs (use with --from-plan)")
     p.add_argument("--plan-only", action="store_true", help="Ingest and plan, write plan.json, stop")
     p.add_argument("--from-plan", help="Build from an (edited) plan.json")
+    p.add_argument("--exercises-for", help="Generate exercises for an existing course id (in --output or examples/courses)")
     p.add_argument("--title", default=None)
     p.add_argument("--output", default="output")
     p.add_argument("--mode", default="auto", choices=["auto", "llm", "heuristic"])
     p.add_argument("--tts", default=None, help="say|edge|silent|auto (default: TTS_ENGINE env or auto)")
     args = p.parse_args(argv)
 
-    if not (args.input or args.script or (args.doc and args.from_plan)):
-        p.error("need --input, --script, or --doc with --from-plan")
+    if not (args.input or args.script or (args.doc and args.from_plan) or args.exercises_for):
+        p.error("need --input, --script, --doc with --from-plan, or --exercises-for")
     llm = make_client() if args.mode != "heuristic" else None
     if args.mode == "auto" and llm is None:
         print("ℹ️  no LLM key found; running heuristic walk-through mode", flush=True)
@@ -331,6 +388,8 @@ def main(argv=None) -> int:
     print(f"ℹ️  LLM: {llm.config.provider + '/' + llm.model if llm else 'none'}   TTS: {pipeline.tts.name}", flush=True)
 
     async def run():
+        if args.exercises_for:
+            return await pipeline.add_exercises(args.exercises_for, roots=[args.output, "examples/courses"])
         if args.script:
             return await pipeline.run_script(args.script)
         if args.from_plan:
