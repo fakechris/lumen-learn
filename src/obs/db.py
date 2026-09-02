@@ -93,6 +93,15 @@ class DB:
         self._exec("INSERT INTO events (run_id, ts, stage, detail, session_id) VALUES (?,?,?,?,?)",
                    (run_id, time.time(), stage, detail, session_id))
 
+    def abort_stale_runs(self, older_than_s: float = 0) -> int:
+        """Runs still 'running' from a process that is gone (killed CLI) become 'aborted'.
+        Called when a new CLI run starts; server jobs finish their own runs."""
+        with self._lock:
+            cur = self._conn.execute("UPDATE runs SET status='aborted', finished=? WHERE status='running' AND started < ?",
+                                     (time.time(), time.time() - older_than_s))
+            self._conn.commit()
+            return cur.rowcount
+
     def runs(self, limit: int = 50) -> List[Dict[str, Any]]:
         return self._rows("SELECT * FROM runs ORDER BY started DESC LIMIT ?", (limit,))
 
