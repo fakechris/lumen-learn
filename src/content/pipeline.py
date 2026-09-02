@@ -136,11 +136,22 @@ class ContentPipeline:
         self.docs.save_plan(key, course)
         return course
 
-    async def build(self, doc: ParsedDocument, course: CourseStructure) -> str:
+    async def build(self, doc: ParsedDocument, course: CourseStructure, only: Optional[set] = None) -> str:
+        """Build the package. With `only`, regenerate just those session ids and keep the
+        rest from the existing package (so one bad session does not cost a full rebuild)."""
         course_dir = os.path.join(self.output_root, course.course_id)
+        existing = CourseStore([self.output_root]) if only else None
         scripts: List[SessionScript] = []
         compiled: List[CompiledSession] = []
         for outline in course.all_sessions():
+            if only and outline.session_id not in only:
+                old_script = existing.get_script(course.course_id, outline.session_id)
+                old_session = existing.get_session(course.course_id, outline.session_id)
+                if old_script and old_session:
+                    scripts.append(old_script)
+                    compiled.append(old_session)
+                    self.progress("skip", f"{outline.session_id}: kept from existing package")
+                    continue
             script = await self._script_for(outline, course, doc)
             self.progress("script", f"{outline.session_id} {outline.title}: {len(script.steps)} steps")
             script = await self._fill_widgets(script, course_dir)
@@ -367,7 +378,7 @@ class ContentPipeline:
 
 
 def _print_progress(stage: str, detail: str) -> None:
-    icons = {"parse": "📄", "plan": "🧠", "script": "✍️", "widget": "🎲", "figure": "🖼️", "exercise": "📝", "compile": "🎬", "warn": "⚠️", "done": "✅"}
+    icons = {"parse": "📄", "plan": "🧠", "script": "✍️", "widget": "🎲", "figure": "🖼️", "exercise": "📝", "compile": "🎬", "skip": "⏭️", "warn": "⚠️", "done": "✅"}
     print(f"{icons.get(stage, '•')} [{stage}] {detail}", flush=True)
 
 
@@ -379,6 +390,7 @@ def main(argv=None) -> int:
     p.add_argument("--plan-only", action="store_true", help="Ingest and plan, write plan.json, stop")
     p.add_argument("--from-plan", help="Build from an (edited) plan.json")
     p.add_argument("--exercises-for", help="Generate exercises for an existing course id (in --output or examples/courses)")
+    p.add_argument("--only", help="Comma-separated session ids to (re)build; others are kept from the existing package")
     p.add_argument("--title", default=None)
     p.add_argument("--output", default="output")
     p.add_argument("--mode", default="auto", choices=["auto", "llm", "heuristic"])
@@ -408,7 +420,8 @@ def main(argv=None) -> int:
                     raise SystemExit(f"no ingested document under {pipeline.docs.dir_for(args.doc)}")
             with open(args.from_plan, encoding="utf-8") as f:
                 plan = CourseStructure.model_validate_json(f.read())
-            return await pipeline.build(doc, plan)
+            only = set(x.strip() for x in args.only.split(",")) if args.only else None
+            return await pipeline.build(doc, plan, only=only)
         key, doc = pipeline.ingest_file(args.input, title=args.title)
         plan = await pipeline.plan(key, doc)
         print(f"📝 plan written to {os.path.join(pipeline.docs.dir_for(key), 'plan.json')}  (doc key: {key})", flush=True)

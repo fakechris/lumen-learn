@@ -70,20 +70,43 @@ _TRAILING_COMMA = re.compile(r",\s*([}\]])")
 
 def _lenient_loads(s: str):
     """json.loads with the fixes that LaTeX-heavy model output usually needs:
-    invalid backslash escapes (\le, \vec) and trailing commas."""
+    invalid backslash escapes and trailing commas."""
+    first: Optional[json.JSONDecodeError] = None
     for candidate in (s, _BAD_ESCAPE.sub(r"\\\\", s), _TRAILING_COMMA.sub(r"\1", _BAD_ESCAPE.sub(r"\\\\", s))):
         try:
             return json.loads(candidate, strict=False)
-        except json.JSONDecodeError:
-            continue
-    raise json.JSONDecodeError("unrecoverable JSON", s, 0)
+        except json.JSONDecodeError as e:
+            first = first or e
+    # Last resort: json-repair handles unescaped quotes inside strings (code snippets
+    # with string literals), missing commas and similar LLM-typical damage.
+    try:
+        from json_repair import repair_json
+        repaired = repair_json(s, return_objects=True)
+        if isinstance(repaired, dict) and repaired:
+            return repaired
+    except Exception:
+        pass
+    raise json.JSONDecodeError(first.msg if first else "unrecoverable JSON", s, first.pos if first else 0)
+
+
+def _dump_bad_output(text: str, reason: str) -> None:
+    """Keep unparseable model replies for diagnosis (output/_debug/)."""
+    try:
+        import time
+        d = os.path.join(os.getenv("HK_OUTPUT_ROOT", "output"), "_debug")
+        os.makedirs(d, exist_ok=True)
+        with open(os.path.join(d, f"badjson_{int(time.time() * 1000)}.txt"), "w", encoding="utf-8") as f:
+            f.write(f"# {reason}\n{text}")
+    except OSError:
+        pass
 
 
 def extract_json(text: str) -> dict:
     """Parse a JSON object out of a model reply, tolerating code fences, prose,
     bad LaTeX escapes and trailing commas."""
     cleaned = text.strip().lstrip("\ufeff")
-    fence = re.search(r"```(?:json)?\s*(.*?)```", cleaned, flags=re.S)
+    # Only unwrap a fence that wraps the WHOLE reply; JSON often contains inner ```code``` blocks.
+    fence = re.match(r"^```(?:json)?\s*(.*)```\s*$", cleaned, flags=re.S)
     if fence:
         cleaned = fence.group(1).strip()
     try:
@@ -97,8 +120,11 @@ def extract_json(text: str) -> dict:
         try:
             return _lenient_loads(cleaned[start:end + 1])
         except json.JSONDecodeError as e:
-            raise LLMError(f"Malformed JSON in model reply ({e.msg} at char {e.pos}); "
-                           f"{'output looks truncated' if not cleaned.rstrip().endswith('}') else 'check quotes/escapes'}")
+            ctx = cleaned[max(0, start + e.pos - 60): start + e.pos + 60].replace("\n", "\\n")
+            reason = (f"Malformed JSON in model reply ({e.msg} at char {e.pos}: …{ctx}…); "
+                      f"{'output looks truncated' if not cleaned.rstrip().endswith('}') else 'check quotes/escapes'}")
+            _dump_bad_output(text, reason)
+            raise LLMError(reason)
 
 
 class LLMClient:

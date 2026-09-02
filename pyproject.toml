@@ -8,6 +8,7 @@ dependencies = [
   "uvicorn[standard]>=0.29",
   "pydantic>=2.6",
   "openai>=1.30",
+  "json-repair>=0.30",
 ]
 
 [project.optional-dependencies]

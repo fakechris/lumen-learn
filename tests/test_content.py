@@ -287,6 +287,21 @@ def test_extract_json_tolerates_latex_escapes_and_trailing_commas():
     assert extract_json('{"a": "$x \\le y$", "b": [1, 2,],}')["a"] == "$x \\le y$"
     assert extract_json('```json\n{"k": "\\\\vec{v}"}\n```')["k"] == "\\vec{v}"
     assert extract_json('前言 {"ok": true} 后记')["ok"] is True
-    with pytest.raises(LLMError) as e:
-        extract_json('{"a": "unterminated')
-    assert "truncated" in str(e.value)
+    assert extract_json('{"a": "unterminated')["a"] == "unterminated"  # json-repair closes it
+    with pytest.raises(LLMError):
+        extract_json("no json here at all")
+
+
+def test_extract_json_repairs_unescaped_quotes_in_code():
+    from src.llm.client import extract_json
+    raw = '{"steps": [{"markdown": "require(x, "insufficient");\\nfunction f() {}", "n": 1}]}'
+    data = extract_json(raw)
+    assert data["steps"][0]["n"] == 1 and "require" in data["steps"][0]["markdown"]
+
+
+def test_extract_json_ignores_inner_code_fences():
+    from src.llm.client import extract_json
+    raw = '{"steps": [{"markdown": "```solidity\\nfunction f() {\\n  require(a, \\"b\\");\\n}\\n```", "n": 2}]}'
+    assert extract_json(raw)["steps"][0]["n"] == 2
+    wrapped = "```json\n" + raw + "\n```"
+    assert extract_json(wrapped)["steps"][0]["n"] == 2
