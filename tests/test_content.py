@@ -327,3 +327,13 @@ def test_decoration_timing_uses_marks():
     assert ms_at_char(None, 10, 6000, 20) == 3000
     step = StepSpec(spoken_text="A" * 10 + "trigger" + "B" * 3)
     assert decoration_offset_ms(step, "trigger", 6000, marks) == 2000
+
+
+def test_thinking_only_for_plan_by_default(monkeypatch):
+    from src.llm.client import LLMConfig
+    monkeypatch.setenv("DEEPSEEK_API_KEY", "k")
+    monkeypatch.delenv("LLM_THINK_PURPOSES", raising=False)
+    cfg = LLMConfig.from_env()
+    assert cfg.is_deepseek and cfg.think_purposes == ("plan",)
+    monkeypatch.setenv("LLM_THINK_PURPOSES", "plan,synth")
+    assert LLMConfig.from_env().think_purposes == ("plan", "synth")
