@@ -88,6 +88,13 @@ class UsageLedger:
     def _append(self, rec: UsageRecord) -> None:
         with self._lock:
             self.records.append(rec)
+        try:  # mirror into the DB, tagged with the current run
+            from src.obs.db import get_db
+            from src.obs.log import current_run_id
+            get_db().add_usage(current_run_id.get(), rec)
+        except Exception:
+            pass
+        with self._lock:
             if self.jsonl_path:
                 try:
                     os.makedirs(os.path.dirname(self.jsonl_path), exist_ok=True)

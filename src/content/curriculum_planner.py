@@ -108,14 +108,7 @@ class PlannedChapter(BaseModel):
     title: str
     description: str = ""
     unit: str = ""
-    sessions: List[PlannedSession]
-
-    @field_validator("sessions")
-    @classmethod
-    def _non_empty(cls, v):
-        if not v:
-            raise ValueError("chapter has no sessions")
-        return v
+    sessions: List[PlannedSession] = Field(default_factory=list)  # empty = nothing teachable (e.g. a glossary)
 
 
 class PlannedCourse(BaseModel):
@@ -127,8 +120,8 @@ class PlannedCourse(BaseModel):
     @field_validator("chapters")
     @classmethod
     def _non_empty(cls, v):
-        if not v:
-            raise ValueError("course has no chapters")
+        if not any(ch.sessions for ch in v):
+            raise ValueError("course has no sessions")
         return v
 
 
@@ -148,7 +141,7 @@ def _assign_ids(planned: PlannedCourse, doc: ParsedDocument, mode: str) -> Cours
     valid_figs = {f.figure_id for f in doc.figures}
     chapters = []
     n = 0
-    for ci, ch in enumerate(planned.chapters, start=1):
+    for ci, ch in enumerate([c for c in planned.chapters if c.sessions], start=1):
         sessions = []
         # A one-segment session is too thin to stand alone: fold it into its predecessor.
         merged: List[PlannedSession] = []
@@ -190,31 +183,83 @@ def _doc_header(doc: ParsedDocument) -> str:
             f"教材图列表：\n{figs or '（无）'}\n")
 
 
+def group_by_headings(doc: ParsedDocument) -> Optional[ChapterGrouping]:
+    """Textbooks with a real outline: level-1 headings are units, level-2 are chapters.
+    Returns None when the document has no such structure."""
+    lvl2 = [s for s in doc.sections if s.level == 2]
+    if len(lvl2) < 2:
+        return None
+    groups: List[ChapterGrouping.Group] = []
+    unit = ""
+    current: Optional[ChapterGrouping.Group] = None
+    for s in doc.sections:
+        if s.level == 1:
+            unit = s.heading
+            if s.content.strip() and len(s.content) > 200:  # a part intro with real text
+                current = ChapterGrouping.Group(title=s.heading, description="", unit=unit, section_ids=[s.section_id])
+                groups.append(current)
+            else:
+                current = None
+            continue
+        if s.level == 2:
+            current = ChapterGrouping.Group(title=s.heading, description="", unit=unit, section_ids=[s.section_id])
+            groups.append(current)
+            continue
+        if current is None:
+            current = ChapterGrouping.Group(title=s.heading, description="", unit=unit, section_ids=[s.section_id])
+            groups.append(current)
+        else:
+            current.section_ids.append(s.section_id)
+    return ChapterGrouping(chapters=groups)
+
+
+def _chapter_header(doc: ParsedDocument, g: "ChapterGrouping.Group") -> str:
+    secs = [s for s in doc.sections if s.section_id in set(g.section_ids)]
+    lines = []
+    for s in secs:
+        pages = f" p{s.pages[0]}-{s.pages[-1]}" if s.pages else ""
+        lines.append(f"[{s.section_id}]{pages} {'#' * s.level} {s.heading}")
+    figs = [f for f in doc.figures if any(f.figure_id in s.figure_ids for s in secs)]
+    fig_lines = "\n".join(f"[{f.figure_id}] 第{f.page}页 {f.caption or '(无题注)'}" for f in figs) or "（无）"
+    return (f"教材：{doc.title}\n本章：{g.title}（单元：{g.unit or '—'}）\n\n本章小节索引：\n" + "\n".join(lines)
+            + f"\n\n本章可用教材图：\n{fig_lines}\n")
+
+
+async def plan_chapter_llm(doc: ParsedDocument, g: "ChapterGrouping.Group", llm: LLMClient) -> PlannedChapter:
+    text = doc.section_text(g.section_ids)
+    user = (f"{_chapter_header(doc, g)}\n只为本章排课，只引用本章小节 id。"
+            f"本章如果只是词汇表/附录/目录之类不可讲授的内容，返回 sessions 为空数组。\n\n本章全文：\n{text}")
+    part = await llm.complete_model(PLAN_SYSTEM, user, PlannedCourse, tier="pro", purpose="plan")
+    sessions = [s for ch in part.chapters for s in ch.sessions]
+    desc = next((ch.description for ch in part.chapters if ch.description), "")
+    return PlannedChapter(title=g.title, description=desc, unit=g.unit, sessions=sessions)
+
+
 async def plan_course_llm(doc: ParsedDocument, llm: LLMClient, progress=None) -> CourseStructure:
-    if doc.char_count() <= SINGLE_CALL_CHAR_LIMIT:
+    if doc.char_count() <= SINGLE_CALL_CHAR_LIMIT and not group_by_headings(doc):
         user = _doc_header(doc) + f"\n讲义全文：\n{doc.raw_markdown}"
         planned = await llm.complete_model(PLAN_SYSTEM, user, PlannedCourse, tier="pro", purpose="plan")
         return _assign_ids(planned, doc, "llm")
 
-    # Hierarchical: group sections into chapters, then plan each chapter from its own text.
-    grouping = await llm.complete_model(OUTLINE_SYSTEM, _doc_header(doc), ChapterGrouping, tier="pro", purpose="plan")
+    # Hierarchical: chapters from the outline (or an LLM grouping), each planned from its own text.
+    grouping = group_by_headings(doc)
+    if grouping is None:
+        grouping = await llm.complete_model(OUTLINE_SYSTEM, _doc_header(doc), ChapterGrouping, tier="pro", purpose="plan")
     if progress:
-        progress("plan", f"long document: {len(grouping.chapters)} chapters to plan separately")
+        progress("plan", f"{len(grouping.chapters)} chapters to plan separately")
     chapters: List[PlannedChapter] = []
-    title, audience, overview = doc.title, "", ""
     for g in grouping.chapters:
-        text = doc.section_text(g.section_ids)
-        user = (f"{_doc_header(doc)}\n本章：{g.title} — {g.description}\n只为本章排课，只引用本章小节 id：{g.section_ids}\n\n"
-                f"本章全文：\n{text}")
-        part = await llm.complete_model(PLAN_SYSTEM, user, PlannedCourse, tier="pro", purpose="plan")
-        for ch in part.chapters:
-            chapters.append(PlannedChapter(title=ch.title or g.title, description=ch.description or g.description,
-                                           unit=g.unit, sessions=ch.sessions))
-        audience = audience or part.target_audience
-        overview = overview or part.overview
+        try:
+            ch = await plan_chapter_llm(doc, g, llm)
+        except Exception as e:  # one bad chapter must not kill a 14-chapter plan
+            if progress:
+                progress("warn", f"chapter '{g.title}': planning failed ({str(e)[:160]}); skipped")
+            continue
+        chapters.append(ch)
         if progress:
-            progress("plan", f"chapter '{g.title}': {sum(len(c.sessions) for c in part.chapters)} sessions")
-    planned = PlannedCourse(title=title, target_audience=audience, overview=overview, chapters=chapters)
+            progress("plan", f"chapter '{g.title}': {len(ch.sessions)} sessions, "
+                             f"{sum(len(s.segments) for s in ch.sessions)} segments")
+    planned = PlannedCourse(title=doc.title, chapters=chapters)
     return _assign_ids(planned, doc, "llm")
 
 
