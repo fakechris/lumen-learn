@@ -318,3 +318,12 @@ def test_llm_config_tiers(monkeypatch):
     monkeypatch.setenv("LLM_MODEL_PRO", "x-pro")
     assert LLMConfig.from_env().for_tier("pro") == "x-pro"
     assert LLMConfig("openai", "k", "m").for_tier("pro") == "m"  # unset tier falls back
+
+
+def test_decoration_timing_uses_marks():
+    from src.content.compiler import ms_at_char
+    marks = [[0, 0], [10, 2000], [20, 6000]]
+    assert ms_at_char(marks, 5, 6000, 20) == 1000 and ms_at_char(marks, 15, 6000, 20) == 4000
+    assert ms_at_char(None, 10, 6000, 20) == 3000
+    step = StepSpec(spoken_text="A" * 10 + "trigger" + "B" * 3)
+    assert decoration_offset_ms(step, "trigger", 6000, marks) == 2000

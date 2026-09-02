@@ -21,7 +21,11 @@ from typing import Dict, List, Optional, Protocol
 
 from pydantic import BaseModel
 
+from src.content.compiler import StepAudio, compile_session
+from src.content.illustration_generator import fill_illustration
 from src.content.store import CourseStore
+from src.llm.usage import GLOBAL_LEDGER
+from src.tts.align import synthesize_aligned
 from src.protocol.actions import (
     ACK_REQUIRED, ActionStepComplete, Ask, ClientMessage, ErrorMessage, InterjectAudio, InterjectDone,
     InterjectQuestion, InterjectReady, InterjectResume, InterjectStart, InterjectText, KeypointRef, PauseSession, Ping, Pong,
@@ -175,11 +179,11 @@ class SessionRuntime:
         elif action.type == "board":
             self.ctx.boards.append(f"## {action.title}\n{action.board_content}" if action.title else action.board_content)
 
-    async def _await_ack(self, step_id: int, timeout_s: float) -> None:
+    async def _await_ack(self, step_id: int, timeout_s: float, suspend_states=("paused", "interjecting")) -> None:
         ev = self._acks.setdefault(step_id, asyncio.Event())
         deadline_budget = timeout_s
         while not ev.is_set():
-            if self.state in ("paused", "interjecting"):
+            if self.state in suspend_states:
                 await asyncio.sleep(0.2)  # clock is suspended while the student is not listening
                 continue
             started = asyncio.get_event_loop().time()
@@ -225,22 +229,50 @@ class SessionRuntime:
         step_id = self._live_step
         self.ctx.transcript.append(f"导师：{text}")
         await self.transport.send(Speak(step_id=step_id, spoken_text=text))
-        url, duration_ms, cjk, latin = await self._synthesize_live(text, f"live_{step_id}")
-        seg = TtsSegment(step_id=step_id, audio_url=url, duration_ms=duration_ms, tts_cjk=cjk, tts_latin=latin,
-                         speed=self.tts_speed)
+        a = await self._synthesize_live(text, f"live_{step_id}")
+        seg = TtsSegment(step_id=step_id, audio_url=a.audio_url, duration_ms=a.duration_ms, tts_cjk=a.cjk,
+                         tts_latin=a.latin, speed=self.tts_speed, marks=a.marks)
         await self.transport.send(seg)
         await self._await_ack(step_id, self._timeout_for(seg))
 
-    async def _synthesize_live(self, text: str, stem: str):
+    async def _synthesize_live(self, text: str, stem: str) -> StepAudio:
+        """Aligned TTS into the live dir; never raises (degrades to a virtual clock)."""
         os.makedirs(self.live_audio_dir, exist_ok=True)
         try:
-            res = await self.tts.synthesize(text, os.path.join(self.live_audio_dir, f"{stem}_{uuid.uuid4().hex[:6]}"),
-                                            speed=self.tts_speed)
+            import time
+            t0 = time.time()
+            res = await synthesize_aligned(self.tts, text, os.path.join(self.live_audio_dir, f"{stem}_{uuid.uuid4().hex[:6]}"),
+                                           speed=self.tts_speed)
+            GLOBAL_LEDGER.add_tts(self.tts.name, "tts_live", len(text), time.time() - t0)
         except Exception as e:
             log.warning("live TTS failed: %s", e)
-            return None, 0, 0, 0
+            return StepAudio(None, 0, 0, 0, None)
         url = f"{self.live_audio_url}/{os.path.basename(res.audio_path)}" if res.audio_path else None
-        return url, res.duration_ms, res.cjk, res.latin
+        return StepAudio(url, res.duration_ms, res.cjk, res.latin, res.marks)
+
+    def _relabel(self, actions, step_base: int, uid_base: int):
+        """Give detour actions step/board ids that cannot collide with the main session."""
+        out = []
+        for a in actions:
+            if a.type == "done":
+                continue
+            upd = {"step_id": a.step_id + step_base}
+            for f in ("reveal_gate_step", "during_step"):
+                if getattr(a, f, None) is not None:
+                    upd[f] = getattr(a, f) + step_base
+            for f in ("board_uid", "target_board_uid"):
+                if getattr(a, f, None) is not None:
+                    upd[f] = getattr(a, f) + uid_base
+            out.append(a.model_copy(update=upd))
+        return out
+
+    async def _play_actions(self, actions) -> None:
+        """Send a list of actions with the same ack discipline as the main loop."""
+        for action in actions:
+            self._track_context(action)
+            await self.transport.send(self._with_speed(action))
+            if action.type in ACK_REQUIRED:
+                await self._await_ack(action.step_id, self._timeout_for(action), suspend_states=("paused",))
 
     # ------------------------------------------------------------------ #
     # Interjections
@@ -262,18 +294,37 @@ class SessionRuntime:
         self._interject_task = asyncio.create_task(self._answer_interjection(interject_id, msg.text))
 
     async def _answer_interjection(self, interject_id: str, question: str) -> None:
+        """Answer an interruption as a mini lesson (岔路): same synthesizer, compiler,
+        aligned TTS and action stream as the main session, then hand control back."""
+        import time
+        t0 = time.time()
+        mark = GLOBAL_LEDGER.mark()
         self.ctx.transcript.append(f"学生（打断）：{question}")
-        parts: List[str] = []
         try:
-            async for delta in self.tutor.stream_interjection(self.ctx, question):
-                parts.append(delta)
-                await self.transport.send(InterjectText(interject_id=interject_id, delta=delta))
-            text = "".join(parts).strip()
-            self.ctx.transcript.append(f"导师：{text}")
-            url, duration_ms, _, _ = await self._synthesize_live(text, f"interject_{interject_id}")
-            await self.transport.send(InterjectAudio(interject_id=interject_id, audio_url=url,
-                                                     duration_ms=duration_ms, text=text))
-            await self.transport.send(InterjectDone(interject_id=interject_id))
+            if not self.tutor.available or self.session is None:
+                text = "当前服务没有配置大模型，我暂时无法展开讲。你可以先继续听课，或者在服务端设置 DEEPSEEK_API_KEY 后重试。"
+                await self._narrate_live(text)
+            else:
+                await self.transport.send(Status(state="interjecting", detail="preparing"))
+                script = await self.tutor.detour_script(self.ctx, question, self.session.course_id, self.session.session_id)
+                # figures (optional, at most one) and aligned audio per step
+                for i, st in enumerate(script.steps[:1]):
+                    il = st.illustration
+                    if il and il.kind == "svg" and not il.svg:
+                        filled = await fill_illustration(il, self.tutor.llm, "", "")
+                        st.illustration = filled if filled.svg else None
+                audio: Dict[int, StepAudio] = {}
+                for i, st in enumerate(script.steps):
+                    audio[i] = await self._synthesize_live(st.spoken_text, f"detour_{interject_id}_{i + 1}")
+                compiled = compile_session(script, audio, generation_mode="llm")
+                self._live_step += 50
+                actions = self._relabel(compiled.actions, step_base=self._live_step, uid_base=self._live_step)
+                self._live_step += len(compiled.actions) + 1
+                await self._play_actions(actions)
+            usage = GLOBAL_LEDGER.summary(since=mark)["total"]
+            await self.transport.send(InterjectDone(interject_id=interject_id, cost_usd=usage["cost_usd"],
+                                                    seconds=round(time.time() - t0, 1),
+                                                    tokens=usage["prompt_tokens"] + usage["completion_tokens"] + usage["reasoning_tokens"]))
         except asyncio.CancelledError:
             raise
         except Exception as e:

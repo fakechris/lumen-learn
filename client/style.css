@@ -285,3 +285,6 @@ svg.wb-annotations { position: absolute; inset: 0; pointer-events: none; overflo
 .home-quiz { border: 1px solid var(--line); border-radius: 14px; background: #fff; padding: 14px 20px; margin-left: 40px; display: flex; align-items: center; justify-content: space-between; }
 .home-quiz .t { font-weight: 600; }
 .home-quiz .d { font-size: .8rem; color: var(--muted); }
+
+.kp.detour { padding-right: 18px; font-size: .74rem; }
+.kp.detour .dot { width: 9px; height: 9px; border-style: dashed; }

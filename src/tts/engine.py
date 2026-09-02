@@ -29,12 +29,17 @@ class TtsResult:
     cjk: int
     latin: int
     engine: str
+    marks: Optional[list] = None  # [[char_index, start_ms], ...] when aligned
 
 
 class TtsEngine(Protocol):
     name: str
 
     async def synthesize(self, text: str, out_stem: str, speed: float = 1.0) -> TtsResult: ...
+
+
+def _env_voice(default: str) -> str:
+    return os.getenv("TTS_VOICE") or default
 
 
 def wav_duration_ms(path: str) -> int:
@@ -62,7 +67,7 @@ class MacSayEngine:
 
     def __init__(self, zh_voice: str = "Tingting", en_voice: str = "Samantha", base_rate: int = 190,
                  mp3: Optional[bool] = None):
-        self.zh_voice = zh_voice
+        self.zh_voice = _env_voice(zh_voice)
         self.en_voice = en_voice
         self.base_rate = base_rate
         self.mp3 = shutil.which("ffmpeg") is not None if mp3 is None else mp3
@@ -93,9 +98,10 @@ class MacSayEngine:
 
 class EdgeTtsEngine:
     name = "edge"
+    provides_marks = True  # WordBoundary events give word-level timing
 
     def __init__(self, zh_voice: str = "zh-CN-XiaoxiaoNeural", en_voice: str = "en-US-AriaNeural"):
-        self.zh_voice = zh_voice
+        self.zh_voice = _env_voice(zh_voice)
         self.en_voice = en_voice
 
     @staticmethod
@@ -117,13 +123,69 @@ class EdgeTtsEngine:
         mp3_path = out_stem + ".mp3"
         communicate = edge_tts.Communicate(spoken, voice, rate=rate)
         end_100ns = 0
+        words = []  # (text, offset_ms)
         with open(mp3_path, "wb") as f:
             async for chunk in communicate.stream():
                 if chunk["type"] == "audio":
                     f.write(chunk["data"])
                 elif chunk["type"] == "WordBoundary":
                     end_100ns = max(end_100ns, chunk["offset"] + chunk["duration"])
+                    words.append((chunk.get("text", ""), int(chunk["offset"] / 10_000)))
         duration_ms = int(end_100ns / 10_000) + 250 if end_100ns else int(estimate_duration_ms(spoken) / speed)
+        marks = _marks_from_words(text, words, duration_ms)
+        return TtsResult(mp3_path, duration_ms, cjk, latin, self.name, marks=marks)
+
+
+def _marks_from_words(text: str, words, duration_ms: int):
+    """Map engine word boundaries back onto the original text by sequential search."""
+    if not words:
+        return None
+    marks, pos = [[0, 0]], 0
+    for w, ms in words:
+        w = w.strip()
+        if not w:
+            continue
+        i = text.find(w, pos)
+        if i < 0:
+            i = text.find(w[:1], pos) if w[:1] else -1
+        if i >= 0:
+            marks.append([i, ms])
+            pos = i + len(w)
+    marks.append([len(text), duration_ms])
+    return marks
+
+
+class MiniMaxEngine:
+    """MiniMax t2a_v2 (speech-2.6-turbo by default). Needs MINIMAX_API_KEY."""
+    name = "minimax"
+
+    def __init__(self, voice: str = "male-qn-qingse", model: Optional[str] = None):
+        self.voice = _env_voice(voice)
+        self.model = model or os.getenv("TTS_MODEL", "speech-2.6-turbo")
+
+    @staticmethod
+    def available() -> bool:
+        return bool(os.getenv("MINIMAX_API_KEY"))
+
+    async def synthesize(self, text: str, out_stem: str, speed: float = 1.0) -> TtsResult:
+        import httpx
+        spoken = to_spoken(text)
+        cjk, latin = count_chars(spoken)
+        payload = {"model": self.model, "text": spoken, "stream": False,
+                   "voice_setting": {"voice_id": self.voice, "speed": float(speed), "vol": 1.0, "pitch": 0},
+                   "audio_setting": {"sample_rate": 32000, "bitrate": 128000, "format": "mp3", "channel": 1}}
+        async with httpx.AsyncClient(timeout=120) as client:
+            r = await client.post("https://api.minimaxi.com/v1/t2a_v2", json=payload,
+                                  headers={"Authorization": f"Bearer {os.environ['MINIMAX_API_KEY']}",
+                                           "Content-Type": "application/json"})
+        data = r.json()
+        audio_hex = (data.get("data") or {}).get("audio")
+        if not audio_hex:
+            raise RuntimeError(f"MiniMax TTS failed: {str(data.get('base_resp'))[:200]}")
+        mp3_path = out_stem + ".mp3"
+        with open(mp3_path, "wb") as f:
+            f.write(bytes.fromhex(audio_hex))
+        duration_ms = int((data.get("extra_info") or {}).get("audio_length") or estimate_duration_ms(spoken) / speed)
         return TtsResult(mp3_path, duration_ms, cjk, latin, self.name)
 
 
@@ -148,8 +210,12 @@ def choose_engine(preference: Optional[str] = None) -> TtsEngine:
         if not EdgeTtsEngine.available():
             raise RuntimeError("TTS_ENGINE=edge requires `pip install edge-tts`")
         return EdgeTtsEngine()
+    if pref == "minimax":
+        if not MiniMaxEngine.available():
+            raise RuntimeError("TTS_ENGINE=minimax requires MINIMAX_API_KEY")
+        return MiniMaxEngine()
     if pref != "auto":
-        raise RuntimeError(f"Unknown TTS_ENGINE {pref!r}; use say|edge|silent|auto")
+        raise RuntimeError(f"Unknown TTS_ENGINE {pref!r}; use say|edge|minimax|silent|auto")
     if MacSayEngine.available():
         return MacSayEngine()
     if EdgeTtsEngine.available():

@@ -39,7 +39,7 @@ async def vision_review(llm, task: str, png_path: str) -> tuple[bool, str]:
     from src.llm.client import extract_json
     with open(png_path, "rb") as f:
         png = f.read()
-    raw = await llm.complete(VISION_REVIEW_SYSTEM, f"教具任务：{task}", json_mode=True, temperature=0.1, images=[png])
+    raw = await llm.complete(VISION_REVIEW_SYSTEM, f"教具任务：{task}", json_mode=True, temperature=0.1, images=[png], purpose="vision_review")
     data = extract_json(raw)
     problems = "; ".join(str(p) for p in data.get("problems") or [])
     return bool(data.get("pass")), (problems or str(data.get("summary") or ""))

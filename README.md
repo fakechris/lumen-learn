@@ -29,9 +29,21 @@ A bundled example course (`examples/courses/`) plays without any API key. With a
 "从讲义生成课程" button produces a full Socratic course from pasted Markdown, and the tutor
 answers interruptions and grades free-text answers live.
 
-TTS: on macOS the built-in `say` voice is used automatically (MP3 if `ffmpeg` is installed).
-`pip install edge-tts` for neural voices (`TTS_ENGINE=edge`). `TTS_ENGINE=silent` runs with
-a virtual clock and no audio.
+TTS: `TTS_ENGINE=say|edge|minimax|silent` (auto: macOS `say`, else edge-tts, else silent),
+`TTS_VOICE` picks the voice, `TTS_MODEL` the MiniMax model. Every narration is synthesized
+sentence by sentence and concatenated, so each `tts_segment` carries character-level
+timing marks; the subtitle typewriter and the circle/highlight timing follow the audio
+exactly (edge-tts additionally provides word marks).
+
+Costs: every LLM/TTS call is recorded in `output/_usage/usage.jsonl` with its purpose; each
+built course gets a `cost.json`; the plan step shows a rough pre-build estimate; interruptions
+report their own cost. Prices are estimates unless set via `LLM_PRICES` / `TTS_PRICES`
+(JSON, USD per 1M tokens / characters). `GET /api/v1/usage` aggregates.
+
+Interruptions (打断) are answered as a mini lesson in exactly the lesson's form: the tutor
+writes 1-3 steps (board opening a "岔路" column, narration, circles, optional figure), they are
+synthesized and streamed through the same action protocol, then the main narration resumes
+from the exact offset.
 
 Generate from the command line:
 

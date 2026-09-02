@@ -49,3 +49,31 @@ def test_choose_engine_respects_preference():
     assert choose_engine("silent").name == "silent"
     with pytest.raises(RuntimeError):
         choose_engine("nope")
+
+
+def test_split_sentences_and_interpolated_marks():
+    from src.tts.align import interpolate_marks, split_sentences
+    text = "第一句话。第二句，比较长一点的话！最后一句"
+    spans = split_sentences(text)
+    assert [text[a:b] for a, b in spans] == ["第一句话。", "第二句，比较长一点的话！", "最后一句"]
+    marks = interpolate_marks(text, [(a, b, 1000 * (i + 1)) for i, (a, b) in enumerate(spans)])
+    assert marks[0] == [0, 0] and marks[-1] == [len(text), 6000]
+    starts = {m[0]: m[1] for m in marks}
+    assert starts[spans[1][0]] == 1000 and starts[spans[2][0]] == 3000
+    assert all(marks[i][1] <= marks[i + 1][1] for i in range(len(marks) - 1))
+
+
+@pytest.mark.asyncio
+async def test_aligned_synthesis_with_silent_engine(tmp_path):
+    from src.tts.align import synthesize_aligned
+    res = await synthesize_aligned(SilentEngine(), "你好。世界很大！", str(tmp_path / "x"))
+    assert res.audio_path is None and res.marks and res.marks[-1][0] == 8 and res.marks[-1][1] == res.duration_ms
+
+
+@pytest.mark.asyncio
+@pytest.mark.skipif(not MacSayEngine.available(), reason="macOS say not available")
+async def test_aligned_synthesis_concatenates_wav(tmp_path):
+    from src.tts.align import synthesize_aligned
+    res = await synthesize_aligned(MacSayEngine(mp3=False), "第一句话。第二句话。", str(tmp_path / "s"))
+    assert res.audio_path.endswith(".wav") and res.duration_ms == wav_duration_ms(res.audio_path)
+    assert res.marks[0] == [0, 0] and 0 < res.marks[5][1] < res.duration_ms

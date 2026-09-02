@@ -133,7 +133,7 @@ async def generate_widget_html(spec: WidgetSpec, llm: LLMClient, attempts: int =
     for _ in range(attempts):
         try:
             prompt = user if not problem else f"{user}\n\n上一次生成的问题：{problem}。请修正后重新输出完整 HTML。"
-            html = _strip_fences(await llm.complete(system, prompt, temperature=0.2))
+            html = _strip_fences(await llm.complete(system, prompt, temperature=0.2, purpose="widget"))
         except LLMError as e:
             problem = str(e)
             continue

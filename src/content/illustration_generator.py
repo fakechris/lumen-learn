@@ -64,7 +64,7 @@ async def generate_svg(spec: IllustrationSpec, llm: LLMClient, attempts: int = 2
     for _ in range(attempts):
         try:
             prompt = user if not problem else f"{user}\n\n上一次的问题：{problem}。请重新输出完整 SVG。"
-            svg = _strip_to_svg(await llm.complete(SVG_SYSTEM, prompt, temperature=0.3))
+            svg = _strip_to_svg(await llm.complete(SVG_SYSTEM, prompt, temperature=0.3, purpose="svg"))
         except LLMError as e:
             problem = str(e)
             continue

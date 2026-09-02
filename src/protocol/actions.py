@@ -41,6 +41,7 @@ class TtsSegment(BaseModel):
     tts_latin: int = 0
     speed: float = 1.0
     skipped: bool = False
+    marks: Optional[List[List[int]]] = Field(None, description="[[char_index, start_ms], ...] subtitle alignment")
 
 
 Layout = Literal["follow", "newcol"]
@@ -234,6 +235,9 @@ class InterjectAudio(BaseModel):
 class InterjectDone(BaseModel):
     type: Literal["interject_done"] = "interject_done"
     interject_id: str
+    cost_usd: float = 0.0
+    seconds: float = 0.0
+    tokens: int = 0
 
 
 class ResponseComplete(BaseModel):

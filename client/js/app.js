@@ -5,7 +5,7 @@
  * audio clock, and sends acks / answers / interjections back.
  */
 import { WhiteboardSocket } from "./ws.js";
-import { AudioClock, playClip } from "./audio-clock.js";
+import { AudioClock, charsAtMs } from "./audio-clock.js";
 import { Whiteboard } from "./board.js";
 import { escapeHtml } from "./markdown.js";
 import { ExerciseView } from "./exercises.js";
@@ -361,7 +361,7 @@ class App {
     const idx = this.keypoints.findIndex((k) => k.step_id === currentStepId);
     this.keypoints.forEach((k, i) => {
       const el = document.createElement("div");
-      el.className = "kp" + (i === idx ? " current" : i < idx || this.state === "finished" ? " done" : "");
+      el.className = "kp" + (k.detour ? " detour" : "") + (i === idx ? " current" : i < idx || this.state === "finished" ? " done" : "");
       el.innerHTML = `<span>${escapeHtml(k.title)}</span><span class="dot"></span>`;
       box.appendChild(el);
     });
@@ -433,21 +433,27 @@ class App {
     this.board.openGate(m.step_id, m.duration_ms);
     const decos = this.pendingDecos.get(m.step_id) || [];
     const chars = Array.from(text);
-    this.clock.play({
+    // marks index the JS string by UTF-16 code units; map to code points for slicing
+    const start = (startMs = 0) => this.clock.play({
       url: m.audio_url,
       durationMs: m.duration_ms,
+      startMs,
       onTick: (progress, ms) => {
-        const n = Math.floor(progress * chars.length);
+        const n = m.marks ? Math.min(chars.length, charsAtMs(m.marks, ms, text.length, m.duration_ms))
+                          : Math.floor(progress * chars.length);
         this.setSubtitle(chars.slice(0, n).join(""), progress < 1);
         for (const d of decos) if (!d.drawn && ms >= d.at_ms) this.drawNow(d);
       },
       onEnded: () => {
         for (const d of decos) if (!d.drawn) this.drawNow(d);
         this.setSubtitle(text, false);
+        if (this.currentPlay?.stepId === m.step_id) this.currentPlay = null;
         this.currentStep = null;
         this.ack(m.step_id);
       },
     });
+    if (m.step_id < 100000 || !this.interject) this.currentPlay = { stepId: m.step_id, start };
+    start(0);
     if (this.state === "paused") this.clock.pause();
   }
 
@@ -517,9 +523,12 @@ class App {
 
   beginInterject() {
     if (this.interject || this.state === "idle") return;
-    this.clock.pause();
-    this.ws.send({ type: "interject_start", step_id: this.currentStep, offset_ms: Math.round(this.clock.currentMs) });
-    this.interject = { id: null, bubble: null, text: "", audioPlayed: false, done: false };
+    const offset = Math.round(this.clock.currentMs);
+    // Suspend the main narration; the detour is a mini lesson that reuses the same action handlers.
+    this.suspended = this.currentPlay ? { start: this.currentPlay.start, ms: offset, stepId: this.currentPlay.stepId } : null;
+    this.clock.stop();
+    this.ws.send({ type: "interject_start", step_id: this.currentStep, offset_ms: offset });
+    this.interject = { id: null, bubble: null, text: "", done: false };
     $("interjectBox").classList.add("open");
     $("interjectInput").value = "";
     $("interjectInput").focus();
@@ -530,7 +539,13 @@ class App {
     if (!text || !this.interject) return;
     $("interjectBox").classList.remove("open");
     this.addBubble("student", text);
-    this.interject.bubble = this.addBubble("tutor", "", { streaming: true });
+    this.interject.bubble = this.addBubble("tutor", "正在准备岔路讲解…", { streaming: true, kind: "岔路" });
+    this.interject.question = text;
+    // show the detour in the keypoints list as a sub-item of the current point
+    const idx = this.keypoints.findIndex((k) => k.step_id === this.suspended?.stepId);
+    this.keypoints.splice(idx + 1, 0, { step_id: -1, title: `岔路：${text.slice(0, 18)}`, detour: true });
+    this.renderKeypoints(this.suspended?.stepId ?? null);
+    this.setSubtitle("", false);
     this.ws.send({ type: "interject_question", text });
   }
 
@@ -539,45 +554,33 @@ class App {
     if (!this.interject) return;
     this.interject = null;
     this.ws.send({ type: "interject_resume" });
-    this.clock.resume();
+    this.resumeSuspended();
   }
 
   on_interject_ready(m) { if (this.interject) this.interject.id = m.interject_id; }
 
-  on_interject_text(m) {
-    if (!this.interject?.bubble) return;
-    this.interject.text += m.delta;
-    this.interject.bubble.text = this.interject.text;
-    if (this.activeTab === "transcript") this.renderSidebar();
-  }
+  on_interject_text() {}
+  on_interject_audio() {}
 
-  async on_interject_audio(m) {
+  on_interject_done(m) {
     if (!this.interject) return;
-    this.interject.bubble.text = m.text;
-    this.interject.bubble.streaming = false;
-    this.renderSidebar();
-    this.setSubtitle(m.text, false);
-    await playClip(m.audio_url, m.duration_ms);
-    this.interject.audioPlayed = true;
-    this.finishInterject();
-  }
-
-  on_interject_done() {
-    if (!this.interject) return;
-    this.interject.done = true;
-    if (!this.interject.audioPlayed) {
-      // No audio arrived (error path): give the reader a moment, then resume.
-      setTimeout(() => this.finishInterject(), 1500);
+    const b = this.interject.bubble;
+    if (b) {
+      b.streaming = false;
+      b.text = `岔路讲解结束，回到主线。`;
+      if (m.cost_usd != null) b.kind = `岔路 · ${m.seconds}s · $${Number(m.cost_usd).toFixed(4)} · ${m.tokens} tokens`;
     }
-  }
-
-  finishInterject() {
-    if (!this.interject) return;
-    if (this.interject.bubble) this.interject.bubble.streaming = false;
     this.interject = null;
     this.ws.send({ type: "interject_resume" });
-    this.clock.resume();
+    this.resumeSuspended();
     this.renderSidebar();
+  }
+
+  resumeSuspended() {
+    const s = this.suspended;
+    this.suspended = null;
+    if (s) { this.currentStep = s.stepId; this.renderKeypoints(s.stepId); s.start(s.ms); }
+    else if (this.state === "paused") this.clock.resume();
   }
 
   // ------------------------------------------------------------------ generation (ingest -> plan -> build)
@@ -623,6 +626,7 @@ class App {
       if (!pres.ok) throw new Error((await pres.json()).detail || pres.statusText);
       const job = await this.pollJob((await pres.json()).job_id, log);
       this.genPlan = job.plan;
+      if (job.estimate) log.textContent += `\n💰 生成本课粗估 ≈ $${job.estimate.usd}（${job.estimate.segments} 段，${job.estimate.widgets} 教具，${job.estimate.figures} 图）；教案本身花费 $${Number(job.cost?.cost_usd || 0).toFixed(4)}`;
       this.renderPlanTree();
       this.showGenStep("plan");
     } catch (e) {
@@ -695,6 +699,7 @@ class App {
       const res = await fetch("/api/v1/build", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ doc_key: this.genDoc.doc_key, plan: this.genPlan, mode }) });
       if (!res.ok) throw new Error((await res.json()).detail || res.statusText);
       const job = await this.pollJob((await res.json()).job_id, log);
+      if (job.cost) this.toast(`本课生成花费 ≈ $${Number(job.cost.cost_usd).toFixed(3)}，${job.cost.calls} 次调用`);
       await this.refreshCourses();
       $("generateModal").classList.remove("open");
       this.showGenStep("import");

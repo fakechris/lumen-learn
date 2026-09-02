@@ -29,16 +29,31 @@ class StepAudio:
     duration_ms: int
     cjk: int
     latin: int
+    marks: Optional[List[List[int]]] = None
 
 
-def decoration_offset_ms(step: StepSpec, trigger_phrase: Optional[str], duration_ms: int) -> int:
-    """When to start drawing: where the trigger phrase sits in the narration."""
+def ms_at_char(marks: Optional[List[List[int]]], idx: int, duration_ms: int, text_len: int) -> int:
+    """Time at which character `idx` is spoken, from alignment marks (linear fallback)."""
+    if not marks:
+        return int(duration_ms * idx / max(1, text_len))
+    prev = marks[0]
+    for m in marks[1:]:
+        if m[0] >= idx:
+            span = max(1, m[0] - prev[0])
+            return int(prev[1] + (m[1] - prev[1]) * (idx - prev[0]) / span)
+        prev = m
+    return duration_ms
+
+
+def decoration_offset_ms(step: StepSpec, trigger_phrase: Optional[str], duration_ms: int,
+                         marks: Optional[List[List[int]]] = None) -> int:
+    """When to start drawing: the moment the trigger phrase is spoken."""
     text = step.spoken_text
     if trigger_phrase and text and trigger_phrase in text:
-        frac = text.index(trigger_phrase) / max(1, len(text))
+        at = ms_at_char(marks, text.index(trigger_phrase), duration_ms, len(text))
     else:
-        frac = 0.35
-    return int(max(0, min(frac * duration_ms, max(0, duration_ms - 800))))
+        at = int(0.35 * duration_ms)
+    return int(max(0, min(at, max(0, duration_ms - 800))))
 
 
 def compile_session(script: SessionScript, audio: Dict[int, StepAudio],
@@ -94,9 +109,9 @@ def compile_session(script: SessionScript, audio: Dict[int, StepAudio],
             if 0 <= d.board_index < len(board_uids):
                 actions.append(Decoration(type=d.kind, step_id=sid(), target_board_uid=board_uids[d.board_index],
                                           snippet=d.snippet, color=d.color, during_step=speak_step,
-                                          at_ms=decoration_offset_ms(step, d.trigger_phrase, a.duration_ms)))
+                                          at_ms=decoration_offset_ms(step, d.trigger_phrase, a.duration_ms, a.marks)))
         actions.append(TtsSegment(step_id=speak_step, audio_url=a.audio_url, duration_ms=a.duration_ms,
-                                  tts_cjk=a.cjk, tts_latin=a.latin))
+                                  tts_cjk=a.cjk, tts_latin=a.latin, marks=a.marks))
         total_ms += a.duration_ms
 
         if step.reward:
