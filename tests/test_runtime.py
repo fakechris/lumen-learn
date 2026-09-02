@@ -133,15 +133,23 @@ async def test_interjection_suspends_clock_and_resumes(package, tmp_path):
     await rt.handle(InterjectStart(step_id=tts["step_id"], offset_ms=120))
     assert rt.state == "interjecting"
     await rt.handle(InterjectQuestion(text="为什么？"))
-    await t.wait_for("interject_text")
-    done = await t.wait_for("interject_done")
-    audio = await t.wait_for("interject_audio")
-    assert done["interject_id"] == audio["interject_id"]
-    assert "没有配置大模型" in audio["text"]  # honest about missing LLM
+    # without an LLM the tutor says so, in lesson form (speak + tts with a live step id)
+    live_speak = None
+    deadline = asyncio.get_event_loop().time() + 3
+    while live_speak is None and asyncio.get_event_loop().time() < deadline:
+        await asyncio.sleep(0.02)
+        live_speak = next((m for m in t.sent if m["type"] == "speak" and m["step_id"] >= 100_000), None)
+    assert live_speak and "没有配置大模型" in live_speak["spoken_text"]
+    live_tts = await t.wait_for("tts_segment") if False else next(m for m in t.sent if m["type"] == "tts_segment" and m["step_id"] >= 100_000)
+    assert live_tts["marks"] and live_tts["marks"][0] == [0, 0]
 
-    # while interjecting, the fail-safe must not advance past the unacked tts step
+    # while interjecting, the fail-safe must not advance past the unacked MAIN tts step
     await asyncio.sleep(0.6)
     assert "ask" not in t.types()
+
+    await rt.handle(ActionStepComplete(step_id=live_tts["step_id"]))
+    done = await t.wait_for("interject_done")
+    assert "cost_usd" in done
 
     await rt.handle(InterjectResume())
     assert rt.state == "teaching"
@@ -167,3 +175,51 @@ async def test_unknown_session_reports_fatal_error(package, tmp_path):
     await rt.handle(StartSession(course_id="course_x", session_id="missing"))
     err = await t.wait_for("error")
     assert err["fatal"] is True
+
+
+@pytest.mark.asyncio
+async def test_detour_is_a_mini_lesson_with_relabeled_ids(package, tmp_path, monkeypatch):
+    """With an LLM, an interruption becomes board + speak + tts actions whose ids
+    cannot collide with the main session, followed by interject_done."""
+    from src.protocol.session import BoardSpec, DecorationSpec, SessionScript, StepSpec
+    store, _ = package
+    t = FakeTransport()
+    rt = make_runtime(t, store, tmp_path, ack_timeout_s=0.3)
+
+    async def fake_detour(ctx, question, course_id, session_id):
+        return SessionScript(session_id=session_id, course_id=course_id, title="岔路", steps=[
+            StepSpec(spoken_text="看这一行，这是岔路讲解。好，我们回到刚才的地方。",
+                     boards=[BoardSpec(title="岔路：为什么", markdown="- 因为 $a=b$", layout="newcol")],
+                     decorations=[DecorationSpec(snippet="a=b", trigger_phrase="这一行")]),
+        ])
+    rt.tutor.llm = object()  # mark as available
+    monkeypatch.setattr(rt.tutor, "detour_script", fake_detour)
+
+    await rt.handle(StartSession(course_id="course_x", session_id="sess_1"))
+    board = await t.wait_for("board")
+    await rt.handle(ActionStepComplete(step_id=board["step_id"]))
+    main_tts = await t.wait_for("tts_segment")
+    await rt.handle(InterjectStart(step_id=main_tts["step_id"], offset_ms=100))
+    await rt.handle(InterjectQuestion(text="为什么"))
+
+    deadline = asyncio.get_event_loop().time() + 3
+    detour_board = None
+    while detour_board is None and asyncio.get_event_loop().time() < deadline:
+        await asyncio.sleep(0.02)
+        detour_board = next((m for m in t.sent if m["type"] == "board" and m["step_id"] >= 100_000), None)
+    assert detour_board and detour_board["title"].startswith("岔路") and detour_board["layout"] == "newcol"
+    assert detour_board["board_uid"] >= 100_000
+    await rt.handle(ActionStepComplete(step_id=detour_board["step_id"]))
+    detour_tts = None
+    while detour_tts is None and asyncio.get_event_loop().time() < deadline:
+        await asyncio.sleep(0.02)
+        detour_tts = next((m for m in t.sent if m["type"] == "tts_segment" and m["step_id"] >= 100_000), None)
+    assert detour_tts and detour_board["reveal_gate_step"] == detour_tts["step_id"]
+    circle = next(m for m in t.sent if m["type"] == "circle")
+    assert circle["target_board_uid"] == detour_board["board_uid"] and circle["during_step"] == detour_tts["step_id"]
+    await rt.handle(ActionStepComplete(step_id=detour_tts["step_id"]))
+    done = await t.wait_for("interject_done")
+    assert done["seconds"] >= 0
+    await rt.handle(InterjectResume())
+    assert rt.state == "teaching"
+    await rt.close()

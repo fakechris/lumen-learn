@@ -27,6 +27,7 @@ from src.content.pipeline import ContentPipeline
 from src.protocol.session import CourseStructure
 from src.content.store import CourseStore
 from src.llm.client import make_client
+from src.llm.usage import GLOBAL_LEDGER
 from src.protocol.actions import ConnectionEstablished, ErrorMessage, parse_client_message
 from src.runtime.session_runtime import SessionRuntime
 from src.runtime.tutor import LiveTutor
@@ -63,7 +64,14 @@ async def capabilities():
                     "model": llm.model if llm else None,
                     "model_pro": llm.config.model_pro if llm else None,
                     "model_vision": llm.config.model_vision if llm else None},
-            "tts": {"engine": tts.name}}
+            "tts": {"engine": tts.name, "voice": getattr(tts, "zh_voice", None) or getattr(tts, "voice", None),
+                    "model": getattr(tts, "model", None)},
+            "usage": GLOBAL_LEDGER.summary()["total"]}
+
+
+@app.get("/api/v1/usage")
+async def usage():
+    return GLOBAL_LEDGER.summary()
 
 
 @app.get("/api/v1/courses")
@@ -167,8 +175,12 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 def _new_job(kind: str) -> dict:
     job_id = uuid.uuid4().hex[:10]
     jobs[job_id] = {"job_id": job_id, "kind": kind, "status": "running", "events": [], "course_id": None,
-                    "plan": None, "error": None}
+                    "plan": None, "error": None, "cost": None, "_mark": GLOBAL_LEDGER.mark()}
     return jobs[job_id]
+
+
+def _finish_job(job: dict) -> None:
+    job["cost"] = GLOBAL_LEDGER.summary(since=job.pop("_mark", 0))["total"]
 
 
 def _pipeline(job: dict, mode: str) -> ContentPipeline:
@@ -223,6 +235,8 @@ async def plan_course(req: PlanRequest):
         try:
             plan = await pipeline.plan(req.doc_key, doc)
             job["plan"] = plan.model_dump(mode="json")
+            job["estimate"] = pipeline.estimate_build_cost(plan) if llm else None
+            _finish_job(job)
             job["status"] = "done"
         except Exception as e:
             log.exception("plan job %s failed", job["job_id"])
@@ -258,6 +272,7 @@ async def build_course(req: BuildRequest):
         try:
             course_dir = await pipeline.build(doc, plan)
             job["course_id"] = os.path.basename(course_dir)
+            _finish_job(job)
             job["status"] = "done"
         except Exception as e:
             log.exception("build job %s failed", job["job_id"])
@@ -306,7 +321,7 @@ async def get_job(job_id: str):
     job = jobs.get(job_id)
     if not job:
         raise HTTPException(404, "job not found")
-    return job
+    return {k: v for k, v in job.items() if not k.startswith("_")}
 
 
 # --------------------------------------------------------------------------- #

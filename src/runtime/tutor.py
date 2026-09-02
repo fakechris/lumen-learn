@@ -12,6 +12,7 @@ from typing import AsyncIterator, List, Optional
 
 from src.llm.client import LLMClient, LLMError
 from src.protocol.actions import Ask
+from src.protocol.session import SessionScript, StepSpec
 
 TUTOR_SYSTEM = """你是白板课上的苏格拉底导师，学生在听课时打断提问或回答了你的问题。
 用亲切的口语回应，2~4 句话，先肯定学生思考里对的部分，再用直观比喻或反问把学生推向正确理解，不要长篇灌输。
@@ -33,9 +34,52 @@ class TutorContext:
                 f"当前讲解：{self.current_narration}\n\n当前板书：\n{boards}\n\n最近对话：\n{recent}")
 
 
+DETOUR_SYSTEM = """你是白板课上的苏格拉底导师。学生刚刚打断了讲解提了一个问题。你要用**和正课完全一样的形式**回应：
+一小段岔路讲解，1~3 步，每步 = 一段口语讲解（40~90 个汉字，不要 LaTeX / Markdown）+ 一张小板书（2~4 行电报体，可用 KaTeX）。
+
+规则：
+- 第一步的板书 title 必须是 "岔路：<学生问题的 8 字以内概括>"，layout 用 "newcol"；后续板书 layout 用 "follow"，title 可为空。
+- 讲解指着板书说（"看这一行"），先肯定学生想法里对的部分，再用直观比喻或反问推向正确理解，不要长篇灌输。
+- 最后一步的结尾一句必须把学生带回主线，例如 "好，我们回到刚才的地方。"
+- 需要一张示意图才说得清时，可以给一个 illustration（kind "svg"，写清 brief）；不要 widget、question、reward。
+- decorations 的 snippet 必须逐字出现在该板书 markdown 中。
+
+只输出 JSON：{"steps": [{"title": "", "spoken_text": "", "boards": [{"title": "岔路：……", "markdown": "", "layout": "newcol"}],
+  "decorations": [], "illustration": null, "widget": null, "question": null, "reward": null}]}"""
+
+
 class LiveTutor:
     def __init__(self, llm: Optional[LLMClient]):
         self.llm = llm
+
+    async def detour_script(self, ctx: TutorContext, question: str, course_id: str, session_id: str) -> SessionScript:
+        """Generate a 1-3 step mini lesson answering the interruption, in lesson form."""
+        from src.content.session_synthesizer import LLMStep
+        from src.content.validators import sanitize_script
+        from pydantic import BaseModel, field_validator
+        from typing import List as _List
+
+        class Detour(BaseModel):
+            steps: _List[LLMStep]
+
+            @field_validator("steps")
+            @classmethod
+            def _n(cls, v):
+                if not 1 <= len(v) <= 3:
+                    raise ValueError("detour needs 1-3 steps")
+                return v
+
+        user = f"{ctx.render()}\n\n学生打断提问：{question}"
+        generated = await self.llm.complete_model(DETOUR_SYSTEM, user, Detour, temperature=0.5, purpose="interject")
+        steps = [StepSpec(**st.model_dump(), ) for st in generated.steps]
+        steps = [st.model_copy(update={"widget": None, "question": None, "reward": None}) for st in steps]
+        if steps and steps[0].boards:
+            b0 = steps[0].boards[0]
+            title = b0.title if b0.title.startswith("岔路") else f"岔路：{question[:12]}"
+            steps[0].boards[0] = b0.model_copy(update={"title": title, "layout": "newcol"})
+        script = SessionScript(session_id=session_id, course_id=course_id, title=f"岔路：{question[:20]}", steps=steps)
+        script, _ = sanitize_script(script)
+        return script
 
     @property
     def available(self) -> bool:

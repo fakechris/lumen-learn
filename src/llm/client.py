@@ -17,6 +17,8 @@ from typing import AsyncIterator, Optional, Type, TypeVar
 
 from pydantic import BaseModel, ValidationError
 
+from src.llm.usage import GLOBAL_LEDGER, UsageLedger
+
 T = TypeVar("T", bound=BaseModel)
 
 
@@ -144,8 +146,9 @@ def extract_json(text: str) -> dict:
 
 
 class LLMClient:
-    def __init__(self, config: LLMConfig):
+    def __init__(self, config: LLMConfig, ledger: Optional[UsageLedger] = None):
         self.config = config
+        self.ledger = ledger or GLOBAL_LEDGER
         if config.provider == "anthropic":
             import anthropic
             self._anthropic = anthropic.AsyncAnthropic(api_key=config.api_key, base_url=config.base_url)
@@ -161,11 +164,22 @@ class LLMClient:
     def has_vision(self) -> bool:
         return bool(self.config.model_vision)
 
+    def _record(self, model: str, purpose: str, usage, seconds: float) -> None:
+        if usage is None:
+            return
+        pt = getattr(usage, "prompt_tokens", 0) or getattr(usage, "input_tokens", 0) or 0
+        ct = getattr(usage, "completion_tokens", 0) or getattr(usage, "output_tokens", 0) or 0
+        details = getattr(usage, "completion_tokens_details", None)
+        rt = getattr(details, "reasoning_tokens", 0) if details else 0
+        self.ledger.add_llm(model, purpose, int(pt), int(ct), int(rt or 0), seconds)
+
     async def complete(self, system: str, user: str, *, json_mode: bool = False,
                        temperature: float = 0.4, tier: str = "fast",
-                       images: Optional[list] = None) -> str:
+                       images: Optional[list] = None, purpose: str = "other") -> str:
         """`tier`: fast | pro | vision. `images`: list of PNG/JPEG bytes (vision tier)."""
+        import time
         model = self.config.for_tier("vision" if images else tier)
+        t0 = time.time()
         try:
             if self.config.provider == "anthropic":
                 content = [{"type": "text", "text": user}]
@@ -176,6 +190,7 @@ class LLMClient:
                     model=model, max_tokens=self.config.max_tokens, system=system,
                     messages=[{"role": "user", "content": content}], temperature=temperature,
                 )
+                self._record(model, purpose, getattr(resp, "usage", None), time.time() - t0)
                 return "".join(block.text for block in resp.content if getattr(block, "text", None))
             kwargs = {}
             if json_mode:
@@ -192,6 +207,7 @@ class LLMClient:
             )
             choice = resp.choices[0]
             content = choice.message.content or ""
+            self._record(model, purpose, getattr(resp, "usage", None), time.time() - t0)
             if choice.finish_reason == "length":
                 raise LLMError(f"output truncated at {self.config.max_tokens} tokens; produce a shorter answer")
             return content
@@ -201,14 +217,14 @@ class LLMClient:
             raise LLMError(f"{self.config.provider}/{self.config.model}: {e}") from e
 
     async def complete_model(self, system: str, user: str, schema: Type[T], *, repairs: int = 2,
-                             temperature: float = 0.4, tier: str = "fast") -> T:
+                             temperature: float = 0.4, tier: str = "fast", purpose: str = "other") -> T:
         """Ask for JSON, validate against `schema`, and give the model one chance to
         repair its own output using the validation error. Raises LLMError after that."""
         try:
-            raw = await self.complete(system, user, json_mode=True, temperature=temperature, tier=tier)
+            raw = await self.complete(system, user, json_mode=True, temperature=temperature, tier=tier, purpose=purpose)
         except LLMError as e:  # e.g. truncated: retry once asking for brevity
             raw = await self.complete(system, user + f"\n\n注意：{e}。请精简输出。", json_mode=True,
-                                      temperature=temperature, tier=tier)
+                                      temperature=temperature, tier=tier, purpose=purpose)
         last_error: Optional[str] = None
         for attempt in range(repairs + 1):
             try:
@@ -222,14 +238,19 @@ class LLMClient:
                         system,
                         user + "\n\n你上一次的输出无法通过校验，错误如下，请修正后重新输出完整 JSON：\n"
                         + last_error[:2000] + "\n\n上一次输出：\n" + raw[:6000],
-                        json_mode=True, temperature=0.2, tier=tier,
+                        json_mode=True, temperature=0.2, tier=tier, purpose=purpose + "_repair",
                     )
                 except LLMError as e:
                     last_error = str(e)
                     raw = ""
         raise LLMError(f"Model output failed validation for {schema.__name__}: {last_error}")
 
-    async def stream(self, system: str, user: str, *, temperature: float = 0.6) -> AsyncIterator[str]:
+    async def stream(self, system: str, user: str, *, temperature: float = 0.6,
+                     purpose: str = "interject") -> AsyncIterator[str]:
+        import time
+        t0 = time.time()
+        model = self.config.for_tier("fast")
+        out_chars = 0
         try:
             if self.config.provider == "anthropic":
                 async with self._anthropic.messages.stream(
@@ -240,12 +261,21 @@ class LLMClient:
                         yield delta
                 return
             stream = await self._openai.chat.completions.create(
-                model=self.config.for_tier("fast"), temperature=temperature, max_tokens=1024, stream=True,
+                model=model, temperature=temperature, max_tokens=1024, stream=True,
+                stream_options={"include_usage": True},
                 messages=[{"role": "system", "content": system}, {"role": "user", "content": user}],
             )
+            usage = None
             async for chunk in stream:
+                if getattr(chunk, "usage", None):
+                    usage = chunk.usage
                 if chunk.choices and chunk.choices[0].delta.content:
+                    out_chars += len(chunk.choices[0].delta.content)
                     yield chunk.choices[0].delta.content
+            if usage is not None:
+                self._record(model, purpose, usage, time.time() - t0)
+            else:  # provider did not report usage: estimate from characters
+                self.ledger.add_llm(model, purpose, (len(system) + len(user)) // 3, out_chars // 2, 0, time.time() - t0)
         except Exception as e:
             raise LLMError(f"{self.config.provider}/{self.config.model}: {e}") from e
 

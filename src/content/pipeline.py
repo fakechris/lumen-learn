@@ -18,6 +18,7 @@ from __future__ import annotations
 import argparse
 import asyncio
 import hashlib
+import json
 import os
 import shutil
 import sys
@@ -37,6 +38,8 @@ from src.llm.client import LLMClient, make_client
 from src.protocol.session import (
     ChapterOutline, CompiledSession, CourseStructure, SessionOutline, SessionScript, stable_id,
 )
+from src.llm.usage import GLOBAL_LEDGER
+from src.tts.align import synthesize_aligned
 from src.tts.engine import TtsEngine, choose_engine
 
 ProgressFn = Callable[[str, str], None]
@@ -127,7 +130,7 @@ class ContentPipeline:
                 with open(fig.path, "rb") as fh:
                     png = fh.read()
                 text = await self.llm.complete("你是教材图注撰写者。", "用一句话（≤30 字）说明这张教材图画的是什么，直接输出题注文字。",
-                                               temperature=0.2, images=[png])
+                                               temperature=0.2, images=[png], purpose="caption")
                 fig.caption = text.strip().strip("。").splitlines()[0][:60]
                 self.progress("figure", f"{fig.figure_id}: captioned by vision model → {fig.caption}")
             except Exception as e:
@@ -154,13 +157,31 @@ class ContentPipeline:
                 media[seg.media] = media.get(seg.media, 0) + 1
         self.progress("plan", f"{len(course.chapters)} chapters, {len(outlines)} sessions, {n_seg} segments "
                               f"[{course.generation_mode}] media={media}")
+        if self.llm:
+            est = self.estimate_build_cost(course)
+            self.progress("estimate", f"生成本课粗估 ≈ ${est['usd']} · {est['segments']} 段 · {est['widgets']} 教具 · {est['figures']} 图")
         self.docs.save_plan(key, course)
         return course
+
+    @staticmethod
+    def estimate_build_cost(course: CourseStructure) -> dict:
+        """Rough pre-build estimate from the plan (labelled as such in the UI)."""
+        segs = sum(len(s.segments) for s in course.all_sessions())
+        n_sessions = len(course.all_sessions())
+        widgets = sum(1 for s in course.all_sessions() for g in s.segments if g.media in ("explorable", "threejs"))
+        figs = sum(1 for s in course.all_sessions() for g in s.segments if g.media in ("illustration", "mermaid"))
+        prices = GLOBAL_LEDGER.llm_prices.get(os.getenv("LLM_MODEL", "deepseek-v4-flash"), [0.27, 1.10])
+        tokens_in = segs * 2500 + widgets * 4000 + figs * 1500 + n_sessions * 3500
+        tokens_out = segs * 700 + widgets * 3000 + figs * 1500 + n_sessions * 1500
+        usd = (tokens_in * prices[0] + tokens_out * prices[1]) / 1_000_000
+        return {"segments": segs, "widgets": widgets, "figures": figs, "tokens_in": tokens_in, "tokens_out": tokens_out,
+                "usd": round(usd, 4)}
 
     async def build(self, doc: ParsedDocument, course: CourseStructure, only: Optional[set] = None) -> str:
         """Build the package. With `only`, regenerate just those session ids and keep the
         rest from the existing package (so one bad session does not cost a full rebuild)."""
         course_dir = os.path.join(self.output_root, course.course_id)
+        ledger_mark = GLOBAL_LEDGER.mark()
         existing = CourseStore([self.output_root]) if only else None
         scripts: List[SessionScript] = []
         compiled: List[CompiledSession] = []
@@ -184,6 +205,13 @@ class ContentPipeline:
             compiled.append(session)
             self.progress("compile", f"{outline.session_id}: {len(session.actions)} actions, {session.total_duration_ms / 1000:.0f}s audio")
         write_package(course_dir, course, scripts, compiled)
+        usage = GLOBAL_LEDGER.summary(since=ledger_mark)
+        with open(os.path.join(course_dir, "cost.json"), "w", encoding="utf-8") as f:
+            json.dump(usage, f, ensure_ascii=False, indent=1)
+        t = usage["total"]
+        self.progress("cost", f"{GLOBAL_LEDGER.format_usd(t['cost_usd'])} ({'按估算单价' if t['estimated_price'] else '按配置单价'}) · "
+                              f"{t['calls']} 次调用 · {t['prompt_tokens'] + t['completion_tokens'] + t['reasoning_tokens']} tokens · "
+                              f"TTS {t['tts_chars']} 字 · {t['seconds']}s 模型耗时")
         self.progress("done", course_dir)
         return course_dir
 
@@ -404,19 +432,23 @@ class ContentPipeline:
         os.makedirs(audio_dir, exist_ok=True)
 
         async def one(i: int) -> StepAudio:
+            text = script.steps[i].spoken_text
             async with self._tts_sem:
-                res = await self.tts.synthesize(script.steps[i].spoken_text, os.path.join(audio_dir, f"step_{i + 1}"))
+                import time
+                t0 = time.time()
+                res = await synthesize_aligned(self.tts, text, os.path.join(audio_dir, f"step_{i + 1}"))
+                GLOBAL_LEDGER.add_tts(self.tts.name, "tts", len(text), time.time() - t0)
             url = None
             if res.audio_path:
                 url = f"/courses/{script.course_id}/audio/{script.session_id}/{os.path.basename(res.audio_path)}"
-            return StepAudio(url, res.duration_ms, res.cjk, res.latin)
+            return StepAudio(url, res.duration_ms, res.cjk, res.latin, res.marks)
 
         results = await asyncio.gather(*(one(i) for i in range(len(script.steps))))
         return dict(enumerate(results))
 
 
 def _print_progress(stage: str, detail: str) -> None:
-    icons = {"parse": "📄", "plan": "🧠", "script": "✍️", "widget": "🎲", "figure": "🖼️", "exercise": "📝", "compile": "🎬", "skip": "⏭️", "warn": "⚠️", "done": "✅"}
+    icons = {"parse": "📄", "plan": "🧠", "estimate": "💰", "script": "✍️", "widget": "🎲", "figure": "🖼️", "exercise": "📝", "compile": "🎬", "skip": "⏭️", "cost": "💰", "warn": "⚠️", "done": "✅"}
     print(f"{icons.get(stage, '•')} [{stage}] {detail}", flush=True)
 
 

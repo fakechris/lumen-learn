@@ -49,15 +49,19 @@ export class AudioClock {
     return this.segment.durationMs || 1;
   }
 
-  play({ url, durationMs, onTick, onEnded }) {
+  play({ url, durationMs, onTick, onEnded, startMs = 0 }) {
     this.stop();
     this.segment = { url, durationMs: durationMs || 1000, onTick, onEnded, virtual: !url };
     this._paused = false;
-    this._virtualElapsed = 0;
+    this._virtualElapsed = startMs || 0;
     this._virtualStart = performance.now();
     if (url) {
       this.audio.src = url;
       this.audio.playbackRate = this.rate;
+      if (startMs > 0) {
+        const seek = () => { try { this.audio.currentTime = startMs / 1000; } catch {} };
+        this.audio.addEventListener("loadedmetadata", seek, { once: true });
+      }
       this.audio.play().catch(() => {
         // Autoplay blocked or decode failure: keep going virtually.
         this.segment.virtual = true;
@@ -132,6 +136,21 @@ export class AudioClock {
     seg.onTick?.(1, seg.durationMs);
     seg.onEnded?.();
   }
+}
+
+/** Characters visible at `ms` given alignment marks [[charIndex, startMs], ...]. */
+export function charsAtMs(marks, ms, totalChars, durationMs) {
+  if (!marks || marks.length < 2) return Math.floor((ms / Math.max(1, durationMs)) * totalChars);
+  let prev = marks[0];
+  for (let i = 1; i < marks.length; i++) {
+    const m = marks[i];
+    if (m[1] >= ms) {
+      const span = Math.max(1, m[1] - prev[1]);
+      return Math.min(totalChars, Math.round(prev[0] + (m[0] - prev[0]) * (ms - prev[1]) / span));
+    }
+    prev = m;
+  }
+  return totalChars;
 }
 
 /** Plays a one-off clip (interjection answers) without disturbing the main clock. */

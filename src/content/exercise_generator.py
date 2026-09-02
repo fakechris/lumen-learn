@@ -73,7 +73,7 @@ def _session_digest(script: SessionScript) -> str:
 
 async def generate_exercises(script: SessionScript, llm: LLMClient) -> tuple[List[ExerciseSpec], List[str]]:
     warnings: List[str] = []
-    generated = await llm.complete_model(EXERCISE_SYSTEM, _session_digest(script), LLMExerciseSet, temperature=0.5)
+    generated = await llm.complete_model(EXERCISE_SYSTEM, _session_digest(script), LLMExerciseSet, temperature=0.5, purpose="exercise")
     out: List[ExerciseSpec] = []
     for i, ex in enumerate(generated.exercises, start=1):
         data = ex.model_dump()
@@ -108,7 +108,7 @@ async def grade_fill_blank(exercise: ExerciseSpec, answer_text: str, llm: Option
             f"解析：{exercise.explanation}\n学生答案：{answer_text}")
     try:
         from src.llm.client import extract_json
-        data = extract_json(await llm.complete(GRADE_SYSTEM, user, json_mode=True, temperature=0.1))
+        data = extract_json(await llm.complete(GRADE_SYSTEM, user, json_mode=True, temperature=0.1, purpose="grade"))
         return bool(data.get("correct")), str(data.get("feedback") or exercise.explanation)
     except (LLMError, ValueError):
         return False, f"标准答案：{exercise.answer}。{exercise.explanation}"
