@@ -253,3 +253,40 @@ def test_exercise_schema_and_exact_grading():
     assert not ok
     choice = ExerciseSpec(exercise_id="e2", kind="single_choice", stem="q", options=["a", "b", "c"], correct_index=2)
     assert choice.correct_index == 2
+
+
+def test_compile_keypoints_follow_speak_steps():
+    script = SessionScript(session_id="s", course_id="c", title="t", steps=[
+        StepSpec(title="第一段", spoken_text="a", boards=[BoardSpec(markdown="x")]),
+        StepSpec(title="", spoken_text="b"),
+    ])
+    compiled = compile_session(script, {})
+    speaks = [a.step_id for a in compiled.actions if a.type == "speak"]
+    assert [k.step_id for k in compiled.keypoints] == speaks
+    assert [k.title for k in compiled.keypoints] == ["第一段", "第 2 段"]
+
+
+def test_thin_sessions_are_merged_into_predecessor():
+    from src.content.curriculum_planner import PlannedChapter, PlannedCourse, PlannedSegment, PlannedSession, _assign_ids
+    doc = parse_markdown(LECTURE)
+    seg = lambda t: PlannedSegment(title=t, intent="i")
+    planned = PlannedCourse(title="T", chapters=[PlannedChapter(title="c", sessions=[
+        PlannedSession(title="a", learning_goal="g", core_concept="c", segments=[seg("1"), seg("2")], estimated_duration_min=4),
+        PlannedSession(title="b", learning_goal="g", core_concept="c", segments=[seg("3")], estimated_duration_min=2),
+        PlannedSession(title="c", learning_goal="g", core_concept="c", segments=[seg("4"), seg("5"), seg("6")]),
+    ])])
+    course = _assign_ids(planned, doc, "llm")
+    sessions = course.all_sessions()
+    assert [s.title for s in sessions] == ["a", "c"]
+    assert [seg.title for seg in sessions[0].segments] == ["1", "2", "3"]
+    assert sessions[0].estimated_duration_min == 5
+
+
+def test_extract_json_tolerates_latex_escapes_and_trailing_commas():
+    from src.llm.client import LLMError, extract_json
+    assert extract_json('{"a": "$x \\le y$", "b": [1, 2,],}')["a"] == "$x \\le y$"
+    assert extract_json('```json\n{"k": "\\\\vec{v}"}\n```')["k"] == "\\vec{v}"
+    assert extract_json('前言 {"ok": true} 后记')["ok"] is True
+    with pytest.raises(LLMError) as e:
+        extract_json('{"a": "unterminated')
+    assert "truncated" in str(e.value)

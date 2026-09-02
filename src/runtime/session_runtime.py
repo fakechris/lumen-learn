@@ -24,7 +24,7 @@ from pydantic import BaseModel
 from src.content.store import CourseStore
 from src.protocol.actions import (
     ACK_REQUIRED, ActionStepComplete, Ask, ClientMessage, ErrorMessage, InterjectAudio, InterjectDone,
-    InterjectQuestion, InterjectReady, InterjectResume, InterjectStart, InterjectText, PauseSession, Ping, Pong,
+    InterjectQuestion, InterjectReady, InterjectResume, InterjectStart, InterjectText, KeypointRef, PauseSession, Ping, Pong,
     QuestionAnswers, ResponseComplete, ResumeSession, SessionReady, SetTtsConfig, Speak, StartSession, Status,
     TtsSegment,
 )
@@ -123,7 +123,8 @@ class SessionRuntime:
         await self.transport.send(SessionReady(course_id=session.course_id, session_id=session.session_id,
                                                title=session.title, learning_goal=session.learning_goal,
                                                total_steps=len(session.actions),
-                                               resume_step_id=msg.from_step_id))
+                                               resume_step_id=msg.from_step_id,
+                                               keypoints=[KeypointRef(step_id=k.step_id, title=k.title) for k in session.keypoints]))
         await self._set_state("teaching")
         self._main_task = asyncio.create_task(self._run(start_index))
 

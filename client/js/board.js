@@ -89,7 +89,7 @@ export class Whiteboard {
 
   addBoard({ uid, title, markdown, layout, gate, hook = false }) {
     const el = document.createElement("div");
-    el.className = hook ? "wb-card hook" : "wb-card";
+    el.className = hook ? "wb-card hook" : layout === "newcol" ? "wb-card col-head" : "wb-card";
     el.dataset.uid = uid;
     el.innerHTML = `<div class="wb-card-title"></div><div class="wb-card-content"></div>`;
     const t = el.querySelector(".wb-card-title");

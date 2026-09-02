@@ -64,19 +64,41 @@ class LLMConfig:
                    base_url or os.getenv("LLM_BASE_URL"))
 
 
+_BAD_ESCAPE = re.compile(r'\\(?![\\"/bfnrtu])')
+_TRAILING_COMMA = re.compile(r",\s*([}\]])")
+
+
+def _lenient_loads(s: str):
+    """json.loads with the fixes that LaTeX-heavy model output usually needs:
+    invalid backslash escapes (\le, \vec) and trailing commas."""
+    for candidate in (s, _BAD_ESCAPE.sub(r"\\\\", s), _TRAILING_COMMA.sub(r"\1", _BAD_ESCAPE.sub(r"\\\\", s))):
+        try:
+            return json.loads(candidate, strict=False)
+        except json.JSONDecodeError:
+            continue
+    raise json.JSONDecodeError("unrecoverable JSON", s, 0)
+
+
 def extract_json(text: str) -> dict:
-    """Parse a JSON object out of a model reply, tolerating code fences and prose."""
-    cleaned = text.strip()
+    """Parse a JSON object out of a model reply, tolerating code fences, prose,
+    bad LaTeX escapes and trailing commas."""
+    cleaned = text.strip().lstrip("\ufeff")
     fence = re.search(r"```(?:json)?\s*(.*?)```", cleaned, flags=re.S)
     if fence:
         cleaned = fence.group(1).strip()
     try:
-        return json.loads(cleaned)
+        return _lenient_loads(cleaned)
     except json.JSONDecodeError:
         start, end = cleaned.find("{"), cleaned.rfind("}")
-        if start == -1 or end == -1 or end <= start:
+        if start == -1:
             raise LLMError(f"No JSON object in model reply: {text[:200]!r}")
-        return json.loads(cleaned[start:end + 1])
+        if end == -1 or end <= start:
+            raise LLMError("Malformed JSON in model reply: no closing brace; output looks truncated")
+        try:
+            return _lenient_loads(cleaned[start:end + 1])
+        except json.JSONDecodeError as e:
+            raise LLMError(f"Malformed JSON in model reply ({e.msg} at char {e.pos}); "
+                           f"{'output looks truncated' if not cleaned.rstrip().endswith('}') else 'check quotes/escapes'}")
 
 
 class LLMClient:
@@ -110,17 +132,24 @@ class LLMClient:
                 messages=[{"role": "system", "content": system}, {"role": "user", "content": user}],
                 **kwargs,
             )
-            return resp.choices[0].message.content or ""
+            choice = resp.choices[0]
+            content = choice.message.content or ""
+            if choice.finish_reason == "length":
+                raise LLMError(f"output truncated at {self.config.max_tokens} tokens; produce a shorter answer")
+            return content
         except LLMError:
             raise
         except Exception as e:  # provider SDK errors
             raise LLMError(f"{self.config.provider}/{self.config.model}: {e}") from e
 
-    async def complete_model(self, system: str, user: str, schema: Type[T], *, repairs: int = 1,
+    async def complete_model(self, system: str, user: str, schema: Type[T], *, repairs: int = 2,
                              temperature: float = 0.4) -> T:
         """Ask for JSON, validate against `schema`, and give the model one chance to
         repair its own output using the validation error. Raises LLMError after that."""
-        raw = await self.complete(system, user, json_mode=True, temperature=temperature)
+        try:
+            raw = await self.complete(system, user, json_mode=True, temperature=temperature)
+        except LLMError as e:  # e.g. truncated: retry once asking for brevity
+            raw = await self.complete(system, user + f"\n\n注意：{e}。请精简输出。", json_mode=True, temperature=temperature)
         last_error: Optional[str] = None
         for attempt in range(repairs + 1):
             try:
@@ -129,12 +158,16 @@ class LLMClient:
                 last_error = str(e)
                 if attempt >= repairs:
                     break
-                raw = await self.complete(
-                    system,
-                    user + "\n\n你上一次的输出无法通过校验，错误如下，请修正后重新输出完整 JSON：\n"
-                    + last_error[:2000] + "\n\n上一次输出：\n" + raw[:6000],
-                    json_mode=True, temperature=0.2,
-                )
+                try:
+                    raw = await self.complete(
+                        system,
+                        user + "\n\n你上一次的输出无法通过校验，错误如下，请修正后重新输出完整 JSON：\n"
+                        + last_error[:2000] + "\n\n上一次输出：\n" + raw[:6000],
+                        json_mode=True, temperature=0.2,
+                    )
+                except LLMError as e:
+                    last_error = str(e)
+                    raw = ""
         raise LLMError(f"Model output failed validation for {schema.__name__}: {last_error}")
 
     async def stream(self, system: str, user: str, *, temperature: float = 0.6) -> AsyncIterator[str]:

@@ -30,6 +30,7 @@ def stable_id(prefix: str, *parts: str, length: int = 10) -> str:
 # --------------------------------------------------------------------------- #
 
 MediaKind = Literal["board", "illustration", "explorable", "threejs", "reference_figure", "mermaid"]
+PedagogyTag = Literal["Intuition", "Definition", "Derivation", "Application", "Advanced"]
 
 
 class SegmentPlan(BaseModel):
@@ -51,13 +52,16 @@ class SessionOutline(BaseModel):
     cognitive_hurdle: str = ""
     source_sections: List[str] = Field(default_factory=list)
     estimated_duration_min: int = 5
+    tags: List[PedagogyTag] = Field(default_factory=list)
     segments: List[SegmentPlan] = Field(default_factory=list)
 
 
 class ChapterOutline(BaseModel):
+    """A lecture-sized group of sessions; `unit` is the optional higher grouping (Unit -> Lecture -> Session)."""
     chapter_id: str
     title: str
     description: str = ""
+    unit: str = ""
     sessions: List[SessionOutline]
 
 
@@ -197,6 +201,12 @@ class SessionScript(BaseModel):
 # Compiled session
 # --------------------------------------------------------------------------- #
 
+class Keypoint(BaseModel):
+    """One narrated segment as shown in the on-canvas progress list (课堂要点)."""
+    step_id: int
+    title: str
+
+
 class CompiledSession(BaseModel):
     manifest_version: str = "2.0"
     session_id: str
@@ -207,6 +217,7 @@ class CompiledSession(BaseModel):
     total_duration_ms: int = 0
     actions: List[Action]
     exercises: List[ExerciseSpec] = Field(default_factory=list)
+    keypoints: List[Keypoint] = Field(default_factory=list)
 
     def step_ids(self) -> List[int]:
         return [a.step_id for a in self.actions]

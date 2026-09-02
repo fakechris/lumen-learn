@@ -63,3 +63,15 @@ readout, muted beige aesthetic) and close the visual QA loop.
 **Status**: Complete. `explorable` widget kind with a hand-written exemplar in the prompt;
 Playwright render check (runtime errors, blank output) with one feedback regeneration;
 authored 夹逼定理 session bundled as the reference.
+
+## Stage 8: Textbook → 教案 → course, exercises, structure/polish (2026-09-02)
+**Goal**: Start from a PDF textbook; plan before generating; decide media per segment; add
+post-session exercises; match the remaining product screens (course structure tree with tags,
+tables in notes, 课堂要点 progress list, typed transcript, end-of-session message).
+**Status**: Complete. PDF parsing with figures; `ingest -> plan -> build`; staged UI with editable
+plan tree (units, lectures, tags, per-segment media); exercises with semantic fill-blank grading,
+choice, interactive; keypoints list; typed transcript; tables in boards.
+**Verified**: CS251 lecture PDF → 3 chapters / 4 sessions / 14 segments with sensible media;
+18 exercises; "变得更高" accepted for "升高" with justification.
+**Remaining**: handwriting font choice (user will pick later); student name in narration;
+voice interjections; multi-page (new_page) boards for very long sessions.

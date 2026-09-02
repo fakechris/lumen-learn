@@ -269,10 +269,17 @@ class ContentPipeline:
         ids = list(dict.fromkeys(outline.source_sections + [s for seg in outline.segments for s in seg.source_sections]))
         source = doc.section_text(ids)
         if self.llm:
-            script, warnings = await synthesize_session_llm(outline, course, source, self.llm)
-            for w in warnings:
-                self.progress("warn", w)
-            return script
+            last = None
+            for attempt in range(2):
+                try:
+                    script, warnings = await synthesize_session_llm(outline, course, source, self.llm)
+                    for w in warnings:
+                        self.progress("warn", w)
+                    return script
+                except Exception as e:  # never let one session kill a long build
+                    last = e
+                    self.progress("warn", f"{outline.session_id}: synthesis attempt {attempt + 1} failed: {str(e)[:200]}")
+            self.progress("warn", f"{outline.session_id}: falling back to read-through mode ({last})")
         return synthesize_session_heuristic(outline, course, source)
 
     async def _fill_widgets(self, script: SessionScript, course_dir: str) -> SessionScript:
