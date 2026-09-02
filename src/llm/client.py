@@ -41,6 +41,14 @@ class LLMConfig:
     # with thinking disabled: reasoning models otherwise spend the whole token budget thinking
     # about widget code and return nothing.
     think_purposes: tuple = ("plan",)
+    # Output budgets per purpose: a degenerate (looping) reply fails fast and cheaply.
+    max_tokens_by_purpose: dict = None
+
+    def budget(self, purpose: str) -> int:
+        table = self.max_tokens_by_purpose or {"widget": 6000, "exercise": 5000, "synth": 7000, "svg": 5000,
+                                               "qa": 2000, "grade": 600, "caption": 200, "vision": 800,
+                                               "interject": 4000, "feedback": 800}
+        return min(self.max_tokens, table.get(purpose.split("_")[0], self.max_tokens))
 
     @property
     def is_deepseek(self) -> bool:
@@ -128,6 +136,24 @@ def _dump_bad_output(text: str, reason: str) -> None:
         pass
 
 
+_REPEAT_MIN = 24
+
+
+def looks_degenerate(text: str, window: int = 3000, min_repeats: int = 6) -> bool:
+    """True when the tail of a reply is the same chunk repeated over and over
+    (the failure mode behind 16K-token widget/exercise replies)."""
+    tail = text[-window:]
+    if len(tail) < _REPEAT_MIN * min_repeats:
+        return False
+    for size in (_REPEAT_MIN, 48, 96, 160):
+        if len(tail) < size * min_repeats:
+            break
+        chunk = tail[-size:]
+        if chunk.strip() and tail.count(chunk) >= min_repeats:
+            return True
+    return False
+
+
 def extract_json(text: str) -> dict:
     """Parse a JSON object out of a model reply, tolerating code fences, prose,
     bad LaTeX escapes and trailing commas."""
@@ -196,7 +222,7 @@ class LLMClient:
                     content.insert(0, {"type": "image", "source": {"type": "base64", "media_type": "image/png",
                                                                     "data": base64.b64encode(img).decode()}})
                 resp = await self._anthropic.messages.create(
-                    model=model, max_tokens=self.config.max_tokens, system=system,
+                    model=model, max_tokens=self.config.budget(purpose), system=system,
                     messages=[{"role": "user", "content": content}], temperature=temperature,
                 )
                 self._record(model, purpose, getattr(resp, "usage", None), time.time() - t0)
@@ -212,16 +238,19 @@ class LLMClient:
                 user_content = [{"type": "text", "text": user}] + [
                     {"type": "image_url", "image_url": {"url": "data:image/png;base64," + base64.b64encode(img).decode()}}
                     for img in images]
+            budget = self.config.budget(purpose)
             resp = await self._openai.chat.completions.create(
-                model=model, temperature=temperature, max_tokens=self.config.max_tokens,
+                model=model, temperature=temperature, max_tokens=budget,
                 messages=[{"role": "system", "content": system}, {"role": "user", "content": user_content}],
                 **kwargs,
             )
             choice = resp.choices[0]
             content = choice.message.content or ""
             self._record(model, purpose, getattr(resp, "usage", None), time.time() - t0)
+            if looks_degenerate(content):
+                raise LLMError("degenerate repetitive output; regenerate with a different phrasing")
             if choice.finish_reason == "length":
-                raise LLMError(f"output truncated at {self.config.max_tokens} tokens; produce a shorter answer")
+                raise LLMError(f"output truncated at {budget} tokens; produce a shorter answer")
             return content
         except LLMError:
             raise
