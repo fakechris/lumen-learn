@@ -129,6 +129,14 @@ def test_decoration_offset_uses_trigger_phrase_position():
     assert decoration_offset_ms(step, "trigger", 500) == 0  # clamped so drawing can finish
 
 
+def test_explorable_static_check():
+    good = '<!DOCTYPE html><html><body><canvas id="p"></canvas><script>addEventListener("pointermove",()=>{})</script></body></html>'
+    assert static_check(good, "explorable") is None
+    assert "external" in static_check(good.replace("<script>", '<script src="https://x/y.js"></script><script>'), "explorable")
+    assert "canvas" in static_check(good.replace("<canvas id=\"p\"></canvas>", "<div></div>"), "explorable")
+    assert "interaction" in static_check(good.replace("pointermove", "load"), "explorable")
+
+
 def test_widget_static_check():
     good = f'<!DOCTYPE html><html><head><script src="{THREE_CDN}"></script><script src="{ORBIT_CDN}"></script></head><body><script>const c=new THREE.OrbitControls();function a(){{requestAnimationFrame(a)}}a();</script></body></html>'
     assert static_check(good) is None

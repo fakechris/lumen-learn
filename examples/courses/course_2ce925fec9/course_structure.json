@@ -2,31 +2,38 @@
   "course_id": "course_2ce925fec9",
   "title": "基与维数：从平面直觉到严格定义",
   "target_audience": "大学一年级线性代数初学者",
-  "overview": "通过三维空间的直观例子，理解生成、线性相关、基与维数的核心概念，并掌握判断基的方法。",
+  "overview": "通过三维空间的直观例子，理解生成、线性相关与基的概念，最终掌握维数的严格定义。",
   "generation_mode": "llm",
   "chapters": [
     {
       "chapter_id": "ch_1",
-      "title": "从生成到线性相关",
-      "description": "通过三维空间中的向量组合，建立生成子空间的直观，并理解线性相关带来的信息冗余。",
+      "title": "从平面到空间：生成与维度",
+      "description": "从三维空间中的两个向量出发，建立生成子空间的直观，并引出维度概念。",
       "sessions": [
         {
           "session_id": "sess_1",
-          "title": "两个向量能铺出什么？",
-          "learning_goal": "学生能解释两个非零不平行向量在三维空间中的生成集是一个过原点的平面，并理解为什么无法填满整个三维空间。",
+          "title": "两个向量能铺满三维空间吗？",
+          "learning_goal": "学生能解释两个非零不平行向量在三维空间中的生成集是一个平面，并理解为什么无法覆盖整个三维空间。",
           "core_concept": "生成子空间（span）",
-          "cognitive_hurdle": "误以为两个向量在三维空间中一定能生成整个三维空间，忽略了方向限制。",
+          "cognitive_hurdle": "误以为两个向量可以生成整个三维空间，忽略方向限制。",
           "source_sections": [
             "s1"
           ],
           "estimated_duration_min": 5
-        },
+        }
+      ]
+    },
+    {
+      "chapter_id": "ch_2",
+      "title": "冗余信息：线性相关",
+      "description": "通过加入第三个向量，揭示线性相关的本质是信息冗余。",
+      "sessions": [
         {
           "session_id": "sess_2",
           "title": "第三个向量是多余的吗？",
-          "learning_goal": "学生能判断当第三个向量是前两个向量的线性组合时，生成集不变，并理解线性相关的直观含义。",
-          "core_concept": "线性相关与信息冗余",
-          "cognitive_hurdle": "误以为增加向量一定能扩大生成空间，忽略了线性组合可能不增加新方向。",
+          "learning_goal": "学生能判断当新向量是已有向量的线性组合时，它不增加生成空间，并理解线性相关的含义。",
+          "core_concept": "线性相关",
+          "cognitive_hurdle": "误以为增加向量总能扩大生成空间，忽略线性组合带来的冗余。",
           "source_sections": [
             "s2"
           ],
@@ -35,16 +42,16 @@
       ]
     },
     {
-      "chapter_id": "ch_2",
-      "title": "基的严格定义与维数",
-      "description": "从生成和线性无关两个角度，严格定义基，并引出维数的概念。",
+      "chapter_id": "ch_3",
+      "title": "基与维数的严格定义",
+      "description": "从生成与无关两个角度定义基，并引出维数。",
       "sessions": [
         {
           "session_id": "sess_3",
-          "title": "基的黄金法则",
-          "learning_goal": "学生能陈述基的两个条件（极大生成性和极小无关性），并解释为什么这两个条件缺一不可。",
-          "core_concept": "基（Basis）",
-          "cognitive_hurdle": "误以为只要向量能生成整个空间就是基，忽略了线性无关的要求。",
+          "title": "什么是基？——两个黄金法则",
+          "learning_goal": "学生能根据基的两个条件判断一组向量是否为基，并说出维数的定义。",
+          "core_concept": "基与维数",
+          "cognitive_hurdle": "混淆基的极大生成性与极小无关性，或误以为基是唯一的。",
           "source_sections": [
             "s3"
           ],

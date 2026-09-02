@@ -62,6 +62,13 @@ Key decisions:
   labelled `heuristic` instead of pretending.
 - **Widgets are sandboxed.** `sandbox="allow-scripts"` only, with an injected shim that reports
   runtime errors back to the host.
+- **Widgets are 2D explorables by default.** The real product's "interactive H5" is a
+  function plot with dashed envelopes, a pointer probe and a live readout, not a 3D scene.
+  `kind: "explorable"` generates a zero-dependency Canvas widget from a hand-written exemplar
+  (`examples/authored/squeeze_explorable.html`); every generated widget is rendered headlessly
+  with Playwright (`tools/render_widget.mjs`) to catch runtime errors and blank output, and is
+  regenerated once with the error as feedback before being dropped. Three.js stays available
+  for genuinely 3D concepts.
 - **Figures are drawn, not painted.** Pedagogical diagrams need exact counts and labels, so the
   default illustration is an LLM-drawn SVG (`kind: "svg"`); MiniMax `image-01` is available for
   scene metaphors (`kind: "image"`, `MINIMAX_API_KEY`).
@@ -82,6 +89,7 @@ Key decisions:
 | `server/app.py` | FastAPI: REST for packages and generation jobs, WebSocket for sessions |
 | `client/` | ES-module whiteboard client (no build step) |
 | `tests/` | `pytest` (`.venv/bin/python -m pytest`) |
+| `tools/render_widget.mjs` | Headless widget render check (needs `node` and a global `playwright`) |
 | `research/` | Captured Lumen Learn bundles and notes (git-ignored) |
 
 Course packages live in `examples/courses/<course_id>/` (bundled) and `output/<course_id>/`

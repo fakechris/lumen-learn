@@ -23,6 +23,7 @@
           "color": null
         }
       ],
+      "illustration": null,
       "widget": null,
       "question": null,
       "reward": null,
@@ -47,6 +48,7 @@
           "color": null
         }
       ],
+      "illustration": null,
       "widget": {
         "kind": "threejs",
         "title": "试试看：能碰到红球吗？",
@@ -92,6 +94,7 @@
           "color": null
         }
       ],
+      "illustration": null,
       "widget": null,
       "question": null,
       "reward": null,
@@ -116,6 +119,7 @@
           "color": null
         }
       ],
+      "illustration": null,
       "widget": null,
       "question": {
         "mode": "choice",
@@ -160,6 +164,7 @@
           "color": null
         }
       ],
+      "illustration": null,
       "widget": null,
       "question": null,
       "reward": {

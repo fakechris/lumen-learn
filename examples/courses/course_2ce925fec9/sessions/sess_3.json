@@ -2,17 +2,17 @@
   "manifest_version": "2.0",
   "session_id": "sess_3",
   "course_id": "course_2ce925fec9",
-  "title": "基的黄金法则",
-  "learning_goal": "学生能陈述基的两个条件（极大生成性和极小无关性），并解释为什么这两个条件缺一不可。",
+  "title": "什么是基？——两个黄金法则",
+  "learning_goal": "学生能根据基的两个条件判断一组向量是否为基，并说出维数的定义。",
   "generation_mode": "llm",
-  "total_duration_ms": 119742,
+  "total_duration_ms": 174657,
   "actions": [
     {
       "type": "board",
       "step_id": 2,
       "board_uid": 1,
-      "title": "",
-      "board_content": "- **基的黄金法则**\n- 能张成整个空间 + 没有多余向量",
+      "title": "基的两个黄金法则",
+      "board_content": "- 基 $S$ 必须满足：\n  - **极大生成性**：$\\text{span}(S) = V$\n  - **极小无关性**：$S$ 线性无关\n- 两条缺一不可",
       "layout": "follow",
       "reveal_gate_step": 1,
       "page_id": "page-1"
@@ -20,204 +20,31 @@
     {
       "type": "speak",
       "step_id": 1,
-      "spoken_text": "看这一行，基的黄金法则，就两个条件。但你别小看它们，缺一个都不行。今天我们就来拆开看看，为什么两个都得要。先记住这句话：基，就是能张成整个空间、又没有多余向量的那组向量。"
+      "spoken_text": "今天我们要回答一个问题：什么样的向量组配叫基？讲义里说，基必须同时满足两条黄金法则。我把它们写在板书上了。第一条叫极大生成性，第二条叫极小无关性。你猜猜看，这两条法则各自在防什么？"
     },
     {
       "type": "circle",
       "step_id": 3,
       "target_board_uid": 1,
-      "snippet": "基的黄金法则",
+      "snippet": "\\text{span}(S) = V",
       "color": null,
       "during_step": 1,
-      "at_ms": 923
+      "at_ms": 10573
+    },
+    {
+      "type": "circle",
+      "step_id": 4,
+      "target_board_uid": 1,
+      "snippet": "线性无关",
+      "color": null,
+      "during_step": 1,
+      "at_ms": 12428
     },
     {
       "type": "tts_segment",
       "step_id": 1,
       "audio_url": "/courses/course_2ce925fec9/audio/sess_3/step_1.mp3",
-      "duration_ms": 15696,
-      "tts_cjk": 74,
-      "tts_latin": 0,
-      "speed": 1.0,
-      "skipped": false
-    },
-    {
-      "type": "board",
-      "step_id": 5,
-      "board_uid": 2,
-      "title": "条件一：极大生成性",
-      "board_content": "- 极大生成性：$\\text{span}(S) = V$\n- 空间里每个向量都能由 $S$ 线性表出\n- 光有这个 → 够吗？",
-      "layout": "follow",
-      "reveal_gate_step": 4,
-      "page_id": "page-1"
-    },
-    {
-      "type": "speak",
-      "step_id": 4,
-      "spoken_text": "第一个条件叫极大生成性，意思就是这组向量的所有线性组合能覆盖整个空间。板书上我写的是：span(S) 等于 V。注意，这里说的是“等于”，不是“包含于”。也就是说，空间里任何一个向量，都能由这组向量拼出来。你觉得，光有这个条件够不够？"
-    },
-    {
-      "type": "circle",
-      "step_id": 6,
-      "target_board_uid": 2,
-      "snippet": "\\text{span}(S) = V",
-      "color": null,
-      "during_step": 4,
-      "at_ms": 7253
-    },
-    {
-      "type": "tts_segment",
-      "step_id": 4,
-      "audio_url": "/courses/course_2ce925fec9/audio/sess_3/step_2.mp3",
-      "duration_ms": 19737,
-      "tts_cjk": 91,
-      "tts_latin": 6,
-      "speed": 1.0,
-      "skipped": false
-    },
-    {
-      "type": "ask",
-      "step_id": 7,
-      "mode": "choice",
-      "question": "如果一组向量能张成整个空间，它一定是基吗？",
-      "options": [
-        {
-          "text": "一定，能张成就行",
-          "misconception": "这是常见误区：误以为只要生成整个空间就是基，忽略了线性无关。"
-        },
-        {
-          "text": "不一定，可能有多余向量",
-          "misconception": null
-        }
-      ],
-      "correct_index": 1,
-      "explanation": "比如在平面上，三个向量可以张成整个平面，但其中一个是多余的，所以不是基。"
-    },
-    {
-      "type": "board",
-      "step_id": 9,
-      "board_uid": 3,
-      "title": "条件二：极小无关性",
-      "board_content": "- 极小无关性：$S$ 线性无关\n- **没有冗余**：去掉任何一个，张成就变小\n- 无关但张不成 → 行吗？",
-      "layout": "follow",
-      "reveal_gate_step": 8,
-      "page_id": "page-1"
-    },
-    {
-      "type": "speak",
-      "step_id": 8,
-      "spoken_text": "第二个条件叫极小无关性，意思是这组向量里没有一个是多余的，它们线性无关。看板书，我圈出来的这个：没有冗余。怎么理解？就是你不能把其中一个去掉，否则剩下的就张不成整个空间了。换句话说，每个向量都必不可少。你觉得，如果一组向量线性无关，但张不成整个空间，行不行？"
-    },
-    {
-      "type": "circle",
-      "step_id": 10,
-      "target_board_uid": 3,
-      "snippet": "没有冗余",
-      "color": null,
-      "during_step": 8,
-      "at_ms": 8786
-    },
-    {
-      "type": "tts_segment",
-      "step_id": 8,
-      "audio_url": "/courses/course_2ce925fec9/audio/sess_3/step_3.mp3",
-      "duration_ms": 23614,
-      "tts_cjk": 114,
-      "tts_latin": 0,
-      "speed": 1.0,
-      "skipped": false
-    },
-    {
-      "type": "ask",
-      "step_id": 11,
-      "mode": "choice",
-      "question": "一组向量线性无关，但张不成整个空间，它能算基吗？",
-      "options": [
-        {
-          "text": "能，无关就行",
-          "misconception": "误以为线性无关就足够，但基必须能生成整个空间。"
-        },
-        {
-          "text": "不能，还得张成整个空间",
-          "misconception": null
-        }
-      ],
-      "correct_index": 1,
-      "explanation": "比如平面中两个不共线的向量张成平面，但如果只有一个向量，虽然无关，却只能张成一条线。"
-    },
-    {
-      "type": "board",
-      "step_id": 13,
-      "board_uid": 4,
-      "title": "缺一不可",
-      "board_content": "- 能张成但相关 → 有冗余，可去掉一个\n- 无关但张不成 → 缺向量，不够用\n- 两个条件 **缺一不可**",
-      "layout": "follow",
-      "reveal_gate_step": 12,
-      "page_id": "page-1"
-    },
-    {
-      "type": "illustration",
-      "step_id": 14,
-      "board_uid": 5,
-      "caption": "网格点对比：4 点 vs 64 点，冗余与缺失的直觉。",
-      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 800 520\">\n  <!-- 左侧：2×2 网格 -->\n  <g transform=\"translate(80, 80)\">\n    <!-- 网格线 -->\n    <line x1=\"0\" y1=\"0\" x2=\"200\" y2=\"0\" stroke=\"#4b4b4b\" stroke-width=\"2\" stroke-linecap=\"round\"/>\n    <line x1=\"0\" y1=\"100\" x2=\"200\" y2=\"100\" stroke=\"#4b4b4b\" stroke-width=\"2\" stroke-linecap=\"round\"/>\n    <line x1=\"0\" y1=\"200\" x2=\"200\" y2=\"200\" stroke=\"#4b4b4b\" stroke-width=\"2\" stroke-linecap=\"round\"/>\n    <line x1=\"0\" y1=\"0\" x2=\"0\" y2=\"200\" stroke=\"#4b4b4b\" stroke-width=\"2\" stroke-linecap=\"round\"/>\n    <line x1=\"100\" y1=\"0\" x2=\"100\" y2=\"200\" stroke=\"#4b4b4b\" stroke-width=\"2\" stroke-linecap=\"round\"/>\n    <line x1=\"200\" y1=\"0\" x2=\"200\" y2=\"200\" stroke=\"#4b4b4b\" stroke-width=\"2\" stroke-linecap=\"round\"/>\n    \n    <!-- 连接点 -->\n    <circle cx=\"0\" cy=\"0\" r=\"6\" fill=\"#e05656\" stroke=\"#4b4b4b\" stroke-width=\"1.5\"/>\n    <circle cx=\"100\" cy=\"0\" r=\"6\" fill=\"#e05656\" stroke=\"#4b4b4b\" stroke-width=\"1.5\"/>\n    <circle cx=\"200\" cy=\"0\" r=\"6\" fill=\"#e05656\" stroke=\"#4b4b4b\" stroke-width=\"1.5\"/>\n    <circle cx=\"0\" cy=\"100\" r=\"6\" fill=\"#e05656\" stroke=\"#4b4b4b\" stroke-width=\"1.5\"/>\n    <circle cx=\"100\" cy=\"100\" r=\"6\" fill=\"#e05656\" stroke=\"#4b4b4b\" stroke-width=\"1.5\"/>\n    <circle cx=\"200\" cy=\"100\" r=\"6\" fill=\"#e05656\" stroke=\"#4b4b4b\" stroke-width=\"1.5\"/>\n    <circle cx=\"0\" cy=\"200\" r=\"6\" fill=\"#e05656\" stroke=\"#4b4b4b\" stroke-width=\"1.5\"/>\n    <circle cx=\"100\" cy=\"200\" r=\"6\" fill=\"#e05656\" stroke=\"#4b4b4b\" stroke-width=\"1.5\"/>\n    <circle cx=\"200\" cy=\"200\" r=\"6\" fill=\"#e05656\" stroke=\"#4b4b4b\" stroke-width=\"1.5\"/>\n  </g>\n  \n  <!-- 左标注：4 个点 -->\n  <text x=\"180\" y=\"320\" font-family=\"'LXGW WenKai Lite', sans-serif\" font-size=\"22\" fill=\"#333\" text-anchor=\"middle\">4 个点</text>\n  <line x1=\"180\" y1=\"310\" x2=\"180\" y2=\"290\" stroke=\"#4b4b4b\" stroke-width=\"1.5\" stroke-linecap=\"round\"/>\n  \n  <!-- 左图小标题 -->\n  <text x=\"180\" y=\"60\" font-family=\"'LXGW WenKai Lite', sans-serif\" font-size=\"20\" fill=\"#4b4b4b\" text-anchor=\"middle\">2×2 网格</text>\n  \n  <!-- 左侧底色块 -->\n  <rect x=\"60\" y=\"70\" width=\"240\" height=\"260\" rx=\"12\" fill=\"#f2d5c4\" opacity=\"0.25\"/>\n  \n  <!-- 左侧说明文字 -->\n  <text x=\"180\" y=\"360\" font-family=\"'LXGW WenKai Lite', sans-serif\" font-size=\"16\" fill=\"#666\" text-anchor=\"middle\">稀疏：张成能力有限</text>\n  \n  <!-- 中间分隔箭头 -->\n  <g transform=\"translate(370, 180)\">\n    <path d=\"M 0,0 Q 15,-10 30,0\" fill=\"none\" stroke=\"#4b4b4b\" stroke-width=\"2\" stroke-linecap=\"round\"/>\n    <path d=\"M 30,0 L 22,-6\" fill=\"none\" stroke=\"#4b4b4b\" stroke-width=\"2\" stroke-linecap=\"round\"/>\n    <path d=\"M 30,0 L 22,6\" fill=\"none\" stroke=\"#4b4b4b\" stroke-width=\"2\" stroke-linecap=\"round\"/>\n  </g>\n  \n  <!-- 右侧：8×8 网格 -->\n  <g transform=\"translate(440, 60)\">\n    <!-- 网格线 -->\n    <g stroke=\"#4b4b4b\" stroke-width=\"1.8\" stroke-linecap=\"round\">\n      <!-- 水平线 -->\n      <line x1=\"0\" y1=\"0\" x2=\"280\" y2=\"0\"/>\n      <line x1=\"0\" y1=\"40\" x2=\"280\" y2=\"40\"/>\n      <line x1=\"0\" y1=\"80\" x2=\"280\" y2=\"80\"/>\n      <line x1=\"0\" y1=\"120\" x2=\"280\" y2=\"120\"/>\n      <line x1=\"0\" y1=\"160\" x2=\"280\" y2=\"160\"/>\n      <line x1=\"0\" y1=\"200\" x2=\"280\" y2=\"200\"/>\n      <line x1=\"0\" y1=\"240\" x2=\"280\" y2=\"240\"/>\n      <line x1=\"0\" y1=\"280\" x2=\"280\" y2=\"280\"/>\n      <!-- 垂直线 -->\n      <line x1=\"0\" y1=\"0\" x2=\"0\" y2=\"280\"/>\n      <line x1=\"40\" y1=\"0\" x2=\"40\" y2=\"280\"/>\n      <line x1=\"80\" y1=\"0\" x2=\"80\" y2=\"280\"/>\n      <line x1=\"120\" y1=\"0\" x2=\"120\" y2=\"280\"/>\n      <line x1=\"160\" y1=\"0\" x2=\"160\" y2=\"280\"/>\n      <line x1=\"200\" y1=\"0\" x2=\"200\" y2=\"280\"/>\n      <line x1=\"240\" y1=\"0\" x2=\"240\" y2=\"280\"/>\n      <line x1=\"280\" y1=\"0\" x2=\"280\" y2=\"280\"/>\n    </g>\n    \n    <!-- 连接点：8×8 网格点 -->\n    <g fill=\"#b8dcc6\" stroke=\"#4b4b4b\" stroke-width=\"1.2\">\n      <circle cx=\"0\" cy=\"0\" r=\"4\"/>\n      <circle cx=\"40\" cy=\"0\" r=\"4\"/>\n      <circle cx=\"80\" cy=\"0\" r=\"4\"/>\n      <circle cx=\"120\" cy=\"0\" r=\"4\"/>\n      <circle cx=\"160\" cy=\"0\" r=\"4\"/>\n      <circle cx=\"200\" cy=\"0\" r=\"4\"/>\n      <circle cx=\"240\" cy=\"0\" r=\"4\"/>\n      <circle cx=\"280\" cy=\"0\" r=\"4\"/>\n      \n      <circle cx=\"0\" cy=\"40\" r=\"4\"/>\n      <circle cx=\"40\" cy=\"40\" r=\"4\"/>\n      <circle cx=\"80\" cy=\"40\" r=\"4\"/>\n      <circle cx=\"120\" cy=\"40\" r=\"4\"/>\n      <circle cx=\"160\" cy=\"40\" r=\"4\"/>\n      <circle cx=\"200\" cy=\"40\" r=\"4\"/>\n      <circle cx=\"240\" cy=\"40\" r=\"4\"/>\n      <circle cx=\"280\" cy=\"40\" r=\"4\"/>\n      \n      <circle cx=\"0\" cy=\"80\" r=\"4\"/>\n      <circle cx=\"40\" cy=\"80\" r=\"4\"/>\n      <circle cx=\"80\" cy=\"80\" r=\"4\"/>\n      <circle cx=\"120\" cy=\"80\" r=\"4\"/>\n      <circle cx=\"160\" cy=\"80\" r=\"4\"/>\n      <circle cx=\"200\" cy=\"80\" r=\"4\"/>\n      <circle cx=\"240\" cy=\"80\" r=\"4\"/>\n      <circle cx=\"280\" cy=\"80\" r=\"4\"/>\n      \n      <circle cx=\"0\" cy=\"120\" r=\"4\"/>\n      <circle cx=\"40\" cy=\"120\" r=\"4\"/>\n      <circle cx=\"80\" cy=\"120\" r=\"4\"/>\n      <circle cx=\"120\" cy=\"120\" r=\"4\"/>\n      <circle cx=\"160\" cy=\"120\" r=\"4\"/>\n      <circle cx=\"200\" cy=\"120\" r=\"4\"/>\n      <circle cx=\"240\" cy=\"120\" r=\"4\"/>\n      <circle cx=\"280\" cy=\"120\" r=\"4\"/>\n      \n      <circle cx=\"0\" cy=\"160\" r=\"4\"/>\n      <circle cx=\"40\" cy=\"160\" r=\"4\"/>\n      <circle cx=\"80\" cy=\"160\" r=\"4\"/>\n      <circle cx=\"120\" cy=\"160\" r=\"4\"/>\n      <circle cx=\"160\" cy=\"160\" r=\"4\"/>\n      <circle cx=\"200\" cy=\"160\" r=\"4\"/>\n      <circle cx=\"240\" cy=\"160\" r=\"4\"/>\n      <circle cx=\"280\" cy=\"160\" r=\"4\"/>\n      \n      <circle cx=\"0\" cy=\"200\" r=\"4\"/>\n      <circle cx=\"40\" cy=\"200\" r=\"4\"/>\n      <circle cx=\"80\" cy=\"200\" r=\"4\"/>\n      <circle cx=\"120\" cy=\"200\" r=\"4\"/>\n      <circle cx=\"160\" cy=\"200\" r=\"4\"/>\n      <circle cx=\"200\" cy=\"200\" r=\"4\"/>\n      <circle cx=\"240\" cy=\"200\" r=\"4\"/>\n      <circle cx=\"280\" cy=\"200\" r=\"4\"/>\n      \n      <circle cx=\"0\" cy=\"240\" r=\"4\"/>\n      <circle cx=\"40\" cy=\"240\" r=\"4\"/>\n      <circle cx=\"80\" cy=\"240\" r=\"4\"/>\n      <circle cx=\"120\" cy=\"240\" r=\"4\"/>\n      <circle cx=\"160\" cy=\"240\" r=\"4\"/>\n      <circle cx=\"200\" cy=\"240\" r=\"4\"/>\n      <circle cx=\"240\" cy=\"240\" r=\"4\"/>\n      <circle cx=\"280\" cy=\"240\" r=\"4\"/>\n      \n      <circle cx=\"0\" cy=\"280\" r=\"4\"/>\n      <circle cx=\"40\" cy=\"280\" r=\"4\"/>\n      <circle cx=\"80\" cy=\"280\" r=\"4\"/>\n      <circle cx=\"120\" cy=\"280\" r=\"4\"/>\n      <circle cx=\"160\" cy=\"280\" r=\"4\"/>\n      <circle cx=\"200\" cy=\"280\" r=\"4\"/>\n      <circle cx=\"240\" cy=\"280\" r=\"4\"/>\n      <circle cx=\"280\" cy=\"280\" r=\"4\"/>\n    </g>\n  </g>\n  \n  <!-- 右标注：64 个点 -->\n  <text x=\"580\" y=\"380\" font-family=\"'LXGW WenKai Lite', sans-serif\" font-size=\"22\" fill=\"#333\" text-anchor=\"middle\">64 个点</text>\n  <line x1=\"580\" y1=\"370\" x2=\"580\" y2=\"350\" stroke=\"#4b4b4b\" stroke-width=\"1.5\" stroke-linecap=\"round\"/>\n  \n  <!-- 右图小标题 -->\n  <text x=\"580\" y=\"40\" font-family=\"'LXGW WenKai Lite', sans-serif\" font-size=\"20\" fill=\"#4b4b4b\" text-anchor=\"middle\">8×8 网格</text>\n  \n  <!-- 右侧底色块 -->\n  <rect x=\"420\" y=\"50\" width=\"320\" height=\"350\" rx=\"12\" fill=\"#c9d8e8\" opacity=\"0.2\"/>\n  \n  <!-- 右侧说明文字 -->\n  <text x=\"580\" y=\"420\" font-family=\"'LXGW WenKai Lite', sans-serif\" font-size=\"16\" fill=\"#666\" text-anchor=\"middle\">稠密：张成能力更强</text>\n  \n  <!-- 顶部总标题 -->\n  <text x=\"400\" y=\"30\" font-family=\"'LXGW WenKai Lite', sans-serif\" font-size=\"24\" fill=\"#333\" text-anchor=\"middle\" font-weight=\"bold\">网格点对比：4 点 vs 64 点</text>\n  \n  <!-- 底部冗余与缺失说明 -->\n  <text x=\"400\" y=\"480\" font-family=\"'LXGW WenKai Lite', sans-serif\" font-size=\"18\" fill=\"#4b4b4b\" text-anchor=\"middle\">向量组大小 → 张成空间的能力</text>\n  \n  <!-- 底部装饰线 -->\n  <path d=\"M 200,500 Q 400,510 600,500\" fill=\"none\" stroke=\"#e05656\" stroke-width=\"1.5\" stroke-linecap=\"round\" opacity=\"0.4\"/>\n</svg>",
-      "image_url": null,
-      "layout": "follow",
-      "reveal_gate_step": 12
-    },
-    {
-      "type": "speak",
-      "step_id": 12,
-      "spoken_text": "看这张图，左边是 2×2 网格，有 4 个连接点，右边是 8×8 网格，有 64 个连接点。想象一下，你的向量组就像这些网格上的点。如果向量组能张成整个空间但线性相关，就像网格上多了一个点，其实可以去掉；如果线性无关但张不成整个空间，就像网格缺了一个点，不能覆盖所有。所以两个条件缺一不可。"
-    },
-    {
-      "type": "highlight",
-      "step_id": 15,
-      "target_board_uid": 4,
-      "snippet": "缺一不可",
-      "color": null,
-      "during_step": 12,
-      "at_ms": 24739
-    },
-    {
-      "type": "tts_segment",
-      "step_id": 12,
-      "audio_url": "/courses/course_2ce925fec9/audio/sess_3/step_4.mp3",
-      "duration_ms": 26377,
-      "tts_cjk": 114,
-      "tts_latin": 7,
-      "speed": 1.0,
-      "skipped": false
-    },
-    {
-      "type": "board",
-      "step_id": 17,
-      "board_uid": 6,
-      "title": "维数",
-      "board_content": "- 基的向量个数 = **维数**\n- 例：平面的一组基：$\\{(1,0), (0,1)\\}$ → 2 维\n- 基唯一吗？",
-      "layout": "follow",
-      "reveal_gate_step": 16,
-      "page_id": "page-1"
-    },
-    {
-      "type": "speak",
-      "step_id": 16,
-      "spoken_text": "现在，如果一组向量既是基，那么它包含的向量个数，就是这个空间的维数。看板书最后一句：基的向量个数 = 维数。比如平面的一组基通常有两个向量，所以平面是二维的。那么，一个空间的基是唯一的吗？"
-    },
-    {
-      "type": "circle",
-      "step_id": 18,
-      "target_board_uid": 6,
-      "snippet": "维数",
-      "color": null,
-      "during_step": 16,
-      "at_ms": 5337
-    },
-    {
-      "type": "tts_segment",
-      "step_id": 16,
-      "audio_url": "/courses/course_2ce925fec9/audio/sess_3/step_5.mp3",
-      "duration_ms": 16184,
+      "duration_ms": 16695,
       "tts_cjk": 81,
       "tts_latin": 0,
       "speed": 1.0,
@@ -225,28 +52,203 @@
     },
     {
       "type": "ask",
-      "step_id": 19,
+      "step_id": 5,
       "mode": "choice",
-      "question": "一个向量空间的基是唯一的吗？",
+      "question": "你觉得这两条法则分别是在防止什么情况？",
       "options": [
         {
-          "text": "是，只有一组",
-          "misconception": "误以为基唯一，但基可以旋转、缩放，只要满足两个条件即可。"
+          "text": "极大生成性防止向量太少，极小无关性防止向量太多",
+          "misconception": null
         },
         {
-          "text": "不是，可以有很多组",
+          "text": "极大生成性防止向量太多，极小无关性防止向量太少",
+          "misconception": "正好说反了：生成性要求能张成整个空间，所以少了不行；无关性要求没有冗余，所以多了不行。"
+        }
+      ],
+      "correct_index": 0,
+      "explanation": "生成性保证覆盖整个空间，所以不能太少；无关性保证没有冗余，所以不能太多。"
+    },
+    {
+      "type": "board",
+      "step_id": 7,
+      "board_uid": 2,
+      "title": "生成性：够不够？",
+      "board_content": "- 生成性：$\\text{span}(S) = V$\n- 例：平面 $\\mathbb{R}^2$\n  - 一个向量 → 一条线（不够）\n  - 两个不共线向量 → 整个平面（够）",
+      "layout": "follow",
+      "reveal_gate_step": 6,
+      "page_id": "page-1"
+    },
+    {
+      "type": "illustration",
+      "step_id": 8,
+      "board_uid": 3,
+      "caption": "左边两个向量张成整个平面，右边一个向量只张成一条线。",
+      "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 800 520\">\n  <!-- 左侧：两个向量张成平面 -->\n  <!-- 平行四边形区域 -->\n  <polygon points=\"180,320 320,180 500,220 360,360\" fill=\"#c9d8e8\" opacity=\"0.5\" stroke=\"#4b4b4b\" stroke-width=\"1.5\" stroke-dasharray=\"4,3\" stroke-linejoin=\"round\"/>\n  \n  <!-- 网格线表示张成整个平面 -->\n  <g stroke=\"#c9d8e8\" stroke-width=\"1\" opacity=\"0.4\">\n    <line x1=\"100\" y1=\"280\" x2=\"420\" y2=\"280\"/>\n    <line x1=\"120\" y1=\"300\" x2=\"440\" y2=\"300\"/>\n    <line x1=\"140\" y1=\"320\" x2=\"460\" y2=\"320\"/>\n    <line x1=\"160\" y1=\"340\" x2=\"480\" y2=\"340\"/>\n    <line x1=\"180\" y1=\"360\" x2=\"500\" y2=\"360\"/>\n    <line x1=\"200\" y1=\"380\" x2=\"520\" y2=\"380\"/>\n    <line x1=\"200\" y1=\"200\" x2=\"240\" y2=\"380\"/>\n    <line x1=\"260\" y1=\"180\" x2=\"300\" y2=\"360\"/>\n    <line x1=\"320\" y1=\"160\" x2=\"360\" y2=\"340\"/>\n    <line x1=\"380\" y1=\"180\" x2=\"420\" y2=\"360\"/>\n    <line x1=\"440\" y1=\"200\" x2=\"480\" y2=\"380\"/>\n  </g>\n\n  <!-- 向量 v1 -->\n  <line x1=\"180\" y1=\"320\" x2=\"320\" y2=\"180\" stroke=\"#e05656\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n  <polygon points=\"320,180 312,196 328,192\" fill=\"#e05656\"/>\n  \n  <!-- 向量 v2 -->\n  <line x1=\"180\" y1=\"320\" x2=\"360\" y2=\"360\" stroke=\"#4b7a9e\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n  <polygon points=\"360,360 344,356 352,344\" fill=\"#4b7a9e\"/>\n\n  <!-- 向量标签 -->\n  <text x=\"240\" y=\"235\" font-family=\"'LXGW WenKai Lite', sans-serif\" font-size=\"20\" fill=\"#333\" font-weight=\"bold\">v₁</text>\n  <text x=\"280\" y=\"365\" font-family=\"'LXGW WenKai Lite', sans-serif\" font-size=\"20\" fill=\"#333\" font-weight=\"bold\">v₂</text>\n\n  <!-- 原点标记 -->\n  <circle cx=\"180\" cy=\"320\" r=\"4\" fill=\"#4b4b4b\"/>\n  <text x=\"155\" y=\"345\" font-family=\"'LXGW WenKai Lite', sans-serif\" font-size=\"16\" fill=\"#666\">O</text>\n\n  <!-- 左侧标注 -->\n  <text x=\"130\" y=\"120\" font-family=\"'LXGW WenKai Lite', sans-serif\" font-size=\"22\" fill=\"#333\" text-anchor=\"middle\" font-weight=\"bold\">两个向量：</text>\n  <text x=\"130\" y=\"150\" font-family=\"'LXGW WenKai Lite', sans-serif\" font-size=\"22\" fill=\"#333\" text-anchor=\"middle\" font-weight=\"bold\">张成整个平面</text>\n  \n  <!-- 引线 -->\n  <line x1=\"130\" y1=\"158\" x2=\"180\" y2=\"280\" stroke=\"#4b4b4b\" stroke-width=\"1.2\" stroke-dasharray=\"3,3\"/>\n  <circle cx=\"180\" cy=\"280\" r=\"2.5\" fill=\"#4b4b4b\"/>\n\n  <!-- 分隔线 -->\n  <line x1=\"560\" y1=\"60\" x2=\"560\" y2=\"460\" stroke=\"#4b4b4b\" stroke-width=\"1.5\" stroke-dasharray=\"6,4\" opacity=\"0.3\"/>\n\n  <!-- 右侧：一个向量张成一条线 -->\n  <!-- 直线（张成的线） -->\n  <line x1=\"580\" y1=\"380\" x2=\"760\" y2=\"180\" stroke=\"#b8dcc6\" stroke-width=\"4\" stroke-linecap=\"round\" opacity=\"0.7\"/>\n  \n  <!-- 直线上的箭头表示延伸方向 -->\n  <polygon points=\"760,180 744,184 752,196\" fill=\"#b8dcc6\" opacity=\"0.7\"/>\n  <polygon points=\"580,380 596,376 588,364\" fill=\"#b8dcc6\" opacity=\"0.7\"/>\n\n  <!-- 向量 v1 -->\n  <line x1=\"640\" y1=\"320\" x2=\"700\" y2=\"260\" stroke=\"#e05656\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n  <polygon points=\"700,260 692,268 704,272\" fill=\"#e05656\"/>\n\n  <!-- 向量标签 -->\n  <text x=\"660\" y=\"280\" font-family=\"'LXGW WenKai Lite', sans-serif\" font-size=\"20\" fill=\"#333\" font-weight=\"bold\">v₁</text>\n\n  <!-- 原点标记 -->\n  <circle cx=\"640\" cy=\"320\" r=\"4\" fill=\"#4b4b4b\"/>\n  <text x=\"618\" y=\"345\" font-family=\"'LXGW WenKai Lite', sans-serif\" font-size=\"16\" fill=\"#666\">O</text>\n\n  <!-- 右侧标注 -->\n  <text x=\"700\" y=\"120\" font-family=\"'LXGW WenKai Lite', sans-serif\" font-size=\"22\" fill=\"#333\" text-anchor=\"middle\" font-weight=\"bold\">一个向量：</text>\n  <text x=\"700\" y=\"150\" font-family=\"'LXGW WenKai Lite', sans-serif\" font-size=\"22\" fill=\"#333\" text-anchor=\"middle\" font-weight=\"bold\">只张成一条线</text>\n\n  <!-- 引线 -->\n  <line x1=\"700\" y1=\"158\" x2=\"660\" y2=\"280\" stroke=\"#4b4b4b\" stroke-width=\"1.2\" stroke-dasharray=\"3,3\"/>\n  <circle cx=\"660\" cy=\"280\" r=\"2.5\" fill=\"#4b4b4b\"/>\n\n  <!-- 右侧补充：几个点表示只能到达直线上的位置 -->\n  <circle cx=\"640\" cy=\"320\" r=\"3\" fill=\"#e05656\" opacity=\"0.5\"/>\n  <circle cx=\"670\" cy=\"290\" r=\"3\" fill=\"#e05656\" opacity=\"0.5\"/>\n  <circle cx=\"700\" cy=\"260\" r=\"3\" fill=\"#e05656\" opacity=\"0.5\"/>\n  <circle cx=\"730\" cy=\"230\" r=\"3\" fill=\"#e05656\" opacity=\"0.5\"/>\n  <circle cx=\"610\" cy=\"350\" r=\"3\" fill=\"#e05656\" opacity=\"0.5\"/>\n  <circle cx=\"580\" cy=\"380\" r=\"3\" fill=\"#e05656\" opacity=\"0.5\"/>\n\n  <!-- 小叉号表示平面其他区域不可达 -->\n  <g stroke=\"#999\" stroke-width=\"1.5\" opacity=\"0.5\">\n    <line x1=\"610\" y1=\"200\" x2=\"618\" y2=\"208\"/>\n    <line x1=\"618\" y1=\"200\" x2=\"610\" y2=\"208\"/>\n    \n    <line x1=\"750\" y1=\"350\" x2=\"758\" y2=\"358\"/>\n    <line x1=\"758\" y1=\"350\" x2=\"750\" y2=\"358\"/>\n    \n    <line x1=\"590\" y1=\"250\" x2=\"598\" y2=\"258\"/>\n    <line x1=\"598\" y1=\"250\" x2=\"590\" y2=\"258\"/>\n  </g>\n</svg>",
+      "image_url": null,
+      "layout": "follow",
+      "reveal_gate_step": 6
+    },
+    {
+      "type": "speak",
+      "step_id": 6,
+      "spoken_text": "先看第一条：极大生成性。意思是这组向量必须能张成整个空间。比如在平面上，只给一个向量，它的 span 只是一条线，够吗？不够，因为平面上还有线外的点。所以生成性要求你给的向量组，必须能覆盖整个空间。看板书，我画了个示意图，左边两个向量张成整个平面，右边一个向量只张成一条线。你觉得，要张成整个平面，至少需要几个向量？"
+    },
+    {
+      "type": "highlight",
+      "step_id": 9,
+      "target_board_uid": 2,
+      "snippet": "\\text{span}(S) = V",
+      "color": null,
+      "during_step": 6,
+      "at_ms": 1097
+    },
+    {
+      "type": "tts_segment",
+      "step_id": 6,
+      "audio_url": "/courses/course_2ce925fec9/audio/sess_3/step_2.mp3",
+      "duration_ms": 28908,
+      "tts_cjk": 134,
+      "tts_latin": 4,
+      "speed": 1.0,
+      "skipped": false
+    },
+    {
+      "type": "ask",
+      "step_id": 10,
+      "mode": "choice",
+      "question": "要张成整个平面，至少需要几个向量？",
+      "options": [
+        {
+          "text": "1个",
+          "misconception": "一个向量的 span 只是一条直线，无法覆盖平面上的其他点。"
+        },
+        {
+          "text": "2个",
           "misconception": null
         }
       ],
       "correct_index": 1,
-      "explanation": "比如平面中任意两个不共线的向量都可以作为基，所以基不唯一。"
+      "explanation": "一个向量只能张成一条线，两个不共线的向量才能张成整个平面。"
+    },
+    {
+      "type": "board",
+      "step_id": 12,
+      "board_uid": 4,
+      "title": "无关性：多不多？",
+      "board_content": "- 无关性：$S$ 线性无关\n- 冗余：某个向量可由其余向量线性表示\n- 去掉冗余 → **张成空间不变**",
+      "layout": "follow",
+      "reveal_gate_step": 11,
+      "page_id": "page-1"
+    },
+    {
+      "type": "speak",
+      "step_id": 11,
+      "spoken_text": "再看第二条：极小无关性。意思是向量组里不能有冗余。比如平面上有两个不共线的向量，已经能张成整个平面了。这时我再加一个向量，它落在前两个张成的平面里，那它就是多余的。看板书，我圈出线性无关这个词。如果向量组里有冗余，比如第三个向量能被前两个表示出来，那它就没带来新东西。你觉得，一个线性相关的组，去掉冗余向量后，张成的空间会变小吗？"
+    },
+    {
+      "type": "circle",
+      "step_id": 13,
+      "target_board_uid": 4,
+      "snippet": "线性无关",
+      "color": null,
+      "during_step": 11,
+      "at_ms": 16369
+    },
+    {
+      "type": "tts_segment",
+      "step_id": 11,
+      "audio_url": "/courses/course_2ce925fec9/audio/sess_3/step_3.mp3",
+      "duration_ms": 30348,
+      "tts_cjk": 148,
+      "tts_latin": 0,
+      "speed": 1.0,
+      "skipped": false
+    },
+    {
+      "type": "ask",
+      "step_id": 14,
+      "mode": "choice",
+      "question": "线性相关的向量组，去掉一个冗余向量后，张成的空间会变小吗？",
+      "options": [
+        {
+          "text": "会变小，少了一个向量嘛",
+          "misconception": "直觉上以为向量少了空间就小了，但冗余向量没有贡献新的方向。"
+        },
+        {
+          "text": "不会，冗余向量本来就在别人张成的空间里",
+          "misconception": null
+        }
+      ],
+      "correct_index": 1,
+      "explanation": "冗余向量本来就能被其他向量表示，去掉它不影响张成空间。"
+    },
+    {
+      "type": "board",
+      "step_id": 16,
+      "board_uid": 5,
+      "title": "动手试试：哪个是基？",
+      "board_content": "- 例：$\\vec{v}_3 = \\vec{v}_1 + \\vec{v}_2$\n- $\\{\\vec{v}_1, \\vec{v}_2\\}$：不共线 → 基\n- $\\{\\vec{v}_1, \\vec{v}_2, \\vec{v}_3\\}$：线性相关 → **不是基**",
+      "layout": "follow",
+      "reveal_gate_step": 15,
+      "page_id": "page-1"
+    },
+    {
+      "type": "generated_animation",
+      "step_id": 17,
+      "board_uid": 6,
+      "title": "拖动滑块，观察 v1、v2、v3",
+      "html": "<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"utf-8\">\n  <style>\n    html, body { margin: 0; height: 100%; background: #faf8f3; font-family: \"PingFang SC\", \"Hiragino Sans GB\", sans-serif; color: #333; overflow: hidden; }\n    #wrap { position: absolute; inset: 0; display: flex; flex-direction: column; }\n    #plot { flex: 1; min-height: 0; margin: 10px 10px 4px; border: 1px solid #d9d2c3; border-radius: 12px; background: #fbfaf6; cursor: crosshair; touch-action: none; }\n    #readout { display: flex; justify-content: center; align-items: center; gap: 20px; padding: 4px 0 8px; font-size: 12px; color: #666; flex-wrap: wrap; }\n    .ctrl-group { display: flex; align-items: center; gap: 8px; background: #fff; border: 1px solid #e0d9cc; border-radius: 20px; padding: 2px 10px; }\n    .ctrl-group label { font-size: 11px; color: #555; font-family: Georgia, serif; font-style: italic; }\n    .ctrl-group input[type=range] { width: 90px; height: 4px; background: #d9d2c3; border-radius: 2px; -webkit-appearance: none; appearance: none; }\n    .ctrl-group input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; background: #c0392b; border-radius: 50%; cursor: pointer; border: 1px solid #a93226; }\n    .ctrl-group input[type=range]::-moz-range-thumb { width: 12px; height: 12px; background: #c0392b; border-radius: 50%; cursor: pointer; border: 1px solid #a93226; }\n    #readout .k { display: block; font-size: 10px; letter-spacing: .03em; color: #888; }\n    #readout .v { display: block; font-family: ui-monospace, Menlo, monospace; font-size: 13px; font-weight: 700; color: #c0392b; min-width: 50px; text-align: center; }\n    #status { display: flex; gap: 18px; align-items: center; }\n    #status .badge { font-size: 11px; padding: 2px 8px; border-radius: 12px; background: #f0ede6; border: 1px solid #d9d2c3; color: #444; }\n    #status .badge span { font-weight: 700; }\n    #formula { display: inline-block; padding: 3px 10px; border: 1px solid #d9d2c3; border-radius: 6px; background: #fff; font-family: Georgia, \"Times New Roman\", serif; font-style: italic; font-size: 13px; color: #333; }\n    .legend { display: flex; gap: 12px; align-items: center; margin-left: 5px; }\n    .legend-item { display: flex; align-items: center; gap: 4px; font-size: 11px; color: #555; }\n    .legend-dot { width: 10px; height: 3px; border-radius: 2px; }\n  </style>\n</head>\n<body>\n  <div id=\"wrap\">\n    <canvas id=\"plot\"></canvas>\n    <div id=\"readout\">\n      <div class=\"legend\">\n        <span class=\"legend-item\"><span class=\"legend-dot\" style=\"background:#c0392b;\"></span>v1</span>\n        <span class=\"legend-item\"><span class=\"legend-dot\" style=\"background:#2e6da4;\"></span>v2</span>\n        <span class=\"legend-item\"><span class=\"legend-dot\" style=\"background:#2e8b6f;\"></span>v3=v1+v2</span>\n      </div>\n      <div class=\"ctrl-group\">\n        <label>v1x</label>\n        <input type=\"range\" id=\"s1\" min=\"-4\" max=\"4\" step=\"0.1\" value=\"2\">\n      </div>\n      <div class=\"ctrl-group\">\n        <label>v2x</label>\n        <input type=\"range\" id=\"s2\" min=\"-4\" max=\"4\" step=\"0.1\" value=\"1\">\n      </div>\n      <div class=\"ctrl-group\">\n        <label>v2y</label>\n        <input type=\"range\" id=\"s3\" min=\"-3\" max=\"3\" step=\"0.1\" value=\"-1\">\n      </div>\n      <div id=\"status\">\n        <span class=\"badge\">相关: <span id=\"dep\">否</span></span>\n        <span class=\"badge\">张成R²: <span id=\"span\">是</span></span>\n      </div>\n      <span id=\"formula\">v3 = v1 + v2</span>\n    </div>\n  </div>\n  <script>\n    (function() {\n      const canvas = document.getElementById(\"plot\");\n      const ctx = canvas.getContext(\"2d\");\n      let W = 0, H = 0;\n      const PAD = { l: 40, r: 20, t: 20, b: 30 };\n      const X_MIN = -5, X_MAX = 5, Y_MIN = -5, Y_MAX = 5;\n\n      // 向量分量 (v1y 固定为1, v2y 由滑块控制)\n      let v1x = 2, v1y = 1;\n      let v2x = 1, v2y = -1;\n\n      const sx = (x) => PAD.l + (x - X_MIN) / (X_MAX - X_MIN) * (W - PAD.l - PAD.r);\n      const sy = (y) => PAD.t + (Y_MAX - y) / (Y_MAX - Y_MIN) * (H - PAD.t - PAD.b);\n\n      function resize() {\n        const r = canvas.getBoundingClientRect();\n        W = r.width; H = r.height;\n        const dpr = window.devicePixelRatio || 1;\n        canvas.width = Math.round(W * dpr);\n        canvas.height = Math.round(H * dpr);\n        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);\n        draw();\n      }\n\n      function drawGrid() {\n        ctx.save();\n        ctx.strokeStyle = \"#e8e2d8\";\n        ctx.lineWidth = 0.5;\n        // 轻网格\n        for (let i = -4; i <= 4; i++) {\n          if (i === 0) continue;\n          ctx.beginPath();\n          ctx.moveTo(sx(i), sy(Y_MIN));\n          ctx.lineTo(sx(i), sy(Y_MAX));\n          ctx.stroke();\n          ctx.beginPath();\n          ctx.moveTo(sx(X_MIN), sy(i));\n          ctx.lineTo(sx(X_MAX), sy(i));\n          ctx.stroke();\n        }\n        ctx.restore();\n      }\n\n      function drawAxes() {\n        ctx.save();\n        ctx.strokeStyle = \"#b9b3a6\";\n        ctx.lineWidth = 1;\n        ctx.beginPath();\n        ctx.moveTo(PAD.l, sy(0));\n        ctx.lineTo(W - PAD.r, sy(0));\n        ctx.stroke();\n        ctx.beginPath();\n        ctx.moveTo(sx(0), PAD.t);\n        ctx.lineTo(sx(0), H - PAD.b);\n        ctx.stroke();\n        // 刻度\n        ctx.fillStyle = \"#8a8377\";\n        ctx.font = \"italic 11px Georgia, serif\";\n        ctx.textAlign = \"center\";\n        for (let i = -4; i <= 4; i++) {\n          if (i === 0) continue;\n          ctx.beginPath();\n          ctx.moveTo(sx(i), sy(0) - 3);\n          ctx.lineTo(sx(i), sy(0) + 3);\n          ctx.stroke();\n          ctx.fillText(i, sx(i), sy(0) + 14);\n        }\n        ctx.textAlign = \"right\";\n        for (let i = -4; i <= 4; i++) {\n          if (i === 0) continue;\n          ctx.beginPath();\n          ctx.moveTo(sx(0) - 3, sy(i));\n          ctx.lineTo(sx(0) + 3, sy(i));\n          ctx.stroke();\n          ctx.fillText(i, sx(0) - 6, sy(i) + 4);\n        }\n        ctx.fillText(\"x\", W - PAD.r - 2, sy(0) - 6);\n        ctx.textAlign = \"left\";\n        ctx.fillText(\"y\", sx(0) + 6, PAD.t + 8);\n        ctx.restore();\n      }\n\n      function drawArrow(fromX, fromY, toX, toY, color, lineWidth = 2.2, dash = null) {\n        ctx.save();\n        ctx.strokeStyle = color;\n        ctx.fillStyle = color;\n        ctx.lineWidth = lineWidth;\n        if (dash) ctx.setLineDash(dash);\n        const x1 = sx(fromX), y1 = sy(fromY);\n        const x2 = sx(toX), y2 = sy(toY);\n        ctx.beginPath();\n        ctx.moveTo(x1, y1);\n        ctx.lineTo(x2, y2);\n        ctx.stroke();\n        // 箭头\n        const angle = Math.atan2(y2 - y1, x2 - x1);\n        const headLen = 10;\n        ctx.beginPath();\n        ctx.moveTo(x2, y2);\n        ctx.lineTo(x2 - headLen * Math.cos(angle - 0.4), y2 - headLen * Math.sin(angle - 0.4));\n        ctx.moveTo(x2, y2);\n        ctx.lineTo(x2 - headLen * Math.cos(angle + 0.4), y2 - headLen * Math.sin(angle + 0.4));\n        ctx.stroke();\n        ctx.restore();\n      }\n\n      function drawVector(v, color, labelText, offset = 0.3) {\n        // 从原点画向量\n        drawArrow(0, 0, v.x, v.y, color, 2.2);\n        // 标签\n        ctx.save();\n        ctx.font = \"italic 12px Georgia, serif\";\n        ctx.fillStyle = color;\n        ctx.textAlign = \"left\";\n        const lx = sx(v.x * 0.5) + 8;\n        const ly = sy(v.y * 0.5) - 8;\n        ctx.fillText(labelText, lx, ly);\n        ctx.restore();\n      }\n\n      function draw() {\n        ctx.clearRect(0, 0, W, H);\n        drawGrid();\n        drawAxes();\n\n        // 计算向量\n        const v1 = { x: v1x, y: v1y };\n        const v2 = { x: v2x, y: v2y };\n        const v3 = { x: v1x + v2x, y: v1y + v2y };\n\n        // 绘制 v1 (红色)\n        drawVector(v1, \"#c0392b\", \"v1\");\n        // 绘制 v2 (蓝色)\n        drawVector(v2, \"#2e6da4\", \"v2\");\n        // 绘制 v3 (绿色) 虚线表示\n        drawArrow(0, 0, v3.x, v3.y, \"#2e8b6f\", 1.8, [5, 4]);\n        // v3 标签\n        ctx.save();\n        ctx.font = \"italic 12px Georgia, serif\";\n        ctx.fillStyle = \"#2e8b6f\";\n        ctx.textAlign = \"left\";\n        ctx.fillText(\"v3\", sx(v3.x * 0.5) + 10, sy(v3.y * 0.5) - 10);\n        ctx.restore();\n\n        // 平行四边形辅助线 (虚线)\n        ctx.save();\n        ctx.strokeStyle = \"#b9b3a6\";\n        ctx.setLineDash([3, 3]);\n        ctx.lineWidth = 1;\n        // 从 v1 终点到 v3 终点\n        ctx.beginPath();\n        ctx.moveTo(sx(v1.x), sy(v1.y));\n        ctx.lineTo(sx(v3.x), sy(v3.y));\n        ctx.stroke();\n        // 从 v2 终点到 v3 终点\n        ctx.beginPath();\n        ctx.moveTo(sx(v2.x), sy(v2.y));\n        ctx.lineTo(sx(v3.x), sy(v3.y));\n        ctx.stroke();\n        ctx.restore();\n\n        // 行列式判断线性相关\n        const det = v1.x * v2.y - v1.y * v2.x;\n        const isDep = Math.abs(det) < 1e-6;\n        const isSpan = !isDep;\n\n        // 更新读数\n        document.getElementById(\"dep\").textContent = isDep ? \"是\" : \"否\";\n        document.getElementById(\"span\").textContent = isSpan ? \"是\" : \"否\";\n        document.getElementById(\"dep\").style.color = isDep ? \"#c0392b\" : \"#2e8b6f\";\n        document.getElementById(\"span\").style.color = isSpan ? \"#2e8b6f\" : \"#c0392b\";\n      }\n\n      // 滑块事件\n      const s1 = document.getElementById(\"s1\");\n      const s2 = document.getElementById(\"s2\");\n      const s3 = document.getElementById(\"s3\");\n\n      function updateFromSliders() {\n        v1x = parseFloat(s1.value);\n        v2x = parseFloat(s2.value);\n        v2y = parseFloat(s3.value);\n        draw();\n      }\n\n      s1.addEventListener(\"input\", updateFromSliders);\n      s2.addEventListener(\"input\", updateFromSliders);\n      s3.addEventListener(\"input\", updateFromSliders);\n\n      // 初始化滑块值\n      s1.value = 2;\n      s2.value = 1;\n      s3.value = -1;\n      v1x = 2; v1y = 1; v2x = 1; v2y = -1;\n\n      window.addEventListener(\"resize\", resize);\n      resize();\n    })();\n  </script>\n</body>\n</html>",
+      "layout": "newcol",
+      "reveal_gate_step": 15
+    },
+    {
+      "type": "speak",
+      "step_id": 15,
+      "spoken_text": "现在我们把两条法则合起来用。右边的教具里，我给了你三个向量：v1、v2、v3，其中 v3 等于 v1 加 v2。你可以拖动滑块改变 v1 和 v2 的长度和方向，但 v3 始终等于它们的和。看，v1 和 v2 不共线时，它们张成整个平面，而且线性无关，所以它们是一组基。但 v3 呢？它躺在 v1、v2 张成的平面里，所以 {v1, v2, v3} 线性相关，不是基。你试试看，当 v1 和 v2 共线时，情况会怎样？"
+    },
+    {
+      "type": "circle",
+      "step_id": 18,
+      "target_board_uid": 5,
+      "snippet": "\\vec{v}_3 = \\vec{v}_1 + \\vec{v}_2",
+      "color": null,
+      "during_step": 15,
+      "at_ms": 8207
+    },
+    {
+      "type": "tts_segment",
+      "step_id": 15,
+      "audio_url": "/courses/course_2ce925fec9/audio/sess_3/step_4.mp3",
+      "duration_ms": 40843,
+      "tts_cjk": 119,
+      "tts_latin": 38,
+      "speed": 1.0,
+      "skipped": false
+    },
+    {
+      "type": "ask",
+      "step_id": 19,
+      "mode": "choice",
+      "question": "当 v1 和 v2 共线时，{v1, v2} 还是基吗？",
+      "options": [
+        {
+          "text": "还是基，两个向量总能张成平面",
+          "misconception": "误以为两个向量一定张成平面，但共线时它们只张成一条线。"
+        },
+        {
+          "text": "不是基，它们张成的只是一条线",
+          "misconception": null
+        }
+      ],
+      "correct_index": 1,
+      "explanation": "共线时 span 只是一条线，无法覆盖整个平面，所以不满足生成性。"
     },
     {
       "type": "board",
       "step_id": 21,
       "board_uid": 7,
-      "title": "基的黄金法则",
-      "board_content": "- **基 (Basis)**：满足\n  - ① 极大生成性：$\\text{span}(S) = V$\n  - ② 极小无关性：$S$ 线性无关\n- 基的向量个数 = **维数**",
+      "title": "基不唯一",
+      "board_content": "- 基不唯一：\n  - $\\{\\vec{v}_1, \\vec{v}_2\\}$ 是基\n  - $\\{\\vec{w}, \\vec{v}_2\\}$ 也是基（$\\vec{w}$ 与 $\\vec{v}_2$ 不共线）\n- 但个数？",
       "layout": "follow",
       "reveal_gate_step": 20,
       "page_id": "page-1"
@@ -254,45 +256,158 @@
     {
       "type": "speak",
       "step_id": 20,
-      "spoken_text": "最后，我们把基的黄金法则完整写下来。看板书，基必须满足两个条件：极大生成性和极小无关性。这两个条件保证了基是最精简的生成集，也是最完整的无关集。基的个数就是维数。现在你明白为什么两个条件缺一不可了吗？"
+      "spoken_text": "你可能注意到，刚才 {v1, v2} 是基，但如果我把 v1 换成另一个不共线的向量，比如 w，那么 {w, v2} 仍然是基。看板书，我写了两个不同的基。这说明基不是唯一的。只要满足两个黄金法则，都可以当基。那么问题来了：既然基可以不同，它们包含的向量个数会不会不一样？"
     },
     {
-      "type": "circle",
+      "type": "highlight",
       "step_id": 22,
       "target_board_uid": 7,
-      "snippet": "极大生成性",
+      "snippet": "\\{\\vec{w}, \\vec{v}_2\\}",
       "color": null,
       "during_step": 20,
-      "at_ms": 5802
-    },
-    {
-      "type": "circle",
-      "step_id": 23,
-      "target_board_uid": 7,
-      "snippet": "极小无关性",
-      "color": null,
-      "during_step": 20,
-      "at_ms": 6890
+      "at_ms": 7735
     },
     {
       "type": "tts_segment",
       "step_id": 20,
+      "audio_url": "/courses/course_2ce925fec9/audio/sess_3/step_5.mp3",
+      "duration_ms": 22871,
+      "tts_cjk": 98,
+      "tts_latin": 10,
+      "speed": 1.0,
+      "skipped": false
+    },
+    {
+      "type": "ask",
+      "step_id": 23,
+      "mode": "choice",
+      "question": "两个不同的基，它们的向量个数会不同吗？",
+      "options": [
+        {
+          "text": "可能不同，比如一个基有2个向量，另一个有3个",
+          "misconception": "误以为基的个数可以变化，但所有基的个数都相等，这是维数良定义的基础。"
+        },
+        {
+          "text": "一定相同，都等于空间的维数",
+          "misconception": null
+        }
+      ],
+      "correct_index": 1,
+      "explanation": "所有基的向量个数都相同，这个共同的个数就是维数。"
+    },
+    {
+      "type": "board",
+      "step_id": 25,
+      "board_uid": 8,
+      "title": "维数：基的个数",
+      "board_content": "- 所有基的个数相同 → **维数**\n- $\\dim(V) = $ 基中向量个数\n- 例：$\\dim(\\mathbb{R}^2) = 2$，$\\dim(\\mathbb{R}^3) = 3$\n- 零空间？",
+      "layout": "follow",
+      "reveal_gate_step": 24,
+      "page_id": "page-1"
+    },
+    {
+      "type": "speak",
+      "step_id": 24,
+      "spoken_text": "既然所有基的个数都一样，我们就给这个数起个名字：维数。看板书最后一行，我圈出了维数这个词。维数就是基中向量的个数。比如平面的维数是 2，因为任何基都有两个向量。空间的维数是 3。那么，零空间 {0} 的维数是多少？"
+    },
+    {
+      "type": "circle",
+      "step_id": 26,
+      "target_board_uid": 8,
+      "snippet": "维数",
+      "color": null,
+      "during_step": 24,
+      "at_ms": 4005
+    },
+    {
+      "type": "tts_segment",
+      "step_id": 24,
       "audio_url": "/courses/course_2ce925fec9/audio/sess_3/step_6.mp3",
-      "duration_ms": 18134,
-      "tts_cjk": 91,
+      "duration_ms": 17856,
+      "tts_cjk": 87,
+      "tts_latin": 3,
+      "speed": 1.0,
+      "skipped": false
+    },
+    {
+      "type": "ask",
+      "step_id": 27,
+      "mode": "choice",
+      "question": "零空间 {0} 的维数是多少？",
+      "options": [
+        {
+          "text": "0",
+          "misconception": null
+        },
+        {
+          "text": "1",
+          "misconception": "零空间只有一个零向量，但零向量不能作为基，所以基是空集，个数为0。"
+        }
+      ],
+      "correct_index": 0,
+      "explanation": "零空间的基是空集，所以维数为0。"
+    },
+    {
+      "type": "board",
+      "step_id": 29,
+      "board_uid": 9,
+      "title": "总结：基与维数",
+      "board_content": "- 基：\n  - 生成性：$\\text{span}(S) = V$\n  - 无关性：$S$ 线性无关\n- 基不唯一，但个数相同\n- 维数 = 基的个数\n- 例：三维空间中三个共面向量？",
+      "layout": "follow",
+      "reveal_gate_step": 28,
+      "page_id": "page-1"
+    },
+    {
+      "type": "speak",
+      "step_id": 28,
+      "spoken_text": "今天我们学了基的两个黄金法则：极大生成性和极小无关性。基不唯一，但所有基的个数相同，这个数就是维数。看板书，我把关键点都列出来了。现在你能否判断，在三维空间中，三个共面的向量能构成基吗？"
+    },
+    {
+      "type": "highlight",
+      "step_id": 30,
+      "target_board_uid": 9,
+      "snippet": "维数 = 基的个数",
+      "color": null,
+      "during_step": 28,
+      "at_ms": 8660
+    },
+    {
+      "type": "tts_segment",
+      "step_id": 28,
+      "audio_url": "/courses/course_2ce925fec9/audio/sess_3/step_7.mp3",
+      "duration_ms": 17136,
+      "tts_cjk": 83,
       "tts_latin": 0,
       "speed": 1.0,
       "skipped": false
     },
     {
       "type": "reward_user",
-      "step_id": 24,
-      "master_concept_title": "基的黄金法则",
-      "master_concept_description": "基是能张成整个空间且线性无关的向量组，其向量个数即维数。"
+      "step_id": 31,
+      "master_concept_title": "基与维数",
+      "master_concept_description": "基是能张成整个空间且线性无关的向量组；所有基的向量个数相同，这个数就是维数。"
+    },
+    {
+      "type": "ask",
+      "step_id": 32,
+      "mode": "choice",
+      "question": "三维空间中三个共面向量能构成基吗？",
+      "options": [
+        {
+          "text": "能，三个向量正好",
+          "misconception": "误以为三个向量一定张成三维空间，但共面时它们只张成一个平面。"
+        },
+        {
+          "text": "不能，它们张成的只是一个平面",
+          "misconception": null
+        }
+      ],
+      "correct_index": 1,
+      "explanation": "三个共面向量线性相关，且张成空间是二维平面，不满足基的条件。"
     },
     {
       "type": "done",
-      "step_id": 25
+      "step_id": 33
     }
   ]
 }

@@ -54,5 +54,12 @@ questions; illustration modality (LLM-drawn SVG, optional MiniMax image); prompt
 rendered page resembles the reference screenshots.
 **Status**: Complete. Verified: boards 3-5 lines, speech points at board/figure, options colloquial,
 SVG figure with labels rendered with caption, circles on formulas and text.
-**Remaining**: widget visual QA loop (headless render check); per-student name in narration
-(needs live TTS or SSML placeholders); voice input for interjections.
+**Remaining**: per-student name in narration (needs live TTS or SSML placeholders); voice
+input for interjections.
+
+## Stage 7: Widgets as 2D explorables + render check (2026-09-02, from the widget screen recording)
+**Goal**: Match the real interactive widget (2D plot, dashed envelopes, pointer probe, live
+readout, muted beige aesthetic) and close the visual QA loop.
+**Status**: Complete. `explorable` widget kind with a hand-written exemplar in the prompt;
+Playwright render check (runtime errors, blank output) with one feedback regeneration;
+authored 夹逼定理 session bundled as the reference.

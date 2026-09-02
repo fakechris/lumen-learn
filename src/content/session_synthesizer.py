@@ -55,7 +55,7 @@ SYNTH_SYSTEM = """你是一名苏格拉底式白板导师，要把一个会话�
 - 讲解**指着板书说**："看这一行"、"我圈出来的这个"、"右边这张图"、"板书最后一句"。讲解里出现的每个关键词都能在板书或图上找到。指向的说法每步换一种，不要每步都用同一句开头。
 - 每一步只讲一个念头，60~110 个汉字，第一人称口语，结尾常常是一个让学生预测的问题。
 - 图是**教学示意图**：元素、数量、标注都精确（例如"2×2 网格 4 个连接点 vs 8×8 网格 64 个连接点"），题注一句话。
-- 教具是一个**实验**：学生动一个控件，观察一个量，问题就问这个量。
+- 教具是一个**实验**：一张 2D 探针图（函数曲线 + 包络/参考线 + 鼠标滑动的探针 + 实时读数），或带一个滑块的参数图。学生动一下，观察一个量，问题就问这个量。
 - 问题的选项是学生会脱口而出的话（"能，多一根总比少一根强"），不是考卷选项（"维度是 2"）。
 
 # 字段规则
@@ -63,7 +63,7 @@ SYNTH_SYSTEM = """你是一名苏格拉底式白板导师，要把一个会话�
 2. boards：markdown 用嵌套列表表达缩进层级；可用 KaTeX（$...$）；加粗表示重点词。第一步的第一张板书是本节的一句话钩子（≤ 20 字，title 留空）。第一张 layout 用 "follow"；需要另起一列时用 "newcol"。
 3. decorations：snippet 必须**逐字**出现在该板书 markdown 里（可以是 LaTeX 源码，也可以是中文短语）；trigger_phrase 必须逐字出现在 spoken_text 里。每步 0~2 个。
 4. illustration：整个会话 1~2 张。kind 默认 "svg"，brief 写清元素、数量、标注文字、左右对比；只有纯场景隐喻（没有精确结构）才用 "image"。caption 一句话。
-5. widget：整个会话最多 1 个。涉及空间、向量、曲线、变换时用 "threejs"，task 写明：可观察量、控件、预期现象、颜色。流程/关系用 "mermaid" 并直接给源码。
+5. widget：整个会话最多 1 个，而且**必须直接演示本步板书里的对象**（同一个公式、同一组向量、同一张网格），学生动一下就能回答本步的问题。默认 kind "explorable"（2D Canvas：可以是函数曲线 + 包络/参考线 + 探针读数，也可以是向量/平行四边形/网格/几何变换 + 滑块）。task 写明：画什么、坐标范围、探针或滑块读出什么量、预期现象。如果本步概念没有一个自然的"可探索的量"，就写 null，不要硬凑一条无关的曲线。只有真正三维的概念才用 "threejs"；流程/关系用 "mermaid" 并直接给源码。
 6. question：2~3 个步骤末尾各一个单选，2~3 个选项，misconceptions 与 options 一一对应（正确项写 null），explanation 一句话。最后一步不提问。
 7. reward：最后一步给 master concept 卡（title + description ≤ 60 字）。
 8. 步骤数 5~7，严格基于讲义内容。
@@ -72,7 +72,7 @@ SYNTH_SYSTEM = """你是一名苏格拉底式白板导师，要把一个会话�
 {"steps": [{"title": "", "spoken_text": "", "boards": [{"title": "", "markdown": "", "layout": "follow"}],
   "decorations": [{"kind": "circle", "snippet": "", "board_index": 0, "trigger_phrase": ""}],
   "illustration": {"kind": "svg", "caption": "", "brief": "", "layout": "follow"} ,
-  "widget": {"kind": "threejs", "title": "", "task": "", "layout": "newcol"},
+  "widget": {"kind": "explorable", "title": "", "task": "", "layout": "follow"},
   "question": {"question": "", "options": ["", ""], "correct_index": 1, "misconceptions": ["", null], "explanation": ""},
   "reward": null}]}
 不需要的字段写 null。

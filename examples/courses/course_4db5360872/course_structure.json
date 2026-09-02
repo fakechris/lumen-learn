@@ -1,0 +1,25 @@
+{
+  "course_id": "course_4db5360872",
+  "title": "极限求值：夹逼定理",
+  "target_audience": "",
+  "overview": "学生能解释为什么 x²·sin(1/x) 在 x→0 时极限为 0，并说出夹逼定理的两个条件。",
+  "generation_mode": "authored",
+  "chapters": [
+    {
+      "chapter_id": "ch_1",
+      "title": "极限求值：夹逼定理",
+      "description": "",
+      "sessions": [
+        {
+          "session_id": "sess_squeeze",
+          "title": "极限求值：夹逼定理",
+          "learning_goal": "学生能解释为什么 x²·sin(1/x) 在 x→0 时极限为 0，并说出夹逼定理的两个条件。",
+          "core_concept": "极限求值：夹逼定理",
+          "cognitive_hurdle": "",
+          "source_sections": [],
+          "estimated_duration_min": 5
+        }
+      ]
+    }
+  ]
+}

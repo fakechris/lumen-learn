@@ -1,0 +1,178 @@
+{
+  "manifest_version": "2.0",
+  "session_id": "sess_squeeze",
+  "course_id": "course_4db5360872",
+  "title": "极限求值：夹逼定理",
+  "learning_goal": "学生能解释为什么 x²·sin(1/x) 在 x→0 时极限为 0，并说出夹逼定理的两个条件。",
+  "generation_mode": "authored",
+  "total_duration_ms": 56168,
+  "actions": [
+    {
+      "type": "board",
+      "step_id": 2,
+      "board_uid": 1,
+      "title": "",
+      "board_content": "处理无法直接代数的\"顽固\"极限",
+      "layout": "follow",
+      "reveal_gate_step": 1,
+      "page_id": "page-1"
+    },
+    {
+      "type": "board",
+      "step_id": 3,
+      "board_uid": 2,
+      "title": "一个令人头大的例子",
+      "board_content": "- $$f(x) = x^2 \\cdot \\sin\\left(\\tfrac{1}{x}\\right)$$\n- 当 $x \\to 0$ 时：\n    - $x^2 \\to 0$\n    - $\\sin(1/x)$ 在 $-1$ 到 $1$ 之间剧烈震荡",
+      "layout": "follow",
+      "reveal_gate_step": 1,
+      "page_id": "page-1"
+    },
+    {
+      "type": "speak",
+      "step_id": 1,
+      "spoken_text": "先看板书上这个函数：x 平方乘以 sin 括号 1 比 x。当 x 趋近 0 的时候，前面的 x 平方乖乖地趋近 0，可后面的 sin 1 比 x 却在负一和一之间疯狂震荡，根本不收敛。两个因子一个听话一个发疯，乘起来到底趋近什么？直接代数是算不出来的。"
+    },
+    {
+      "type": "circle",
+      "step_id": 4,
+      "target_board_uid": 2,
+      "snippet": "\\sin(1/x)",
+      "color": null,
+      "during_step": 1,
+      "at_ms": 13223
+    },
+    {
+      "type": "tts_segment",
+      "step_id": 1,
+      "audio_url": "/courses/course_4db5360872/audio/sess_squeeze/step_1.mp3",
+      "duration_ms": 20480,
+      "tts_cjk": 85,
+      "tts_latin": 15,
+      "speed": 1.0,
+      "skipped": false
+    },
+    {
+      "type": "board",
+      "step_id": 6,
+      "board_uid": 3,
+      "title": "建立直觉",
+      "board_content": "- 找到\"夹子\"：寻找上下界函数\n    - $-x^2 \\le x^2 \\sin(1/x) \\le x^2$\n- 确认汇合：两个界限的极限必须相等",
+      "layout": "follow",
+      "reveal_gate_step": 5,
+      "page_id": "page-1"
+    },
+    {
+      "type": "generated_animation",
+      "step_id": 7,
+      "board_uid": 4,
+      "title": "滑动探针：红点永远在两片面包之间",
+      "html": "<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"utf-8\">\n  <style>\n    html, body { margin: 0; height: 100%; background: #faf8f3; font-family: \"PingFang SC\", \"Hiragino Sans GB\", sans-serif; color: #333; overflow: hidden; }\n    #wrap { position: absolute; inset: 0; display: flex; flex-direction: column; }\n    #plot { flex: 1; min-height: 0; margin: 10px 10px 4px; border: 1px solid #d9d2c3; border-radius: 12px; background: #fbfaf6; cursor: crosshair; touch-action: none; }\n    #readout { display: flex; justify-content: center; align-items: center; gap: 28px; padding: 4px 0 8px; font-size: 12px; color: #666; }\n    #readout .k { display: block; font-size: 11px; letter-spacing: .04em; }\n    #readout .v { display: block; font-family: ui-monospace, Menlo, monospace; font-size: 14px; font-weight: 700; color: #c0392b; min-width: 64px; text-align: center; }\n    #formula { display: inline-block; padding: 3px 10px; border: 1px solid #d9d2c3; border-radius: 6px; background: #fff; font-family: Georgia, \"Times New Roman\", serif; font-style: italic; font-size: 13px; color: #333; }\n  </style>\n</head>\n<body>\n  <div id=\"wrap\">\n    <canvas id=\"plot\"></canvas>\n    <div id=\"readout\">\n      <span><span class=\"k\">当前 X</span><span class=\"v\" id=\"rx\">—</span></span>\n      <span><span class=\"k\">F(X)</span><span class=\"v\" id=\"ry\">—</span></span>\n      <span id=\"formula\">f(x) = x² · sin(1/x)</span>\n    </div>\n  </div>\n  <script>\n    // --- the thing being explored -------------------------------------\n    const f = (x) => (x === 0 ? 0 : x * x * Math.sin(1 / x));\n    const upper = (x) => x * x, lower = (x) => -x * x;\n    const X_MIN = -0.32, X_MAX = 0.32, Y_MIN = -0.075, Y_MAX = 0.075;\n\n    // --- plumbing ------------------------------------------------------\n    const canvas = document.getElementById(\"plot\");\n    const ctx = canvas.getContext(\"2d\");\n    let W = 0, H = 0, probeX = null;\n    const PAD = { l: 34, r: 18, t: 18, b: 26 };\n    const sx = (x) => PAD.l + (x - X_MIN) / (X_MAX - X_MIN) * (W - PAD.l - PAD.r);\n    const sy = (y) => PAD.t + (Y_MAX - y) / (Y_MAX - Y_MIN) * (H - PAD.t - PAD.b);\n    const ux = (px) => X_MIN + (px - PAD.l) / (W - PAD.l - PAD.r) * (X_MAX - X_MIN);\n\n    function resize() {\n      const r = canvas.getBoundingClientRect();\n      W = r.width; H = r.height;\n      const dpr = window.devicePixelRatio || 1;\n      canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);\n      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);\n      draw();\n    }\n\n    function curve(fn, style) {\n      ctx.save(); Object.assign(ctx, style.props || {});\n      if (style.dash) ctx.setLineDash(style.dash);\n      ctx.beginPath();\n      const n = 1600; let started = false;\n      for (let i = 0; i <= n; i++) {\n        const x = X_MIN + (X_MAX - X_MIN) * i / n, y = fn(x);\n        if (!isFinite(y)) { started = false; continue; }\n        const px = sx(x), py = sy(Math.max(Y_MIN * 1.3, Math.min(Y_MAX * 1.3, y)));\n        started ? ctx.lineTo(px, py) : ctx.moveTo(px, py); started = true;\n      }\n      ctx.stroke(); ctx.restore();\n    }\n\n    function label(text, x, y, color, align = \"left\") {\n      ctx.save(); ctx.font = \"italic 12px Georgia, serif\"; ctx.fillStyle = color; ctx.textAlign = align; ctx.fillText(text, x, y); ctx.restore();\n    }\n\n    function draw() {\n      ctx.clearRect(0, 0, W, H);\n      // axes\n      ctx.save(); ctx.strokeStyle = \"#b9b3a6\"; ctx.lineWidth = 1;\n      ctx.beginPath(); ctx.moveTo(PAD.l, sy(0)); ctx.lineTo(W - PAD.r, sy(0)); ctx.moveTo(sx(0), PAD.t); ctx.lineTo(sx(0), H - PAD.b); ctx.stroke();\n      ctx.fillStyle = \"#8a8377\"; ctx.font = \"italic 11px Georgia, serif\"; ctx.textAlign = \"center\";\n      for (const x of [-0.2, 0.2]) { ctx.beginPath(); ctx.moveTo(sx(x), sy(0) - 3); ctx.lineTo(sx(x), sy(0) + 3); ctx.stroke(); ctx.fillText(x, sx(x), sy(0) + 14); }\n      ctx.textAlign = \"right\";\n      for (const y of [-0.04, 0.04]) { ctx.beginPath(); ctx.moveTo(sx(0) - 3, sy(y)); ctx.lineTo(sx(0) + 3, sy(y)); ctx.stroke(); ctx.fillText(y, sx(0) - 6, sy(y) + 4); }\n      ctx.fillText(\"x\", W - PAD.r - 2, sy(0) - 6); ctx.textAlign = \"left\"; ctx.fillText(\"y\", sx(0) + 6, PAD.t + 8);\n      ctx.restore();\n      // envelopes (the \"bread\")\n      curve(upper, { props: { strokeStyle: \"#2e8b6f\", lineWidth: 1.2 }, dash: [5, 4] });\n      curve(lower, { props: { strokeStyle: \"#2e8b6f\", lineWidth: 1.2 }, dash: [5, 4] });\n      label(\"y = x²\", sx(0.24), sy(upper(0.24)) - 8, \"#2e8b6f\");\n      label(\"y = -x²\", sx(0.24), sy(lower(0.24)) + 14, \"#2e8b6f\");\n      // the function (the \"filling\")\n      curve(f, { props: { strokeStyle: \"#c0392b\", lineWidth: 2 } });\n      // probe\n      if (probeX !== null) {\n        const px = sx(probeX), y = f(probeX), py = sy(y);\n        ctx.save(); ctx.strokeStyle = \"rgba(192,57,43,.55)\"; ctx.setLineDash([3, 4]); ctx.lineWidth = 1;\n        ctx.beginPath(); ctx.moveTo(px, PAD.t); ctx.lineTo(px, H - PAD.b); ctx.stroke(); ctx.restore();\n        ctx.save(); ctx.fillStyle = \"#c0392b\"; ctx.beginPath(); ctx.arc(px, py, 4, 0, Math.PI * 2); ctx.fill(); ctx.restore();\n        document.getElementById(\"rx\").textContent = probeX.toFixed(3);\n        document.getElementById(\"ry\").textContent = y.toFixed(3);\n      }\n    }\n\n    function onPointer(e) {\n      const r = canvas.getBoundingClientRect();\n      probeX = Math.max(X_MIN, Math.min(X_MAX, ux(e.clientX - r.left)));\n      draw();\n    }\n    canvas.addEventListener(\"pointermove\", onPointer);\n    canvas.addEventListener(\"pointerdown\", onPointer);\n    window.addEventListener(\"resize\", resize);\n    resize();\n  </script>\n</body>\n</html>\n",
+      "layout": "follow",
+      "reveal_gate_step": 5
+    },
+    {
+      "type": "speak",
+      "step_id": 5,
+      "spoken_text": "把鼠标放到右边这张图上，沿着 x 轴左右滑。红色是我们的函数，绿色虚线是 y 等于 x 平方和 y 等于负 x 平方。看读数：不管你滑到哪，红点永远夹在两条绿线之间。越靠近 0，两片面包越贴近，中间的馅料还能往哪跑？"
+    },
+    {
+      "type": "highlight",
+      "step_id": 8,
+      "target_board_uid": 3,
+      "snippet": "-x^2 \\le x^2 \\sin(1/x) \\le x^2",
+      "color": null,
+      "during_step": 5,
+      "at_ms": 13498
+    },
+    {
+      "type": "tts_segment",
+      "step_id": 5,
+      "audio_url": "/courses/course_4db5360872/audio/sess_squeeze/step_2.mp3",
+      "duration_ms": 20247,
+      "tts_cjk": 81,
+      "tts_latin": 6,
+      "speed": 1.0,
+      "skipped": false
+    },
+    {
+      "type": "ask",
+      "step_id": 9,
+      "mode": "choice",
+      "question": "x 越靠近 0，红点还能跑到哪去？",
+      "options": [
+        {
+          "text": "它一直在震荡，所以极限不存在",
+          "misconception": "震荡不等于发散：只要振幅被压到 0，震荡也会收敛。看读数，F(X) 的绝对值越来越小。"
+        },
+        {
+          "text": "被两片面包挤到 0 了，极限就是 0",
+          "misconception": null
+        }
+      ],
+      "correct_index": 1,
+      "explanation": "上下界都趋近 0，被夹在中间的函数别无选择，只能趋近 0。"
+    },
+    {
+      "type": "board",
+      "step_id": 11,
+      "board_uid": 5,
+      "title": "夹逼定理",
+      "board_content": "- 若 $g(x) \\le f(x) \\le h(x)$\n- 且 $\\lim g(x) = \\lim h(x) = L$\n- 则 $\\lim f(x) = L$ → **馅料只能待在面包汇合处**",
+      "layout": "follow",
+      "reveal_gate_step": 10,
+      "page_id": "page-1"
+    },
+    {
+      "type": "speak",
+      "step_id": 10,
+      "spoken_text": "这就是夹逼定理的直觉：只要我们能找到两片面包把目标函数夹住，并且面包在某一点汇合了，那中间的馅料也就只能待在那儿了。板书最后一行是它的正式写法。到这里，这个三明治的逻辑你感觉顺吗？"
+    },
+    {
+      "type": "circle",
+      "step_id": 12,
+      "target_board_uid": 5,
+      "snippet": "\\lim f(x) = L",
+      "color": null,
+      "during_step": 10,
+      "at_ms": 11494
+    },
+    {
+      "type": "tts_segment",
+      "step_id": 10,
+      "audio_url": "/courses/course_4db5360872/audio/sess_squeeze/step_3.mp3",
+      "duration_ms": 15441,
+      "tts_cjk": 83,
+      "tts_latin": 0,
+      "speed": 1.0,
+      "skipped": false
+    },
+    {
+      "type": "reward_user",
+      "step_id": 13,
+      "master_concept_title": "夹逼定理 = 三明治",
+      "master_concept_description": "算不出来的极限，找两片容易算的面包把它夹住；面包汇合在哪，馅料的极限就在哪。两个条件缺一不可：夹住，且汇合。"
+    },
+    {
+      "type": "ask",
+      "step_id": 14,
+      "mode": "choice",
+      "question": "两片面包如果在 x→0 处一个趋近 0、一个趋近 1，还能下结论吗？",
+      "options": [
+        {
+          "text": "能，反正函数被夹住了",
+          "misconception": "夹住只是第一个条件，第二个条件是两个界限的极限相等。没汇合就没结论。"
+        },
+        {
+          "text": "不能，面包没汇合，馅料在 0 到 1 之间哪都可能",
+          "misconception": null
+        }
+      ],
+      "correct_index": 1,
+      "explanation": "夹逼定理需要两个条件同时成立：夹住，并且上下界极限相等。"
+    },
+    {
+      "type": "done",
+      "step_id": 15
+    }
+  ]
+}

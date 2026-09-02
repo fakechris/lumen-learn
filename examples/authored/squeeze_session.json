@@ -1,0 +1,86 @@
+{
+  "session_id": "sess_squeeze",
+  "course_id": "course_authored",
+  "title": "极限求值：夹逼定理",
+  "learning_goal": "学生能解释为什么 x²·sin(1/x) 在 x→0 时极限为 0，并说出夹逼定理的两个条件。",
+  "steps": [
+    {
+      "title": "一个令人头大的例子",
+      "spoken_text": "先看板书上这个函数：x 平方乘以 sin 括号 1 比 x。当 x 趋近 0 的时候，前面的 x 平方乖乖地趋近 0，可后面的 sin 1 比 x 却在负一和一之间疯狂震荡，根本不收敛。两个因子一个听话一个发疯，乘起来到底趋近什么？直接代数是算不出来的。",
+      "boards": [
+        { "title": "", "markdown": "处理无法直接代数的\"顽固\"极限", "layout": "follow" },
+        {
+          "title": "一个令人头大的例子",
+          "markdown": "- $$f(x) = x^2 \\cdot \\sin\\left(\\tfrac{1}{x}\\right)$$\n- 当 $x \\to 0$ 时：\n    - $x^2 \\to 0$\n    - $\\sin(1/x)$ 在 $-1$ 到 $1$ 之间剧烈震荡",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        { "kind": "circle", "snippet": "\\sin(1/x)", "board_index": 1, "trigger_phrase": "疯狂震荡" }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": null,
+      "reward": null
+    },
+    {
+      "title": "两片面包",
+      "spoken_text": "把鼠标放到右边这张图上，沿着 x 轴左右滑。红色是我们的函数，绿色虚线是 y 等于 x 平方和 y 等于负 x 平方。看读数：不管你滑到哪，红点永远夹在两条绿线之间。越靠近 0，两片面包越贴近，中间的馅料还能往哪跑？",
+      "boards": [
+        {
+          "title": "建立直觉",
+          "markdown": "- 找到\"夹子\"：寻找上下界函数\n    - $-x^2 \\le x^2 \\sin(1/x) \\le x^2$\n- 确认汇合：两个界限的极限必须相等",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        { "kind": "highlight", "snippet": "-x^2 \\le x^2 \\sin(1/x) \\le x^2", "board_index": 0, "trigger_phrase": "永远夹在两条绿线之间" }
+      ],
+      "illustration": null,
+      "widget": {
+        "kind": "explorable",
+        "title": "滑动探针：红点永远在两片面包之间",
+        "task": "画 f(x)=x²·sin(1/x)（红）与包络 y=x²、y=-x²（绿色虚线），x 范围 ±0.32；探针读出当前 X 与 F(X)。",
+        "html_path": "squeeze_explorable.html",
+        "layout": "follow"
+      },
+      "question": {
+        "mode": "choice",
+        "question": "x 越靠近 0，红点还能跑到哪去？",
+        "options": ["它一直在震荡，所以极限不存在", "被两片面包挤到 0 了，极限就是 0"],
+        "correct_index": 1,
+        "misconceptions": ["震荡不等于发散：只要振幅被压到 0，震荡也会收敛。看读数，F(X) 的绝对值越来越小。", null],
+        "explanation": "上下界都趋近 0，被夹在中间的函数别无选择，只能趋近 0。"
+      },
+      "reward": null
+    },
+    {
+      "title": "夹逼定理",
+      "spoken_text": "这就是夹逼定理的直觉：只要我们能找到两片面包把目标函数夹住，并且面包在某一点汇合了，那中间的馅料也就只能待在那儿了。板书最后一行是它的正式写法。到这里，这个三明治的逻辑你感觉顺吗？",
+      "boards": [
+        {
+          "title": "夹逼定理",
+          "markdown": "- 若 $g(x) \\le f(x) \\le h(x)$\n- 且 $\\lim g(x) = \\lim h(x) = L$\n- 则 $\\lim f(x) = L$ → **馅料只能待在面包汇合处**",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        { "kind": "circle", "snippet": "\\lim f(x) = L", "board_index": 0, "trigger_phrase": "正式写法" }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": {
+        "mode": "choice",
+        "question": "两片面包如果在 x→0 处一个趋近 0、一个趋近 1，还能下结论吗？",
+        "options": ["能，反正函数被夹住了", "不能，面包没汇合，馅料在 0 到 1 之间哪都可能"],
+        "correct_index": 1,
+        "misconceptions": ["夹住只是第一个条件，第二个条件是两个界限的极限相等。没汇合就没结论。", null],
+        "explanation": "夹逼定理需要两个条件同时成立：夹住，并且上下界极限相等。"
+      },
+      "reward": {
+        "title": "夹逼定理 = 三明治",
+        "description": "算不出来的极限，找两片容易算的面包把它夹住；面包汇合在哪，馅料的极限就在哪。两个条件缺一不可：夹住，且汇合。"
+      }
+    }
+  ]
+}

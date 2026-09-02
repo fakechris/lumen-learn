@@ -77,11 +77,11 @@ svg.wb-annotations { position: absolute; inset: 0; pointer-events: none; overflo
 
 /* widgets keep a light frame (they are interactive surfaces) */
 .wb-widget { padding: 6px; }
-.wb-widget .wb-card-title { font-size: 1.2rem; color: #4b5563; margin-bottom: 6px; }
-.widget-frame { position: relative; border-radius: 12px; overflow: hidden; border: 1px solid var(--line); background: #fcfcfc; box-shadow: 0 6px 20px -12px rgba(15,23,42,.3); }
+.wb-widget .caption { font-family: var(--hand); text-align: center; color: #8a8f98; font-size: 1.25rem; margin-top: 6px; }
+.widget-frame { position: relative; border-radius: 14px; overflow: hidden; background: #faf8f3; border: 1px solid #ece7dc; }
 .widget-frame iframe { width: 100%; height: 100%; border: 0; display: block; }
 .widget-frame.fullscreen { position: fixed; inset: 24px; z-index: 50; height: auto !important; box-shadow: 0 30px 80px rgba(0,0,0,.35); }
-.widget-status { position: absolute; left: 10px; bottom: 8px; font-family: var(--ui); font-size: .72rem; color: var(--muted); background: rgba(255,255,255,.85); padding: 2px 8px; border-radius: 999px; }
+.widget-status { display: none; position: absolute; left: 10px; bottom: 8px; font-family: var(--ui); font-size: .72rem; color: var(--muted); background: rgba(255,255,255,.85); padding: 2px 8px; border-radius: 999px; }
 .widget-fullscreen { position: absolute; right: 8px; top: 8px; width: 28px; height: 28px; border-radius: 6px; border: 1px solid var(--line); background: rgba(255,255,255,.9); font-family: var(--ui); }
 .widget-error { position: absolute; inset: 0; display: none; align-items: center; justify-content: center; padding: 20px; text-align: center; font-family: var(--ui); font-size: .85rem; color: #991b1b; background: #fef2f2; }
 .widget-error.visible { display: flex; }
