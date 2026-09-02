@@ -122,8 +122,10 @@ class ContentPipeline:
 
     def begin_run(self, kind: str, course_id: Optional[str] = None, doc_key: Optional[str] = None, scope: str = "",
                   echo: bool = True) -> Run:
+        # Console echo comes from the Run; only non-console sinks (server jobs) are forwarded.
+        sink = self._progress if (self._progress is not _noop_progress and self._progress is not _print_progress) else None
         self.run = start_run(kind, self.output_root, course_id=course_id, doc_key=doc_key, scope=scope, echo=echo,
-                             extra_sink=self._progress if self._progress is not _noop_progress else None)
+                             extra_sink=sink)
         self.run._ledger_mark = GLOBAL_LEDGER.mark()
         return self.run
 
