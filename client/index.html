@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lumen Learn Socratic Whiteboard AI Tutor</title>
+  
+  <!-- KaTeX CSS & JS for LaTeX Math Rendering -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+  <!-- Marked Markdown Parser -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+  <!-- Top Navigation Header -->
+  <header class="top-header">
+    <div class="brand-section">
+      <div class="brand-logo">
+        <i data-lucide="sparkles" style="color: #2563eb; width: 20px; height: 20px;"></i>
+        Lumen Learn<span>Agent</span>
+      </div>
+      <div class="course-title-pill" id="courseTitlePill">
+        📚 线性代数：基与维数 (Basis and Dimension)
+      </div>
+    </div>
+
+    <div class="header-controls">
+      <!-- Session Switcher -->
+      <div class="nav-stepper">
+        <button class="btn-icon" id="prevSessionBtn" title="上一节"><i data-lucide="chevron-left"></i></button>
+        <span id="sessionCounter" style="font-size: 0.85rem; font-weight: 600; padding: 0 4px;">1 / 4</span>
+        <button class="btn-icon" id="nextSessionBtn" title="下一节"><i data-lucide="chevron-right"></i></button>
+      </div>
+
+      <!-- Speed Control -->
+      <button class="btn-pill" id="speedToggleBtn">1.25x 速度</button>
+
+      <!-- Model API & Upload Modals -->
+      <button class="btn-pill btn-primary" id="openUploadModalBtn">
+        <i data-lucide="upload-cloud" style="width: 14px; height: 14px; display: inline-block; vertical-align: middle; margin-right: 4px;"></i>
+        上传讲义生产新课程
+      </button>
+
+      <button class="btn-pill" id="openSettingsModalBtn" title="配置 LLM 模型与 API Key">
+        <i data-lucide="settings" style="width: 14px; height: 14px; display: inline-block; vertical-align: middle;"></i>
+        模型配置
+      </button>
+    </div>
+  </header>
+
+  <!-- Workspace Container -->
+  <div class="workspace-container">
+
+    <!-- Left Whiteboard Viewport -->
+    <main class="whiteboard-viewport" id="whiteboardViewport">
+      <div class="whiteboard-grid" id="whiteboardGrid">
+        <!-- Column 0: Conceptual Notes & Formulas -->
+        <div class="wb-column" id="columnLeft"></div>
+        <!-- Column 1: 3D Interactive Manipulatives & Visual Proofs -->
+        <div class="wb-column" id="columnRight"></div>
+      </div>
+    </main>
+
+    <!-- Bottom Floating Subtitle & Socratic Options Dock -->
+    <div class="bottom-dock">
+      <!-- Live Audio Subtitle Bar -->
+      <div class="subtitle-section">
+        <button class="play-pause-btn" id="playPauseBtn">
+          <i data-lucide="play" id="playIcon"></i>
+        </button>
+        <div class="subtitle-text-box" id="subtitleBox">
+          <span id="subtitleText">正在加载苏格拉底教学互动白板...</span>
+          <span class="typing-cursor" id="typingCursor"></span>
+        </div>
+        <button class="interject-btn" id="interjectBtn">
+          <i data-lucide="mic" style="width: 14px; height: 14px;"></i>
+          打断提问
+        </button>
+      </div>
+
+      <!-- Socratic Option Chips -->
+      <div class="socratic-chips-row" id="socraticOptionsRow">
+        <!-- Chips injected dynamically -->
+      </div>
+    </div>
+
+    <!-- Right Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-tabs">
+        <div class="sidebar-tab active" id="tabDialogue">💬 对话与讲解</div>
+        <div class="sidebar-tab" id="tabOutline">📑 课程大纲</div>
+        <div class="sidebar-tab" id="tabInspector">⚙️ 生产检查器</div>
+      </div>
+
+      <div class="sidebar-content" id="sidebarContent">
+        <!-- Tab Content dynamically swapped -->
+      </div>
+    </aside>
+
+  </div>
+
+  <!-- Upload Lecture Modal -->
+  <div class="modal-overlay" id="uploadModal" style="display: none;">
+    <div class="modal-box">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h3 style="font-size: 1.1rem; font-weight: 700; color: #1e293b;">📄 上传讲义或课件生成白板微课</h3>
+        <button class="btn-icon" id="closeUploadModalBtn"><i data-lucide="x"></i></button>
+      </div>
+      <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 12px;">
+        支持粘贴 Markdown / LaTeX 讲义或上传文档，系统将自动进行认知阶梯解构、生成板书、3D 三维教具与苏格拉底问题。
+      </p>
+      
+      <div style="margin-bottom: 12px;">
+        <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 4px;">课程标题</label>
+        <input type="text" id="lectureTitleInput" value="线性代数：基与维数" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.9rem;">
+      </div>
+
+      <div style="margin-bottom: 16px;">
+        <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 4px;">讲义文本内容 (支持 LaTeX $公式$)</label>
+        <textarea id="lectureContentInput" rows="8" style="width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.88rem; font-family: monospace;"></textarea>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 10px;">
+        <button class="btn-pill" id="cancelUploadBtn">取消</button>
+        <button class="btn-pill btn-primary" id="startGenerateBtn">🚀 开始 AI 拆解与生产</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Model Settings Modal -->
+  <div class="modal-overlay" id="settingsModal" style="display: none;">
+    <div class="modal-box">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h3 style="font-size: 1.1rem; font-weight: 700; color: #1e293b;">⚡ 配置大模型 API (接模型测试)</h3>
+        <button class="btn-icon" id="closeSettingsModalBtn"><i data-lucide="x"></i></button>
+      </div>
+
+      <div style="margin-bottom: 12px;">
+        <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 4px;">模型供应商 (Provider)</label>
+        <select id="llmProviderSelect" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px;">
+          <option value="deepseek">DeepSeek (deepseek-chat / deepseek-reasoner)</option>
+          <option value="anthropic">Anthropic (Claude 3.7 Sonnet / 3.5 Sonnet)</option>
+          <option value="openai">OpenAI / Compatible (GPT-4o / Qwen / Moonshot)</option>
+          <option value="gemini">Google Gemini (Gemini 2.5 Flash / Pro)</option>
+        </select>
+      </div>
+
+      <div style="margin-bottom: 12px;">
+        <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 4px;">API Key</label>
+        <input type="password" id="apiKeyInput" placeholder="sk-..." style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px;">
+      </div>
+
+      <div style="margin-bottom: 16px;">
+        <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 4px;">自定义 Base URL (可选)</label>
+        <input type="text" id="baseUrlInput" placeholder="https://api.deepseek.com" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px;">
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 10px;">
+        <button class="btn-pill" id="closeSettingsBtn">保存并应用</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>
