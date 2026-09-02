@@ -512,10 +512,22 @@ class ContentPipeline:
 
         async def one(i: int) -> StepAudio:
             text = script.steps[i].spoken_text
+            stem = os.path.join(audio_dir, f"step_{i + 1}")
             async with self._tts_sem:
                 import time
                 t0 = time.time()
-                res = await synthesize_aligned(self.tts, text, os.path.join(audio_dir, f"step_{i + 1}"))
+                try:
+                    res = await synthesize_aligned(self.tts, text, stem)
+                except Exception as e:  # never let audio kill a build: plain synthesis, then a virtual clock
+                    self.progress("warn", f"{script.session_id} step {i + 1}: aligned TTS failed ({str(e)[:120]}); plain synthesis",
+                                  session_id=script.session_id)
+                    try:
+                        res = await self.tts.synthesize(text, stem)
+                    except Exception as e2:
+                        self.progress("warn", f"{script.session_id} step {i + 1}: TTS failed ({str(e2)[:120]}); silent",
+                                      session_id=script.session_id)
+                        from src.tts.engine import SilentEngine
+                        res = await SilentEngine().synthesize(text, stem)
                 GLOBAL_LEDGER.add_tts(self.tts.name, "tts", len(text), time.time() - t0)
             url = None
             if res.audio_path:
