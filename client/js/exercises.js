@@ -28,12 +28,21 @@ export class ExerciseView {
     $("exRead").addEventListener("click", () => this.readAloud());
   }
 
-  async open(courseId, sessionId) {
-    const res = await fetch(`/api/v1/courses/${courseId}/sessions/${sessionId}/exercises`);
-    const data = res.ok ? await res.json() : { exercises: [] };
-    this.items = data.exercises || [];
+  async open(courseId, sessionId, opts = {}) {
+    return this.openMany(courseId, [sessionId], opts);
+  }
+
+  /** Open the exercises of several sessions as one set (unit quiz). */
+  async openMany(courseId, sessionIds, { onDone } = {}) {
+    const items = [];
+    for (const sid of sessionIds) {
+      const res = await fetch(`/api/v1/courses/${courseId}/sessions/${sid}/exercises`);
+      const data = res.ok ? await res.json() : { exercises: [] };
+      for (const ex of data.exercises || []) items.push({ ...ex, _session: sid });
+    }
+    this.items = items;
     this.courseId = courseId;
-    this.sessionId = sessionId;
+    this.onDone = onDone || null;
     this.results.clear();
     this.index = 0;
     if (!this.items.length) return false;
@@ -42,7 +51,14 @@ export class ExerciseView {
     return true;
   }
 
-  close() { this.root.classList.remove("open"); }
+  close() {
+    this.root.classList.remove("open");
+    if (this.onDone && this.results.size) {
+      const correct = [...this.results.values()].filter((r) => r.correct).length;
+      this.onDone(correct / this.items.length);
+      this.onDone = null;
+    }
+  }
 
   go(delta) {
     const next = this.index + delta;
@@ -151,7 +167,7 @@ export class ExerciseView {
 
   async check() {
     const ex = this.current();
-    const body = { course_id: this.courseId, session_id: this.sessionId, exercise_id: ex.exercise_id };
+    const body = { course_id: this.courseId, session_id: ex._session || this.sessionId, exercise_id: ex.exercise_id };
     if (ex.kind === "fill_blank") body.answer_text = $("exBlank").value.trim();
     else body.answer_index = this.selected;
     $("exCheck").disabled = true;
