@@ -55,6 +55,38 @@ class ContentPipeline:
     async def run_text(self, content: str, title: Optional[str] = None) -> str:
         return await self.run_document(parse_markdown(content, title=title))
 
+    async def run_script(self, script_path: str) -> str:
+        """Compile a hand-authored SessionScript (mode "authored") into a package."""
+        from src.content.validators import sanitize_script
+        from src.protocol.session import ChapterOutline, stable_id
+
+        with open(script_path, encoding="utf-8") as f:
+            raw = f.read()
+        script = SessionScript.model_validate_json(raw)
+        base = os.path.dirname(os.path.abspath(script_path))
+        for step in script.steps:
+            w = step.widget
+            if w and w.html_path and not w.html:
+                with open(os.path.join(base, w.html_path), encoding="utf-8") as f:
+                    step.widget = w.model_copy(update={"html": f.read()})
+        course_id = stable_id("course", "authored", script.session_id, raw)
+        script = script.model_copy(update={"course_id": course_id})
+        script, warnings = sanitize_script(script)
+        for w in warnings:
+            self.progress("warn", w)
+        outline = SessionOutline(session_id=script.session_id, title=script.title, learning_goal=script.learning_goal,
+                                 core_concept=script.title)
+        course = CourseStructure(course_id=course_id, title=script.title, overview=script.learning_goal,
+                                 generation_mode="authored",
+                                 chapters=[ChapterOutline(chapter_id="ch_1", title=script.title, sessions=[outline])])
+        course_dir = os.path.join(self.output_root, course_id)
+        audio = await self._synthesize_audio(script, course_dir)
+        session = compile_session(script, audio, generation_mode="authored")
+        self.progress("compile", f"{script.session_id}: {len(session.actions)} actions, {session.total_duration_ms / 1000:.0f}s audio")
+        write_package(course_dir, course, [script], [session])
+        self.progress("done", course_dir)
+        return course_dir
+
     async def run_document(self, doc: ParsedDocument) -> str:
         self.progress("parse", f"{doc.title}: {len(doc.sections)} sections")
         course = await plan_course_llm(doc, self.llm) if self.llm else plan_course_heuristic(doc)
@@ -127,13 +159,16 @@ def _print_progress(stage: str, detail: str) -> None:
 
 def main(argv=None) -> int:
     p = argparse.ArgumentParser(description="Socratic whiteboard content pipeline")
-    p.add_argument("--input", required=True)
+    p.add_argument("--input", help="Lecture file (md/txt/pdf)")
+    p.add_argument("--script", help="Hand-authored SessionScript JSON to compile instead of --input")
     p.add_argument("--title", default=None)
     p.add_argument("--output", default="output")
     p.add_argument("--mode", default="auto", choices=["auto", "llm", "heuristic"])
     p.add_argument("--tts", default=None, help="say|edge|silent|auto (default: TTS_ENGINE env or auto)")
     args = p.parse_args(argv)
 
+    if not args.input and not args.script:
+        p.error("one of --input or --script is required")
     llm = make_client() if args.mode != "heuristic" else None
     if args.mode == "auto" and llm is None:
         print("ℹ️  no LLM key found; running heuristic walk-through mode", flush=True)
@@ -143,7 +178,10 @@ def main(argv=None) -> int:
         print(f"ℹ️  LLM: {llm.config.provider}/{llm.model}   TTS: {pipeline.tts.name}", flush=True)
     else:
         print(f"ℹ️  TTS: {pipeline.tts.name}", flush=True)
-    asyncio.run(pipeline.run_file(args.input, title=args.title))
+    if args.script:
+        asyncio.run(pipeline.run_script(args.script))
+    else:
+        asyncio.run(pipeline.run_file(args.input, title=args.title))
     return 0
 
 

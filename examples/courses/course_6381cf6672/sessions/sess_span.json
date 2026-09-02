@@ -1,0 +1,245 @@
+{
+  "manifest_version": "2.0",
+  "session_id": "sess_span",
+  "course_id": "course_6381cf6672",
+  "title": "两个向量能张成什么？",
+  "learning_goal": "学生能解释两个非零不平行向量在三维空间中的张成是一个平面，并理解为什么不能张成整个三维空间。",
+  "generation_mode": "authored",
+  "total_duration_ms": 97312,
+  "actions": [
+    {
+      "type": "board",
+      "step_id": 2,
+      "board_uid": 1,
+      "title": "一根棍子",
+      "board_content": "- 棍子 $\\vec{v}_1$，拉伸倍数 $c_1$\n- 尖端能到的位置：$c_1 \\vec{v}_1$\n- 连起来 → **一条过原点的直线**（1 维）",
+      "layout": "follow",
+      "reveal_gate_step": 1,
+      "page_id": "page-1"
+    },
+    {
+      "type": "speak",
+      "step_id": 1,
+      "spoken_text": "先别急着看公式。想象你手里有一根可以随意拉长缩短、还能反过来的棍子，这就是 v1。它的尖端能到的所有位置，连起来是什么？对，一条穿过原点的直线。板书上我把它记成 c1 乘 v1，c1 就是你拉伸的倍数。"
+    },
+    {
+      "type": "highlight",
+      "step_id": 3,
+      "target_board_uid": 1,
+      "snippet": "c_1 \\vec{v}_1",
+      "color": null,
+      "during_step": 1,
+      "at_ms": 14916
+    },
+    {
+      "type": "tts_segment",
+      "step_id": 1,
+      "audio_url": "/courses/course_6381cf6672/audio/sess_span/step_1.mp3",
+      "duration_ms": 18599,
+      "tts_cjk": 78,
+      "tts_latin": 8,
+      "speed": 1.0,
+      "skipped": false
+    },
+    {
+      "type": "board",
+      "step_id": 5,
+      "board_uid": 2,
+      "title": "两根棍子",
+      "board_content": "- 先走 $c_1 \\vec{v}_1$，再走 $c_2 \\vec{v}_2$\n- 尖端位置：$c_1 \\vec{v}_1 + c_2 \\vec{v}_2$\n- 所有可能的尖端 = $\\text{span}(\\vec{v}_1, \\vec{v}_2)$\n- 长什么样？→ 你先猜",
+      "layout": "follow",
+      "reveal_gate_step": 4,
+      "page_id": "page-1"
+    },
+    {
+      "type": "generated_animation",
+      "step_id": 6,
+      "board_uid": 3,
+      "title": "试试看：能碰到红球吗？",
+      "html": "<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"utf-8\">\n  <style>\n    body { margin: 0; overflow: hidden; background: #fcfcfc; font-family: -apple-system, \"PingFang SC\", sans-serif; }\n    #hint { position: absolute; top: 10px; left: 10px; font-size: 12px; color: #444; background: rgba(255,255,255,.9); padding: 5px 9px; border-radius: 6px; border: 1px solid #e5e7eb; pointer-events: none; }\n    #panel { position: absolute; left: 10px; bottom: 10px; right: 10px; background: rgba(255,255,255,.94); border: 1px solid #e5e7eb; border-radius: 10px; padding: 8px 12px; font-size: 12px; color: #1f2937; }\n    .row { display: flex; align-items: center; gap: 8px; margin: 4px 0; }\n    .row label { width: 84px; font-weight: 600; }\n    .row input[type=range] { flex: 1; }\n    .row .val { width: 44px; text-align: right; font-variant-numeric: tabular-nums; }\n    #status { margin-top: 4px; font-weight: 600; color: #b91c1c; }\n    #status.ok { color: #15803d; }\n    .sw { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 4px; vertical-align: middle; }\n  </style>\n  <script src=\"https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js\"></script>\n  <script src=\"https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js\"></script>\n</head>\n<body>\n  <div id=\"hint\">拖拽旋转视角 · 拖动滑块调 c1、c2，试着把紫色箭头尖送到红球</div>\n  <div id=\"panel\">\n    <div class=\"row\"><label><span class=\"sw\" style=\"background:#e05656\"></span>c1 · v1</label><input id=\"c1\" type=\"range\" min=\"-2\" max=\"2\" step=\"0.05\" value=\"1\"><span class=\"val\" id=\"c1v\">1.00</span></div>\n    <div class=\"row\"><label><span class=\"sw\" style=\"background:#2563eb\"></span>c2 · v2</label><input id=\"c2\" type=\"range\" min=\"-2\" max=\"2\" step=\"0.05\" value=\"0.6\"><span class=\"val\" id=\"c2v\">0.60</span></div>\n    <div class=\"row\"><label><input id=\"v3\" type=\"checkbox\"> 加入 v3 = v1 + v2</label><span id=\"status\">紫色箭头尖到红球的高度差：—</span></div>\n  </div>\n  <script>\n    const scene = new THREE.Scene();\n    scene.background = new THREE.Color(0xfcfcfc);\n    const camera = new THREE.PerspectiveCamera(45, innerWidth / innerHeight, 0.1, 100);\n    camera.position.set(4.5, 3.2, 5.5);\n    const renderer = new THREE.WebGLRenderer({ antialias: true });\n    renderer.setPixelRatio(devicePixelRatio);\n    renderer.setSize(innerWidth, innerHeight);\n    document.body.appendChild(renderer.domElement);\n    const controls = new THREE.OrbitControls(camera, renderer.domElement);\n    controls.enableDamping = true;\n    controls.target.set(0.6, 0.4, 0.6);\n\n    scene.add(new THREE.GridHelper(8, 16, 0xbbbbbb, 0xe5e5e5));\n    scene.add(new THREE.AxesHelper(3));\n\n    // v1 and v2 lie in a tilted plane so the \"floor\" is not the xz grid.\n    const v1 = new THREE.Vector3(2, 0.4, 0.6);\n    const v2 = new THREE.Vector3(0.4, 0.9, 2);\n    const origin = new THREE.Vector3();\n    const arrow = (v, color, len) => new THREE.ArrowHelper(v.clone().normalize(), origin, len ?? v.length(), color, 0.25, 0.12);\n    scene.add(arrow(v1, 0xe05656));\n    scene.add(arrow(v2, 0x2563eb));\n\n    // The span plane, drawn as a large translucent quad through the origin.\n    const n = new THREE.Vector3().crossVectors(v1, v2).normalize();\n    const planeGeo = new THREE.PlaneGeometry(7, 7);\n    const plane = new THREE.Mesh(planeGeo, new THREE.MeshBasicMaterial({ color: 0x10b981, transparent: true, opacity: 0.22, side: THREE.DoubleSide, depthWrite: false }));\n    plane.lookAt(n);\n    scene.add(plane);\n\n    // Purple combination arrow c1 v1 + c2 v2, and a target sphere off the plane.\n    const combo = new THREE.ArrowHelper(new THREE.Vector3(1, 0, 0), origin, 1, 0x8b5cf6, 0.25, 0.12);\n    scene.add(combo);\n    const target = new THREE.Mesh(new THREE.SphereGeometry(0.12, 24, 24), new THREE.MeshBasicMaterial({ color: 0xdc2626 }));\n    target.position.copy(v1.clone().multiplyScalar(0.8).add(v2.clone().multiplyScalar(0.7)).add(n.clone().multiplyScalar(1.2)));\n    scene.add(target);\n    // Dashed drop line from the target down to the plane, to make the \"height\" visible.\n    const foot = target.position.clone().sub(n.clone().multiplyScalar(target.position.dot(n)));\n    const drop = new THREE.Line(new THREE.BufferGeometry().setFromPoints([target.position, foot]),\n      new THREE.LineDashedMaterial({ color: 0xdc2626, dashSize: 0.12, gapSize: 0.08 }));\n    drop.computeLineDistances();\n    scene.add(drop);\n\n    const v3 = arrow(v1.clone().add(v2), 0xf59e0b);\n    v3.visible = false;\n    scene.add(v3);\n\n    function label(text, pos, color) {\n      const c = document.createElement(\"canvas\"); c.width = 256; c.height = 64;\n      const g = c.getContext(\"2d\"); g.font = \"bold 40px sans-serif\"; g.fillStyle = color; g.textAlign = \"center\"; g.fillText(text, 128, 46);\n      const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(c), transparent: true }));\n      s.scale.set(1.2, 0.3, 1); s.position.copy(pos); scene.add(s); return s;\n    }\n    label(\"v1\", v1.clone().multiplyScalar(1.12), \"#e05656\");\n    label(\"v2\", v2.clone().multiplyScalar(1.12), \"#2563eb\");\n    label(\"红球在平面上方\", target.position.clone().add(new THREE.Vector3(0, 0.35, 0)), \"#dc2626\");\n    const v3Label = label(\"v3 = v1 + v2\", v1.clone().add(v2).multiplyScalar(1.1), \"#f59e0b\");\n    v3Label.visible = false;\n\n    const c1 = document.getElementById(\"c1\"), c2 = document.getElementById(\"c2\");\n    const status = document.getElementById(\"status\");\n    function update() {\n      const a = parseFloat(c1.value), b = parseFloat(c2.value);\n      document.getElementById(\"c1v\").textContent = a.toFixed(2);\n      document.getElementById(\"c2v\").textContent = b.toFixed(2);\n      const p = v1.clone().multiplyScalar(a).add(v2.clone().multiplyScalar(b));\n      const len = Math.max(0.001, p.length());\n      combo.setDirection(p.clone().normalize());\n      combo.setLength(len, 0.25, 0.12);\n      const gap = target.position.clone().sub(p).dot(n);\n      status.textContent = `紫色箭头尖到红球的高度差：${gap.toFixed(2)}（永远不会变成 0）`;\n      status.className = \"\";\n    }\n    c1.addEventListener(\"input\", update);\n    c2.addEventListener(\"input\", update);\n    document.getElementById(\"v3\").addEventListener(\"change\", (e) => { v3.visible = e.target.checked; v3Label.visible = e.target.checked; });\n    update();\n\n    addEventListener(\"resize\", () => {\n      camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight);\n    });\n    (function animate() { requestAnimationFrame(animate); controls.update(); renderer.render(scene, camera); })();\n  </script>\n</body>\n</html>\n",
+      "layout": "newcol",
+      "reveal_gate_step": 4
+    },
+    {
+      "type": "speak",
+      "step_id": 4,
+      "spoken_text": "现在给你第二根棍子 v2，方向和 v1 不一样。规则是：先沿 v1 走 c1 倍，再沿 v2 走 c2 倍，看紫色箭头的尖端能到哪里。右边的教具你可以自己拖滑块试。注意那个红球，它就在绿色平面的正上方一点点。你能把紫色箭头的尖送到红球上吗？"
+    },
+    {
+      "type": "circle",
+      "step_id": 7,
+      "target_board_uid": 2,
+      "snippet": "c_1 \\vec{v}_1 + c_2 \\vec{v}_2",
+      "color": null,
+      "during_step": 4,
+      "at_ms": 10248
+    },
+    {
+      "type": "tts_segment",
+      "step_id": 4,
+      "audio_url": "/courses/course_6381cf6672/audio/sess_span/step_2.mp3",
+      "duration_ms": 22360,
+      "tts_cjk": 87,
+      "tts_latin": 12,
+      "speed": 1.0,
+      "skipped": false
+    },
+    {
+      "type": "ask",
+      "step_id": 8,
+      "mode": "choice",
+      "question": "拖了半天滑块，紫色箭头的尖能碰到红球吗？",
+      "options": [
+        {
+          "text": "能，c1 c2 随便调，总有一组行",
+          "misconception": "这是最常见的直觉：以为两个参数可以自由到任何地方。但两个参数只能在一张纸上滑动，红球在纸的上方。"
+        },
+        {
+          "text": "不能，尖端永远贴在绿色平面上",
+          "misconception": null
+        }
+      ],
+      "correct_index": 1,
+      "explanation": "不管 c1、c2 取多少，尖端始终在绿色平面上，红球在平面上方，高度差永远不为零。"
+    },
+    {
+      "type": "board",
+      "step_id": 10,
+      "board_uid": 4,
+      "title": "缺的方向",
+      "board_content": "- 房间：前后、左右、**上下** 三个方向\n- $\\vec{v}_1, \\vec{v}_2$ 都躺在同一张纸上\n- 纸上的向量，组合不出**垂直于纸的分量**\n- 所以 $\\text{span}(\\vec{v}_1, \\vec{v}_2)$ = 一个平面（2 维）≠ $\\mathbb{R}^3$",
+      "layout": "follow",
+      "reveal_gate_step": 9,
+      "page_id": "page-1"
+    },
+    {
+      "type": "speak",
+      "step_id": 9,
+      "spoken_text": "为什么到不了？看教具里那条红色虚线，那是红球离平面的高度。v1 和 v2 都躺在平面里，它们怎么组合，都造不出这一段高度。板书上我把它写成一句话：平面上的向量，组合不出垂直于平面的分量。房间有三个方向，你手上只有两个。"
+    },
+    {
+      "type": "circle",
+      "step_id": 11,
+      "target_board_uid": 4,
+      "snippet": "垂直于纸的分量",
+      "color": null,
+      "during_step": 9,
+      "at_ms": 14604
+    },
+    {
+      "type": "tts_segment",
+      "step_id": 9,
+      "audio_url": "/courses/course_6381cf6672/audio/sess_span/step_3.mp3",
+      "duration_ms": 19899,
+      "tts_cjk": 91,
+      "tts_latin": 4,
+      "speed": 1.0,
+      "skipped": false
+    },
+    {
+      "type": "board",
+      "step_id": 13,
+      "board_uid": 5,
+      "title": "第三根棍子",
+      "board_content": "- 新来的 $\\vec{v}_3 = \\vec{v}_1 + \\vec{v}_2$\n- 它在哪？→ 教具里橙色箭头\n- 三根棍子 → 能出纸面吗？",
+      "layout": "follow",
+      "reveal_gate_step": 12,
+      "page_id": "page-1"
+    },
+    {
+      "type": "speak",
+      "step_id": 12,
+      "spoken_text": "那我再给你一根 v3，它正好等于 v1 加 v2。你可以在教具里把它勾出来，橙色的那根。三根棍子总比两根强吧？现在有三个向量了，能不能带你离开这张纸，去碰红球？"
+    },
+    {
+      "type": "highlight",
+      "step_id": 14,
+      "target_board_uid": 5,
+      "snippet": "\\vec{v}_3 = \\vec{v}_1 + \\vec{v}_2",
+      "color": null,
+      "during_step": 12,
+      "at_ms": 2288
+    },
+    {
+      "type": "tts_segment",
+      "step_id": 12,
+      "audio_url": "/courses/course_6381cf6672/audio/sess_span/step_4.mp3",
+      "duration_ms": 15255,
+      "tts_cjk": 62,
+      "tts_latin": 6,
+      "speed": 1.0,
+      "skipped": false
+    },
+    {
+      "type": "ask",
+      "step_id": 15,
+      "mode": "choice",
+      "question": "加了 v3 = v1 + v2 之后，能离开平面碰到红球吗？",
+      "options": [
+        {
+          "text": "能，多一根总比少一根强",
+          "misconception": "以为向量数量多了维度就自动多了。可 v3 本来就是 v1、v2 拼出来的，它没带来新方向。"
+        },
+        {
+          "text": "不能，v3 自己就躺在纸上",
+          "misconception": null
+        }
+      ],
+      "correct_index": 1,
+      "explanation": "v3 是 v1 和 v2 的组合，它自己就在平面里，三根棍子能到的地方和两根一模一样。"
+    },
+    {
+      "type": "board",
+      "step_id": 17,
+      "board_uid": 6,
+      "title": "多余 vs 关键",
+      "board_content": "- $\\vec{v}_3 = \\vec{v}_1 + \\vec{v}_2$ → 没有新方向\n- $\\text{span}(\\vec{v}_1, \\vec{v}_2, \\vec{v}_3) = \\text{span}(\\vec{v}_1, \\vec{v}_2)$，**线性相关**\n- 换一根戳出纸面的 $\\vec{u}$ → $\\text{span}(\\vec{v}_1, \\vec{v}_2, \\vec{u}) = \\mathbb{R}^3$\n- 决定维度的：**独立方向的个数**，不是向量个数",
+      "layout": "follow",
+      "reveal_gate_step": 16,
+      "page_id": "page-1"
+    },
+    {
+      "type": "speak",
+      "step_id": 16,
+      "spoken_text": "看板书第二行：三根棍子的 span，和两根的 span，一模一样。v3 是多余的，我们说这三个向量线性相关。反过来，如果第三根棍子是斜着戳出纸面的，哪怕只戳出去一点点，你就能到达房间里任何一点。所以关键从来不是几根棍子，而是有几个真正独立的方向。"
+    },
+    {
+      "type": "circle",
+      "step_id": 18,
+      "target_board_uid": 6,
+      "snippet": "\\text{span}(\\vec{v}_1, \\vec{v}_2, \\vec{v}_3) = \\text{span}(\\vec{v}_1, \\vec{v}_2)",
+      "color": null,
+      "during_step": 16,
+      "at_ms": 4825
+    },
+    {
+      "type": "highlight",
+      "step_id": 19,
+      "target_board_uid": 6,
+      "snippet": "独立方向的个数",
+      "color": null,
+      "during_step": 16,
+      "at_ms": 19303
+    },
+    {
+      "type": "tts_segment",
+      "step_id": 16,
+      "audio_url": "/courses/course_6381cf6672/audio/sess_span/step_5.mp3",
+      "duration_ms": 21199,
+      "tts_cjk": 98,
+      "tts_latin": 10,
+      "speed": 1.0,
+      "skipped": false
+    },
+    {
+      "type": "reward_user",
+      "step_id": 20,
+      "master_concept_title": "张成 = 棍子能到的所有地方",
+      "master_concept_description": "两根不平行的棍子只能铺出一张过原点的纸（平面）。再多的棍子，只要都躺在纸上，纸还是纸；一根戳出纸面的棍子，才能把纸变成整个房间。维度数的是独立方向，不是向量个数。"
+    },
+    {
+      "type": "done",
+      "step_id": 21
+    }
+  ]
+}

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { margin: 0; overflow: hidden; background: #fcfcfc; font-family: -apple-system, "PingFang SC", sans-serif; }
+    #hint { position: absolute; top: 10px; left: 10px; font-size: 12px; color: #444; background: rgba(255,255,255,.9); padding: 5px 9px; border-radius: 6px; border: 1px solid #e5e7eb; pointer-events: none; }
+    #panel { position: absolute; left: 10px; bottom: 10px; right: 10px; background: rgba(255,255,255,.94); border: 1px solid #e5e7eb; border-radius: 10px; padding: 8px 12px; font-size: 12px; color: #1f2937; }
+    .row { display: flex; align-items: center; gap: 8px; margin: 4px 0; }
+    .row label { width: 84px; font-weight: 600; }
+    .row input[type=range] { flex: 1; }
+    .row .val { width: 44px; text-align: right; font-variant-numeric: tabular-nums; }
+    #status { margin-top: 4px; font-weight: 600; color: #b91c1c; }
+    #status.ok { color: #15803d; }
+    .sw { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 4px; vertical-align: middle; }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+</head>
+<body>
+  <div id="hint">拖拽旋转视角 · 拖动滑块调 c1、c2，试着把紫色箭头尖送到红球</div>
+  <div id="panel">
+    <div class="row"><label><span class="sw" style="background:#e05656"></span>c1 · v1</label><input id="c1" type="range" min="-2" max="2" step="0.05" value="1"><span class="val" id="c1v">1.00</span></div>
+    <div class="row"><label><span class="sw" style="background:#2563eb"></span>c2 · v2</label><input id="c2" type="range" min="-2" max="2" step="0.05" value="0.6"><span class="val" id="c2v">0.60</span></div>
+    <div class="row"><label><input id="v3" type="checkbox"> 加入 v3 = v1 + v2</label><span id="status">紫色箭头尖到红球的高度差：—</span></div>
+  </div>
+  <script>
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0xfcfcfc);
+    const camera = new THREE.PerspectiveCamera(45, innerWidth / innerHeight, 0.1, 100);
+    camera.position.set(4.5, 3.2, 5.5);
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setPixelRatio(devicePixelRatio);
+    renderer.setSize(innerWidth, innerHeight);
+    document.body.appendChild(renderer.domElement);
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.target.set(0.6, 0.4, 0.6);
+
+    scene.add(new THREE.GridHelper(8, 16, 0xbbbbbb, 0xe5e5e5));
+    scene.add(new THREE.AxesHelper(3));
+
+    // v1 and v2 lie in a tilted plane so the "floor" is not the xz grid.
+    const v1 = new THREE.Vector3(2, 0.4, 0.6);
+    const v2 = new THREE.Vector3(0.4, 0.9, 2);
+    const origin = new THREE.Vector3();
+    const arrow = (v, color, len) => new THREE.ArrowHelper(v.clone().normalize(), origin, len ?? v.length(), color, 0.25, 0.12);
+    scene.add(arrow(v1, 0xe05656));
+    scene.add(arrow(v2, 0x2563eb));
+
+    // The span plane, drawn as a large translucent quad through the origin.
+    const n = new THREE.Vector3().crossVectors(v1, v2).normalize();
+    const planeGeo = new THREE.PlaneGeometry(7, 7);
+    const plane = new THREE.Mesh(planeGeo, new THREE.MeshBasicMaterial({ color: 0x10b981, transparent: true, opacity: 0.22, side: THREE.DoubleSide, depthWrite: false }));
+    plane.lookAt(n);
+    scene.add(plane);
+
+    // Purple combination arrow c1 v1 + c2 v2, and a target sphere off the plane.
+    const combo = new THREE.ArrowHelper(new THREE.Vector3(1, 0, 0), origin, 1, 0x8b5cf6, 0.25, 0.12);
+    scene.add(combo);
+    const target = new THREE.Mesh(new THREE.SphereGeometry(0.12, 24, 24), new THREE.MeshBasicMaterial({ color: 0xdc2626 }));
+    target.position.copy(v1.clone().multiplyScalar(0.8).add(v2.clone().multiplyScalar(0.7)).add(n.clone().multiplyScalar(1.2)));
+    scene.add(target);
+    // Dashed drop line from the target down to the plane, to make the "height" visible.
+    const foot = target.position.clone().sub(n.clone().multiplyScalar(target.position.dot(n)));
+    const drop = new THREE.Line(new THREE.BufferGeometry().setFromPoints([target.position, foot]),
+      new THREE.LineDashedMaterial({ color: 0xdc2626, dashSize: 0.12, gapSize: 0.08 }));
+    drop.computeLineDistances();
+    scene.add(drop);
+
+    const v3 = arrow(v1.clone().add(v2), 0xf59e0b);
+    v3.visible = false;
+    scene.add(v3);
+
+    function label(text, pos, color) {
+      const c = document.createElement("canvas"); c.width = 256; c.height = 64;
+      const g = c.getContext("2d"); g.font = "bold 40px sans-serif"; g.fillStyle = color; g.textAlign = "center"; g.fillText(text, 128, 46);
+      const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(c), transparent: true }));
+      s.scale.set(1.2, 0.3, 1); s.position.copy(pos); scene.add(s); return s;
+    }
+    label("v1", v1.clone().multiplyScalar(1.12), "#e05656");
+    label("v2", v2.clone().multiplyScalar(1.12), "#2563eb");
+    label("红球在平面上方", target.position.clone().add(new THREE.Vector3(0, 0.35, 0)), "#dc2626");
+    const v3Label = label("v3 = v1 + v2", v1.clone().add(v2).multiplyScalar(1.1), "#f59e0b");
+    v3Label.visible = false;
+
+    const c1 = document.getElementById("c1"), c2 = document.getElementById("c2");
+    const status = document.getElementById("status");
+    function update() {
+      const a = parseFloat(c1.value), b = parseFloat(c2.value);
+      document.getElementById("c1v").textContent = a.toFixed(2);
+      document.getElementById("c2v").textContent = b.toFixed(2);
+      const p = v1.clone().multiplyScalar(a).add(v2.clone().multiplyScalar(b));
+      const len = Math.max(0.001, p.length());
+      combo.setDirection(p.clone().normalize());
+      combo.setLength(len, 0.25, 0.12);
+      const gap = target.position.clone().sub(p).dot(n);
+      status.textContent = `紫色箭头尖到红球的高度差：${gap.toFixed(2)}（永远不会变成 0）`;
+      status.className = "";
+    }
+    c1.addEventListener("input", update);
+    c2.addEventListener("input", update);
+    document.getElementById("v3").addEventListener("change", (e) => { v3.visible = e.target.checked; v3Label.visible = e.target.checked; });
+    update();
+
+    addEventListener("resize", () => {
+      camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight);
+    });
+    (function animate() { requestAnimationFrame(animate); controls.update(); renderer.render(scene, camera); })();
+  </script>
+</body>
+</html>

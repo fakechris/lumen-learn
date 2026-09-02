@@ -1,0 +1,117 @@
+{
+  "session_id": "sess_span",
+  "course_id": "course_authored",
+  "title": "两个向量能张成什么？",
+  "learning_goal": "学生能解释两个非零不平行向量在三维空间中的张成是一个平面，并理解为什么不能张成整个三维空间。",
+  "steps": [
+    {
+      "title": "一根棍子，一条线",
+      "spoken_text": "先别急着看公式。想象你手里有一根可以随意拉长缩短、还能反过来的棍子，这就是 v1。它的尖端能到的所有位置，连起来是什么？对，一条穿过原点的直线。板书上我把它记成 c1 乘 v1，c1 就是你拉伸的倍数。",
+      "boards": [
+        {
+          "title": "一根棍子",
+          "markdown": "- 棍子 $\\vec{v}_1$，拉伸倍数 $c_1$\n- 尖端能到的位置：$c_1 \\vec{v}_1$\n- 连起来 → **一条过原点的直线**（1 维）",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        { "kind": "highlight", "snippet": "c_1 \\vec{v}_1", "board_index": 0, "trigger_phrase": "c1 乘 v1" }
+      ],
+      "widget": null,
+      "question": null,
+      "reward": null
+    },
+    {
+      "title": "两根棍子，一张纸",
+      "spoken_text": "现在给你第二根棍子 v2，方向和 v1 不一样。规则是：先沿 v1 走 c1 倍，再沿 v2 走 c2 倍，看紫色箭头的尖端能到哪里。右边的教具你可以自己拖滑块试。注意那个红球，它就在绿色平面的正上方一点点。你能把紫色箭头的尖送到红球上吗？",
+      "boards": [
+        {
+          "title": "两根棍子",
+          "markdown": "- 先走 $c_1 \\vec{v}_1$，再走 $c_2 \\vec{v}_2$\n- 尖端位置：$c_1 \\vec{v}_1 + c_2 \\vec{v}_2$\n- 所有可能的尖端 = $\\text{span}(\\vec{v}_1, \\vec{v}_2)$\n- 长什么样？→ 你先猜",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        { "kind": "circle", "snippet": "c_1 \\vec{v}_1 + c_2 \\vec{v}_2", "board_index": 0, "trigger_phrase": "紫色箭头的尖端能到哪里" }
+      ],
+      "widget": {
+        "kind": "threejs",
+        "title": "试试看：能碰到红球吗？",
+        "task": "三维空间：红色 v1、蓝色 v2 两个不平行向量，它们张成的半透明绿色平面过原点。紫色箭头 = c1·v1 + c2·v2，底部两个滑块调 c1、c2。平面正上方悬一个红球并画出到平面的虚线高度，实时显示紫色箭头尖到红球的高度差，让学生发现永远到不了。复选框可加入橙色 v3 = v1 + v2，看到它躺在平面里。鼠标可旋转。",
+        "html_path": "span_widget.html",
+        "layout": "newcol"
+      },
+      "question": {
+        "mode": "choice",
+        "question": "拖了半天滑块，紫色箭头的尖能碰到红球吗？",
+        "options": ["能，c1 c2 随便调，总有一组行", "不能，尖端永远贴在绿色平面上"],
+        "correct_index": 1,
+        "misconceptions": ["这是最常见的直觉：以为两个参数可以自由到任何地方。但两个参数只能在一张纸上滑动，红球在纸的上方。", null],
+        "explanation": "不管 c1、c2 取多少，尖端始终在绿色平面上，红球在平面上方，高度差永远不为零。"
+      },
+      "reward": null
+    },
+    {
+      "title": "缺的是哪一个方向",
+      "spoken_text": "为什么到不了？看教具里那条红色虚线，那是红球离平面的高度。v1 和 v2 都躺在平面里，它们怎么组合，都造不出这一段高度。板书上我把它写成一句话：平面上的向量，组合不出垂直于平面的分量。房间有三个方向，你手上只有两个。",
+      "boards": [
+        {
+          "title": "缺的方向",
+          "markdown": "- 房间：前后、左右、**上下** 三个方向\n- $\\vec{v}_1, \\vec{v}_2$ 都躺在同一张纸上\n- 纸上的向量，组合不出**垂直于纸的分量**\n- 所以 $\\text{span}(\\vec{v}_1, \\vec{v}_2)$ = 一个平面（2 维）≠ $\\mathbb{R}^3$",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        { "kind": "circle", "snippet": "垂直于纸的分量", "board_index": 0, "trigger_phrase": "组合不出垂直于平面的分量" }
+      ],
+      "widget": null,
+      "question": null,
+      "reward": null
+    },
+    {
+      "title": "第三根棍子来了",
+      "spoken_text": "那我再给你一根 v3，它正好等于 v1 加 v2。你可以在教具里把它勾出来，橙色的那根。三根棍子总比两根强吧？现在有三个向量了，能不能带你离开这张纸，去碰红球？",
+      "boards": [
+        {
+          "title": "第三根棍子",
+          "markdown": "- 新来的 $\\vec{v}_3 = \\vec{v}_1 + \\vec{v}_2$\n- 它在哪？→ 教具里橙色箭头\n- 三根棍子 → 能出纸面吗？",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        { "kind": "highlight", "snippet": "\\vec{v}_3 = \\vec{v}_1 + \\vec{v}_2", "board_index": 0, "trigger_phrase": "正好等于 v1 加 v2" }
+      ],
+      "widget": null,
+      "question": {
+        "mode": "choice",
+        "question": "加了 v3 = v1 + v2 之后，能离开平面碰到红球吗？",
+        "options": ["能，多一根总比少一根强", "不能，v3 自己就躺在纸上"],
+        "correct_index": 1,
+        "misconceptions": ["以为向量数量多了维度就自动多了。可 v3 本来就是 v1、v2 拼出来的，它没带来新方向。", null],
+        "explanation": "v3 是 v1 和 v2 的组合，它自己就在平面里，三根棍子能到的地方和两根一模一样。"
+      },
+      "reward": null
+    },
+    {
+      "title": "多余，还是关键",
+      "spoken_text": "看板书第二行：三根棍子的 span，和两根的 span，一模一样。v3 是多余的，我们说这三个向量线性相关。反过来，如果第三根棍子是斜着戳出纸面的，哪怕只戳出去一点点，你就能到达房间里任何一点。所以关键从来不是几根棍子，而是有几个真正独立的方向。",
+      "boards": [
+        {
+          "title": "多余 vs 关键",
+          "markdown": "- $\\vec{v}_3 = \\vec{v}_1 + \\vec{v}_2$ → 没有新方向\n- $\\text{span}(\\vec{v}_1, \\vec{v}_2, \\vec{v}_3) = \\text{span}(\\vec{v}_1, \\vec{v}_2)$，**线性相关**\n- 换一根戳出纸面的 $\\vec{u}$ → $\\text{span}(\\vec{v}_1, \\vec{v}_2, \\vec{u}) = \\mathbb{R}^3$\n- 决定维度的：**独立方向的个数**，不是向量个数",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        { "kind": "circle", "snippet": "\\text{span}(\\vec{v}_1, \\vec{v}_2, \\vec{v}_3) = \\text{span}(\\vec{v}_1, \\vec{v}_2)", "board_index": 0, "trigger_phrase": "一模一样" },
+        { "kind": "highlight", "snippet": "独立方向的个数", "board_index": 0, "trigger_phrase": "有几个真正独立的方向" }
+      ],
+      "widget": null,
+      "question": null,
+      "reward": {
+        "title": "张成 = 棍子能到的所有地方",
+        "description": "两根不平行的棍子只能铺出一张过原点的纸（平面）。再多的棍子，只要都躺在纸上，纸还是纸；一根戳出纸面的棍子，才能把纸变成整个房间。维度数的是独立方向，不是向量个数。"
+      }
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "course_id": "course_6381cf6672",
+  "title": "两个向量能张成什么？",
+  "target_audience": "",
+  "overview": "学生能解释两个非零不平行向量在三维空间中的张成是一个平面，并理解为什么不能张成整个三维空间。",
+  "generation_mode": "authored",
+  "chapters": [
+    {
+      "chapter_id": "ch_1",
+      "title": "两个向量能张成什么？",
+      "description": "",
+      "sessions": [
+        {
+          "session_id": "sess_span",
+          "title": "两个向量能张成什么？",
+          "learning_goal": "学生能解释两个非零不平行向量在三维空间中的张成是一个平面，并理解为什么不能张成整个三维空间。",
+          "core_concept": "两个向量能张成什么？",
+          "cognitive_hurdle": "",
+          "source_sections": [],
+          "estimated_duration_min": 5
+        }
+      ]
+    }
+  ]
+}
