@@ -29,6 +29,20 @@ def stable_id(prefix: str, *parts: str, length: int = 10) -> str:
 # Course structure
 # --------------------------------------------------------------------------- #
 
+MediaKind = Literal["board", "illustration", "explorable", "threejs", "reference_figure", "mermaid"]
+
+
+class SegmentPlan(BaseModel):
+    """One narrated segment of a session, decided at lesson-plan time."""
+    title: str
+    intent: str = Field(..., description="What this segment must get across (one sentence)")
+    media: MediaKind = "board"
+    media_brief: str = Field("", description="What the figure/widget must show; empty for board-only")
+    figure_id: Optional[str] = Field(None, description="For reference_figure: id of an extracted textbook figure")
+    ask: bool = Field(False, description="End this segment with a prediction question")
+    source_sections: List[str] = Field(default_factory=list)
+
+
 class SessionOutline(BaseModel):
     session_id: str
     title: str
@@ -37,6 +51,7 @@ class SessionOutline(BaseModel):
     cognitive_hurdle: str = ""
     source_sections: List[str] = Field(default_factory=list)
     estimated_duration_min: int = 5
+    segments: List[SegmentPlan] = Field(default_factory=list)
 
 
 class ChapterOutline(BaseModel):
@@ -55,6 +70,7 @@ class CourseStructure(BaseModel):
     target_audience: str = ""
     overview: str = ""
     generation_mode: GenerationMode = "authored"
+    document_id: Optional[str] = None
     chapters: List[ChapterOutline]
 
     def all_sessions(self) -> List[SessionOutline]:
@@ -92,9 +108,10 @@ class WidgetSpec(BaseModel):
 
 
 class IllustrationSpec(BaseModel):
-    kind: Literal["svg", "image"] = "svg"
+    kind: Literal["svg", "image", "reference"] = "svg"
     caption: str = ""
     brief: str = Field("", description="Exactly what to draw: elements, counts, labels, comparison")
+    figure_id: Optional[str] = Field(None, description="reference: id of an extracted textbook figure")
     svg: Optional[str] = None
     svg_path: Optional[str] = None
     image_path: Optional[str] = None

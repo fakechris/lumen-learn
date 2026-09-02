@@ -162,3 +162,27 @@ svg.wb-annotations { position: absolute; inset: 0; pointer-events: none; overflo
 #toasts { position: fixed; right: 16px; top: 70px; display: flex; flex-direction: column; gap: 8px; z-index: 200; }
 .toast { background: #0f172a; color: #fff; padding: 10px 14px; border-radius: 10px; font-size: .85rem; max-width: 380px; }
 .toast.error { background: #991b1b; }
+
+/* staged generation modal */
+.modal-box.wide { width: min(900px, 94vw); }
+.steps { display: flex; gap: 8px; font-size: .78rem; color: var(--muted); }
+.steps .step { padding: 4px 10px; border-radius: 999px; background: #f1f5f9; }
+.steps .step.active { background: #dbeafe; color: #1d4ed8; font-weight: 600; }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.modal-box section { display: flex; flex-direction: column; gap: 10px; }
+.hint { font-size: .8rem; color: var(--muted); }
+.doc-summary { font-size: .8rem; color: var(--ink); }
+.doc-summary:empty { display: none; }
+.plan-tree { display: flex; flex-direction: column; gap: 10px; max-height: 46vh; overflow: auto; padding-right: 4px; }
+.plan-chapter { font-weight: 700; font-size: .9rem; margin-top: 4px; }
+.plan-session { border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; }
+.plan-session .t { font-weight: 600; }
+.plan-session .meta { font-size: .76rem; color: var(--muted); }
+.plan-session .meta b { color: #b45309; font-weight: 600; }
+.plan-seg { display: grid; grid-template-columns: 24px 1fr 130px 64px; gap: 8px; align-items: center; font-size: .82rem; padding: 4px 0; border-top: 1px dashed #eef2f7; }
+.plan-seg .n { color: var(--muted); }
+.plan-seg .intent { color: var(--muted); font-size: .76rem; }
+.plan-seg select, .plan-seg label { font-size: .76rem; }
+.plan-seg select { padding: 3px 6px; border: 1px solid var(--line); border-radius: 6px; }
+.media-board { color: #475569; } .media-illustration { color: #0e7490; } .media-explorable { color: #b91c1c; }
+.media-threejs { color: #6d28d9; } .media-reference_figure { color: #15803d; } .media-mermaid { color: #a16207; }

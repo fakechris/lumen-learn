@@ -115,7 +115,9 @@ class App {
     $("toggleSidebar").addEventListener("click", () => $("sidebar").classList.toggle("open"));
     $("openGenerate").addEventListener("click", () => $("generateModal").classList.add("open"));
     $("closeGenerate").addEventListener("click", () => $("generateModal").classList.remove("open"));
-    $("generateBtn").addEventListener("click", () => this.generate());
+    $("ingestBtn").addEventListener("click", () => this.ingestAndPlan());
+    $("buildBtn").addEventListener("click", () => this.buildFromPlan());
+    $("backToImport").addEventListener("click", () => this.showGenStep("import"));
     $("loadExample").addEventListener("click", async () => {
       $("genContent").value = await (await fetch("/examples/linear_algebra_basis.md")).text().catch(() => "");
     });
@@ -423,35 +425,121 @@ class App {
     this.renderSidebar();
   }
 
-  // ------------------------------------------------------------------ generation
+  // ------------------------------------------------------------------ generation (ingest -> plan -> build)
 
-  async generate() {
-    const content = $("genContent").value;
-    const title = $("genTitle").value.trim() || null;
-    const mode = $("genMode").value;
+  showGenStep(step) {
+    $("panelImport").style.display = step === "import" ? "" : "none";
+    $("panelPlan").style.display = step === "import" ? "none" : "";
+    for (const [id, key] of [["stepImport", "import"], ["stepPlan", "plan"], ["stepBuild", "build"]]) $(id).classList.toggle("active", key === step);
+  }
+
+  async pollJob(jobId, log) {
+    let job;
+    do {
+      await new Promise((r) => setTimeout(r, 1500));
+      job = await (await fetch(`/api/v1/jobs/${jobId}`)).json();
+      log.textContent = job.events.map((e) => `[${e.stage}] ${e.detail}`).join("\n");
+      log.scrollTop = log.scrollHeight;
+    } while (job.status === "running");
+    if (job.status === "error") throw new Error(job.error);
+    return job;
+  }
+
+  async ingestAndPlan() {
     const log = $("genLog");
-    if (!content.trim()) { log.textContent = "请先粘贴讲义内容"; return; }
-    $("generateBtn").disabled = true;
-    log.textContent = "已提交，正在生成…";
+    const file = $("genFile").files[0];
+    const content = $("genContent").value;
+    const title = $("genTitle").value.trim();
+    const mode = $("genMode").value;
+    if (!file && !content.trim()) { log.textContent = "请上传 PDF / Markdown，或粘贴讲义内容"; return; }
+    $("ingestBtn").disabled = true;
+    log.textContent = "正在解析讲义…";
     try {
-      const res = await fetch("/api/v1/generate_course", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title, content, mode }) });
+      const form = new FormData();
+      if (file) form.append("file", file); else form.append("content", content);
+      if (title) form.append("title", title);
+      const res = await fetch("/api/v1/ingest", { method: "POST", body: form });
       if (!res.ok) throw new Error((await res.json()).detail || res.statusText);
-      const { job_id } = await res.json();
-      let job;
-      do {
-        await new Promise((r) => setTimeout(r, 1500));
-        job = await (await fetch(`/api/v1/jobs/${job_id}`)).json();
-        log.textContent = job.events.map((e) => `[${e.stage}] ${e.detail}`).join("\n");
-        log.scrollTop = log.scrollHeight;
-      } while (job.status === "running");
-      if (job.status === "error") throw new Error(job.error);
+      const doc = await res.json();
+      this.genDoc = doc;
+      $("docSummary").textContent = `《${doc.title}》：${doc.sections} 个小节${doc.pages ? `，${doc.pages} 页` : ""}，${doc.figures} 张教材图，约 ${doc.chars} 字`;
+      log.textContent += "\n正在生成教案…";
+      const pres = await fetch("/api/v1/plan", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ doc_key: doc.doc_key, mode }) });
+      if (!pres.ok) throw new Error((await pres.json()).detail || pres.statusText);
+      const job = await this.pollJob((await pres.json()).job_id, log);
+      this.genPlan = job.plan;
+      this.renderPlanTree();
+      this.showGenStep("plan");
+    } catch (e) {
+      log.textContent += `\n失败：${e.message}`;
+    } finally {
+      $("ingestBtn").disabled = false;
+    }
+  }
+
+  renderPlanTree() {
+    const tree = $("planTree");
+    tree.innerHTML = "";
+    const MEDIA = { board: "板书", illustration: "示意图", explorable: "探针图", threejs: "3D", reference_figure: "教材原图", mermaid: "流程图" };
+    const plan = this.genPlan;
+    plan.chapters.forEach((ch) => {
+      const h = document.createElement("div");
+      h.className = "plan-chapter";
+      h.textContent = `${ch.title}${ch.description ? " · " + ch.description : ""}`;
+      tree.appendChild(h);
+      ch.sessions.forEach((s) => {
+        const box = document.createElement("div");
+        box.className = "plan-session";
+        box.innerHTML = `<div class="t">${escapeHtml(s.title)} <span class="meta">${s.estimated_duration_min} 分钟</span></div>
+          <div class="meta">目标：${escapeHtml(s.learning_goal)}</div>
+          <div class="meta"><b>误区：</b>${escapeHtml(s.cognitive_hurdle || "—")}</div>`;
+        s.segments.forEach((seg, i) => {
+          const row = document.createElement("div");
+          row.className = "plan-seg";
+          const sel = document.createElement("select");
+          for (const [k, label] of Object.entries(MEDIA)) {
+            const o = document.createElement("option");
+            o.value = k; o.textContent = label; o.selected = seg.media === k;
+            sel.appendChild(o);
+          }
+          sel.className = `media-${seg.media}`;
+          sel.addEventListener("change", () => { seg.media = sel.value; sel.className = `media-${seg.media}`; });
+          const ask = document.createElement("label");
+          const cb = document.createElement("input");
+          cb.type = "checkbox"; cb.checked = !!seg.ask;
+          cb.addEventListener("change", () => { seg.ask = cb.checked; });
+          ask.append(cb, " 提问");
+          const main = document.createElement("div");
+          main.innerHTML = `<div>${escapeHtml(seg.title)}</div><div class="intent">${escapeHtml(seg.intent)}${seg.media_brief ? " · " + escapeHtml(seg.media_brief) : ""}</div>`;
+          const n = document.createElement("span");
+          n.className = "n"; n.textContent = `${i + 1}.`;
+          row.append(n, main, sel, ask);
+          box.appendChild(row);
+        });
+        tree.appendChild(box);
+      });
+    });
+  }
+
+  async buildFromPlan() {
+    const log = $("genLog");
+    const mode = $("genMode").value;
+    $("buildBtn").disabled = true;
+    this.showGenStep("build");
+    log.textContent = "正在按教案生成课程（写稿、画图、教具、配音）…";
+    try {
+      const res = await fetch("/api/v1/build", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ doc_key: this.genDoc.doc_key, plan: this.genPlan, mode }) });
+      if (!res.ok) throw new Error((await res.json()).detail || res.statusText);
+      const job = await this.pollJob((await res.json()).job_id, log);
       await this.refreshCourses();
       $("generateModal").classList.remove("open");
+      this.showGenStep("import");
       await this.loadCourse(job.course_id);
     } catch (e) {
       log.textContent += `\n生成失败：${e.message}`;
+      this.showGenStep("plan");
     } finally {
-      $("generateBtn").disabled = false;
+      $("buildBtn").disabled = false;
     }
   }
 
