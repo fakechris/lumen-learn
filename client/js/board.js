@@ -212,14 +212,21 @@ export class Whiteboard {
     requestAnimationFrame(() => this._fitVisible(item));
   }
 
-  /** Scroll only the canvas viewport (never ancestors) so the item is visible above the dock. */
+  /** Scroll only the canvas viewport (never ancestors) so the item is visible above the dock.
+   *  Horizontal rule: when a column falls off the right edge, shift so the previous column
+   *  becomes the first on screen and the new one the second (one column of context kept). */
   _fitVisible(item) {
     const vp = this.viewport;
     const dock = 170;
     let top = vp.scrollTop, left = vp.scrollLeft;
     if (item.y + item.h + dock > top + vp.clientHeight) top = item.y + item.h + dock - vp.clientHeight;
     if (item.y - PAD < top) top = Math.max(0, item.y - PAD);
-    if (item.x + COL_W + PAD > left + vp.clientWidth) left = item.x + COL_W + PAD - vp.clientWidth;
+    const colLeft = (c) => PAD + c * (COL_W + GAP_X);
+    if (item.x + COL_W + PAD > left + vp.clientWidth) {
+      const anchor = Math.max(0, item.column - 1);
+      left = Math.max(0, colLeft(anchor) - PAD);
+      if (item.x + COL_W + PAD > left + vp.clientWidth) left = item.x + COL_W + PAD - vp.clientWidth;
+    }
     if (item.x - PAD < left) left = Math.max(0, item.x - PAD);
     vp.scrollTo({ top, left, behavior: "smooth" });
   }
