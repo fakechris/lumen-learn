@@ -343,3 +343,11 @@ def test_clean_mermaid_unescapes_and_unfences():
     from src.content.validators import clean_mermaid
     assert clean_mermaid("```mermaid\ngraph LR\\nA --> B\n```") == "graph LR\nA --> B"
     assert clean_mermaid("graph LR\nA --> B") == "graph LR\nA --> B"
+
+
+def test_degenerate_output_detection_and_budgets():
+    from src.llm.client import LLMConfig, looks_degenerate
+    assert looks_degenerate("正常开头 " + ("<div class='row'>重复的内容行</div>\n" * 40))
+    assert not looks_degenerate("这是一段正常的、不重复的输出。" + "".join(f"第{i}行内容不同。" for i in range(60)))
+    cfg = LLMConfig("openai", "k", "m")
+    assert cfg.budget("widget") == 6000 and cfg.budget("plan") == cfg.max_tokens and cfg.budget("synth_repair") == 7000
