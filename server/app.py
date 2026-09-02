@@ -28,6 +28,7 @@ from src.protocol.session import CourseStructure
 from src.content.store import CourseStore
 from src.llm.client import make_client
 from src.llm.usage import GLOBAL_LEDGER
+from src.obs.db import get_db
 from src.protocol.actions import ConnectionEstablished, ErrorMessage, parse_client_message
 from src.runtime.session_runtime import SessionRuntime
 from src.runtime.tutor import LiveTutor
@@ -72,6 +73,37 @@ async def capabilities():
 @app.get("/api/v1/usage")
 async def usage():
     return GLOBAL_LEDGER.summary()
+
+
+@app.get("/api/v1/runs")
+async def list_runs(limit: int = 50):
+    return {"runs": get_db(OUTPUT_ROOT).runs(limit)}
+
+
+@app.get("/api/v1/runs/{run_id}")
+async def get_run(run_id: str):
+    db = get_db(OUTPUT_ROOT)
+    run = db.run(run_id)
+    if not run:
+        raise HTTPException(404, "run not found")
+    return {"run": run, "usage": db.usage_summary(run_id)}
+
+
+@app.get("/api/v1/runs/{run_id}/events")
+async def run_events(run_id: str, after: int = 0, limit: int = 500):
+    return {"events": get_db(OUTPUT_ROOT).events(run_id, after, limit)}
+
+
+@app.get("/api/v1/courses/{course_id}/qa")
+async def course_qa(course_id: str):
+    rows = get_db(OUTPUT_ROOT).sessions(course_id)
+    for r in rows:
+        if r.get("qa_json"):
+            try:
+                r["qa_json"] = json.loads(r["qa_json"])
+            except json.JSONDecodeError:
+                pass
+    return {"sessions": rows}
 
 
 @app.get("/api/v1/courses")
@@ -232,16 +264,20 @@ async def plan_course(req: PlanRequest):
         raise HTTPException(404, "document not found; ingest first")
 
     async def run() -> None:
+        pipeline.begin_run("plan", doc_key=req.doc_key, scope="plan", echo=False)
+        job["run_id"] = pipeline.run_id
         try:
             plan = await pipeline.plan(req.doc_key, doc)
             job["plan"] = plan.model_dump(mode="json")
             job["estimate"] = pipeline.estimate_build_cost(plan) if llm else None
             _finish_job(job)
             job["status"] = "done"
+            pipeline.end_run("done", course_id=plan.course_id)
         except Exception as e:
             log.exception("plan job %s failed", job["job_id"])
             job["status"] = "error"
             job["error"] = str(e)
+            pipeline.end_run("error", error=str(e)[:500])
 
     asyncio.create_task(run())
     return {"job_id": job["job_id"]}
@@ -269,15 +305,19 @@ async def build_course(req: BuildRequest):
     pipeline.docs.save_plan(req.doc_key, plan)
 
     async def run() -> None:
+        pipeline.begin_run("build", course_id=plan.course_id, doc_key=req.doc_key, scope="all", echo=False)
+        job["run_id"] = pipeline.run_id
         try:
             course_dir = await pipeline.build(doc, plan)
             job["course_id"] = os.path.basename(course_dir)
             _finish_job(job)
             job["status"] = "done"
+            pipeline.end_run("done", course_id=plan.course_id)
         except Exception as e:
             log.exception("build job %s failed", job["job_id"])
             job["status"] = "error"
             job["error"] = str(e)
+            pipeline.end_run("error", error=str(e)[:500], course_id=plan.course_id)
 
     asyncio.create_task(run())
     return {"job_id": job["job_id"]}

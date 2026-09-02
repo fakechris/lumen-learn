@@ -189,10 +189,11 @@ def _script_model(n_expected: int, min_steps: int = 1):
 
 
 async def synthesize_session_llm(outline: SessionOutline, course: CourseStructure, source_text: str,
-                                 llm: LLMClient) -> tuple[SessionScript, List[str]]:
+                                 llm: LLMClient, feedback: Optional[str] = None) -> tuple[SessionScript, List[str]]:
     segments = outline.segments
+    fb = f"\n\n{feedback}\n" if feedback else ""
     if not segments:
-        user = _header(outline, course) + f"依据的讲义内容：\n{source_text}"
+        user = _header(outline, course) + fb + f"依据的讲义内容：\n{source_text}"
         generated = await llm.complete_model(SYNTH_SYSTEM, user, _script_model(0, 3), temperature=0.5, tier=SYNTH_TIER, purpose="synth")
         steps = [StepSpec(**s.model_dump()) for s in generated.steps]
     else:
@@ -207,7 +208,7 @@ async def synthesize_session_llm(outline: SessionOutline, course: CourseStructur
                 user += f"前面已经写好的段落（保持衔接，不要重复）：\n{_steps_summary(steps)}\n"
             if start + len(part) < total:
                 user += "这不是最后一段，不要写 reward。\n"
-            user += "\n" + _segments_block(part_outline) + "\n\n" + f"依据的讲义内容：\n{source_text}"
+            user += "\n" + _segments_block(part_outline) + fb + "\n\n" + f"依据的讲义内容：\n{source_text}"
             generated = await llm.complete_model(SYNTH_SYSTEM, user, _script_model(len(part)), temperature=0.5, tier=SYNTH_TIER, purpose="synth")
             chunk_steps = _apply_plan([StepSpec(**s.model_dump()) for s in generated.steps], part_outline)
             if start + len(part) < total:

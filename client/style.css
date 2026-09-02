@@ -288,3 +288,8 @@ svg.wb-annotations { position: absolute; inset: 0; pointer-events: none; overflo
 
 .kp.detour { padding-right: 18px; font-size: .74rem; }
 .kp.detour .dot { width: 9px; height: 9px; border-style: dashed; }
+
+/* mermaid graphs: sit in the note flow like a hand-drawn figure */
+.wb-graph .wb-card-content { display: flex; flex-direction: column; align-items: center; }
+.wb-graph .wb-card-content svg { max-width: 100%; height: auto; }
+.wb-graph .wb-card-content svg text, .wb-graph .wb-card-content svg .nodeLabel, .wb-graph .wb-card-content svg .edgeLabel { font-family: var(--hand) !important; }

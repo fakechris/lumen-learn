@@ -29,6 +29,7 @@ from src.content.curriculum_planner import plan_course_heuristic, plan_course_ll
 from src.content.document_parser import ParsedDocument, parse_file, parse_markdown
 from src.content.exercise_generator import generate_exercises
 from src.content.illustration_generator import fill_illustration
+from src.content.qa import qa_session
 from src.content.session_synthesizer import synthesize_session_heuristic, synthesize_session_llm
 from src.content.store import CourseStore, write_package
 from src.content.validators import sanitize_script
@@ -39,6 +40,8 @@ from src.protocol.session import (
     ChapterOutline, CompiledSession, CourseStructure, SessionOutline, SessionScript, stable_id,
 )
 from src.llm.usage import GLOBAL_LEDGER
+from src.obs.db import get_db
+from src.obs.log import Run, start_run
 from src.tts.align import synthesize_aligned
 from src.tts.engine import TtsEngine, choose_engine
 
@@ -103,8 +106,31 @@ class ContentPipeline:
         self.docs = DocStore(self.output_root)
         self.llm = llm if mode != "heuristic" else None
         self.tts = tts or choose_engine()
-        self.progress = progress
+        self._progress = progress
+        self.run: Optional[Run] = None
         self._tts_sem = asyncio.Semaphore(tts_concurrency)
+
+    @property
+    def run_id(self) -> Optional[str]:
+        return self.run.run_id if self.run else None
+
+    def progress(self, stage: str, detail: str, session_id: Optional[str] = None) -> None:
+        if self.run:
+            self.run.progress(stage, detail, session_id=session_id)
+        else:
+            self._progress(stage, detail)
+
+    def begin_run(self, kind: str, course_id: Optional[str] = None, doc_key: Optional[str] = None, scope: str = "",
+                  echo: bool = True) -> Run:
+        self.run = start_run(kind, self.output_root, course_id=course_id, doc_key=doc_key, scope=scope, echo=echo,
+                             extra_sink=self._progress if self._progress is not _noop_progress else None)
+        self.run._ledger_mark = GLOBAL_LEDGER.mark()
+        return self.run
+
+    def end_run(self, status: str, error: Optional[str] = None, course_id: Optional[str] = None) -> None:
+        if self.run:
+            self.run.finish(status, GLOBAL_LEDGER.summary(since=getattr(self.run, "_ledger_mark", 0))["total"], error, course_id)
+            self.run = None
 
     @property
     def mode(self) -> str:
@@ -116,6 +142,8 @@ class ContentPipeline:
         key = self.docs.key_for_file(path)
         doc = parse_file(path, title=title, assets_dir=os.path.join(self.docs.dir_for(key), "figures"))
         self.docs.save(key, doc)
+        get_db(self.output_root).upsert_document(key, doc.title, doc.source_path, doc.total_pages, len(doc.sections),
+                                                 len(doc.figures), doc.char_count())
         self.progress("parse", f"{doc.title}: {len(doc.sections)} sections, {doc.total_pages or '-'} pages, {len(doc.figures)} figures")
         return key, doc
 
@@ -143,6 +171,7 @@ class ContentPipeline:
         key = self.docs.key_for_text(content)
         doc = parse_markdown(content, title=title)
         self.docs.save(key, doc)
+        get_db(self.output_root).upsert_document(key, doc.title, None, 0, len(doc.sections), 0, doc.char_count())
         self.progress("parse", f"{doc.title}: {len(doc.sections)} sections")
         return key, doc
 
@@ -161,6 +190,8 @@ class ContentPipeline:
             est = self.estimate_build_cost(course)
             self.progress("estimate", f"生成本课粗估 ≈ ${est['usd']} · {est['segments']} 段 · {est['widgets']} 教具 · {est['figures']} 图")
         self.docs.save_plan(key, course)
+        get_db(self.output_root).upsert_plan(course.course_id, key, course.title, len(course.chapters), len(outlines), n_seg,
+                                             course.model_dump_json())
         return course
 
     @staticmethod
@@ -177,33 +208,72 @@ class ContentPipeline:
         return {"segments": segs, "widgets": widgets, "figures": figs, "tokens_in": tokens_in, "tokens_out": tokens_out,
                 "usd": round(usd, 4)}
 
-    async def build(self, doc: ParsedDocument, course: CourseStructure, only: Optional[set] = None) -> str:
-        """Build the package. With `only`, regenerate just those session ids and keep the
-        rest from the existing package (so one bad session does not cost a full rebuild)."""
+    async def build(self, doc: ParsedDocument, course: CourseStructure, only: Optional[set] = None,
+                    chapters: Optional[set] = None, qa: bool = True, resume: bool = True,
+                    max_attempts: int = 2) -> str:
+        """Build the package. `only` = session ids, `chapters` = chapter ids to (re)generate;
+        everything else is kept from the existing package. With `resume`, sessions that already
+        passed QA in the DB are kept too. Each generated session is QA-checked and regenerated
+        once with the issues as feedback if it fails."""
         course_dir = os.path.join(self.output_root, course.course_id)
         ledger_mark = GLOBAL_LEDGER.mark()
-        existing = CourseStore([self.output_root]) if only else None
+        db = get_db(self.output_root)
+        existing = CourseStore([self.output_root])
         scripts: List[SessionScript] = []
         compiled: List[CompiledSession] = []
+        chapter_of = {s.session_id: ch.chapter_id for ch in course.chapters for s in ch.sessions}
+        run_id = getattr(self, "run_id", None)
         for outline in course.all_sessions():
-            if only and outline.session_id not in only:
-                old_script = existing.get_script(course.course_id, outline.session_id)
-                old_session = existing.get_session(course.course_id, outline.session_id)
+            sid = outline.session_id
+            selected = (only is None or sid in only) and (chapters is None or chapter_of.get(sid) in chapters)
+            prior = db.session(course.course_id, sid) if resume else None
+            keep = (not selected) or (resume and only is None and prior and prior.get("qa_pass"))
+            if keep:
+                old_script = existing.get_script(course.course_id, sid)
+                old_session = existing.get_session(course.course_id, sid)
                 if old_script and old_session:
                     scripts.append(old_script)
                     compiled.append(old_session)
-                    self.progress("skip", f"{outline.session_id}: kept from existing package")
+                    if selected:
+                        self.progress("skip", f"{sid}: already passed QA; kept", session_id=sid)
                     continue
-            script = await self._script_for(outline, course, doc)
-            self.progress("script", f"{outline.session_id} {outline.title}: {len(script.steps)} steps")
-            script = await self._fill_widgets(script, course_dir)
-            script = await self._fill_illustrations(script, course_dir, doc)
-            script = await self._fill_exercises(script, course_dir)
+                if not selected:
+                    continue  # never generated and not selected: leave out of this build
+            sess_mark = GLOBAL_LEDGER.mark()
+            script, report, attempts = None, None, 0
+            feedback: Optional[str] = None
+            while attempts < max_attempts:
+                attempts += 1
+                script = await self._script_for(outline, course, doc, feedback=feedback)
+                self.progress("script", f"{sid} {outline.title}: {len(script.steps)} steps (attempt {attempts})", session_id=sid)
+                script = await self._fill_widgets(script, course_dir)
+                script = await self._fill_illustrations(script, course_dir, doc)
+                script = await self._fill_exercises(script, course_dir)
+                if not qa:
+                    break
+                report = await qa_session(script, outline, self.llm)
+                self.progress("qa", f"{sid}: score {report.score} {'PASS' if report.passed else 'FAIL'}"
+                                    + (f" · {len(report.issues)} issues: " + " | ".join(report.issues[:4]) if report.issues else ""),
+                              session_id=sid)
+                if report.passed or attempts >= max_attempts:
+                    break
+                feedback = "上一次生成经审核发现以下问题，请在这次生成中修正：\n- " + "\n- ".join(report.issues[:8])
+                self.progress("retry", f"{sid}: regenerating with QA feedback", session_id=sid)
             audio = await self._synthesize_audio(script, course_dir)
             session = compile_session(script, audio, generation_mode=course.generation_mode)
             scripts.append(script)
             compiled.append(session)
-            self.progress("compile", f"{outline.session_id}: {len(session.actions)} actions, {session.total_duration_ms / 1000:.0f}s audio")
+            sess_cost = GLOBAL_LEDGER.summary(since=sess_mark)["total"]["cost_usd"]
+            db.upsert_session(course.course_id, sid, chapter_id=chapter_of.get(sid), title=outline.title,
+                              steps=len(script.steps),
+                              widgets=sum(1 for st in script.steps if st.widget and (st.widget.html or st.widget.mermaid)),
+                              figures=sum(1 for st in script.steps if st.illustration and (st.illustration.svg or st.illustration.image_url)),
+                              exercises=len(script.exercises), warnings=len(report.issues) if report else 0,
+                              duration_ms=session.total_duration_ms, cost_usd=sess_cost,
+                              qa_score=report.score if report else None, qa_pass=int(report.passed) if report else 1,
+                              qa_json=report.to_dict() if report else None, attempts=attempts, run_id=run_id)
+            self.progress("compile", f"{sid}: {len(session.actions)} actions, {session.total_duration_ms / 1000:.0f}s audio, "
+                                     f"${sess_cost:.3f}", session_id=sid)
         write_package(course_dir, course, scripts, compiled)
         usage = GLOBAL_LEDGER.summary(since=ledger_mark)
         with open(os.path.join(course_dir, "cost.json"), "w", encoding="utf-8") as f:
@@ -327,14 +397,15 @@ class ContentPipeline:
         self.progress("exercise", f"{script.session_id}: {len(exercises)} exercises {kinds}")
         return script.model_copy(update={"exercises": exercises})
 
-    async def _script_for(self, outline: SessionOutline, course: CourseStructure, doc: ParsedDocument) -> SessionScript:
+    async def _script_for(self, outline: SessionOutline, course: CourseStructure, doc: ParsedDocument,
+                          feedback: Optional[str] = None) -> SessionScript:
         ids = list(dict.fromkeys(outline.source_sections + [s for seg in outline.segments for s in seg.source_sections]))
         source = doc.section_text(ids)
         if self.llm:
             last = None
             for attempt in range(2):
                 try:
-                    script, warnings = await synthesize_session_llm(outline, course, source, self.llm)
+                    script, warnings = await synthesize_session_llm(outline, course, source, self.llm, feedback=feedback)
                     for w in warnings:
                         self.progress("warn", w)
                     return script
@@ -467,6 +538,11 @@ def main(argv=None) -> int:
     p.add_argument("--from-plan", help="Build from an (edited) plan.json")
     p.add_argument("--exercises-for", help="Generate exercises for an existing course id (in --output or examples/courses)")
     p.add_argument("--only", help="Comma-separated session ids to (re)build; others are kept from the existing package")
+    p.add_argument("--chapters", help="Comma-separated chapter ids to build (e.g. ch_1,ch_2); use with --from-plan")
+    p.add_argument("--all-chapters", action="store_true", help="Build every chapter in order, one run per chapter, resumable")
+    p.add_argument("--no-qa", action="store_true", help="Skip per-session QA/retry")
+    p.add_argument("--force", action="store_true", help="Regenerate even sessions that already passed QA")
+    p.add_argument("--quiet", action="store_true", help="No console progress (events still go to DB/JSONL)")
     p.add_argument("--title", default=None)
     p.add_argument("--output", default="output")
     p.add_argument("--mode", default="auto", choices=["auto", "llm", "heuristic"])
@@ -479,12 +555,23 @@ def main(argv=None) -> int:
     if args.mode == "auto" and llm is None:
         print("ℹ️  no LLM key found; running heuristic walk-through mode", flush=True)
     pipeline = ContentPipeline(args.output, llm=llm, tts=choose_engine(args.tts), mode=args.mode,
-                               progress=_print_progress)
+                               progress=_noop_progress if args.quiet else _print_progress)
     if llm:
         c = llm.config
         print(f"ℹ️  LLM: {c.provider} fast={c.model} pro={c.model_pro or c.model} vision={c.model_vision or '-'}   TTS: {pipeline.tts.name}", flush=True)
     else:
         print(f"ℹ️  LLM: none   TTS: {pipeline.tts.name}", flush=True)
+
+    async def build_with_run(doc, plan, key, **kw):
+        scope = ",".join(sorted(kw.get("chapters") or [])) or ",".join(sorted(kw.get("only") or [])) or "all"
+        pipeline.begin_run("build", course_id=plan.course_id, doc_key=key, scope=scope, echo=not args.quiet)
+        try:
+            out = await pipeline.build(doc, plan, **kw)
+            pipeline.end_run("done", course_id=plan.course_id)
+            return out
+        except Exception as e:
+            pipeline.end_run("error", error=str(e)[:500], course_id=plan.course_id)
+            raise
 
     async def run():
         if args.exercises_for:
@@ -493,21 +580,35 @@ def main(argv=None) -> int:
             return await pipeline.run_script(args.script)
         if args.from_plan:
             if args.input:
-                _, doc = pipeline.ingest_file(args.input, title=args.title)
+                key, doc = pipeline.ingest_file(args.input, title=args.title)
             else:
-                doc = pipeline.docs.load(args.doc)
+                key, doc = args.doc, pipeline.docs.load(args.doc)
                 if doc is None:
                     raise SystemExit(f"no ingested document under {pipeline.docs.dir_for(args.doc)}")
             with open(args.from_plan, encoding="utf-8") as f:
                 plan = CourseStructure.model_validate_json(f.read())
             only = set(x.strip() for x in args.only.split(",")) if args.only else None
-            return await pipeline.build(doc, plan, only=only)
+            kw = dict(only=only, qa=not args.no_qa, resume=not args.force)
+            if args.all_chapters:
+                out = None
+                for ch in plan.chapters:
+                    print(f"📚 [chapter] {ch.chapter_id} {ch.title} ({len(ch.sessions)} sessions)", flush=True)
+                    out = await build_with_run(doc, plan, key, chapters={ch.chapter_id}, **kw)
+                return out
+            chapters = set(x.strip() for x in args.chapters.split(",")) if args.chapters else None
+            return await build_with_run(doc, plan, key, chapters=chapters, **kw)
         key, doc = pipeline.ingest_file(args.input, title=args.title)
-        plan = await pipeline.plan(key, doc)
+        pipeline.begin_run("plan", doc_key=key, scope="plan", echo=not args.quiet)
+        try:
+            plan = await pipeline.plan(key, doc)
+            pipeline.end_run("done", course_id=plan.course_id)
+        except Exception as e:
+            pipeline.end_run("error", error=str(e)[:500])
+            raise
         print(f"📝 plan written to {os.path.join(pipeline.docs.dir_for(key), 'plan.json')}  (doc key: {key})", flush=True)
         if args.plan_only:
             return None
-        return await pipeline.build(doc, plan)
+        return await build_with_run(doc, plan, key, qa=not args.no_qa, resume=not args.force)
 
     asyncio.run(run())
     return 0
