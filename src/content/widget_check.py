@@ -25,6 +25,24 @@ class RenderResult:
     ok: bool
     problem: Optional[str]
     png_path: Optional[str]
+    review: Optional[str] = None  # vision model's verdict text, when available
+
+
+VISION_REVIEW_SYSTEM = """你是教学可视化审核员。给你一个教具的任务描述和它渲染后的截图。判断：
+1. 截图是否画出了任务要求的对象（曲线/向量/网格/元素、标注、读数控件）；
+2. 是否有明显问题：空白、元素重叠遮挡、标注看不清、坐标范围让关键现象看不见、与任务不符。
+只输出 JSON：{"pass": true/false, "problems": ["……"], "summary": "一句话"}"""
+
+
+async def vision_review(llm, task: str, png_path: str) -> tuple[bool, str]:
+    """Ask the vision-tier model whether the rendered widget matches its task."""
+    from src.llm.client import extract_json
+    with open(png_path, "rb") as f:
+        png = f.read()
+    raw = await llm.complete(VISION_REVIEW_SYSTEM, f"教具任务：{task}", json_mode=True, temperature=0.1, images=[png])
+    data = extract_json(raw)
+    problems = "; ".join(str(p) for p in data.get("problems") or [])
+    return bool(data.get("pass")), (problems or str(data.get("summary") or ""))
 
 
 def _node_path() -> Optional[str]:

@@ -60,7 +60,9 @@ log.info("LLM: %s   TTS: %s", f"{llm.config.provider}/{llm.model}" if llm else "
 @app.get("/api/v1/capabilities")
 async def capabilities():
     return {"llm": {"configured": llm is not None, "provider": llm.config.provider if llm else None,
-                    "model": llm.model if llm else None},
+                    "model": llm.model if llm else None,
+                    "model_pro": llm.config.model_pro if llm else None,
+                    "model_vision": llm.config.model_vision if llm else None},
             "tts": {"engine": tts.name}}
 
 

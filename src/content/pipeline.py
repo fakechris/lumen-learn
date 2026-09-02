@@ -31,7 +31,7 @@ from src.content.illustration_generator import fill_illustration
 from src.content.session_synthesizer import synthesize_session_heuristic, synthesize_session_llm
 from src.content.store import CourseStore, write_package
 from src.content.validators import sanitize_script
-from src.content.widget_check import available as widget_check_available, render_check
+from src.content.widget_check import available as widget_check_available, render_check, vision_review
 from src.content.widget_generator import generate_widget_html
 from src.llm.client import LLMClient, make_client
 from src.protocol.session import (
@@ -116,6 +116,26 @@ class ContentPipeline:
         self.progress("parse", f"{doc.title}: {len(doc.sections)} sections, {doc.total_pages or '-'} pages, {len(doc.figures)} figures")
         return key, doc
 
+    async def describe_figures(self, key: str, doc: ParsedDocument) -> ParsedDocument:
+        """Caption textbook figures that have no caption, using the vision model, so the
+        planner can decide when to reuse them."""
+        if not self.llm or not self.llm.has_vision:
+            return doc
+        todo = [f for f in doc.figures if not f.caption and os.path.isfile(f.path)]
+        for fig in todo:
+            try:
+                with open(fig.path, "rb") as fh:
+                    png = fh.read()
+                text = await self.llm.complete("你是教材图注撰写者。", "用一句话（≤30 字）说明这张教材图画的是什么，直接输出题注文字。",
+                                               temperature=0.2, images=[png])
+                fig.caption = text.strip().strip("。").splitlines()[0][:60]
+                self.progress("figure", f"{fig.figure_id}: captioned by vision model → {fig.caption}")
+            except Exception as e:
+                self.progress("warn", f"{fig.figure_id}: vision caption failed: {str(e)[:100]}")
+        if todo:
+            self.docs.save(key, doc)
+        return doc
+
     def ingest_text(self, content: str, title: Optional[str] = None) -> tuple[str, ParsedDocument]:
         key = self.docs.key_for_text(content)
         doc = parse_markdown(content, title=title)
@@ -124,6 +144,7 @@ class ContentPipeline:
         return key, doc
 
     async def plan(self, key: str, doc: ParsedDocument) -> CourseStructure:
+        doc = await self.describe_figures(key, doc)
         course = await plan_course_llm(doc, self.llm, progress=self.progress) if self.llm else plan_course_heuristic(doc)
         outlines = course.all_sessions()
         n_seg = sum(len(s.segments) for s in outlines)
@@ -258,10 +279,10 @@ class ContentPipeline:
                 html = await generate_widget_html(ex.widget, self.llm)
                 png = os.path.join(course_dir, "widgets", f"{script.session_id}_{ex.exercise_id}.png")
                 if html and check:
-                    res = await render_check(html, png)
+                    res = await self._check_widget(html, png, ex.widget.task)
                     if not res.ok:
                         html = await generate_widget_html(ex.widget, self.llm, feedback=res.problem)
-                        res = await render_check(html, png) if html else res
+                        res = await self._check_widget(html, png, ex.widget.task) if html else res
                         if not res.ok:
                             html = None
                 if html:
@@ -307,11 +328,11 @@ class ContentPipeline:
             html = await generate_widget_html(w, self.llm)
             png = os.path.join(course_dir, "widgets", f"{script.session_id}_step_{i + 1}.png")
             if html and check:
-                res = await render_check(html, png)
+                res = await self._check_widget(html, png, w.task)
                 if not res.ok:
                     self.progress("warn", f"{script.session_id} step {i + 1}: widget {res.problem}; regenerating")
                     html = await generate_widget_html(w, self.llm, feedback=res.problem)
-                    res = await render_check(html, png) if html else res
+                    res = await self._check_widget(html, png, w.task) if html else res
                     if not res.ok:
                         html = None
             if html:
@@ -323,6 +344,23 @@ class ContentPipeline:
 
         await asyncio.gather(*(fill(i) for i in range(len(script.steps))))
         return script
+
+    async def _check_widget(self, html: str, png: str, task: str):
+        """Headless render check, then (if a vision model is configured) a visual review
+        against the widget's task. Either failure carries a concrete problem back to the generator."""
+        res = await render_check(html, png)
+        if not res.ok or not self.llm or not self.llm.has_vision or not res.png_path:
+            return res
+        try:
+            passed, notes = await vision_review(self.llm, task, res.png_path)
+        except Exception as e:  # vision review is best-effort
+            self.progress("warn", f"vision review skipped: {str(e)[:120]}")
+            return res
+        if not passed:
+            res.ok = False
+            res.problem = f"visual review: {notes}"
+        res.review = notes
+        return res
 
     @staticmethod
     def _copy_image(src: str, course_dir: str, course_id: str, session_id: str, step_no: int) -> str:
@@ -404,7 +442,11 @@ def main(argv=None) -> int:
         print("ℹ️  no LLM key found; running heuristic walk-through mode", flush=True)
     pipeline = ContentPipeline(args.output, llm=llm, tts=choose_engine(args.tts), mode=args.mode,
                                progress=_print_progress)
-    print(f"ℹ️  LLM: {llm.config.provider + '/' + llm.model if llm else 'none'}   TTS: {pipeline.tts.name}", flush=True)
+    if llm:
+        c = llm.config
+        print(f"ℹ️  LLM: {c.provider} fast={c.model} pro={c.model_pro or c.model} vision={c.model_vision or '-'}   TTS: {pipeline.tts.name}", flush=True)
+    else:
+        print(f"ℹ️  LLM: none   TTS: {pipeline.tts.name}", flush=True)
 
     async def run():
         if args.exercises_for:

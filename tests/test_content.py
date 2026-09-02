@@ -305,3 +305,16 @@ def test_extract_json_ignores_inner_code_fences():
     assert extract_json(raw)["steps"][0]["n"] == 2
     wrapped = "```json\n" + raw + "\n```"
     assert extract_json(wrapped)["steps"][0]["n"] == 2
+
+
+def test_llm_config_tiers(monkeypatch):
+    from src.llm.client import LLMConfig
+    monkeypatch.setenv("DEEPSEEK_API_KEY", "k")
+    monkeypatch.delenv("LLM_PROVIDER", raising=False)
+    monkeypatch.delenv("LLM_MODEL", raising=False)
+    cfg = LLMConfig.from_env()
+    assert cfg.model == "deepseek-v4-flash" and cfg.for_tier("pro") == "deepseek-v4-pro"
+    assert cfg.for_tier("vision") == "deepseek-v4-flash-vision-exp" and cfg.for_tier("fast") == cfg.model
+    monkeypatch.setenv("LLM_MODEL_PRO", "x-pro")
+    assert LLMConfig.from_env().for_tier("pro") == "x-pro"
+    assert LLMConfig("openai", "k", "m").for_tier("pro") == "m"  # unset tier falls back

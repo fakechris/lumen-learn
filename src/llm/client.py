@@ -8,6 +8,7 @@ canned content — if generation fails, `LLMError` propagates.
 
 from __future__ import annotations
 
+import base64
 import json
 import os
 import re
@@ -25,11 +26,22 @@ class LLMError(RuntimeError):
 
 @dataclass
 class LLMConfig:
+    """Models by tier: `model` (default / fast), `model_pro` (planning, synthesis),
+    `model_vision` (image understanding). Unset tiers fall back to `model`."""
     provider: str  # "openai" (compatible) | "anthropic"
     api_key: str
     model: str
     base_url: Optional[str] = None
-    max_tokens: int = 8000
+    max_tokens: int = 16000
+    model_pro: Optional[str] = None
+    model_vision: Optional[str] = None
+
+    def for_tier(self, tier: str) -> str:
+        if tier == "pro" and self.model_pro:
+            return self.model_pro
+        if tier == "vision" and self.model_vision:
+            return self.model_vision
+        return self.model
 
     @classmethod
     def from_env(cls, provider: Optional[str] = None, api_key: Optional[str] = None,
@@ -50,18 +62,22 @@ class LLMConfig:
 
         if provider == "deepseek":
             return cls("openai", api_key or os.environ["DEEPSEEK_API_KEY"],
-                       model or os.getenv("LLM_MODEL", "deepseek-chat"),
-                       base_url or os.getenv("LLM_BASE_URL", "https://api.deepseek.com"))
+                       model or os.getenv("LLM_MODEL", "deepseek-v4-flash"),
+                       base_url or os.getenv("LLM_BASE_URL", "https://api.deepseek.com"),
+                       model_pro=os.getenv("LLM_MODEL_PRO", "deepseek-v4-pro"),
+                       model_vision=os.getenv("LLM_MODEL_VISION", "deepseek-v4-flash-vision-exp"))
         if provider == "anthropic":
             key = api_key or os.getenv("ANTHROPIC_API_KEY")
             if not key:
                 return None
-            return cls("anthropic", key, model or os.getenv("LLM_MODEL", "claude-sonnet-5"), base_url)
+            return cls("anthropic", key, model or os.getenv("LLM_MODEL", "claude-sonnet-5"), base_url,
+                       model_pro=os.getenv("LLM_MODEL_PRO"), model_vision=os.getenv("LLM_MODEL_VISION"))
         key = api_key or os.getenv("OPENAI_API_KEY") or os.getenv("LLM_API_KEY")
         if not key:
             return None
         return cls("openai", key, model or os.getenv("LLM_MODEL", "gpt-4o"),
-                   base_url or os.getenv("LLM_BASE_URL"))
+                   base_url or os.getenv("LLM_BASE_URL"),
+                   model_pro=os.getenv("LLM_MODEL_PRO"), model_vision=os.getenv("LLM_MODEL_VISION"))
 
 
 _BAD_ESCAPE = re.compile(r'\\(?![\\"/bfnrtu])')
@@ -141,21 +157,37 @@ class LLMClient:
     def model(self) -> str:
         return self.config.model
 
+    @property
+    def has_vision(self) -> bool:
+        return bool(self.config.model_vision)
+
     async def complete(self, system: str, user: str, *, json_mode: bool = False,
-                       temperature: float = 0.4) -> str:
+                       temperature: float = 0.4, tier: str = "fast",
+                       images: Optional[list] = None) -> str:
+        """`tier`: fast | pro | vision. `images`: list of PNG/JPEG bytes (vision tier)."""
+        model = self.config.for_tier("vision" if images else tier)
         try:
             if self.config.provider == "anthropic":
+                content = [{"type": "text", "text": user}]
+                for img in images or []:
+                    content.insert(0, {"type": "image", "source": {"type": "base64", "media_type": "image/png",
+                                                                    "data": base64.b64encode(img).decode()}})
                 resp = await self._anthropic.messages.create(
-                    model=self.config.model, max_tokens=self.config.max_tokens, system=system,
-                    messages=[{"role": "user", "content": user}], temperature=temperature,
+                    model=model, max_tokens=self.config.max_tokens, system=system,
+                    messages=[{"role": "user", "content": content}], temperature=temperature,
                 )
                 return "".join(block.text for block in resp.content if getattr(block, "text", None))
             kwargs = {}
             if json_mode:
                 kwargs["response_format"] = {"type": "json_object"}
+            user_content = user
+            if images:
+                user_content = [{"type": "text", "text": user}] + [
+                    {"type": "image_url", "image_url": {"url": "data:image/png;base64," + base64.b64encode(img).decode()}}
+                    for img in images]
             resp = await self._openai.chat.completions.create(
-                model=self.config.model, temperature=temperature, max_tokens=self.config.max_tokens,
-                messages=[{"role": "system", "content": system}, {"role": "user", "content": user}],
+                model=model, temperature=temperature, max_tokens=self.config.max_tokens,
+                messages=[{"role": "system", "content": system}, {"role": "user", "content": user_content}],
                 **kwargs,
             )
             choice = resp.choices[0]
@@ -169,13 +201,14 @@ class LLMClient:
             raise LLMError(f"{self.config.provider}/{self.config.model}: {e}") from e
 
     async def complete_model(self, system: str, user: str, schema: Type[T], *, repairs: int = 2,
-                             temperature: float = 0.4) -> T:
+                             temperature: float = 0.4, tier: str = "fast") -> T:
         """Ask for JSON, validate against `schema`, and give the model one chance to
         repair its own output using the validation error. Raises LLMError after that."""
         try:
-            raw = await self.complete(system, user, json_mode=True, temperature=temperature)
+            raw = await self.complete(system, user, json_mode=True, temperature=temperature, tier=tier)
         except LLMError as e:  # e.g. truncated: retry once asking for brevity
-            raw = await self.complete(system, user + f"\n\n注意：{e}。请精简输出。", json_mode=True, temperature=temperature)
+            raw = await self.complete(system, user + f"\n\n注意：{e}。请精简输出。", json_mode=True,
+                                      temperature=temperature, tier=tier)
         last_error: Optional[str] = None
         for attempt in range(repairs + 1):
             try:
@@ -189,7 +222,7 @@ class LLMClient:
                         system,
                         user + "\n\n你上一次的输出无法通过校验，错误如下，请修正后重新输出完整 JSON：\n"
                         + last_error[:2000] + "\n\n上一次输出：\n" + raw[:6000],
-                        json_mode=True, temperature=0.2,
+                        json_mode=True, temperature=0.2, tier=tier,
                     )
                 except LLMError as e:
                     last_error = str(e)
@@ -200,14 +233,14 @@ class LLMClient:
         try:
             if self.config.provider == "anthropic":
                 async with self._anthropic.messages.stream(
-                    model=self.config.model, max_tokens=1024, system=system,
+                    model=self.config.for_tier("fast"), max_tokens=1024, system=system,
                     messages=[{"role": "user", "content": user}], temperature=temperature,
                 ) as s:
                     async for delta in s.text_stream:
                         yield delta
                 return
             stream = await self._openai.chat.completions.create(
-                model=self.config.model, temperature=temperature, max_tokens=1024, stream=True,
+                model=self.config.for_tier("fast"), temperature=temperature, max_tokens=1024, stream=True,
                 messages=[{"role": "system", "content": system}, {"role": "user", "content": user}],
             )
             async for chunk in stream:
