@@ -37,6 +37,14 @@ class LLMConfig:
     max_tokens: int = 16000
     model_pro: Optional[str] = None
     model_vision: Optional[str] = None
+    # Purposes that may use extended thinking (DeepSeek V4 reasoning). Everything else runs
+    # with thinking disabled: reasoning models otherwise spend the whole token budget thinking
+    # about widget code and return nothing.
+    think_purposes: tuple = ("plan",)
+
+    @property
+    def is_deepseek(self) -> bool:
+        return bool(self.base_url and "deepseek" in self.base_url)
 
     def for_tier(self, tier: str) -> str:
         if tier == "pro" and self.model_pro:
@@ -67,7 +75,8 @@ class LLMConfig:
                        model or os.getenv("LLM_MODEL", "deepseek-v4-flash"),
                        base_url or os.getenv("LLM_BASE_URL", "https://api.deepseek.com"),
                        model_pro=os.getenv("LLM_MODEL_PRO", "deepseek-v4-pro"),
-                       model_vision=os.getenv("LLM_MODEL_VISION", "deepseek-v4-flash-vision-exp"))
+                       model_vision=os.getenv("LLM_MODEL_VISION", "deepseek-v4-flash-vision-exp"),
+                       think_purposes=tuple(p for p in os.getenv("LLM_THINK_PURPOSES", "plan").split(",") if p))
         if provider == "anthropic":
             key = api_key or os.getenv("ANTHROPIC_API_KEY")
             if not key:
@@ -195,6 +204,9 @@ class LLMClient:
             kwargs = {}
             if json_mode:
                 kwargs["response_format"] = {"type": "json_object"}
+            if self.config.is_deepseek:
+                think = purpose.split("_")[0] in self.config.think_purposes
+                kwargs["extra_body"] = {"thinking": {"type": "enabled" if think else "disabled"}}
             user_content = user
             if images:
                 user_content = [{"type": "text", "text": user}] + [
@@ -263,6 +275,7 @@ class LLMClient:
             stream = await self._openai.chat.completions.create(
                 model=model, temperature=temperature, max_tokens=1024, stream=True,
                 stream_options={"include_usage": True},
+                **({"extra_body": {"thinking": {"type": "disabled"}}} if self.config.is_deepseek else {}),
                 messages=[{"role": "system", "content": system}, {"role": "user", "content": user}],
             )
             usage = None

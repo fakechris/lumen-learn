@@ -120,9 +120,10 @@ def _strip_fences(text: str) -> str:
 
 
 async def generate_widget_html(spec: WidgetSpec, llm: LLMClient, attempts: int = 2,
-                               feedback: Optional[str] = None) -> Optional[str]:
+                               feedback: Optional[str] = None, problems: Optional[list] = None) -> Optional[str]:
     """Generate HTML for an explorable/threejs widget. Returns None on failure.
-    `feedback` carries a runtime problem from a previous render check."""
+    `feedback` carries a runtime problem from a previous render check; `problems`
+    (if given) collects the reason of every failed attempt for diagnostics."""
     if spec.kind == "mermaid":
         return None
     if spec.html and not feedback:
@@ -135,9 +136,13 @@ async def generate_widget_html(spec: WidgetSpec, llm: LLMClient, attempts: int =
             prompt = user if not problem else f"{user}\n\n上一次生成的问题：{problem}。请修正后重新输出完整 HTML。"
             html = _strip_fences(await llm.complete(system, prompt, temperature=0.2, purpose="widget"))
         except LLMError as e:
-            problem = str(e)
+            problem = f"llm error: {e}"
+            if problems is not None:
+                problems.append(problem)
             continue
         problem = static_check(html, spec.kind)
         if problem is None:
             return html
+        if problems is not None:
+            problems.append(f"static check: {problem}")
     return None

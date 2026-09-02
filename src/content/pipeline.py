@@ -304,7 +304,8 @@ class ContentPipeline:
         check = widget_check_available()
         for ex in exercises:
             if ex.kind == "interactive" and ex.widget and not ex.widget.html:
-                html = await generate_widget_html(ex.widget, self.llm)
+                problems: List[str] = []
+                html = await generate_widget_html(ex.widget, self.llm, problems=problems)
                 png = os.path.join(course_dir, "widgets", f"{script.session_id}_{ex.exercise_id}.png")
                 if html and check:
                     res = await self._check_widget(html, png, ex.widget.task)
@@ -318,7 +319,8 @@ class ContentPipeline:
                 else:
                     ex.kind = "single_choice"
                     ex.widget = None
-                    self.progress("warn", f"{script.session_id} {ex.exercise_id}: interactive widget failed; downgraded to choice")
+                    self.progress("warn", f"{script.session_id} {ex.exercise_id}: interactive widget failed; downgraded to choice. reasons: "
+                                          + " | ".join(p[:160] for p in problems))
         kinds = {}
         for ex in exercises:
             kinds[ex.kind] = kinds.get(ex.kind, 0) + 1
@@ -353,22 +355,26 @@ class ContentPipeline:
             w = script.steps[i].widget
             if not w or w.kind == "mermaid" or w.html:
                 return
-            html = await generate_widget_html(w, self.llm)
+            problems: List[str] = []
+            html = await generate_widget_html(w, self.llm, problems=problems)
             png = os.path.join(course_dir, "widgets", f"{script.session_id}_step_{i + 1}.png")
             if html and check:
                 res = await self._check_widget(html, png, w.task)
                 if not res.ok:
                     self.progress("warn", f"{script.session_id} step {i + 1}: widget {res.problem}; regenerating")
-                    html = await generate_widget_html(w, self.llm, feedback=res.problem)
+                    html = await generate_widget_html(w, self.llm, feedback=res.problem, problems=problems)
                     res = await self._check_widget(html, png, w.task) if html else res
                     if not res.ok:
+                        problems.append(str(res.problem))
                         html = None
             if html:
                 script.steps[i].widget = w.model_copy(update={"html": html})
-                self.progress("widget", f"{script.session_id} step {i + 1}: {w.kind} ok ({len(html)} bytes)")
+                self.progress("widget", f"{script.session_id} step {i + 1}: {w.kind} ok ({len(html)} bytes)" +
+                              (f" after: {problems[-1][:120]}" if problems else ""))
             else:
                 script.steps[i].widget = None
-                self.progress("warn", f"{script.session_id} step {i + 1}: widget generation failed; dropped")
+                self.progress("warn", f"{script.session_id} step {i + 1}: widget generation failed; dropped. reasons: "
+                                      + " | ".join(p[:160] for p in problems))
 
         await asyncio.gather(*(fill(i) for i in range(len(script.steps))))
         return script
