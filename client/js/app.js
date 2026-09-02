@@ -31,6 +31,8 @@ class App {
     this.rawLog = [];
     this.activeTab = "transcript";
     this.firstBoardPending = false;
+    this.zoom = 1;
+    this.progress = JSON.parse(localStorage.getItem("hk_progress") || "{}"); // courseId/sessionId -> {started, finished, score}
 
     this.speakText = new Map();       // step_id -> text
     this.stepKinds = new Map();       // step_id -> Set of media kinds seen before its speak
@@ -71,16 +73,109 @@ class App {
     }
   }
 
-  async loadCourse(courseId) {
+  async loadCourse(courseId, { home = true } = {}) {
     this.course = await (await fetch(`/api/v1/courses/${courseId}`)).json();
     $("courseSelect").value = courseId;
-    this.sessions = this.course.chapters.flatMap((ch) => ch.sessions.map((s) => ({ ...s, chapter: ch.title })));
+    this.sessions = this.course.chapters.flatMap((ch) => ch.sessions.map((s) => ({ ...s, chapter: ch.title, unit: ch.unit || "" })));
     this.renderSidebar();
-    if (this.sessions.length) this.startSession(this.sessions[0].session_id);
+    if (home) this.openHome();
+    else if (this.sessions.length) this.startSession(this.sessions[0].session_id);
+  }
+
+  setZoom(z) {
+    this.zoom = Math.max(0.6, Math.min(2.0, Math.round(z * 10) / 10));
+    $("whiteboardCanvas").style.zoom = this.zoom;
+    $("zoomLabel").textContent = `${Math.round(this.zoom * 100)}%`;
+  }
+
+  // ------------------------------------------------------------------ course home
+
+  progressOf(sessionId) {
+    return this.progress[`${this.course.course_id}/${sessionId}`] || {};
+  }
+
+  markProgress(sessionId, patch) {
+    const key = `${this.course.course_id}/${sessionId}`;
+    this.progress[key] = { ...(this.progress[key] || {}), ...patch };
+    localStorage.setItem("hk_progress", JSON.stringify(this.progress));
+  }
+
+  statusClass(p) {
+    if (p.score != null && p.score >= 0.8) return "done";
+    if (p.score != null) return "good";
+    if (p.started) return "tried";
+    return "todo";
+  }
+
+  openHome() {
+    const c = this.course;
+    if (!c) return;
+    $("homeKicker").textContent = `${c.chapters.length} 讲 · ${this.sessions.length} 节 · ${c.generation_mode}`;
+    $("homeTitle").textContent = c.title;
+    $("homeOverview").textContent = c.overview || "";
+    const box = $("homeUnits");
+    box.innerHTML = "";
+    const groups = [];
+    c.chapters.forEach((ch, ci) => {
+      const unit = ch.unit || "";
+      let g = groups[groups.length - 1];
+      if (!g || g.unit !== unit) { g = { unit, chapters: [] }; groups.push(g); }
+      g.chapters.push({ ...ch, index: ci });
+    });
+    groups.forEach((g, gi) => {
+      const u = document.createElement("div");
+      u.className = "home-unit";
+      if (g.unit) u.innerHTML = `<div class="u">UNIT ${String(gi + 1).padStart(2, "0")} · ${escapeHtml(g.unit)}</div>`;
+      g.chapters.forEach((ch) => {
+        const lec = document.createElement("div");
+        lec.className = "home-lecture";
+        lec.innerHTML = `<h3>讲次 ${ch.index + 1}：${escapeHtml(ch.title)}</h3><div class="d">${escapeHtml(ch.description || "")}</div>`;
+        ch.sessions.forEach((s) => {
+          const p = this.progressOf(s.session_id);
+          const row = document.createElement("div");
+          row.className = "home-session";
+          const tags = (s.tags || []).map((t) => `<span class="tag tag-${t}">${t}</span>`).join("");
+          row.innerHTML = `<div>${escapeHtml(s.title)}<span class="tags">${tags}</span><div class="meta" style="font-size:.76rem;color:#64748b">${escapeHtml(s.learning_goal)}</div></div>`;
+          const learn = document.createElement("button");
+          learn.className = "pill btn learn" + (p.finished ? " secondary" : "");
+          learn.textContent = p.finished ? "▶ 再学一遍" : "▶ 学习";
+          learn.addEventListener("click", () => { $("courseHome").classList.remove("open"); this.startSession(s.session_id); });
+          const practice = document.createElement("button");
+          practice.className = "pill btn";
+          practice.textContent = p.score != null ? `↻ 练习 ${Math.round(p.score * 100)}%` : "↻ 练习";
+          practice.addEventListener("click", async () => {
+            const ok = await this.exercises.open(c.course_id, s.session_id, { onDone: (score) => { this.markProgress(s.session_id, { score }); this.openHome(); } });
+            if (!ok) this.toast("这一节还没有课后练习");
+          });
+          const st = document.createElement("i");
+          st.className = `st ${this.statusClass(p)}`;
+          row.append(learn, practice, st);
+          lec.appendChild(row);
+        });
+        u.appendChild(lec);
+      });
+      const quiz = document.createElement("div");
+      quiz.className = "home-quiz";
+      const label = g.unit ? "单元测验" : "综合测验";
+      quiz.innerHTML = `<div><div class="t">${label}：${escapeHtml(g.unit || c.title)}</div><div class="d">把这一部分所有小节的课后题连起来做一遍</div></div>`;
+      const btn = document.createElement("button");
+      btn.className = "pill btn primary";
+      btn.textContent = "开始测验";
+      btn.addEventListener("click", async () => {
+        const ids = g.chapters.flatMap((ch) => ch.sessions.map((s) => s.session_id));
+        const ok = await this.exercises.openMany(c.course_id, ids, { onDone: (score) => { ids.forEach((id) => this.markProgress(id, { quiz: score })); this.openHome(); } });
+        if (!ok) this.toast("这一部分还没有习题");
+      });
+      quiz.appendChild(btn);
+      u.appendChild(quiz);
+      box.appendChild(u);
+    });
+    $("courseHome").classList.add("open");
   }
 
   startSession(sessionId, fromStep = null) {
     this.sessionId = sessionId;
+    this.markProgress(sessionId, { started: true });
     this.clock.stop();
     this.board.clear();
     this.speakText.clear();
@@ -120,6 +215,10 @@ class App {
       $(`tab-${tab}`).addEventListener("click", () => { this.activeTab = tab; this.renderSidebar(); });
     }
     $("toggleSidebar").addEventListener("click", () => $("sidebar").classList.toggle("open"));
+    $("openHome").addEventListener("click", () => this.openHome());
+    $("closeHome").addEventListener("click", () => $("courseHome").classList.remove("open"));
+    $("zoomIn").addEventListener("click", () => this.setZoom(this.zoom + 0.1));
+    $("zoomOut").addEventListener("click", () => this.setZoom(this.zoom - 0.1));
     $("openGenerate").addEventListener("click", () => $("generateModal").classList.add("open"));
     $("closeGenerate").addEventListener("click", () => $("generateModal").classList.remove("open"));
     $("ingestBtn").addEventListener("click", () => this.ingestAndPlan());
@@ -246,7 +345,9 @@ class App {
     this.stepKinds.clear();
     this.renderKeypoints(null);
     this.setState("teaching");
-    this.addBubble("tutor", `本节：${m.title}。目标：${m.learning_goal}`, { kind: "导引" });
+    this.addBubble("tutor", m.title, { kind: "课程开场" });
+    if (m.learning_goal) this.addBubble("tutor", m.learning_goal, { kind: "学习目标" });
+    this.stepTitles = new Map();
   }
 
   renderKeypoints(currentStepId) {
@@ -272,9 +373,11 @@ class App {
   on_new_column() { this.board.newColumn(); }
 
   on_board(m) {
-    this.noteKind("板书");
+    this.noteKind(m.title && !this.firstBoardPending ? m.title : "板书");
     this.board.addBoard({ uid: m.board_uid, title: m.title, markdown: m.board_content, layout: m.layout, gate: m.reveal_gate_step, hook: this.firstBoardPending });
     this.firstBoardPending = false;
+    this.zoom = 1;
+    this.progress = JSON.parse(localStorage.getItem("hk_progress") || "{}"); // courseId/sessionId -> {started, finished, score}
     this.ack(m.step_id);
   }
 
@@ -302,7 +405,7 @@ class App {
   on_speak(m) {
     this.speakText.set(m.step_id, m.spoken_text);
     const kinds = new Set(this.pendingKinds);
-    if (this.speakText.size === 1) kinds.add("导引");
+    if (this.speakText.size === 1 && !kinds.size) kinds.add("导引");
     this.stepKinds.set(m.step_id, kinds);
     this.pendingKinds = new Set();
   }
@@ -325,7 +428,7 @@ class App {
     const text = this.speakText.get(m.step_id) || "";
     this.currentStep = m.step_id;
     const kinds = [...(this.stepKinds.get(m.step_id) || [])];
-    this.addBubble("tutor", text, { kind: kinds.length ? kinds.join(" · ") : (m.step_id >= 100000 ? "点评" : "讲解") });
+    this.addBubble("tutor", text, { kind: kinds.length ? kinds[0] : (m.step_id >= 100000 ? "点评" : "讲解") });
     this.renderKeypoints(m.step_id);
     this.board.openGate(m.step_id, m.duration_ms);
     const decos = this.pendingDecos.get(m.step_id) || [];
@@ -394,6 +497,7 @@ class App {
   on_done() {}
   async on_response_complete() {
     this.setState("finished");
+    this.markProgress(this.sessionId, { finished: true });
     this.renderKeypoints(null);
     this.addBubble("tutor", "本节课程内容已讲完。你可以做几道课后练习，进入下一课，或者退出当前课程。", { kind: "结课" });
     this.setSubtitle("本节课程内容已讲完。", false);

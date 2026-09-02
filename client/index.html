@@ -29,7 +29,11 @@
       <span id="sessionCounter" class="counter">0 / 0</span>
       <button class="icon" id="nextSessionBtn" title="下一节">›</button>
     </div>
+    <div class="pill group" title="缩放">
+      <button class="icon" id="zoomOut">−</button><span class="counter" id="zoomLabel">100%</span><button class="icon" id="zoomIn">+</button>
+    </div>
     <button class="pill btn" id="speedBtn" title="语速">沉稳 · 1×</button>
+    <button class="pill btn" id="openHome" title="课程主页">☰ 课程</button>
     <span class="pill" id="capsPill" title="服务端能力">…</span>
     <button class="pill btn primary" id="openGenerate">＋ 从讲义生成</button>
     <button class="pill btn" id="toggleSidebar" title="对话 / 大纲">💬</button>
@@ -109,6 +113,23 @@
       </section>
 
       <pre class="gen-log" id="genLog"></pre>
+    </div>
+  </div>
+
+  <div class="course-home" id="courseHome">
+    <div class="home-inner">
+      <div class="home-head">
+        <div>
+          <div class="home-kicker" id="homeKicker"></div>
+          <h2 id="homeTitle"></h2>
+          <p class="home-overview" id="homeOverview"></p>
+        </div>
+        <button class="icon" id="closeHome" title="关闭">×</button>
+      </div>
+      <div class="home-legend">
+        <span><i class="st done"></i>已掌握</span><span><i class="st good"></i>熟练</span><span><i class="st tried"></i>已尝试</span><span><i class="st todo"></i>未开始</span>
+      </div>
+      <div class="home-units" id="homeUnits"></div>
     </div>
   </div>
 
