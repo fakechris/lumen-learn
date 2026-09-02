@@ -58,7 +58,8 @@ class Run:
             print(f"{ICONS.get(stage, '•')} [{stage}] {detail}", flush=True)
         if self.extra_sink:
             self.extra_sink(stage, detail)
-        (log.warning if stage in ("warn", "error") else log.info)("%s %s", stage, detail)
+        if not self.echo:  # console already has it; keep stdlib logging for server processes
+            (log.warning if stage in ("warn", "error") else log.info)("%s %s", stage, detail)
 
     def finish(self, status: str, usage_total: Optional[dict] = None, error: Optional[str] = None,
                course_id: Optional[str] = None) -> None:
