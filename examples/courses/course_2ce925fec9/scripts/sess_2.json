@@ -1,0 +1,153 @@
+{
+  "session_id": "sess_2",
+  "course_id": "course_2ce925fec9",
+  "title": "第三个向量是多余的吗？",
+  "learning_goal": "学生能判断当第三个向量是前两个向量的线性组合时，张成空间不变，并理解线性相关的概念。",
+  "steps": [
+    {
+      "title": "回顾：两个向量的张成空间",
+      "spoken_text": "我们先从一个熟悉的情景开始。想象你有一支画笔，向量 v1 和 v2 是两支不同方向的笔刷。当你用这两支笔刷任意混合颜料时，能涂满的整个平面就是它们的张成空间。现在，如果我再递给你第三支笔刷 v3，它会不会让我们的调色盘变得更丰富呢？这就要看 v3 是不是一个'新花样'了。",
+      "boards": [
+        {
+          "title": "两个向量的张成",
+          "markdown": "设 $\\vec{v}_1, \\vec{v}_2$ 不共线，则\n$$\\text{span}(\\vec{v}_1, \\vec{v}_2) = \\{ c_1 \\vec{v}_1 + c_2 \\vec{v}_2 \\mid c_1, c_2 \\in \\mathbb{R} \\}$$\n这是一个平面。",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [],
+      "widget": null,
+      "question": null,
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "加入第三个向量：是扩展还是冗余？",
+      "spoken_text": "现在，假设 v3 恰好等于 v1 加 v2，也就是说，v3 这支笔刷的颜色，其实可以用 v1 和 v2 按一比一混合出来。那么，我们还需要 v3 吗？显然，任何用 v3 能画出的颜色，用 v1 和 v2 也能调出来。所以，加上 v3 并没有让我们的画布变大，张成空间还是原来那个平面。",
+      "boards": [
+        {
+          "title": "线性相关",
+          "markdown": "若 $\\vec{v}_3 = \\vec{v}_1 + \\vec{v}_2$，则\n$$\\text{span}(\\vec{v}_1, \\vec{v}_2, \\vec{v}_3) = \\text{span}(\\vec{v}_1, \\vec{v}_2)$$\n称 $\\{\\vec{v}_1, \\vec{v}_2, \\vec{v}_3\\}$ 线性相关。",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "circle",
+          "snippet": "\\text{span}(\\vec{v}_1, \\vec{v}_2, \\vec{v}_3) = \\text{span}(\\vec{v}_1, \\vec{v}_2)",
+          "board_index": 0,
+          "trigger_phrase": "张成空间还是原来那个平面",
+          "color": null
+        }
+      ],
+      "widget": {
+        "kind": "threejs",
+        "title": "三维空间中的三个向量",
+        "task": "展示三个向量 v1, v2, v3，其中 v3 = v1 + v2。用不同颜色箭头表示，v1 红色，v2 绿色，v3 蓝色。v1 和 v2 张成一个平面（半透明平行四边形），v3 箭头落在该平面内。允许鼠标旋转观察。",
+        "html": "<!DOCTYPE html>\n<html lang=\"zh-CN\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>三维空间中的三个向量 (v3 = v1 + v2)</title>\n    <style>\n        body { margin: 0; overflow: hidden; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }\n        #info {\n            position: absolute;\n            top: 20px;\n            left: 20px;\n            background: rgba(255, 255, 255, 0.9);\n            padding: 8px 16px;\n            border-radius: 20px;\n            box-shadow: 0 2px 10px rgba(0,0,0,0.1);\n            color: #333;\n            font-size: 14px;\n            pointer-events: none;\n            z-index: 100;\n            border: 1px solid #ddd;\n            backdrop-filter: blur(4px);\n        }\n        .legend {\n            position: absolute;\n            bottom: 20px;\n            left: 20px;\n            background: rgba(255, 255, 255, 0.85);\n            padding: 12px 16px;\n            border-radius: 8px;\n            box-shadow: 0 2px 10px rgba(0,0,0,0.1);\n            font-size: 14px;\n            color: #222;\n            border: 1px solid #e0e0e0;\n            backdrop-filter: blur(4px);\n            pointer-events: none;\n            z-index: 100;\n            line-height: 1.6;\n        }\n        .legend-item {\n            display: flex;\n            align-items: center;\n            gap: 8px;\n            margin: 4px 0;\n        }\n        .color-box {\n            width: 16px;\n            height: 16px;\n            border-radius: 4px;\n            display: inline-block;\n        }\n        .vector-formula {\n            margin-top: 8px;\n            padding-top: 8px;\n            border-top: 1px solid #ccc;\n            font-weight: 500;\n        }\n    </style>\n</head>\n<body>\n    <div id=\"info\">🖱️ 拖拽旋转视角</div>\n    <div class=\"legend\">\n        <div class=\"legend-item\"><span class=\"color-box\" style=\"background:#e53935;\"></span> <strong>v1</strong> (红色)</div>\n        <div class=\"legend-item\"><span class=\"color-box\" style=\"background:#43a047;\"></span> <strong>v2</strong> (绿色)</div>\n        <div class=\"legend-item\"><span class=\"color-box\" style=\"background:#1e88e5;\"></span> <strong>v3 = v1 + v2</strong> (蓝色)</div>\n        <div class=\"vector-formula\">v1 = (2, 1, 1) &nbsp; v2 = (1, 2, 0.5) &nbsp; v3 = (3, 3, 1.5)</div>\n    </div>\n\n    <script src=\"https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js\"></script>\n    <script src=\"https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js\"></script>\n\n    <script>\n        (function() {\n            // --- 初始化场景、相机、渲染器 ---\n            const scene = new THREE.Scene();\n            scene.background = new THREE.Color(0xfcfcfc);\n\n            const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);\n            camera.position.set(6, 5, 8);\n            camera.lookAt(1.5, 1.5, 1);\n\n            const renderer = new THREE.WebGLRenderer({ antialias: true });\n            renderer.setSize(window.innerWidth, window.innerHeight);\n            renderer.shadowMap.enabled = false; // 不需要阴影\n            renderer.setPixelRatio(window.devicePixelRatio);\n            document.body.appendChild(renderer.domElement);\n\n            // --- 控制器 ---\n            const controls = new THREE.OrbitControls(camera, renderer.domElement);\n            controls.enableDamping = true;\n            controls.dampingFactor = 0.05;\n            controls.target.set(1.5, 1.5, 1);\n            controls.update();\n\n            // --- 辅助元素：网格和坐标轴 ---\n            const gridHelper = new THREE.GridHelper(10, 20, 0x888888, 0xcccccc);\n            gridHelper.position.set(1.5, 0, 1.5); // 让网格中心大致在向量附近\n            scene.add(gridHelper);\n\n            const axesHelper = new THREE.AxesHelper(5);\n            axesHelper.position.set(0, 0, 0);\n            scene.add(axesHelper);\n\n            // --- 定义向量数据 ---\n            // v1 = (2, 1, 1)  红色\n            // v2 = (1, 2, 0.5) 绿色\n            // v3 = v1 + v2 = (3, 3, 1.5) 蓝色\n            const v1 = new THREE.Vector3(2, 1, 1);\n            const v2 = new THREE.Vector3(1, 2, 0.5);\n            const v3 = new THREE.Vector3().addVectors(v1, v2); // (3, 3, 1.5)\n\n            // 原点\n            const origin = new THREE.Vector3(0, 0, 0);\n\n            // --- 创建箭头 (ArrowHelper) ---\n            // 箭头长度 = 向量长度，箭头大小稍作调整\n            const arrowLengthScale = 1.0; \n            const headLength = 0.3;\n            const headWidth = 0.2;\n\n            // v1 红色\n            const arrowV1 = new THREE.ArrowHelper(v1.clone().normalize(), origin, v1.length() * arrowLengthScale, 0xe53935, headLength, headWidth);\n            scene.add(arrowV1);\n\n            // v2 绿色\n            const arrowV2 = new THREE.ArrowHelper(v2.clone().normalize(), origin, v2.length() * arrowLengthScale, 0x43a047, headLength, headWidth);\n            scene.add(arrowV2);\n\n            // v3 蓝色 (从原点出发)\n            const arrowV3 = new THREE.ArrowHelper(v3.clone().normalize(), origin, v3.length() * arrowLengthScale, 0x1e88e5, headLength, headWidth);\n            scene.add(arrowV3);\n\n            // --- 绘制平行四边形 (v1 和 v2 张成的平面) ---\n            // 四个顶点: 0, v1, v2, v1+v2\n            const p0 = new THREE.Vector3(0, 0, 0);\n            const p1 = v1.clone();\n            const p2 = v2.clone();\n            const p3 = v3.clone(); // v1+v2\n\n            // 使用 BufferGeometry 构建两个三角形组成四边形\n            const geometry = new THREE.BufferGeometry();\n            const vertices = [\n                p0.x, p0.y, p0.z,\n                p1.x, p1.y, p1.z,\n                p3.x, p3.y, p3.z,\n                p0.x, p0.y, p0.z,\n                p3.x, p3.y, p3.z,\n                p2.x, p2.y, p2.z\n            ];\n            geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));\n            geometry.computeVertexNormals();\n\n            // 半透明材质，双面显示\n            const material = new THREE.MeshBasicMaterial({\n                color: 0xffaa00, // 暖黄色半透明，与箭头区分\n                transparent: true,\n                opacity: 0.25,\n                side: THREE.DoubleSide,\n                depthWrite: false\n            });\n            const parallelogram = new THREE.Mesh(geometry, material);\n            scene.add(parallelogram);\n\n            // 可选：添加四边形边缘线，使其更清晰 (使用LineSegments)\n            const edgeVertices = [\n                p0.x, p0.y, p0.z, p1.x, p1.y, p1.z,\n                p1.x, p1.y, p1.z, p3.x, p3.y, p3.z,\n                p3.x, p3.y, p3.z, p2.x, p2.y, p2.z,\n                p2.x, p2.y, p2.z, p0.x, p0.y, p0.z\n            ];\n            const edgeGeo = new THREE.BufferGeometry();\n            edgeGeo.setAttribute('position', new THREE.Float32BufferAttribute(edgeVertices, 3));\n            const edgeMat = new THREE.LineBasicMaterial({ color: 0x888888, linewidth: 1 }); // linewidth not supported everywhere\n            const edges = new THREE.LineSegments(edgeGeo, edgeMat);\n            scene.add(edges);\n\n            // --- 文字标注 (使用 Sprite) ---\n            function createLabel(text, position, color = '#333333', fontSize = 48) {\n                const canvas = document.createElement('canvas');\n                const ctx = canvas.getContext('2d');\n                canvas.width = 256;\n                canvas.height = 128;\n                ctx.clearRect(0, 0, canvas.width, canvas.height);\n                \n                // 背景半透明圆角矩形 (可选，为了可读性)\n                ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';\n                ctx.shadowColor = 'rgba(0,0,0,0.2)';\n                ctx.shadowBlur = 8;\n                ctx.beginPath();\n                ctx.roundRect(20, 20, 216, 88, 20);\n                ctx.fill();\n                ctx.shadowColor = 'transparent';\n                \n                // 文字\n                ctx.font = `Bold ${fontSize}px \"Segoe UI\", Arial, sans-serif`;\n                ctx.textAlign = 'center';\n                ctx.textBaseline = 'middle';\n                ctx.fillStyle = color;\n                ctx.fillText(text, canvas.width/2, canvas.height/2);\n                \n                const texture = new THREE.CanvasTexture(canvas);\n                texture.needsUpdate = true;\n                const material = new THREE.SpriteMaterial({ map: texture, depthTest: false, depthWrite: false });\n                const sprite = new THREE.Sprite(material);\n                sprite.scale.set(1.2, 0.6, 1);\n                sprite.position.copy(position);\n                return sprite;\n            }\n\n            // 为每个向量添加标签 (放在箭头尖端稍微偏移)\n            const labelV1 = createLabel('v1', v1.clone().add(new THREE.Vector3(0.3, 0.3, 0.2)), '#c62828');\n            const labelV2 = createLabel('v2', v2.clone().add(new THREE.Vector3(0.3, 0.3, 0.2)), '#2e7d32');\n            const labelV3 = createLabel('v3', v3.clone().add(new THREE.Vector3(0.3, 0.3, 0.2)), '#1565c0');\n            \n            scene.add(labelV1);\n            scene.add(labelV2);\n            scene.add(labelV3);\n\n            // 原点标签 (可选)\n            const originLabel = createLabel('O', new THREE.Vector3(-0.3, -0.3, -0.2), '#555555', 40);\n            scene.add(originLabel);\n\n            // 添加一些辅助点 (小球体) 在向量端点，增强视觉\n            function addSphere(pos, color, size = 0.08) {\n                const sphereGeo = new THREE.SphereGeometry(size, 16, 16);\n                const sphereMat = new THREE.MeshBasicMaterial({ color: color });\n                const sphere = new THREE.Mesh(sphereGeo, sphereMat);\n                sphere.position.copy(pos);\n                scene.add(sphere);\n            }\n            addSphere(v1, 0xe53935);\n            addSphere(v2, 0x43a047);\n            addSphere(v3, 0x1e88e5);\n            addSphere(new THREE.Vector3(0,0,0), 0x555555, 0.06);\n\n            // --- 动画循环 ---\n            function animate() {\n                requestAnimationFrame(animate);\n                controls.update(); // 启用阻尼后需要每帧更新\n                renderer.render(scene, camera);\n            }\n            animate();\n\n            // --- 窗口大小自适应 ---\n            window.addEventListener('resize', onWindowResize, false);\n            function onWindowResize() {\n                camera.aspect = window.innerWidth / window.innerHeight;\n                camera.updateProjectionMatrix();\n                renderer.setSize(window.innerWidth, window.innerHeight);\n            }\n\n            // 辅助函数：Canvas roundRect (某些浏览器可能不支持，手动补充)\n            if (!CanvasRenderingContext2D.prototype.roundRect) {\n                CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {\n                    if (w < 2 * r) r = w / 2;\n                    if (h < 2 * r) r = h / 2;\n                    this.moveTo(x + r, y);\n                    this.lineTo(x + w - r, y);\n                    this.quadraticCurveTo(x + w, y, x + w, y + r);\n                    this.lineTo(x + w, y + h - r);\n                    this.quadraticCurveTo(x + w, y + h, x + w - r, y + h);\n                    this.lineTo(x + r, y + h);\n                    this.quadraticCurveTo(x, y + h, x, y + h - r);\n                    this.lineTo(x, y + r);\n                    this.quadraticCurveTo(x, y, x + r, y);\n                    return this;\n                };\n            }\n\n        })();\n    </script>\n</body>\n</html>",
+        "mermaid": null,
+        "layout": "newcol"
+      },
+      "question": {
+        "mode": "choice",
+        "question": "如果 v3 = v1 + v2，那么 span(v1, v2, v3) 与 span(v1, v2) 相比会怎样？",
+        "options": [
+          "A. span(v1, v2, v3) 更大，因为向量更多",
+          "B. span(v1, v2, v3) 与 span(v1, v2) 相同"
+        ],
+        "correct_index": 1,
+        "misconceptions": [
+          "认为向量越多张成空间越大，忽略了向量之间的线性关系。",
+          null
+        ],
+        "explanation": "因为 v3 是 v1 和 v2 的线性组合，所以任何包含 v3 的组合都可以用 v1 和 v2 表示，张成空间不变。"
+      },
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "从几何直觉到代数定义",
+      "spoken_text": "这个现象在几何上非常直观：三个向量都在同一个平面上，它们当然撑不起三维空间。但在代数上，我们怎么严格地描述这种'冗余'呢？我们注意到，存在一组不全为零的系数，比如 c1 等于 1，c2 等于 1，c3 等于负 1，使得 c1 v1 加 c2 v2 加 c3 v3 等于零向量。这就是线性相关的代数定义。",
+      "boards": [
+        {
+          "title": "线性相关的代数定义",
+          "markdown": "若存在不全为零的 $c_1, c_2, c_3$ 使得\n$$c_1 \\vec{v}_1 + c_2 \\vec{v}_2 + c_3 \\vec{v}_3 = \\vec{0}$$\n则称向量组线性相关。",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "circle",
+          "snippet": "c_1 \\vec{v}_1 + c_2 \\vec{v}_2 + c_3 \\vec{v}_3 = \\vec{0}",
+          "board_index": 0,
+          "trigger_phrase": "c1 v1 加 c2 v2 加 c3 v3 等于零向量",
+          "color": null
+        }
+      ],
+      "widget": null,
+      "question": {
+        "mode": "choice",
+        "question": "对于 v3 = v1 + v2，下面哪组系数能说明线性相关？",
+        "options": [
+          "A. c1=1, c2=1, c3=1",
+          "B. c1=1, c2=1, c3=-1"
+        ],
+        "correct_index": 1,
+        "misconceptions": [
+          "误以为 c3 也取正 1，导致组合不为零。",
+          null
+        ],
+        "explanation": "代入得 v1+v2-v3 = v1+v2-(v1+v2)=0，且系数不全为零。"
+      },
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "线性无关：没有冗余",
+      "spoken_text": "反过来，如果三个向量不在同一个平面上，比如 v1 沿 x 轴，v2 沿 y 轴，v3 沿 z 轴，那么它们就能撑起整个三维空间。这时，没有任何一个向量是多余的，我们称它们线性无关。线性无关意味着：只有当所有系数都为零时，它们的线性组合才能得到零向量。",
+      "boards": [
+        {
+          "title": "线性无关的定义",
+          "markdown": "若 $c_1 \\vec{v}_1 + c_2 \\vec{v}_2 + c_3 \\vec{v}_3 = \\vec{0}$ 只能推出 $c_1 = c_2 = c_3 = 0$，则称线性无关。",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [],
+      "widget": null,
+      "question": {
+        "mode": "choice",
+        "question": "如果三个向量线性无关，那么它们张成的空间可能是？",
+        "options": [
+          "A. 一个平面",
+          "B. 整个三维空间"
+        ],
+        "correct_index": 1,
+        "misconceptions": [
+          "误以为线性无关的向量也可能共面，但共面意味着相关。",
+          null
+        ],
+        "explanation": "三个线性无关的向量不共面，所以张成三维空间。"
+      },
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "总结：冗余与空间的维度",
+      "spoken_text": "今天我们学到，增加一个向量不一定能扩大张成空间。如果新向量是已有向量的线性组合，它就是冗余的，向量组线性相关；反之，如果每个向量都带来新方向，它们就线性无关，张成空间会变大。这个思想是理解维数和基的关键。记住：真正重要的是'独立的方向'，而不是向量的个数。",
+      "boards": [
+        {
+          "title": "核心要点",
+          "markdown": "- 线性相关：存在非零组合得到零向量，意味着有冗余。\n- 线性无关：只有全零组合才能得到零向量，每个向量都贡献新维度。\n- 张成空间的大小由线性无关的向量个数决定。",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [],
+      "widget": null,
+      "question": null,
+      "reward": {
+        "title": "Master Concept: 线性相关与冗余",
+        "description": "线性相关描述了向量组中的信息冗余：当一个向量可以表示为其他向量的线性组合时，它不增加张成空间。线性无关则确保每个向量都提供新的方向。这一概念是理解基、维数和矩阵秩的基石。"
+      },
+      "new_page_title": null
+    }
+  ]
+}

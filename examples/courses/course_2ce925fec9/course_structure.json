@@ -1,0 +1,56 @@
+{
+  "course_id": "course_2ce925fec9",
+  "title": "基与维数：从平面到空间的认知跃迁",
+  "target_audience": "大学一年级线性代数初学者",
+  "overview": "通过直观的几何例子，理解向量空间的生成、线性相关与基的概念，最终掌握维数的严格定义。",
+  "generation_mode": "llm",
+  "chapters": [
+    {
+      "chapter_id": "ch_1",
+      "title": "从生成到冗余",
+      "description": "建立向量张成子空间的直观，并发现冗余向量的存在。",
+      "sessions": [
+        {
+          "session_id": "sess_1",
+          "title": "两个向量能张成什么？",
+          "learning_goal": "学生能解释两个非零不平行向量在三维空间中的张成是一个平面，并理解为什么不能张成整个三维空间。",
+          "core_concept": "张成（span）与子空间",
+          "cognitive_hurdle": "误以为两个向量可以张成整个三维空间，忽略了维度限制。",
+          "source_sections": [
+            "s1"
+          ],
+          "estimated_duration_min": 5
+        },
+        {
+          "session_id": "sess_2",
+          "title": "第三个向量是多余的吗？",
+          "learning_goal": "学生能判断当第三个向量是前两个向量的线性组合时，张成空间不变，并理解线性相关的概念。",
+          "core_concept": "线性相关与冗余",
+          "cognitive_hurdle": "认为增加向量总能扩大张成空间，没有意识到冗余向量的存在。",
+          "source_sections": [
+            "s2"
+          ],
+          "estimated_duration_min": 5
+        }
+      ]
+    },
+    {
+      "chapter_id": "ch_2",
+      "title": "基与维数的严格化",
+      "description": "从冗余概念过渡到基的严格定义，并理解维数的本质。",
+      "sessions": [
+        {
+          "session_id": "sess_3",
+          "title": "什么是基？",
+          "learning_goal": "学生能根据基的两个黄金法则判断一组向量是否为基，并能解释为什么基是“极大生成”和“极小无关”的。",
+          "core_concept": "基（Basis）的定义",
+          "cognitive_hurdle": "混淆基与生成集，忽略线性无关的要求。",
+          "source_sections": [
+            "s3"
+          ],
+          "estimated_duration_min": 5
+        }
+      ]
+    }
+  ]
+}

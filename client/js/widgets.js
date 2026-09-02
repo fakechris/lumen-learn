@@ -1,0 +1,72 @@
+/**
+ * Sandboxed HTML widgets (Three.js manipulatives etc.).
+ *
+ * The iframe runs with `sandbox="allow-scripts"` only: no same-origin access,
+ * so generated code cannot touch our DOM, storage or cookies. A small shim is
+ * injected so runtime errors inside the widget are reported back via
+ * postMessage and shown as an overlay instead of a silent blank box.
+ */
+const shimFor = (token) => `<script>
+(function(){
+  var T = ${JSON.stringify(token)};
+  function post(m){ try { parent.postMessage(Object.assign({ source: "hk-widget", token: T }, m), "*"); } catch(e){} }
+  window.addEventListener("error", function(e){ post({ type: "error", message: e.message || "script error" }); });
+  window.addEventListener("unhandledrejection", function(e){ post({ type: "error", message: (e.reason && e.reason.message) || String(e.reason) }); });
+  window.addEventListener("load", function(){ post({ type: "ready" }); });
+})();
+</script>`;
+
+const frames = new Map(); // token -> { overlay, status }
+let nextToken = 1;
+
+window.addEventListener("message", (ev) => {
+  const data = ev.data;
+  if (!data || data.source !== "hk-widget") return;
+  const entry = frames.get(data.token);
+  if (!entry) return;
+  if (data.type === "error") {
+    entry.overlay.textContent = `教具运行出错：${data.message}`;
+    entry.overlay.classList.add("visible");
+  } else if (data.type === "ready") {
+    entry.status.textContent = "可拖拽旋转";
+  }
+});
+
+function injectShim(html, token) {
+  const shim = shimFor(token);
+  const idx = html.search(/<head[^>]*>/i);
+  if (idx >= 0) {
+    const end = html.indexOf(">", idx) + 1;
+    return html.slice(0, end) + shim + html.slice(end);
+  }
+  return shim + html;
+}
+
+export function createWidgetFrame({ html, title, height = 360 }) {
+  const wrap = document.createElement("div");
+  wrap.className = "widget-frame";
+  wrap.style.height = `${height}px`;
+
+  const iframe = document.createElement("iframe");
+  iframe.setAttribute("sandbox", "allow-scripts");
+  iframe.setAttribute("title", title || "interactive widget");
+  const token = `w${nextToken++}`;
+  iframe.srcdoc = injectShim(html, token);
+
+  const overlay = document.createElement("div");
+  overlay.className = "widget-error";
+
+  const status = document.createElement("div");
+  status.className = "widget-status";
+  status.textContent = "加载中…";
+
+  const fullscreen = document.createElement("button");
+  fullscreen.className = "widget-fullscreen";
+  fullscreen.textContent = "⛶";
+  fullscreen.title = "全屏";
+  fullscreen.addEventListener("click", () => wrap.classList.toggle("fullscreen"));
+
+  wrap.append(iframe, status, overlay, fullscreen);
+  frames.set(token, { overlay, status });
+  return wrap;
+}

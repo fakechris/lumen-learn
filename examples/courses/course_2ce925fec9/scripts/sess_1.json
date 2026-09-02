@@ -1,0 +1,182 @@
+{
+  "session_id": "sess_1",
+  "course_id": "course_2ce925fec9",
+  "title": "两个向量能张成什么？",
+  "learning_goal": "学生能解释两个非零不平行向量在三维空间中的张成是一个平面，并理解为什么不能张成整个三维空间。",
+  "steps": [
+    {
+      "title": "从平面到空间：两个向量的舞台",
+      "spoken_text": "想象你站在三维空间里，手里握着两个非零且不平行的箭头。它们像两根筷子，指向不同的方向。现在我问你：仅靠这两根筷子，你能铺满整个三维空间吗？直觉会告诉你，两根筷子只能撑起一个平面，就像两根木棍只能搭出一个平面框架，却撑不起一个立体的帐篷。我们来看看数学上怎么说。",
+      "boards": [
+        {
+          "title": "两个向量的线性组合",
+          "markdown": "在 $\\mathbb{R}^3$ 中，取非零且不平行的 $\\vec{v}_1, \\vec{v}_2$。\n\n所有线性组合：\n$$c_1 \\vec{v}_1 + c_2 \\vec{v}_2 \\quad (c_1, c_2 \\in \\mathbb{R})$$\n\n记为 $\\text{span}(\\vec{v}_1, \\vec{v}_2)$。",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "circle",
+          "snippet": "c_1 \\vec{v}_1 + c_2 \\vec{v}_2",
+          "board_index": 0,
+          "trigger_phrase": null,
+          "color": null
+        }
+      ],
+      "widget": {
+        "kind": "threejs",
+        "title": "两个向量的张成",
+        "task": "展示三维空间中的两个非零不平行向量（红色和蓝色），以及它们张成的平面（半透明绿色），平面过原点。鼠标可旋转视角，观察平面只是三维空间中的一个切片。",
+        "html": "<!DOCTYPE html>\n<html lang=\"zh-CN\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>两个向量的张成 · 三维切片</title>\n    <style>\n        body {\n            margin: 0;\n            overflow: hidden;\n            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;\n        }\n        #info {\n            position: absolute;\n            top: 20px;\n            left: 20px;\n            background: rgba(255, 255, 255, 0.9);\n            padding: 8px 16px;\n            border-radius: 30px;\n            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);\n            font-size: 14px;\n            color: #333;\n            pointer-events: none;\n            backdrop-filter: blur(4px);\n            border: 1px solid #ddd;\n            z-index: 100;\n        }\n        #info span {\n            display: inline-block;\n            width: 10px;\n            height: 10px;\n            border-radius: 50%;\n            margin-right: 6px;\n        }\n        .dot-red { background: #e74c3c; }\n        .dot-blue { background: #3498db; }\n        .dot-green { background: #2ecc71; }\n        .label {\n            color: #2c3e50;\n            font-weight: 500;\n            text-shadow: 1px 1px 2px rgba(255,255,255,0.8);\n        }\n    </style>\n</head>\n<body>\n    <div id=\"info\">\n        <span class=\"dot-red\"></span> 向量 a &nbsp;|&nbsp; \n        <span class=\"dot-blue\"></span> 向量 b &nbsp;|&nbsp; \n        <span class=\"dot-green\"></span> 张成平面 (过原点)\n        <span style=\"margin-left: 12px; opacity: 0.6;\">🖱️ 拖拽旋转视角</span>\n    </div>\n\n    <script src=\"https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js\"></script>\n    <script src=\"https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js\"></script>\n\n    <script>\n        (function() {\n            // --- 初始化场景、相机、渲染器 ---\n            const scene = new THREE.Scene();\n            scene.background = new THREE.Color(0xfcfcfc);\n\n            const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);\n            camera.position.set(6, 4, 8);\n            camera.lookAt(0, 0, 0);\n\n            const renderer = new THREE.WebGLRenderer({ antialias: true });\n            renderer.setSize(window.innerWidth, window.innerHeight);\n            renderer.shadowMap.enabled = false; // 不需要阴影\n            renderer.setPixelRatio(window.devicePixelRatio);\n            document.body.appendChild(renderer.domElement);\n\n            // --- 控制器 ---\n            const controls = new THREE.OrbitControls(camera, renderer.domElement);\n            controls.enableDamping = true;\n            controls.dampingFactor = 0.05;\n            controls.autoRotate = false;\n            controls.enableZoom = true;\n            controls.target.set(0, 0, 0);\n\n            // --- 辅助元素：网格与坐标轴 ---\n            const gridHelper = new THREE.GridHelper(10, 20, 0xaaaaaa, 0xcccccc);\n            gridHelper.position.y = 0;\n            scene.add(gridHelper);\n\n            const axesHelper = new THREE.AxesHelper(5);\n            scene.add(axesHelper);\n\n            // --- 定义两个非零不平行向量 (红色 a, 蓝色 b) ---\n            // 选择两个不平行且不共线的向量，使平面明显倾斜\n            const vecA = new THREE.Vector3(2.0, 1.2, 1.5).normalize().multiplyScalar(2.5); // 长度2.5\n            const vecB = new THREE.Vector3(-1.0, 2.0, 1.8).normalize().multiplyScalar(2.5); // 长度2.5\n\n            // 确保它们不平行 (叉积不为零)\n            const cross = new THREE.Vector3().crossVectors(vecA, vecB);\n            if (cross.length() < 0.01) {\n                // 如果意外平行，稍微扰动\n                vecB.x += 0.3;\n                vecB.y -= 0.2;\n                vecB.z += 0.1;\n                vecB.normalize().multiplyScalar(2.5);\n            }\n\n            // --- 绘制向量 (ArrowHelper) ---\n            // 红色向量 a\n            const arrowA = new THREE.ArrowHelper(vecA.clone().normalize(), new THREE.Vector3(0, 0, 0), vecA.length(), 0xe74c3c, 0.4, 0.2);\n            scene.add(arrowA);\n            \n            // 蓝色向量 b\n            const arrowB = new THREE.ArrowHelper(vecB.clone().normalize(), new THREE.Vector3(0, 0, 0), vecB.length(), 0x3498db, 0.4, 0.2);\n            scene.add(arrowB);\n\n            // --- 计算张成平面 (由 vecA 和 vecB 张成) ---\n            // 平面法向量 n = a × b\n            const normal = new THREE.Vector3().crossVectors(vecA, vecB).normalize();\n            \n            // 构建一个覆盖范围较大的四边形平面，使用两个基向量 (a 和 b) 的线性组合\n            // 为了视觉上呈现“无限”平面，我们取较大的系数范围，例如从 -3 到 3\n            const scale = 3.5; // 平面延伸范围\n            \n            // 四个顶点: p1 = -scale*a - scale*b, p2 = scale*a - scale*b, p3 = scale*a + scale*b, p4 = -scale*a + scale*b\n            const p1 = vecA.clone().multiplyScalar(-scale).add(vecB.clone().multiplyScalar(-scale));\n            const p2 = vecA.clone().multiplyScalar(scale).add(vecB.clone().multiplyScalar(-scale));\n            const p3 = vecA.clone().multiplyScalar(scale).add(vecB.clone().multiplyScalar(scale));\n            const p4 = vecA.clone().multiplyScalar(-scale).add(vecB.clone().multiplyScalar(scale));\n\n            // 创建几何体并设置顶点\n            const geometry = new THREE.BufferGeometry();\n            const vertices = new Float32Array([\n                p1.x, p1.y, p1.z,\n                p2.x, p2.y, p2.z,\n                p3.x, p3.y, p3.z,\n                p4.x, p4.y, p4.z\n            ]);\n            geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));\n            \n            // 索引两个三角形 (0-1-2 和 0-2-3)\n            geometry.setIndex([\n                0, 1, 2,\n                0, 2, 3\n            ]);\n            geometry.computeVertexNormals();\n\n            // 半透明绿色材质\n            const material = new THREE.MeshBasicMaterial({\n                color: 0x2ecc71,\n                transparent: true,\n                opacity: 0.25,\n                side: THREE.DoubleSide,\n                depthWrite: false,\n                polygonOffset: true,\n                polygonOffsetFactor: 1,\n                polygonOffsetUnits: 1\n            });\n\n            const planeMesh = new THREE.Mesh(geometry, material);\n            scene.add(planeMesh);\n\n            // 可选：添加平面边缘的线框，帮助视觉感知平面范围 (浅色线)\n            const edges = new THREE.EdgesGeometry(geometry);\n            const lineMat = new THREE.LineBasicMaterial({ color: 0x27ae60, opacity: 0.3, transparent: true });\n            const wireframe = new THREE.LineSegments(edges, lineMat);\n            scene.add(wireframe);\n\n            // --- 添加文字标注 (Canvas Sprite) ---\n            function createLabel(text, color, position, offset = new THREE.Vector3(0.3, 0.3, 0.3)) {\n                const canvas = document.createElement('canvas');\n                canvas.width = 128;\n                canvas.height = 64;\n                const ctx = canvas.getContext('2d');\n                \n                // 背景透明\n                ctx.clearRect(0, 0, canvas.width, canvas.height);\n                \n                // 绘制文字\n                ctx.font = 'Bold 28px \"Segoe UI\", Arial, sans-serif';\n                ctx.textAlign = 'center';\n                ctx.textBaseline = 'middle';\n                \n                // 描边白底增加可读性\n                ctx.shadowColor = 'rgba(255,255,255,0.8)';\n                ctx.shadowBlur = 8;\n                ctx.fillStyle = color;\n                ctx.fillText(text, canvas.width/2, canvas.height/2);\n                \n                // 额外描边\n                ctx.shadowBlur = 0;\n                ctx.strokeStyle = 'rgba(255,255,255,0.9)';\n                ctx.lineWidth = 2;\n                ctx.strokeText(text, canvas.width/2, canvas.height/2);\n                \n                const texture = new THREE.CanvasTexture(canvas);\n                const material = new THREE.SpriteMaterial({ map: texture, depthTest: false, depthWrite: false });\n                const sprite = new THREE.Sprite(material);\n                sprite.scale.set(1.2, 0.6, 1);\n                sprite.position.copy(position).add(offset);\n                scene.add(sprite);\n                return sprite;\n            }\n\n            // 在向量尖端附近标注 a 和 b\n            const tipA = vecA.clone().multiplyScalar(1.1); // 稍微超出尖端\n            const tipB = vecB.clone().multiplyScalar(1.1);\n            createLabel('a', '#e74c3c', tipA, new THREE.Vector3(0.2, 0.2, 0.2));\n            createLabel('b', '#3498db', tipB, new THREE.Vector3(-0.2, 0.3, -0.1));\n\n            // 在平面中心附近标注 \"span(a,b)\"，但避免遮挡原点，放在偏移位置\n            const centerOffset = vecA.clone().add(vecB).multiplyScalar(0.4).add(new THREE.Vector3(0.5, 0.2, 0.5));\n            createLabel('span(a,b)', '#2ecc71', centerOffset, new THREE.Vector3(0, 0.2, 0));\n\n            // 原点小标记 (可选)\n            const originDot = new THREE.Mesh(\n                new THREE.SphereGeometry(0.08, 16, 16),\n                new THREE.MeshBasicMaterial({ color: 0x555555 })\n            );\n            originDot.position.set(0, 0, 0);\n            scene.add(originDot);\n\n            // --- 添加一些辅助点/虚线来强调平面过原点? 不需要，平面本身过原点 ---\n\n            // --- 动画循环 ---\n            function animate() {\n                requestAnimationFrame(animate);\n                \n                controls.update(); // 启用阻尼后必须每帧调用\n                \n                renderer.render(scene, camera);\n            }\n            \n            animate();\n\n            // --- 窗口大小自适应 ---\n            window.addEventListener('resize', onWindowResize, false);\n            function onWindowResize() {\n                camera.aspect = window.innerWidth / window.innerHeight;\n                camera.updateProjectionMatrix();\n                renderer.setSize(window.innerWidth, window.innerHeight);\n            }\n\n            // 首帧内容已经由同步绘制保证，无需额外操作\n        })();\n    </script>\n</body>\n</html>",
+        "mermaid": null,
+        "layout": "newcol"
+      },
+      "question": {
+        "mode": "choice",
+        "question": "两个非零不平行向量在三维空间中的张成是什么？",
+        "options": [
+          "整个三维空间",
+          "一个过原点的平面"
+        ],
+        "correct_index": 1,
+        "misconceptions": [
+          "误以为两个向量可以张成整个三维空间，忽略了维度限制。",
+          null
+        ],
+        "explanation": "两个向量只能提供两个方向的自由度，所以张成的是二维平面，无法覆盖三维空间。"
+      },
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "为什么填不满三维空间？",
+      "spoken_text": "为什么两根筷子撑不起立体帐篷？因为要填满三维空间，你需要三个方向各不相同的向量，比如上下、左右、前后。而你现在只有两个向量，它们只能在一个平面里滑动。就像你只有前后和左右两个方向，却想上下移动，那是不可能的。数学上，这两个向量的所有线性组合都躺在一个过原点的平面上，永远无法产生垂直于这个平面的分量。",
+      "boards": [
+        {
+          "title": "缺少第三个方向",
+          "markdown": "设 $\\vec{v}_1, \\vec{v}_2$ 张成的平面为 $P$。\n\n任意 $\\vec{w} \\in \\text{span}(\\vec{v}_1, \\vec{v}_2)$ 都在 $P$ 内。\n\n若 $\\vec{u} \\notin P$（如垂直于 $P$ 的向量），则 $\\vec{u} \\notin \\text{span}(\\vec{v}_1, \\vec{v}_2)$。\n\n因此无法张成整个 $\\mathbb{R}^3$。",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "circle",
+          "snippet": "\\text{span}(\\vec{v}_1, \\vec{v}_2)",
+          "board_index": 0,
+          "trigger_phrase": null,
+          "color": null
+        }
+      ],
+      "widget": null,
+      "question": {
+        "mode": "choice",
+        "question": "如果两个向量张成一个平面，那么平面外的任意向量（比如垂直于平面的向量）能否由这两个向量线性表示？",
+        "options": [
+          "能，因为线性组合可以产生任意方向",
+          "不能，因为缺少第三个方向"
+        ],
+        "correct_index": 1,
+        "misconceptions": [
+          "误以为线性组合可以产生任意方向，忽略了维度限制。",
+          null
+        ],
+        "explanation": "线性组合只能产生平面内的向量，平面外的向量需要第三个基向量。"
+      },
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "维度：空间的自由度",
+      "spoken_text": "现在我们引入一个关键概念——维度。维度可以理解为空间中的自由度，也就是你需要多少个独立的参数才能描述空间中的每一个点。在三维空间里，你需要三个坐标，所以维度是三。而两个向量张成的平面，只需要两个参数 c1 和 c2 就能描述平面上的所有点，所以它的维度是二。这就是为什么两个向量只能张成一个二维平面，而不是三维空间。",
+      "boards": [
+        {
+          "title": "维度与参数个数",
+          "markdown": "平面上的点：$c_1 \\vec{v}_1 + c_2 \\vec{v}_2$，需要两个参数 $c_1, c_2$。\n\n所以 $\\dim(\\text{span}(\\vec{v}_1, \\vec{v}_2)) = 2$。\n\n而 $\\mathbb{R}^3$ 需要三个参数，所以 $\\dim(\\mathbb{R}^3) = 3$。",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "circle",
+          "snippet": "\\dim(\\text{span}(\\vec{v}_1, \\vec{v}_2)) = 2",
+          "board_index": 0,
+          "trigger_phrase": "维度是二",
+          "color": null
+        }
+      ],
+      "widget": null,
+      "question": {
+        "mode": "choice",
+        "question": "两个向量张成的子空间的维度是多少？",
+        "options": [
+          "1",
+          "2"
+        ],
+        "correct_index": 1,
+        "misconceptions": [
+          "误以为两个向量就是二维，但这里问的是张成空间的维度，确实是2，但选项1是典型错误，可能混淆了向量个数与维度。",
+          null
+        ],
+        "explanation": "两个不平行向量张成二维平面，所以维度是2。"
+      },
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "特殊情况：共线与平行",
+      "spoken_text": "如果两个向量恰好共线，也就是平行，会发生什么？想象两根筷子指向同一个方向，那它们就只能撑起一条直线，而不是平面。这时张成空间就退化为一维的直线。所以，我们强调两个向量必须不平行，才能张成一个平面。如果平行，它们只能张成一条直线。",
+      "boards": [
+        {
+          "title": "共线向量的张成",
+          "markdown": "若 $\\vec{v}_2 = k \\vec{v}_1$（$k \\neq 0$），则\n\n$$\\text{span}(\\vec{v}_1, \\vec{v}_2) = \\{c \\vec{v}_1 : c \\in \\mathbb{R}\\}$$\n\n这是一条过原点的直线，维度为 1。",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "circle",
+          "snippet": "\\text{span}(\\vec{v}_1, \\vec{v}_2) = \\{c \\vec{v}_1 : c \\in \\mathbb{R}\\}",
+          "board_index": 0,
+          "trigger_phrase": "张成空间",
+          "color": null
+        }
+      ],
+      "widget": null,
+      "question": {
+        "mode": "choice",
+        "question": "如果两个向量平行但不为零，它们的张成是什么？",
+        "options": [
+          "一个平面",
+          "一条直线"
+        ],
+        "correct_index": 1,
+        "misconceptions": [
+          "误以为两个向量总能张成平面，忽略了平行情况。",
+          null
+        ],
+        "explanation": "平行向量只能提供同一个方向，所以张成一条直线。"
+      },
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "总结：从两个向量到平面",
+      "spoken_text": "让我们回顾一下：两个非零不平行向量在三维空间中的张成是一个过原点的平面，维度为二。它们无法张成整个三维空间，因为缺少第三个方向。如果它们平行，则张成一条直线。这个认知将帮助你理解基、维数以及线性相关性的概念。记住，向量的个数决定了张成空间维度的上限。",
+      "boards": [
+        {
+          "title": "核心结论",
+          "markdown": "两个非零不平行向量 $\\vec{v}_1, \\vec{v}_2$ 在 $\\mathbb{R}^3$ 中张成一个过原点的平面。\n\n- 维度：2\n- 无法张成 $\\mathbb{R}^3$（需要3个独立向量）\n- 若平行，则张成直线（维度1）",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [],
+      "widget": null,
+      "question": null,
+      "reward": {
+        "title": "Master Concept: 张成与维度",
+        "description": "张成是向量线性组合的集合。在三维空间中，两个不平行向量张成二维平面，三个不共面向量才能张成整个三维空间。维度由独立向量的个数决定，是理解线性代数的基础。"
+      },
+      "new_page_title": null
+    }
+  ]
+}

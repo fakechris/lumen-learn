@@ -3,172 +3,90 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Lumen Learn Socratic Whiteboard AI Tutor</title>
-  
-  <!-- KaTeX CSS & JS for LaTeX Math Rendering -->
+  <title>Socratic Whiteboard</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
-  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
-
-  <!-- Marked Markdown Parser -->
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  
-  <!-- Lucide Icons -->
-  <script src="https://unpkg.com/lucide@latest"></script>
-
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked@12/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
+  <script type="module">
+    import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs";
+    mermaid.initialize({ startOnLoad: false, theme: "neutral" });
+    window.mermaid = mermaid;
+  </script>
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-
-  <!-- Top Navigation Header -->
-  <header class="top-header">
-    <div class="brand-section">
-      <div class="brand-logo">
-        <i data-lucide="sparkles" style="color: #2563eb; width: 20px; height: 20px;"></i>
-        Lumen Learn<span>Agent</span>
-      </div>
-      <div class="course-title-pill" id="courseTitlePill">
-        📚 线性代数：基与维数 (Basis and Dimension)
-      </div>
+  <header class="top">
+    <div class="brand"><span class="dot" id="connDot"></span> Socratic<b>Whiteboard</b></div>
+    <select id="courseSelect" class="course-select" title="选择课程"></select>
+    <span class="pill" id="capsPill">…</span>
+    <div class="spacer"></div>
+    <div class="nav">
+      <button class="icon" id="prevSessionBtn" title="上一节">‹</button>
+      <span id="sessionCounter" class="counter">0 / 0</span>
+      <button class="icon" id="nextSessionBtn" title="下一节">›</button>
     </div>
-
-    <div class="header-controls">
-      <!-- Session Switcher -->
-      <div class="nav-stepper">
-        <button class="btn-icon" id="prevSessionBtn" title="上一节"><i data-lucide="chevron-left"></i></button>
-        <span id="sessionCounter" style="font-size: 0.85rem; font-weight: 600; padding: 0 4px;">1 / 4</span>
-        <button class="btn-icon" id="nextSessionBtn" title="下一节"><i data-lucide="chevron-right"></i></button>
-      </div>
-
-      <!-- Speed Control -->
-      <button class="btn-pill" id="speedToggleBtn">1.25x 速度</button>
-
-      <!-- Model API & Upload Modals -->
-      <button class="btn-pill btn-primary" id="openUploadModalBtn">
-        <i data-lucide="upload-cloud" style="width: 14px; height: 14px; display: inline-block; vertical-align: middle; margin-right: 4px;"></i>
-        上传讲义生产新课程
-      </button>
-
-      <button class="btn-pill" id="openSettingsModalBtn" title="配置 LLM 模型与 API Key">
-        <i data-lucide="settings" style="width: 14px; height: 14px; display: inline-block; vertical-align: middle;"></i>
-        模型配置
-      </button>
-    </div>
+    <button class="pill btn" id="speedBtn" title="语速">1x</button>
+    <button class="pill btn primary" id="openGenerate">＋ 从讲义生成课程</button>
   </header>
 
-  <!-- Workspace Container -->
-  <div class="workspace-container">
-
-    <!-- Left Whiteboard Viewport -->
-    <main class="whiteboard-viewport" id="whiteboardViewport">
-      <div class="whiteboard-grid" id="whiteboardGrid">
-        <!-- Column 0: Conceptual Notes & Formulas -->
-        <div class="wb-column" id="columnLeft"></div>
-        <!-- Column 1: 3D Interactive Manipulatives & Visual Proofs -->
-        <div class="wb-column" id="columnRight"></div>
-      </div>
+  <div class="workspace">
+    <main class="viewport" id="whiteboardViewport">
+      <div class="canvas" id="whiteboardCanvas"></div>
     </main>
 
-    <!-- Bottom Floating Subtitle & Socratic Options Dock -->
-    <div class="bottom-dock">
-      <!-- Live Audio Subtitle Bar -->
-      <div class="subtitle-section">
-        <button class="play-pause-btn" id="playPauseBtn">
-          <i data-lucide="play" id="playIcon"></i>
-        </button>
-        <div class="subtitle-text-box" id="subtitleBox">
-          <span id="subtitleText">正在加载苏格拉底教学互动白板...</span>
-          <span class="typing-cursor" id="typingCursor"></span>
-        </div>
-        <button class="interject-btn" id="interjectBtn">
-          <i data-lucide="mic" style="width: 14px; height: 14px;"></i>
-          打断提问
-        </button>
-      </div>
-
-      <!-- Socratic Option Chips -->
-      <div class="socratic-chips-row" id="socraticOptionsRow">
-        <!-- Chips injected dynamically -->
-      </div>
-    </div>
-
-    <!-- Right Sidebar -->
     <aside class="sidebar">
-      <div class="sidebar-tabs">
-        <div class="sidebar-tab active" id="tabDialogue">💬 对话与讲解</div>
-        <div class="sidebar-tab" id="tabOutline">📑 课程大纲</div>
-        <div class="sidebar-tab" id="tabInspector">⚙️ 生产检查器</div>
+      <div class="tabs">
+        <button class="tab active" id="tab-transcript">对话</button>
+        <button class="tab" id="tab-outline">大纲</button>
+        <button class="tab" id="tab-inspector">协议</button>
       </div>
-
-      <div class="sidebar-content" id="sidebarContent">
-        <!-- Tab Content dynamically swapped -->
-      </div>
+      <div class="sidebar-content" id="sidebarContent"></div>
     </aside>
 
-  </div>
-
-  <!-- Upload Lecture Modal -->
-  <div class="modal-overlay" id="uploadModal" style="display: none;">
-    <div class="modal-box">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-        <h3 style="font-size: 1.1rem; font-weight: 700; color: #1e293b;">📄 上传讲义或课件生成白板微课</h3>
-        <button class="btn-icon" id="closeUploadModalBtn"><i data-lucide="x"></i></button>
+    <div class="dock">
+      <div class="dock-row">
+        <button class="play" id="playPauseBtn" title="播放 / 暂停（空格）"><span id="playIcon">❚❚</span></button>
+        <div class="subtitle">
+          <div class="session-title" id="sessionTitle"></div>
+          <div class="subtitle-text"><span id="subtitleText"></span><span class="cursor" id="typingCursor"></span></div>
+        </div>
+        <span class="state" id="stateBadge" data-state="idle">空闲</span>
+        <button class="pill btn interject" id="interjectBtn">✋ 打断提问</button>
       </div>
-      <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 12px;">
-        支持粘贴 Markdown / LaTeX 讲义或上传文档，系统将自动进行认知阶梯解构、生成板书、3D 三维教具与苏格拉底问题。
-      </p>
-      
-      <div style="margin-bottom: 12px;">
-        <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 4px;">课程标题</label>
-        <input type="text" id="lectureTitleInput" value="线性代数：基与维数" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.9rem;">
+      <div class="interject-box" id="interjectBox">
+        <input id="interjectInput" placeholder="讲到这里有什么疑问？回车发送，Esc 取消">
+        <button class="pill btn primary" id="interjectSend">发送</button>
+        <button class="pill btn" id="interjectCancel">取消</button>
       </div>
-
-      <div style="margin-bottom: 16px;">
-        <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 4px;">讲义文本内容 (支持 LaTeX $公式$)</label>
-        <textarea id="lectureContentInput" rows="8" style="width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.88rem; font-family: monospace;"></textarea>
-      </div>
-
-      <div style="display: flex; justify-content: flex-end; gap: 10px;">
-        <button class="btn-pill" id="cancelUploadBtn">取消</button>
-        <button class="btn-pill btn-primary" id="startGenerateBtn">🚀 开始 AI 拆解与生产</button>
-      </div>
+      <div class="ask-row" id="askRow"></div>
+      <button class="chip next" id="nextSessionHint" style="display:none"></button>
     </div>
   </div>
 
-  <!-- Model Settings Modal -->
-  <div class="modal-overlay" id="settingsModal" style="display: none;">
+  <div class="modal" id="generateModal">
     <div class="modal-box">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-        <h3 style="font-size: 1.1rem; font-weight: 700; color: #1e293b;">⚡ 配置大模型 API (接模型测试)</h3>
-        <button class="btn-icon" id="closeSettingsModalBtn"><i data-lucide="x"></i></button>
-      </div>
-
-      <div style="margin-bottom: 12px;">
-        <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 4px;">模型供应商 (Provider)</label>
-        <select id="llmProviderSelect" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px;">
-          <option value="deepseek">DeepSeek (deepseek-chat / deepseek-reasoner)</option>
-          <option value="anthropic">Anthropic (Claude 3.7 Sonnet / 3.5 Sonnet)</option>
-          <option value="openai">OpenAI / Compatible (GPT-4o / Qwen / Moonshot)</option>
-          <option value="gemini">Google Gemini (Gemini 2.5 Flash / Pro)</option>
+      <div class="modal-head"><h3>从讲义生成白板课</h3><button class="icon" id="closeGenerate">×</button></div>
+      <label>课程标题（可选）<input id="genTitle" placeholder="留空则取讲义一级标题"></label>
+      <label>生成模式
+        <select id="genMode">
+          <option value="auto">自动（有模型用模型，否则逐段讲读）</option>
+          <option value="llm">大模型苏格拉底课（需要服务端配置 API Key）</option>
+          <option value="heuristic">逐段讲读（不用模型，忠实原文）</option>
         </select>
+      </label>
+      <label>讲义内容（Markdown / LaTeX）<textarea id="genContent" rows="10" placeholder="# 标题&#10;## 第一节 …"></textarea></label>
+      <div class="modal-actions">
+        <button class="pill btn" id="loadExample">载入示例讲义</button>
+        <div class="spacer"></div>
+        <button class="pill btn primary" id="generateBtn">开始生成</button>
       </div>
-
-      <div style="margin-bottom: 12px;">
-        <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 4px;">API Key</label>
-        <input type="password" id="apiKeyInput" placeholder="sk-..." style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px;">
-      </div>
-
-      <div style="margin-bottom: 16px;">
-        <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 4px;">自定义 Base URL (可选)</label>
-        <input type="text" id="baseUrlInput" placeholder="https://api.deepseek.com" style="width: 100%; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px;">
-      </div>
-
-      <div style="display: flex; justify-content: flex-end; gap: 10px;">
-        <button class="btn-pill" id="closeSettingsBtn">保存并应用</button>
-      </div>
+      <pre class="gen-log" id="genLog"></pre>
     </div>
   </div>
 
-  <script src="/app.js"></script>
+  <div id="toasts"></div>
+  <script type="module" src="/js/app.js"></script>
 </body>
 </html>
