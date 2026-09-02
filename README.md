@@ -20,9 +20,9 @@ export DEEPSEEK_API_KEY=...        # or OPENAI_API_KEY / ANTHROPIC_API_KEY (opti
 open http://localhost:8000
 ```
 
-Models are configured per tier: `LLM_MODEL` (fast: grading, interjections, figures, widgets),
-`LLM_MODEL_PRO` (lesson plan and session writing), `LLM_MODEL_VISION` (widget screenshot review,
-textbook-figure captions). With a DeepSeek key the defaults are `deepseek-v4-flash`,
+Models are configured per tier: `LLM_MODEL` (fast: session writing, grading, interjections, figures,
+widgets), `LLM_MODEL_PRO` (lesson plan; set `LLM_SYNTH_TIER=pro` to also use it for session writing,
+noticeably slower with reasoning models), `LLM_MODEL_VISION` (widget screenshot review, textbook-figure captions). With a DeepSeek key the defaults are `deepseek-v4-flash`,
 `deepseek-v4-pro`, `deepseek-v4-flash-vision-exp`.
 
 A bundled example course (`examples/courses/`) plays without any API key. With a key the
