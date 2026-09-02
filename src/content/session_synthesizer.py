@@ -20,7 +20,7 @@ from typing import List, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
-from src.content.validators import sanitize_script
+from src.content.validators import clean_mermaid, sanitize_script
 from src.llm.client import LLMClient
 from src.protocol.session import (
     BoardSpec, CourseStructure, DecorationSpec, IllustrationSpec, QuestionSpec, RewardSpec, SessionOutline,
@@ -149,6 +149,10 @@ def _apply_plan(steps: List[StepSpec], outline: SessionOutline) -> List[StepSpec
             upd["illustration"] = None
             if step.widget and step.widget.kind != seg.media and seg.media != "mermaid":
                 upd["widget"] = step.widget.model_copy(update={"kind": seg.media})
+            if seg.media == "mermaid":
+                src = clean_mermaid((step.widget.mermaid if step.widget else None) or seg.media_brief)
+                base = step.widget or WidgetSpec(kind="mermaid", title=seg.title)
+                upd["widget"] = base.model_copy(update={"kind": "mermaid", "mermaid": src, "layout": "follow"})
         if not seg.ask:
             upd["question"] = None
         out.append(step.model_copy(update=upd))

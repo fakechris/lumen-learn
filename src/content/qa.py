@@ -90,7 +90,7 @@ def _digest(script: SessionScript, outline: Optional[SessionOutline]) -> str:
     if outline:
         parts.append("教案段落：" + "；".join(f"{i + 1}.{g.title}[{g.media}{'/问' if g.ask else ''}]" for i, g in enumerate(outline.segments)))
     for i, st in enumerate(script.steps, start=1):
-        boards = " || ".join(b.markdown.replace("\n", " / ")[:160] for b in st.boards)
+        boards = " || ".join(b.markdown.replace("\n", " / ") for b in st.boards)
         media = []
         if st.widget:
             media.append(f"教具:{st.widget.kind}:{st.widget.title}")

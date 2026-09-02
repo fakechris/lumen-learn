@@ -77,3 +77,16 @@ def sanitize_script(script: SessionScript) -> Tuple[SessionScript, List[str]]:
         steps.append(clean)
         warnings.extend(w)
     return script.model_copy(update={"steps": steps}), warnings
+
+
+def clean_mermaid(src: str) -> str:
+    """Model-written mermaid often arrives with literal \\n escapes or ``` fences; normalise it."""
+    if not src:
+        return src
+    m = re.search(r"```(?:mermaid)?\s*(.*?)```", src, flags=re.S)
+    if m:
+        src = m.group(1)
+    src = src.replace("\\n", "\n").strip()
+    # "graph LR A --> B; B --> C" on one line is legal, but semicolon-separated statements
+    # after the header render more reliably one per line
+    return src

@@ -337,3 +337,9 @@ def test_thinking_only_for_plan_by_default(monkeypatch):
     assert cfg.is_deepseek and cfg.think_purposes == ("plan",)
     monkeypatch.setenv("LLM_THINK_PURPOSES", "plan,synth")
     assert LLMConfig.from_env().think_purposes == ("plan", "synth")
+
+
+def test_clean_mermaid_unescapes_and_unfences():
+    from src.content.validators import clean_mermaid
+    assert clean_mermaid("```mermaid\ngraph LR\\nA --> B\n```") == "graph LR\nA --> B"
+    assert clean_mermaid("graph LR\nA --> B") == "graph LR\nA --> B"
