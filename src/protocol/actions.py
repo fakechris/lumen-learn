@@ -183,6 +183,11 @@ ACK_REQUIRED = {"tts_segment", "board", "graph", "illustration", "generated_anim
 # Non-action server -> client messages
 # --------------------------------------------------------------------------- #
 
+class KeypointRef(BaseModel):
+    step_id: int
+    title: str
+
+
 class SessionReady(BaseModel):
     type: Literal["session_ready"] = "session_ready"
     course_id: str
@@ -191,6 +196,7 @@ class SessionReady(BaseModel):
     learning_goal: str = ""
     total_steps: int
     resume_step_id: Optional[int] = None
+    keypoints: List[KeypointRef] = Field(default_factory=list)
 
 
 class Status(BaseModel):

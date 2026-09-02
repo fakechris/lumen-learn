@@ -20,7 +20,7 @@ from src.protocol.actions import (
     Action, AnimationFailed, Ask, AskOption, Board, Decoration, Done, GeneratedAnimation,
     Graph, Illustration, NewPage, RewardUser, Speak, TtsSegment,
 )
-from src.protocol.session import CompiledSession, GenerationMode, SessionScript, StepSpec
+from src.protocol.session import CompiledSession, GenerationMode, Keypoint, SessionScript, StepSpec
 
 
 @dataclass
@@ -48,6 +48,7 @@ def compile_session(script: SessionScript, audio: Dict[int, StepAudio],
     board_uid = 0
     page_no = 1
     total_ms = 0
+    keypoints: List[Keypoint] = []
 
     def sid() -> int:
         nonlocal next_step
@@ -60,6 +61,7 @@ def compile_session(script: SessionScript, audio: Dict[int, StepAudio],
             actions.append(NewPage(step_id=sid(), title=step.new_page_title, page_id=f"page-{page_no}"))
 
         speak_step = sid()
+        keypoints.append(Keypoint(step_id=speak_step, title=step.title or f"第 {idx + 1} 段"))
         board_uids: List[int] = []
         for b in step.boards:
             board_uid += 1
@@ -110,4 +112,5 @@ def compile_session(script: SessionScript, audio: Dict[int, StepAudio],
     actions.append(Done(step_id=sid()))
     return CompiledSession(session_id=script.session_id, course_id=script.course_id, title=script.title,
                            learning_goal=script.learning_goal, generation_mode=generation_mode,
-                           total_duration_ms=total_ms, actions=actions, exercises=list(script.exercises))
+                           total_duration_ms=total_ms, actions=actions, exercises=list(script.exercises),
+                           keypoints=keypoints)

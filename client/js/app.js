@@ -33,6 +33,9 @@ class App {
     this.firstBoardPending = false;
 
     this.speakText = new Map();       // step_id -> text
+    this.stepKinds = new Map();       // step_id -> Set of media kinds seen before its speak
+    this.keypoints = [];
+    this.pendingKinds = new Set();
     this.pendingDecos = new Map();    // during_step -> [decoration]
     this.currentStep = null;          // step_id of playing tts
     this.interject = null;            // { id, bubble, text, audioPlayed }
@@ -175,7 +178,7 @@ class App {
   }
 
   addBubble(role, text, opts = {}) {
-    const entry = { role, text, streaming: !!opts.streaming };
+    const entry = { role, text, streaming: !!opts.streaming, kind: opts.kind || null };
     this.transcript.push(entry);
     if (this.activeTab === "transcript") this.renderSidebar();
     return entry;
@@ -189,7 +192,7 @@ class App {
       for (const m of this.transcript) {
         const b = document.createElement("div");
         b.className = `bubble ${m.role}${m.streaming ? " streaming" : ""}`;
-        b.innerHTML = `<span class="who">${m.role === "tutor" ? "导师" : "你"}</span><div class="body">${escapeHtml(m.text)}</div>`;
+        b.innerHTML = `<span class="who">${m.kind ? `<span class="kind">${escapeHtml(m.kind)}</span>` : ""}${m.role === "tutor" ? "导师" : "你"}</span><div class="body">${escapeHtml(m.text)}</div>`;
         box.appendChild(b);
       }
       box.scrollTop = box.scrollHeight;
@@ -238,30 +241,57 @@ class App {
     $("sessionTitle").textContent = m.title;
     this.board.newPage(m.title);
     this.firstBoardPending = true;
+    this.keypoints = m.keypoints || [];
+    this.pendingKinds = new Set();
+    this.stepKinds.clear();
+    this.renderKeypoints(null);
     this.setState("teaching");
-    this.addBubble("tutor", `本节：${m.title}。目标：${m.learning_goal}`);
+    this.addBubble("tutor", `本节：${m.title}。目标：${m.learning_goal}`, { kind: "导引" });
   }
+
+  renderKeypoints(currentStepId) {
+    const box = $("keypoints");
+    box.innerHTML = "";
+    if (!this.keypoints.length) return;
+    const t = document.createElement("div");
+    t.className = "kp-title";
+    t.textContent = "课堂要点";
+    box.appendChild(t);
+    const idx = this.keypoints.findIndex((k) => k.step_id === currentStepId);
+    this.keypoints.forEach((k, i) => {
+      const el = document.createElement("div");
+      el.className = "kp" + (i === idx ? " current" : i < idx || this.state === "finished" ? " done" : "");
+      el.innerHTML = `<span>${escapeHtml(k.title)}</span><span class="dot"></span>`;
+      box.appendChild(el);
+    });
+  }
+
+  noteKind(kind) { this.pendingKinds.add(kind); }
 
   on_new_page(m) { this.board.newPage(m.title); this.ack(m.step_id); }
   on_new_column() { this.board.newColumn(); }
 
   on_board(m) {
+    this.noteKind("板书");
     this.board.addBoard({ uid: m.board_uid, title: m.title, markdown: m.board_content, layout: m.layout, gate: m.reveal_gate_step, hook: this.firstBoardPending });
     this.firstBoardPending = false;
     this.ack(m.step_id);
   }
 
   on_illustration(m) {
+    this.noteKind("示意图");
     this.board.addIllustration({ uid: m.board_uid, caption: m.caption, svg: m.svg, imageUrl: m.image_url, layout: m.layout, gate: m.reveal_gate_step });
     this.ack(m.step_id);
   }
 
   async on_graph(m) {
+    this.noteKind("流程图");
     await this.board.addGraph({ uid: m.board_uid, title: m.title, mermaid: m.mermaid, layout: m.layout, gate: m.reveal_gate_step });
     this.ack(m.step_id);
   }
 
   on_generated_animation(m) {
+    this.noteKind("互动动画");
     this.board.addWidget({ uid: m.board_uid, title: m.title, html: m.html, layout: m.layout, gate: m.reveal_gate_step });
     this.ack(m.step_id);
   }
@@ -269,12 +299,19 @@ class App {
   on_animation_pending(m) { this.board.addPlaceholder({ uid: m.board_uid, text: `教具生成中：${m.task_preview}`, layout: m.layout }); }
   on_animation_failed(m) { this.toast(`教具生成失败，已跳过（${m.reason}）`); }
 
-  on_speak(m) { this.speakText.set(m.step_id, m.spoken_text); }
+  on_speak(m) {
+    this.speakText.set(m.step_id, m.spoken_text);
+    const kinds = new Set(this.pendingKinds);
+    if (this.speakText.size === 1) kinds.add("导引");
+    this.stepKinds.set(m.step_id, kinds);
+    this.pendingKinds = new Set();
+  }
 
   on_highlight(m) { this.queueDecoration(m); }
   on_circle(m) { this.queueDecoration(m); }
   queueDecoration(m) {
     const key = m.during_step ?? this.currentStep ?? -1;
+    if (this.stepKinds.has(key)) this.stepKinds.get(key).add("圈画");
     if (!this.pendingDecos.has(key)) this.pendingDecos.set(key, []);
     this.pendingDecos.get(key).push({ ...m, drawn: false });
     if (key === this.currentStep && this.clock.currentMs >= m.at_ms) this.drawNow(m);
@@ -287,7 +324,9 @@ class App {
   on_tts_segment(m) {
     const text = this.speakText.get(m.step_id) || "";
     this.currentStep = m.step_id;
-    this.addBubble("tutor", text);
+    const kinds = [...(this.stepKinds.get(m.step_id) || [])];
+    this.addBubble("tutor", text, { kind: kinds.length ? kinds.join(" · ") : (m.step_id >= 100000 ? "点评" : "讲解") });
+    this.renderKeypoints(m.step_id);
     this.board.openGate(m.step_id, m.duration_ms);
     const decos = this.pendingDecos.get(m.step_id) || [];
     const chars = Array.from(text);
@@ -316,7 +355,7 @@ class App {
     q.className = "ask-question";
     q.textContent = m.question;
     row.appendChild(q);
-    this.addBubble("tutor", `❓ ${m.question}`);
+    this.addBubble("tutor", `❓ ${m.question}`, { kind: "小测" });
     const finish = (payload, label) => {
       row.querySelectorAll("button, input").forEach((b) => (b.disabled = true));
       this.addBubble("student", label);
@@ -355,6 +394,9 @@ class App {
   on_done() {}
   async on_response_complete() {
     this.setState("finished");
+    this.renderKeypoints(null);
+    this.addBubble("tutor", "本节课程内容已讲完。你可以做几道课后练习，进入下一课，或者退出当前课程。", { kind: "结课" });
+    this.setSubtitle("本节课程内容已讲完。", false);
     const ex = await (await fetch(`/api/v1/courses/${this.course.course_id}/sessions/${this.sessionId}/exercises`)).json().catch(() => ({ exercises: [] }));
     if (ex.exercises?.length) {
       $("exerciseHint").textContent = `📝 课后练习（${ex.exercises.length} 题）`;
@@ -491,15 +533,24 @@ class App {
     tree.innerHTML = "";
     const MEDIA = { board: "板书", illustration: "示意图", explorable: "探针图", threejs: "3D", reference_figure: "教材原图", mermaid: "流程图" };
     const plan = this.genPlan;
-    plan.chapters.forEach((ch) => {
+    let lastUnit = null;
+    plan.chapters.forEach((ch, ci) => {
+      if (ch.unit && ch.unit !== lastUnit) {
+        const u = document.createElement("div");
+        u.className = "plan-unit";
+        u.textContent = `UNIT · ${ch.unit}`;
+        tree.appendChild(u);
+        lastUnit = ch.unit;
+      }
       const h = document.createElement("div");
       h.className = "plan-chapter";
-      h.textContent = `${ch.title}${ch.description ? " · " + ch.description : ""}`;
+      h.innerHTML = `<span class="lec">LECTURE ${String(ci + 1).padStart(2, "0")}</span> ${escapeHtml(ch.title)}${ch.description ? ` <span class="meta">· ${escapeHtml(ch.description)}</span>` : ""}`;
       tree.appendChild(h);
       ch.sessions.forEach((s) => {
         const box = document.createElement("div");
         box.className = "plan-session";
-        box.innerHTML = `<div class="t">${escapeHtml(s.title)} <span class="meta">${s.estimated_duration_min} 分钟</span></div>
+        const tags = (s.tags || []).map((t) => `<span class="tag tag-${t}">${t}</span>`).join("");
+        box.innerHTML = `<div class="t">${escapeHtml(s.title)} <span class="meta">${s.estimated_duration_min} 分钟</span> ${tags}</div>
           <div class="meta">目标：${escapeHtml(s.learning_goal)}</div>
           <div class="meta"><b>误区：</b>${escapeHtml(s.cognitive_hurdle || "—")}</div>`;
         s.segments.forEach((seg, i) => {

@@ -37,19 +37,28 @@ Generate from the command line:
 ## Architecture
 
 ```
-lecture.md ─▶ document_parser ─▶ curriculum_planner (LLM, structured) ─▶ CourseStructure
-                                                 │
-                       per session:  session_synthesizer (LLM) ─▶ SessionScript
-                                     ├─ validators   (snippet ∈ board, math balanced, 1 correct option)
-                                     ├─ widget_generator (separate LLM call, static checks, degrades on failure)
-                                     └─ tts engine   (real audio + measured duration)
-                                                 ▼
-                                     compiler ─▶ CompiledSession (ordered actions with step_ids)
+textbook.pdf / lecture.md
+   │  ingest   document_parser: TOC or font-size headings, page refs, embedded figures (+captions)
+   ▼
+ParsedDocument  ──▶  plan  curriculum_planner (LLM, hierarchical for long docs)
+                                 │   教案: Unit → Lecture(chapter) → Session(tags) → Segment(media decision, ask?)
+                                 ▼   reviewed / edited in the UI before anything expensive runs
+CourseStructure ──▶  build  per session:
+                        session_synthesizer  (one step per planned segment; media enforced)
+                        ├─ validators         (snippet ∈ board, math balanced, one correct option)
+                        ├─ widget_generator   (explorable 2D canvas by default; Playwright render check)
+                        ├─ illustration_gen   (LLM-drawn SVG / MiniMax image / textbook figure)
+                        ├─ exercise_generator (fill-blank, choice, interactive; semantic grading)
+                        └─ tts engine         (real audio + measured duration)
+                        compiler ─▶ CompiledSession (ordered actions with step_ids, keypoints, exercises)
                                                  ▼
 server/app.py  ──WebSocket──▶  runtime/session_runtime.py  (teaching / awaiting_answer / interjecting / paused)
                                                  ▼
-client/js  (ws → audio clock → board layout → decorations → sandboxed widgets)
+client/js  (ws → audio clock → handwritten page → decorations → sandboxed widgets → exercises)
 ```
+
+CLI stages: `--plan-only` writes `output/_docs/<doc_key>/plan.json`; edit it and `--doc <key> --from-plan plan.json`;
+`--exercises-for <course_id>` adds exercises to an existing package.
 
 Key decisions:
 
