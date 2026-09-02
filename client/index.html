@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Socratic Whiteboard</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.7.0/style.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap">
   <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked@12/marked.min.js"></script>
@@ -18,17 +20,19 @@
 </head>
 <body>
   <header class="top">
-    <div class="brand"><span class="dot" id="connDot"></span> Socratic<b>Whiteboard</b></div>
+    <span class="dot" id="connDot" title="连接状态"></span>
     <select id="courseSelect" class="course-select" title="选择课程"></select>
-    <span class="pill" id="capsPill">…</span>
+    <span class="pill title-pill" id="sessionTitle"></span>
     <div class="spacer"></div>
-    <div class="nav">
+    <div class="pill group">
       <button class="icon" id="prevSessionBtn" title="上一节">‹</button>
       <span id="sessionCounter" class="counter">0 / 0</span>
       <button class="icon" id="nextSessionBtn" title="下一节">›</button>
     </div>
-    <button class="pill btn" id="speedBtn" title="语速">1x</button>
-    <button class="pill btn primary" id="openGenerate">＋ 从讲义生成课程</button>
+    <button class="pill btn" id="speedBtn" title="语速">沉稳 · 1×</button>
+    <span class="pill" id="capsPill" title="服务端能力">…</span>
+    <button class="pill btn primary" id="openGenerate">＋ 从讲义生成</button>
+    <button class="pill btn" id="toggleSidebar" title="对话 / 大纲">💬</button>
   </header>
 
   <div class="workspace">
@@ -36,7 +40,7 @@
       <div class="canvas" id="whiteboardCanvas"></div>
     </main>
 
-    <aside class="sidebar">
+    <aside class="sidebar" id="sidebar">
       <div class="tabs">
         <button class="tab active" id="tab-transcript">对话</button>
         <button class="tab" id="tab-outline">大纲</button>
@@ -46,15 +50,7 @@
     </aside>
 
     <div class="dock">
-      <div class="dock-row">
-        <button class="play" id="playPauseBtn" title="播放 / 暂停（空格）"><span id="playIcon">❚❚</span></button>
-        <div class="subtitle">
-          <div class="session-title" id="sessionTitle"></div>
-          <div class="subtitle-text"><span id="subtitleText"></span><span class="cursor" id="typingCursor"></span></div>
-        </div>
-        <span class="state" id="stateBadge" data-state="idle">空闲</span>
-        <button class="pill btn interject" id="interjectBtn">✋ 打断提问</button>
-      </div>
+      <div class="subtitle-text"><span id="subtitleText"></span><span class="cursor" id="typingCursor"></span></div>
       <div class="interject-box" id="interjectBox">
         <input id="interjectInput" placeholder="讲到这里有什么疑问？回车发送，Esc 取消">
         <button class="pill btn primary" id="interjectSend">发送</button>
@@ -62,6 +58,12 @@
       </div>
       <div class="ask-row" id="askRow"></div>
       <button class="chip next" id="nextSessionHint" style="display:none"></button>
+    </div>
+
+    <div class="controls">
+      <button class="round" id="playPauseBtn" title="播放 / 暂停（空格）"><span id="playIcon">❚❚</span></button>
+      <button class="round interject" id="interjectBtn" title="打断提问">✋</button>
+      <span class="state" id="stateBadge" data-state="idle">空闲</span>
     </div>
   </div>
 

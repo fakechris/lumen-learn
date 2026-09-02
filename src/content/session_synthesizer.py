@@ -1,13 +1,20 @@
 """
 Stage: SessionOutline + source text -> SessionScript (steps with narration,
-boards, decorations, widget specs, questions).
+boards, decorations, illustration/widget specs, questions).
 
-The LLM writes the *script*; widgets are generated separately
-(widget_generator) so a failed 3D scene never poisons the whole session.
+The LLM writes the *script*; illustrations and widgets are generated in
+separate calls so a failed figure never poisons the whole session.
+
+The system prompt encodes what the target product actually looks like
+(one handwritten page, telegraphic notes, narration that points at the page,
+figures with exact labels, colloquial prediction questions) and ships a
+hand-authored exemplar; without those, models produce lecture prose.
 """
 
 from __future__ import annotations
 
+import json
+import os
 import re
 from typing import List, Optional
 
@@ -16,42 +23,62 @@ from pydantic import BaseModel, Field, field_validator
 from src.content.validators import sanitize_script
 from src.llm.client import LLMClient
 from src.protocol.session import (
-    BoardSpec, CourseStructure, DecorationSpec, QuestionSpec, RewardSpec, SessionOutline,
+    BoardSpec, CourseStructure, DecorationSpec, IllustrationSpec, QuestionSpec, RewardSpec, SessionOutline,
     SessionScript, StepSpec, WidgetSpec,
 )
 from src.tts.spoken_text import to_spoken
 
-SYNTH_SYSTEM = """你是一名苏格拉底式的数学与计算机科学白板导师。你要把一个会话大纲写成"分步的白板教学脚本"，
-学生会听到你的语音，同时看到板书卡片逐步出现、公式被圈画、以及一个可交互教具。
+EXEMPLAR_PATH = os.path.join(os.path.dirname(__file__), "..", "..", "examples", "authored", "span_session.json")
 
-写作规则：
-1. spoken_text：第一人称口语，有画面感的生活隐喻，每步 60~160 个汉字。**不要写 LaTeX、不要写 Markdown**，公式要用口语念出来（例如"c1 乘 v1 加 c2 乘 v2"）。
-2. boards：每步 0~2 张板书卡片。markdown 可用 KaTeX（行内 $...$，行间 $$...$$），简洁、有结构，像真人板书而不是课本段落。
-   第一张卡片 layout 用 "follow"，需要另起一列时用 "newcol"。
-3. decorations：语音提到关键公式时圈画它。snippet 必须是该卡片 markdown 中**逐字出现**的子串（含 LaTeX 源码，如 "c_1 \\vec{v}_1 + c_2 \\vec{v}_2"），
-   trigger_phrase 是 spoken_text 中逐字出现的短语，表示念到这里时开始画。
-4. widget：整个会话最多 1 个。涉及空间、向量、曲线、变换时用 "threejs"，流程/关系用 "mermaid"（直接给 mermaid 源码）。
-   threejs 只写 task（教具要展示什么、有哪些元素和颜色、允许鼠标旋转），不写代码。
-5. question：在 2~3 个步骤末尾抛出认知冲突单选题（2~3 个选项，含典型误区），每个错误选项给 misconception 诊断，正确选项对应位置写 null。
-   最后一步不要提问。
-6. reward：最后一步给出 master concept 总结卡（title + description）。
-7. 步骤数 5~7，严格基于给定讲义内容，不要编造讲义之外的结论。
 
-只输出一个 JSON 对象：
-{
-  "steps": [
-    {
-      "title": "步骤小标题",
-      "spoken_text": "口语讲解……",
-      "boards": [{"title": "卡片标题", "markdown": "板书……", "layout": "follow"}],
-      "decorations": [{"kind": "circle", "snippet": "被圈画的原文", "board_index": 0, "trigger_phrase": "语音中的短语"}],
-      "widget": {"kind": "threejs", "title": "教具标题", "task": "展示……"} ,
-      "question": {"question": "……", "options": ["A", "B"], "correct_index": 1, "misconceptions": ["误区诊断", null], "explanation": "为什么"},
-      "reward": null
-    }
-  ]
-}
-widget / question / reward 不需要时写 null。"""
+def _load_exemplar() -> str:
+    """Two steps of the hand-authored session, with widget html stripped, as a few-shot example."""
+    try:
+        with open(EXEMPLAR_PATH, encoding="utf-8") as f:
+            data = json.load(f)
+    except (OSError, json.JSONDecodeError):
+        return ""
+    steps = []
+    for st in data["steps"][:2]:
+        st = dict(st)
+        if st.get("widget"):
+            st["widget"] = {k: v for k, v in st["widget"].items() if k in ("kind", "title", "task", "layout")}
+        steps.append(st)
+    return json.dumps({"steps": steps}, ensure_ascii=False, indent=1)
+
+
+SYNTH_SYSTEM = """你是一名苏格拉底式白板导师，要把一个会话大纲写成"分步的白板教学脚本"。
+学生看到的是一页手写风格的笔记：你一边说话，笔记一行行出现，关键处被红笔圈出，旁边有一张示意图或一个可以动手的教具，然后你停下来问学生一个问题。
+
+# 目标画面（必须还原）
+- 板书是**电报体笔记**，不是课本段落：一行一个念头，用缩进表示层级，用 → 表示推出，每张板书 2~5 行。
+- 讲解**指着板书说**："看这一行"、"我圈出来的这个"、"右边这张图"、"板书最后一句"。讲解里出现的每个关键词都能在板书或图上找到。指向的说法每步换一种，不要每步都用同一句开头。
+- 每一步只讲一个念头，60~110 个汉字，第一人称口语，结尾常常是一个让学生预测的问题。
+- 图是**教学示意图**：元素、数量、标注都精确（例如"2×2 网格 4 个连接点 vs 8×8 网格 64 个连接点"），题注一句话。
+- 教具是一个**实验**：学生动一个控件，观察一个量，问题就问这个量。
+- 问题的选项是学生会脱口而出的话（"能，多一根总比少一根强"），不是考卷选项（"维度是 2"）。
+
+# 字段规则
+1. spoken_text：**不要 LaTeX、不要 Markdown**，公式口语化（"c1 乘 v1 加 c2 乘 v2"）。
+2. boards：markdown 用嵌套列表表达缩进层级；可用 KaTeX（$...$）；加粗表示重点词。第一步的第一张板书是本节的一句话钩子（≤ 20 字，title 留空）。第一张 layout 用 "follow"；需要另起一列时用 "newcol"。
+3. decorations：snippet 必须**逐字**出现在该板书 markdown 里（可以是 LaTeX 源码，也可以是中文短语）；trigger_phrase 必须逐字出现在 spoken_text 里。每步 0~2 个。
+4. illustration：整个会话 1~2 张。kind 默认 "svg"，brief 写清元素、数量、标注文字、左右对比；只有纯场景隐喻（没有精确结构）才用 "image"。caption 一句话。
+5. widget：整个会话最多 1 个。涉及空间、向量、曲线、变换时用 "threejs"，task 写明：可观察量、控件、预期现象、颜色。流程/关系用 "mermaid" 并直接给源码。
+6. question：2~3 个步骤末尾各一个单选，2~3 个选项，misconceptions 与 options 一一对应（正确项写 null），explanation 一句话。最后一步不提问。
+7. reward：最后一步给 master concept 卡（title + description ≤ 60 字）。
+8. 步骤数 5~7，严格基于讲义内容。
+
+# 输出（只输出一个 JSON 对象）
+{"steps": [{"title": "", "spoken_text": "", "boards": [{"title": "", "markdown": "", "layout": "follow"}],
+  "decorations": [{"kind": "circle", "snippet": "", "board_index": 0, "trigger_phrase": ""}],
+  "illustration": {"kind": "svg", "caption": "", "brief": "", "layout": "follow"} ,
+  "widget": {"kind": "threejs", "title": "", "task": "", "layout": "newcol"},
+  "question": {"question": "", "options": ["", ""], "correct_index": 1, "misconceptions": ["", null], "explanation": ""},
+  "reward": null}]}
+不需要的字段写 null。
+
+# 范例（同一风格的两步，供对齐语气和粒度）
+""" + _load_exemplar()
 
 
 class LLMStep(BaseModel):
@@ -59,6 +86,7 @@ class LLMStep(BaseModel):
     spoken_text: str
     boards: List[BoardSpec] = Field(default_factory=list)
     decorations: List[DecorationSpec] = Field(default_factory=list)
+    illustration: Optional[IllustrationSpec] = None
     widget: Optional[WidgetSpec] = None
     question: Optional[QuestionSpec] = None
     reward: Optional[RewardSpec] = None

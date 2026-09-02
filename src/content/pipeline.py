@@ -19,6 +19,7 @@ from src.content.curriculum_planner import plan_course_heuristic, plan_course_ll
 from src.content.document_parser import ParsedDocument, parse_file, parse_markdown
 from src.content.session_synthesizer import synthesize_session_heuristic, synthesize_session_llm
 from src.content.store import write_package
+from src.content.illustration_generator import fill_illustration
 from src.content.widget_generator import generate_widget_html
 from src.llm.client import LLMClient, make_client
 from src.protocol.session import CompiledSession, CourseStructure, SessionOutline, SessionScript
@@ -69,8 +70,22 @@ class ContentPipeline:
             if w and w.html_path and not w.html:
                 with open(os.path.join(base, w.html_path), encoding="utf-8") as f:
                     step.widget = w.model_copy(update={"html": f.read()})
+            il = step.illustration
+            if il and il.svg_path and not il.svg:
+                with open(os.path.join(base, il.svg_path), encoding="utf-8") as f:
+                    step.illustration = il.model_copy(update={"svg": f.read()})
         course_id = stable_id("course", "authored", script.session_id, raw)
         script = script.model_copy(update={"course_id": course_id})
+        course_dir = os.path.join(self.output_root, course_id)
+        for i, step in enumerate(script.steps):
+            il = step.illustration
+            if il and il.image_path and not il.image_url:
+                import shutil
+                dst_dir = os.path.join(course_dir, "images", script.session_id)
+                os.makedirs(dst_dir, exist_ok=True)
+                dst = os.path.join(dst_dir, f"step_{i + 1}{os.path.splitext(il.image_path)[1]}")
+                shutil.copyfile(os.path.join(base, il.image_path), dst)
+                step.illustration = il.model_copy(update={"image_url": f"/courses/{course_id}/images/{script.session_id}/{os.path.basename(dst)}"})
         script, warnings = sanitize_script(script)
         for w in warnings:
             self.progress("warn", w)
@@ -79,7 +94,7 @@ class ContentPipeline:
         course = CourseStructure(course_id=course_id, title=script.title, overview=script.learning_goal,
                                  generation_mode="authored",
                                  chapters=[ChapterOutline(chapter_id="ch_1", title=script.title, sessions=[outline])])
-        course_dir = os.path.join(self.output_root, course_id)
+        script = await self._fill_illustrations(script, course_dir)
         audio = await self._synthesize_audio(script, course_dir)
         session = compile_session(script, audio, generation_mode="authored")
         self.progress("compile", f"{script.session_id}: {len(session.actions)} actions, {session.total_duration_ms / 1000:.0f}s audio")
@@ -100,6 +115,7 @@ class ContentPipeline:
             script = await self._script_for(outline, course, doc)
             self.progress("script", f"{outline.session_id} {outline.title}: {len(script.steps)} steps")
             script = await self._fill_widgets(script)
+            script = await self._fill_illustrations(script, course_dir)
             audio = await self._synthesize_audio(script, course_dir)
             session = compile_session(script, audio, generation_mode=course.generation_mode)
             scripts.append(script)
@@ -136,6 +152,24 @@ class ContentPipeline:
         await asyncio.gather(*(fill(i) for i in range(len(script.steps))))
         return script
 
+    async def _fill_illustrations(self, script: SessionScript, course_dir: str) -> SessionScript:
+        async def fill(i: int):
+            il = script.steps[i].illustration
+            if not il or il.svg or il.image_url:
+                return
+            out = os.path.join(course_dir, "images", script.session_id, f"step_{i + 1}.png")
+            url = f"/courses/{script.course_id}/images/{script.session_id}/step_{i + 1}.png"
+            filled = await fill_illustration(il, self.llm, out, url)
+            if filled.svg or filled.image_url:
+                script.steps[i].illustration = filled
+                self.progress("figure", f"{script.session_id} step {i + 1}: {il.kind} ok")
+            else:
+                script.steps[i].illustration = None
+                self.progress("warn", f"{script.session_id} step {i + 1}: illustration ({il.kind}) failed; dropped")
+
+        await asyncio.gather(*(fill(i) for i in range(len(script.steps))))
+        return script
+
     async def _synthesize_audio(self, script: SessionScript, course_dir: str) -> Dict[int, StepAudio]:
         audio_dir = os.path.join(course_dir, "audio", script.session_id)
         os.makedirs(audio_dir, exist_ok=True)
@@ -153,7 +187,7 @@ class ContentPipeline:
 
 
 def _print_progress(stage: str, detail: str) -> None:
-    icons = {"parse": "📄", "plan": "🧠", "script": "✍️", "widget": "🎲", "compile": "🎬", "warn": "⚠️", "done": "✅"}
+    icons = {"parse": "📄", "plan": "🧠", "script": "✍️", "widget": "🎲", "figure": "🖼️", "compile": "🎬", "warn": "⚠️", "done": "✅"}
     print(f"{icons.get(stage, '•')} [{stage}] {detail}", flush=True)
 
 

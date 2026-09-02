@@ -91,11 +91,11 @@ async def get_script(course_id: str, session_id: str):
     return script.model_dump(mode="json")
 
 
-@app.get("/courses/{course_id}/audio/{rel_path:path}")
-async def course_audio(course_id: str, rel_path: str):
-    path = store.resolve_audio(course_id, rel_path)
+@app.get("/courses/{course_id}/{kind}/{rel_path:path}")
+async def course_asset(course_id: str, kind: str, rel_path: str):
+    path = store.resolve_asset(course_id, kind, rel_path)
     if not path:
-        raise HTTPException(404, "audio not found")
+        raise HTTPException(404, "asset not found")
     return FileResponse(path)
 
 

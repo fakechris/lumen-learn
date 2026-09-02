@@ -11,6 +11,7 @@ import { escapeHtml } from "./markdown.js";
 
 const $ = (id) => document.getElementById(id);
 const SPEEDS = [1.0, 1.25, 1.5, 2.0];
+const ASK_HINT = "点击一个选项，或直接输入你的答案 / 提问";
 
 class App {
   constructor() {
@@ -27,6 +28,7 @@ class App {
     this.transcript = [];
     this.rawLog = [];
     this.activeTab = "transcript";
+    this.firstBoardPending = false;
 
     this.speakText = new Map();       // step_id -> text
     this.pendingDecos = new Map();    // during_step -> [decoration]
@@ -110,6 +112,7 @@ class App {
     for (const tab of ["transcript", "outline", "inspector"]) {
       $(`tab-${tab}`).addEventListener("click", () => { this.activeTab = tab; this.renderSidebar(); });
     }
+    $("toggleSidebar").addEventListener("click", () => $("sidebar").classList.toggle("open"));
     $("openGenerate").addEventListener("click", () => $("generateModal").classList.add("open"));
     $("closeGenerate").addEventListener("click", () => $("generateModal").classList.remove("open"));
     $("generateBtn").addEventListener("click", () => this.generate());
@@ -160,7 +163,7 @@ class App {
 
   cycleSpeed() {
     this.speed = SPEEDS[(SPEEDS.indexOf(this.speed) + 1) % SPEEDS.length];
-    $("speedBtn").textContent = `${this.speed}x`;
+    $("speedBtn").textContent = `沉稳 · ${this.speed}×`;
     this.clock.setRate(this.speed);
     this.ws.send({ type: "set_tts_config", speed: this.speed });
   }
@@ -210,7 +213,9 @@ class App {
   // ------------------------------------------------------------------ messages
 
   onMessage(m) {
-    this.rawLog.push(m.type === "generated_animation" ? { ...m, html: `<${m.html.length} bytes>` } : m);
+    const compact = m.type === "generated_animation" ? { ...m, html: `<${m.html.length} bytes>` }
+      : m.type === "illustration" && m.svg ? { ...m, svg: `<${m.svg.length} bytes>` } : m;
+    this.rawLog.push(compact);
     if (this.activeTab === "inspector") this.renderSidebar();
     const h = this[`on_${m.type}`];
     if (h) h.call(this, m);
@@ -225,6 +230,8 @@ class App {
 
   on_session_ready(m) {
     $("sessionTitle").textContent = m.title;
+    this.board.newPage(m.title);
+    this.firstBoardPending = true;
     this.setState("teaching");
     this.addBubble("tutor", `本节：${m.title}。目标：${m.learning_goal}`);
   }
@@ -233,7 +240,13 @@ class App {
   on_new_column() { this.board.newColumn(); }
 
   on_board(m) {
-    this.board.addBoard({ uid: m.board_uid, title: m.title, markdown: m.board_content, layout: m.layout, gate: m.reveal_gate_step });
+    this.board.addBoard({ uid: m.board_uid, title: m.title, markdown: m.board_content, layout: m.layout, gate: m.reveal_gate_step, hook: this.firstBoardPending });
+    this.firstBoardPending = false;
+    this.ack(m.step_id);
+  }
+
+  on_illustration(m) {
+    this.board.addIllustration({ uid: m.board_uid, caption: m.caption, svg: m.svg, imageUrl: m.image_url, layout: m.layout, gate: m.reveal_gate_step });
     this.ack(m.step_id);
   }
 
@@ -305,6 +318,9 @@ class App {
       setTimeout(() => { if ($("askRow").contains(q)) row.innerHTML = ""; }, 1200);
     };
     if (m.mode === "choice") {
+      const hint = document.createElement("div");
+      hint.className = "ask-hint";
+      hint.textContent = ASK_HINT;
       m.options.forEach((opt, i) => {
         const chip = document.createElement("button");
         chip.className = "chip";
@@ -315,6 +331,7 @@ class App {
         });
         row.appendChild(chip);
       });
+      row.appendChild(hint);
     } else {
       const input = document.createElement("input");
       input.className = "ask-input";
