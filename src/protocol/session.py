@@ -86,6 +86,7 @@ class WidgetSpec(BaseModel):
     title: str = ""
     task: str = Field("", description="What the widget should show (used for generation)")
     html: Optional[str] = None
+    html_path: Optional[str] = Field(None, description="Authored scripts: HTML file relative to the script")
     mermaid: Optional[str] = None
     layout: Literal["follow", "newcol"] = "newcol"
 
