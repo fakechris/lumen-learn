@@ -210,7 +210,8 @@ class LLMClient:
 
     async def complete(self, system: str, user: str, *, json_mode: bool = False,
                        temperature: float = 0.4, tier: str = "fast",
-                       images: Optional[list] = None, purpose: str = "other") -> str:
+                       images: Optional[list] = None, purpose: str = "other",
+                       frequency_penalty: float = 0.0) -> str:
         """`tier`: fast | pro | vision. `images`: list of PNG/JPEG bytes (vision tier)."""
         import time
         model = self.config.for_tier("vision" if images else tier)
@@ -233,6 +234,8 @@ class LLMClient:
             if self.config.is_deepseek:
                 think = purpose.split("_")[0] in self.config.think_purposes
                 kwargs["extra_body"] = {"thinking": {"type": "enabled" if think else "disabled"}}
+            if frequency_penalty:
+                kwargs["frequency_penalty"] = frequency_penalty
             user_content = user
             if images:
                 user_content = [{"type": "text", "text": user}] + [
@@ -263,9 +266,11 @@ class LLMClient:
         repair its own output using the validation error. Raises LLMError after that."""
         try:
             raw = await self.complete(system, user, json_mode=True, temperature=temperature, tier=tier, purpose=purpose)
-        except LLMError as e:  # e.g. truncated: retry once asking for brevity
+        except LLMError as e:  # truncated or looping: retry once with brevity + anti-repetition sampling
+            degenerate = "degenerate" in str(e)
             raw = await self.complete(system, user + f"\n\n注意：{e}。请精简输出。", json_mode=True,
-                                      temperature=temperature, tier=tier, purpose=purpose)
+                                      temperature=max(temperature, 0.8) if degenerate else temperature, tier=tier,
+                                      purpose=purpose, frequency_penalty=0.6 if degenerate else 0.0)
         last_error: Optional[str] = None
         for attempt in range(repairs + 1):
             try:
