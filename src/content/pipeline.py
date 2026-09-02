@@ -575,6 +575,8 @@ def main(argv=None) -> int:
             pipeline.end_run("error", error=str(e)[:500], course_id=plan.course_id)
             raise
 
+    get_db(pipeline.output_root).abort_stale_runs()  # a fresh CLI run means earlier CLI runs are dead
+
     async def run():
         if args.exercises_for:
             return await pipeline.add_exercises(args.exercises_for, roots=[args.output, "examples/courses"])
