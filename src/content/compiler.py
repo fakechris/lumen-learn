@@ -110,4 +110,4 @@ def compile_session(script: SessionScript, audio: Dict[int, StepAudio],
     actions.append(Done(step_id=sid()))
     return CompiledSession(session_id=script.session_id, course_id=script.course_id, title=script.title,
                            learning_goal=script.learning_goal, generation_mode=generation_mode,
-                           total_duration_ms=total_ms, actions=actions)
+                           total_duration_ms=total_ms, actions=actions, exercises=list(script.exercises))

@@ -8,6 +8,7 @@ import { WhiteboardSocket } from "./ws.js";
 import { AudioClock, playClip } from "./audio-clock.js";
 import { Whiteboard } from "./board.js";
 import { escapeHtml } from "./markdown.js";
+import { ExerciseView } from "./exercises.js";
 
 const $ = (id) => document.getElementById(id);
 const SPEEDS = [1.0, 1.25, 1.5, 2.0];
@@ -18,6 +19,7 @@ class App {
     this.ws = new WhiteboardSocket();
     this.clock = new AudioClock();
     this.board = new Whiteboard($("whiteboardViewport"), $("whiteboardCanvas"));
+    this.exercises = new ExerciseView();
 
     this.courses = [];
     this.course = null;
@@ -86,6 +88,7 @@ class App {
     this.setSubtitle("");
     $("askRow").innerHTML = "";
     $("nextSessionHint").style.display = "none";
+    $("exerciseHint").style.display = "none";
     const idx = this.sessions.findIndex((s) => s.session_id === sessionId);
     $("sessionCounter").textContent = `${idx + 1} / ${this.sessions.length}`;
     $("sessionTitle").textContent = this.sessions[idx]?.title || "";
@@ -100,6 +103,7 @@ class App {
     $("prevSessionBtn").addEventListener("click", () => this.navigate(-1));
     $("nextSessionBtn").addEventListener("click", () => this.navigate(1));
     $("nextSessionHint").addEventListener("click", () => this.navigate(1));
+    $("exerciseHint").addEventListener("click", () => this.exercises.open(this.course.course_id, this.sessionId));
     $("playPauseBtn").addEventListener("click", () => this.togglePause());
     $("speedBtn").addEventListener("click", () => this.cycleSpeed());
     $("interjectBtn").addEventListener("click", () => this.beginInterject());
@@ -349,8 +353,13 @@ class App {
   }
 
   on_done() {}
-  on_response_complete() {
+  async on_response_complete() {
     this.setState("finished");
+    const ex = await (await fetch(`/api/v1/courses/${this.course.course_id}/sessions/${this.sessionId}/exercises`)).json().catch(() => ({ exercises: [] }));
+    if (ex.exercises?.length) {
+      $("exerciseHint").textContent = `📝 课后练习（${ex.exercises.length} 题）`;
+      $("exerciseHint").style.display = "";
+    }
     const idx = this.sessions.findIndex((s) => s.session_id === this.sessionId);
     if (this.sessions[idx + 1]) {
       $("nextSessionHint").textContent = `▶ 下一节：${this.sessions[idx + 1].title}`;

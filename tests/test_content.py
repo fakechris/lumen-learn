@@ -232,3 +232,24 @@ def test_heuristic_plan_has_segments_and_synthesizer_follows_them():
     assert applied[0].illustration is None and applied[0].question is None
     assert applied[1].illustration.kind == "reference" and applied[1].illustration.figure_id == "fig_p2_1"
     assert applied[2].widget.kind == "explorable"
+
+
+def test_exercise_schema_and_exact_grading():
+    import asyncio
+    from src.content.exercise_generator import grade_fill_blank, normalize_answer
+    from src.protocol.session import ExerciseSpec
+    with pytest.raises(ValueError):
+        ExerciseSpec(kind="fill_blank", stem="没有空", answer="x")
+    with pytest.raises(ValueError):
+        ExerciseSpec(kind="single_choice", stem="q", options=["a"], correct_index=0)
+    ex = ExerciseSpec(exercise_id="e1", kind="fill_blank", stem="函数被称为 ____ 函数", answer="夹逼",
+                      accepted=["逼近", "包络"], explanation="因为它们提供了范围。")
+    assert normalize_answer(" 逼 近。") == "逼近"
+    ok, fb = asyncio.run(grade_fill_blank(ex, "逼近", None))
+    assert ok and fb == ex.explanation
+    ok, fb = asyncio.run(grade_fill_blank(ex, "发散", None))
+    assert not ok and "夹逼" in fb
+    ok, _ = asyncio.run(grade_fill_blank(ex, "", None))
+    assert not ok
+    choice = ExerciseSpec(exercise_id="e2", kind="single_choice", stem="q", options=["a", "b", "c"], correct_index=2)
+    assert choice.correct_index == 2
