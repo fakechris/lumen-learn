@@ -33,6 +33,7 @@ class CourseStore:
         return None
 
     def list_courses(self) -> List[Dict]:
+        """Newest package first (by course_structure.json mtime), bundled examples deduplicated."""
         seen = set()
         out = []
         for root in self.roots:
@@ -51,7 +52,10 @@ class CourseStore:
                 seen.add(name)
                 out.append({"course_id": cs.course_id, "title": cs.title, "overview": cs.overview,
                             "generation_mode": cs.generation_mode, "chapter_count": len(cs.chapters),
-                            "total_sessions": len(cs.all_sessions())})
+                            "total_sessions": len(cs.all_sessions()), "_mtime": os.path.getmtime(path)})
+        out.sort(key=lambda c: c["_mtime"], reverse=True)
+        for c in out:
+            c.pop("_mtime", None)
         return out
 
     def get_course(self, course_id: str) -> Optional[CourseStructure]:
