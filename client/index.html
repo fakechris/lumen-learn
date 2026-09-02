@@ -68,22 +68,42 @@
   </div>
 
   <div class="modal" id="generateModal">
-    <div class="modal-box">
-      <div class="modal-head"><h3>从讲义生成白板课</h3><button class="icon" id="closeGenerate">×</button></div>
-      <label>课程标题（可选）<input id="genTitle" placeholder="留空则取讲义一级标题"></label>
-      <label>生成模式
-        <select id="genMode">
-          <option value="auto">自动（有模型用模型，否则逐段讲读）</option>
-          <option value="llm">大模型苏格拉底课（需要服务端配置 API Key）</option>
-          <option value="heuristic">逐段讲读（不用模型，忠实原文）</option>
-        </select>
-      </label>
-      <label>讲义内容（Markdown / LaTeX）<textarea id="genContent" rows="10" placeholder="# 标题&#10;## 第一节 …"></textarea></label>
-      <div class="modal-actions">
-        <button class="pill btn" id="loadExample">载入示例讲义</button>
-        <div class="spacer"></div>
-        <button class="pill btn primary" id="generateBtn">开始生成</button>
-      </div>
+    <div class="modal-box wide">
+      <div class="modal-head"><h3>从教材生成白板课</h3><button class="icon" id="closeGenerate">×</button></div>
+      <div class="steps"><span class="step active" id="stepImport">1 导入讲义</span><span class="step" id="stepPlan">2 审核教案</span><span class="step" id="stepBuild">3 生成课程</span></div>
+
+      <section id="panelImport">
+        <div class="row2">
+          <label>上传 PDF / Markdown<input type="file" id="genFile" accept=".pdf,.md,.txt,.markdown"></label>
+          <label>课程标题（可选）<input id="genTitle" placeholder="留空则取教材标题"></label>
+        </div>
+        <label>或直接粘贴讲义（Markdown / LaTeX）<textarea id="genContent" rows="6" placeholder="# 标题&#10;## 第一节 …"></textarea></label>
+        <div class="row2">
+          <label>生成模式
+            <select id="genMode">
+              <option value="auto">自动（有模型用模型，否则逐段讲读）</option>
+              <option value="llm">大模型苏格拉底课（需要服务端配置 API Key）</option>
+              <option value="heuristic">逐段讲读（不用模型，忠实原文）</option>
+            </select>
+          </label>
+          <div class="modal-actions" style="align-self:flex-end">
+            <button class="pill btn" id="loadExample">载入示例讲义</button>
+            <button class="pill btn primary" id="ingestBtn">解析并生成教案</button>
+          </div>
+        </div>
+        <div class="doc-summary" id="docSummary"></div>
+      </section>
+
+      <section id="panelPlan" style="display:none">
+        <p class="hint">教案是生成的蓝图：每节课拆成几段，每段决定用板书、示意图、探针图、3D 还是教材原图。可以在这里改媒介、改是否提问，再生成。</p>
+        <div class="plan-tree" id="planTree"></div>
+        <div class="modal-actions">
+          <button class="pill btn" id="backToImport">← 重新导入</button>
+          <div class="spacer"></div>
+          <button class="pill btn primary" id="buildBtn">确认教案，生成课程</button>
+        </div>
+      </section>
+
       <pre class="gen-log" id="genLog"></pre>
     </div>
   </div>

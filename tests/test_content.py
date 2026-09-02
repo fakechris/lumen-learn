@@ -1,3 +1,5 @@
+import os
+
 import pytest
 
 from src.content.compiler import StepAudio, compile_session, decoration_offset_ms
@@ -168,3 +170,65 @@ def test_illustration_compiles_and_svg_check():
     step2 = step.model_copy(update={"illustration": IllustrationSpec(caption="x", brief="y")})
     compiled2 = compile_session(SessionScript(session_id="s", course_id="c", title="t", steps=[step2]), {})
     assert "illustration" not in [a.type for a in compiled2.actions]
+
+
+def test_pdf_parse_sections_figures_and_logo_filter(tmp_path):
+    pymupdf = pytest.importorskip("pymupdf")
+    from src.content.document_parser import parse_pdf
+
+    doc = pymupdf.open()
+    logo = pymupdf.open()  # a small image used on every page (logo)
+    lp = logo.new_page(width=60, height=60)
+    lp.draw_rect(pymupdf.Rect(5, 5, 55, 55), color=(0, 0, 1), fill=(0, 0, 1))
+    logo_pdf = logo.convert_to_pdf()
+    logo_bytes = pymupdf.open("pdf", logo_pdf)[0].get_pixmap().tobytes("png")
+    fig = pymupdf.open()
+    fp = fig.new_page(width=300, height=200)
+    fp.draw_circle(pymupdf.Point(150, 100), 80, color=(1, 0, 0), fill=(1, 0, 0))
+    fig_bytes = pymupdf.open("pdf", fig.convert_to_pdf())[0].get_pixmap().tobytes("png")
+    for i in range(3):
+        page = doc.new_page()
+        page.insert_image(pymupdf.Rect(20, 20, 60, 60), stream=logo_bytes)
+        page.insert_text((72, 100), f"Chapter {i + 1} heading", fontsize=18)
+        page.insert_text((72, 140), "Body text line one of the chapter.", fontsize=11)
+        page.insert_text((72, 160), "Body text line two.", fontsize=11)
+        if i == 1:
+            page.insert_image(pymupdf.Rect(72, 200, 372, 400), stream=fig_bytes)
+            page.insert_text((72, 420), "Figure 1 a red circle", fontsize=11)
+    doc.set_toc([[1, f"Chapter {i + 1} heading", i + 1] for i in range(3)])
+    path = str(tmp_path / "book.pdf")
+    doc.save(path)
+
+    parsed = parse_pdf(path, assets_dir=str(tmp_path / "figs"))
+    assert [s.heading for s in parsed.sections] == ["Chapter 1 heading", "Chapter 2 heading", "Chapter 3 heading"]
+    assert parsed.sections[1].pages == [2] and "line one" in parsed.sections[1].content
+    assert len(parsed.figures) == 1, "logo must be filtered, the figure kept"
+    f = parsed.figures[0]
+    assert f.page == 2 and f.caption.startswith("Figure 1") and os.path.isfile(f.path)
+    assert parsed.sections[1].figure_ids == [f.figure_id]
+
+
+def test_heuristic_plan_has_segments_and_synthesizer_follows_them():
+    from src.protocol.session import SegmentPlan
+    doc = parse_markdown(LECTURE)
+    course = plan_course_heuristic(doc)
+    for s in course.all_sessions():
+        assert 3 <= len(s.segments) <= 8 and all(seg.media == "board" for seg in s.segments)
+    # media decisions from the plan override what the model produced
+    from src.content.session_synthesizer import _apply_plan
+    from src.protocol.session import IllustrationSpec, SessionOutline, WidgetSpec
+    outline = SessionOutline(session_id="s", title="t", learning_goal="g", core_concept="c", segments=[
+        SegmentPlan(title="a", intent="i", media="board", ask=False),
+        SegmentPlan(title="b", intent="i", media="reference_figure", figure_id="fig_p2_1", ask=True),
+        SegmentPlan(title="c", intent="i", media="explorable", ask=False),
+    ])
+    steps = [
+        StepSpec(spoken_text="x", illustration=IllustrationSpec(caption="unwanted", brief="b"),
+                 question=QuestionSpec(question="q", options=["a", "b"], correct_index=0)),
+        StepSpec(spoken_text="y"),
+        StepSpec(spoken_text="z", widget=WidgetSpec(kind="threejs", task="t")),
+    ]
+    applied = _apply_plan(steps, outline)
+    assert applied[0].illustration is None and applied[0].question is None
+    assert applied[1].illustration.kind == "reference" and applied[1].illustration.figure_id == "fig_p2_1"
+    assert applied[2].widget.kind == "explorable"

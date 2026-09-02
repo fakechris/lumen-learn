@@ -110,13 +110,71 @@ class LLMSessionScript(BaseModel):
         return v
 
 
+SEGMENT_RULES = """# 本节教案（必须逐段对应）
+steps 与下面的段落**一一对应、顺序相同、数量相等**。每段的媒介已经决定，照办：
+- board：illustration 与 widget 都为 null。
+- illustration：填 illustration {kind:"svg", caption, brief}，brief 在教案 media_brief 基础上写得更具体（元素、数量、标注文字）。
+- reference_figure：填 illustration {kind:"reference", figure_id: 教案给出的 id, caption: 一句话}，讲解要"看教材这张图"。
+- explorable / threejs：填 widget {kind, title, task}，task 在 media_brief 基础上写清可观察量、控件、预期现象。
+- mermaid：填 widget {kind:"mermaid", title, mermaid: 源码}。
+- ask 为 true 的段末尾出 question；ask 为 false 不出。最后一段附 reward。
+"""
+
+
+def _segments_block(outline: SessionOutline) -> str:
+    lines = []
+    for i, seg in enumerate(outline.segments, start=1):
+        extra = f"；media_brief：{seg.media_brief}" if seg.media_brief else ""
+        fig = f"；figure_id：{seg.figure_id}" if seg.figure_id else ""
+        lines.append(f"{i}. 「{seg.title}」意图：{seg.intent}；media：{seg.media}{extra}{fig}；ask：{'true' if seg.ask else 'false'}")
+    return "\n".join(lines)
+
+
+def _apply_plan(steps: List[StepSpec], outline: SessionOutline) -> List[StepSpec]:
+    """Enforce the plan's media decisions on the generated steps (belt and braces)."""
+    if not outline.segments:
+        return steps
+    out = []
+    for step, seg in zip(steps, outline.segments):
+        upd = {}
+        if seg.media == "board":
+            upd = {"illustration": None, "widget": None}
+        elif seg.media in ("illustration", "reference_figure"):
+            upd["widget"] = None
+            if seg.media == "reference_figure":
+                il = step.illustration or IllustrationSpec(caption=seg.title)
+                upd["illustration"] = il.model_copy(update={"kind": "reference", "figure_id": seg.figure_id})
+        elif seg.media in ("explorable", "threejs", "mermaid"):
+            upd["illustration"] = None
+            if step.widget and step.widget.kind != seg.media and seg.media != "mermaid":
+                upd["widget"] = step.widget.model_copy(update={"kind": seg.media})
+        if not seg.ask:
+            upd["question"] = None
+        out.append(step.model_copy(update=upd))
+    return out
+
+
 async def synthesize_session_llm(outline: SessionOutline, course: CourseStructure, source_text: str,
                                  llm: LLMClient) -> tuple[SessionScript, List[str]]:
     user = (f"课程：{course.title}（受众：{course.target_audience or '未指定'}）\n"
             f"会话标题：{outline.title}\n教学目标：{outline.learning_goal}\n核心概念：{outline.core_concept}\n"
-            f"典型误区：{outline.cognitive_hurdle or '未指定'}\n\n依据的讲义内容：\n{source_text}")
-    generated = await llm.complete_model(SYNTH_SYSTEM, user, LLMSessionScript, temperature=0.5)
-    steps = [StepSpec(**s.model_dump()) for s in generated.steps]
+            f"典型误区：{outline.cognitive_hurdle or '未指定'}\n\n")
+    if outline.segments:
+        user += SEGMENT_RULES + "\n" + _segments_block(outline) + "\n\n"
+    user += f"依据的讲义内容：\n{source_text}"
+
+    n_expected = len(outline.segments)
+
+    class Planned(LLMSessionScript):
+        @field_validator("steps")
+        @classmethod
+        def _match(cls, v):
+            if n_expected and len(v) != n_expected:
+                raise ValueError(f"expected exactly {n_expected} steps to match the lesson plan, got {len(v)}")
+            return v
+
+    generated = await llm.complete_model(SYNTH_SYSTEM, user, Planned if n_expected else LLMSessionScript, temperature=0.5)
+    steps = _apply_plan([StepSpec(**s.model_dump()) for s in generated.steps], outline)
     script = SessionScript(session_id=outline.session_id, course_id=course.course_id, title=outline.title,
                            learning_goal=outline.learning_goal, steps=steps)
     return sanitize_script(script)

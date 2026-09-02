@@ -17,12 +17,13 @@ from typing import Dict, List, Optional
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, File, Form, HTTPException, UploadFile, WebSocket, WebSocketDisconnect
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, ValidationError
 
 from src.content.pipeline import ContentPipeline
+from src.protocol.session import CourseStructure
 from src.content.store import CourseStore
 from src.llm.client import make_client
 from src.protocol.actions import ConnectionEstablished, ErrorMessage, parse_client_message
@@ -97,6 +98,116 @@ async def course_asset(course_id: str, kind: str, rel_path: str):
     if not path:
         raise HTTPException(404, "asset not found")
     return FileResponse(path)
+
+
+# ---- staged generation: ingest -> plan (教案, editable) -> build ----
+
+UPLOAD_DIR = os.path.join(OUTPUT_ROOT, "_uploads")
+os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+
+def _new_job(kind: str) -> dict:
+    job_id = uuid.uuid4().hex[:10]
+    jobs[job_id] = {"job_id": job_id, "kind": kind, "status": "running", "events": [], "course_id": None,
+                    "plan": None, "error": None}
+    return jobs[job_id]
+
+
+def _pipeline(job: dict, mode: str) -> ContentPipeline:
+    def progress(stage: str, detail: str) -> None:
+        job["events"].append({"stage": stage, "detail": detail})
+    return ContentPipeline(OUTPUT_ROOT, llm=llm, tts=tts, mode=mode, progress=progress)
+
+
+def _doc_summary(key: str, doc) -> dict:
+    return {"doc_key": key, "title": doc.title, "sections": len(doc.sections), "pages": doc.total_pages,
+            "figures": len(doc.figures), "chars": doc.char_count(),
+            "outline": [{"id": s.section_id, "heading": s.heading, "level": s.level, "pages": s.pages} for s in doc.sections]}
+
+
+@app.post("/api/v1/ingest")
+async def ingest(file: Optional[UploadFile] = File(None), content: Optional[str] = Form(None),
+                 title: Optional[str] = Form(None)):
+    """Parse an uploaded PDF/Markdown file or pasted text into sections and figures."""
+    pipeline = ContentPipeline(OUTPUT_ROOT, llm=llm, tts=tts, mode="auto")
+    if file is not None:
+        safe = os.path.basename(file.filename or "upload")
+        path = os.path.join(UPLOAD_DIR, f"{uuid.uuid4().hex[:8]}_{safe}")
+        with open(path, "wb") as f:
+            f.write(await file.read())
+        try:
+            key, doc = pipeline.ingest_file(path, title=title or None)
+        except Exception as e:
+            raise HTTPException(400, f"could not parse file: {e}")
+    elif content and content.strip():
+        key, doc = pipeline.ingest_text(content, title=title or None)
+    else:
+        raise HTTPException(400, "provide a file or content")
+    return _doc_summary(key, doc)
+
+
+class PlanRequest(BaseModel):
+    doc_key: str
+    mode: str = "auto"
+
+
+@app.post("/api/v1/plan")
+async def plan_course(req: PlanRequest):
+    if req.mode == "llm" and llm is None:
+        raise HTTPException(400, "mode=llm requested but no LLM is configured on the server")
+    job = _new_job("plan")
+    pipeline = _pipeline(job, req.mode)
+    doc = pipeline.docs.load(req.doc_key)
+    if doc is None:
+        raise HTTPException(404, "document not found; ingest first")
+
+    async def run() -> None:
+        try:
+            plan = await pipeline.plan(req.doc_key, doc)
+            job["plan"] = plan.model_dump(mode="json")
+            job["status"] = "done"
+        except Exception as e:
+            log.exception("plan job %s failed", job["job_id"])
+            job["status"] = "error"
+            job["error"] = str(e)
+
+    asyncio.create_task(run())
+    return {"job_id": job["job_id"]}
+
+
+class BuildRequest(BaseModel):
+    doc_key: str
+    plan: dict
+    mode: str = "auto"
+
+
+@app.post("/api/v1/build")
+async def build_course(req: BuildRequest):
+    if req.mode == "llm" and llm is None:
+        raise HTTPException(400, "mode=llm requested but no LLM is configured on the server")
+    try:
+        plan = CourseStructure.model_validate(req.plan)
+    except ValidationError as e:
+        raise HTTPException(400, f"invalid plan: {e}")
+    job = _new_job("build")
+    pipeline = _pipeline(job, req.mode)
+    doc = pipeline.docs.load(req.doc_key)
+    if doc is None:
+        raise HTTPException(404, "document not found; ingest first")
+    pipeline.docs.save_plan(req.doc_key, plan)
+
+    async def run() -> None:
+        try:
+            course_dir = await pipeline.build(doc, plan)
+            job["course_id"] = os.path.basename(course_dir)
+            job["status"] = "done"
+        except Exception as e:
+            log.exception("build job %s failed", job["job_id"])
+            job["status"] = "error"
+            job["error"] = str(e)
+
+    asyncio.create_task(run())
+    return {"job_id": job["job_id"]}
 
 
 class GenerateRequest(BaseModel):
