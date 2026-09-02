@@ -61,6 +61,7 @@ SYNTH_SYSTEM = """你是一名苏格拉底式白板导师，要把一个会话�
 # 字段规则
 1. spoken_text：**不要 LaTeX、不要 Markdown**，公式口语化（"c1 乘 v1 加 c2 乘 v2"）。
 2. boards：markdown 用嵌套列表表达缩进层级；可用 KaTeX（$...$）；加粗表示重点词。**对比类内容用 markdown 表格**（2~4 列、2~5 行，单元格里是短语，不是句子），并可用 decorations 高亮某个单元格里的短语。每张板书的 title 是这块内容的小标题（另起一列的板书 title 会被当作分栏大标题显示）。第一步的第一张板书是本节的一句话钩子（≤ 20 字，title 留空）。第一张 layout 用 "follow"；需要另起一列时用 "newcol"。
+   板书里如果放代码：用 ``` 代码块，代码里的字符串一律用**单引号**，并且 JSON 字符串内的双引号必须写成 \\"。
 3. decorations：snippet 必须**逐字**出现在该板书 markdown 里（可以是 LaTeX 源码，也可以是中文短语）；trigger_phrase 必须逐字出现在 spoken_text 里。每步 0~2 个。
 4. illustration：整个会话 1~2 张。kind 默认 "svg"，brief 写清元素、数量、标注文字、左右对比；只有纯场景隐喻（没有精确结构）才用 "image"。caption 一句话。
 5. widget：整个会话最多 1 个，而且**必须直接演示本步板书里的对象**（同一个公式、同一组向量、同一张网格），学生动一下就能回答本步的问题。默认 kind "explorable"（2D Canvas：可以是函数曲线 + 包络/参考线 + 探针读数，也可以是向量/平行四边形/网格/几何变换 + 滑块）。task 写明：画什么、坐标范围、探针或滑块读出什么量、预期现象。如果本步概念没有一个自然的"可探索的量"，就写 null，不要硬凑一条无关的曲线。只有真正三维的概念才用 "threejs"；流程/关系用 "mermaid" 并直接给源码。
@@ -154,27 +155,63 @@ def _apply_plan(steps: List[StepSpec], outline: SessionOutline) -> List[StepSpec
     return out
 
 
-async def synthesize_session_llm(outline: SessionOutline, course: CourseStructure, source_text: str,
-                                 llm: LLMClient) -> tuple[SessionScript, List[str]]:
-    user = (f"课程：{course.title}（受众：{course.target_audience or '未指定'}）\n"
+CHUNK = 3  # segments per generation call; whole-session JSON overflows 8K-token outputs
+
+
+def _header(outline: SessionOutline, course: CourseStructure) -> str:
+    return (f"课程：{course.title}（受众：{course.target_audience or '未指定'}）\n"
             f"会话标题：{outline.title}\n教学目标：{outline.learning_goal}\n核心概念：{outline.core_concept}\n"
             f"典型误区：{outline.cognitive_hurdle or '未指定'}\n\n")
-    if outline.segments:
-        user += SEGMENT_RULES + "\n" + _segments_block(outline) + "\n\n"
-    user += f"依据的讲义内容：\n{source_text}"
 
-    n_expected = len(outline.segments)
 
-    class Planned(LLMSessionScript):
+def _steps_summary(steps: List[StepSpec]) -> str:
+    lines = []
+    for i, st in enumerate(steps, start=1):
+        boards = " / ".join(b.markdown.replace("\n", " ")[:80] for b in st.boards)
+        lines.append(f"{i}. {st.title}：{st.spoken_text[:60]}… 板书：{boards}")
+    return "\n".join(lines)
+
+
+def _script_model(n_expected: int, min_steps: int = 1):
+    class Planned(BaseModel):
+        steps: List[LLMStep]
+
         @field_validator("steps")
         @classmethod
         def _match(cls, v):
             if n_expected and len(v) != n_expected:
                 raise ValueError(f"expected exactly {n_expected} steps to match the lesson plan, got {len(v)}")
+            if not n_expected and not min_steps <= len(v) <= 9:
+                raise ValueError("expected 3-9 steps")
             return v
+    return Planned
 
-    generated = await llm.complete_model(SYNTH_SYSTEM, user, Planned if n_expected else LLMSessionScript, temperature=0.5)
-    steps = _apply_plan([StepSpec(**s.model_dump()) for s in generated.steps], outline)
+
+async def synthesize_session_llm(outline: SessionOutline, course: CourseStructure, source_text: str,
+                                 llm: LLMClient) -> tuple[SessionScript, List[str]]:
+    segments = outline.segments
+    if not segments:
+        user = _header(outline, course) + f"依据的讲义内容：\n{source_text}"
+        generated = await llm.complete_model(SYNTH_SYSTEM, user, _script_model(0, 3), temperature=0.5)
+        steps = [StepSpec(**s.model_dump()) for s in generated.steps]
+    else:
+        steps: List[StepSpec] = []
+        total = len(segments)
+        for start in range(0, total, CHUNK):
+            part = segments[start:start + CHUNK]
+            part_outline = outline.model_copy(update={"segments": part})
+            user = _header(outline, course) + SEGMENT_RULES + "\n"
+            user += f"本节共 {total} 段，这次只写第 {start + 1}~{start + len(part)} 段（steps 恰好 {len(part)} 个）。\n"
+            if steps:
+                user += f"前面已经写好的段落（保持衔接，不要重复）：\n{_steps_summary(steps)}\n"
+            if start + len(part) < total:
+                user += "这不是最后一段，不要写 reward。\n"
+            user += "\n" + _segments_block(part_outline) + "\n\n" + f"依据的讲义内容：\n{source_text}"
+            generated = await llm.complete_model(SYNTH_SYSTEM, user, _script_model(len(part)), temperature=0.5)
+            chunk_steps = _apply_plan([StepSpec(**s.model_dump()) for s in generated.steps], part_outline)
+            if start + len(part) < total:
+                chunk_steps = [st.model_copy(update={"reward": None}) for st in chunk_steps]
+            steps.extend(chunk_steps)
     script = SessionScript(session_id=outline.session_id, course_id=course.course_id, title=outline.title,
                            learning_goal=outline.learning_goal, steps=steps)
     return sanitize_script(script)
