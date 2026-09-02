@@ -192,7 +192,7 @@ async def synthesize_session_llm(outline: SessionOutline, course: CourseStructur
     segments = outline.segments
     if not segments:
         user = _header(outline, course) + f"依据的讲义内容：\n{source_text}"
-        generated = await llm.complete_model(SYNTH_SYSTEM, user, _script_model(0, 3), temperature=0.5)
+        generated = await llm.complete_model(SYNTH_SYSTEM, user, _script_model(0, 3), temperature=0.5, tier="pro")
         steps = [StepSpec(**s.model_dump()) for s in generated.steps]
     else:
         steps: List[StepSpec] = []
@@ -207,7 +207,7 @@ async def synthesize_session_llm(outline: SessionOutline, course: CourseStructur
             if start + len(part) < total:
                 user += "这不是最后一段，不要写 reward。\n"
             user += "\n" + _segments_block(part_outline) + "\n\n" + f"依据的讲义内容：\n{source_text}"
-            generated = await llm.complete_model(SYNTH_SYSTEM, user, _script_model(len(part)), temperature=0.5)
+            generated = await llm.complete_model(SYNTH_SYSTEM, user, _script_model(len(part)), temperature=0.5, tier="pro")
             chunk_steps = _apply_plan([StepSpec(**s.model_dump()) for s in generated.steps], part_outline)
             if start + len(part) < total:
                 chunk_steps = [st.model_copy(update={"reward": None}) for st in chunk_steps]

@@ -20,6 +20,11 @@ export DEEPSEEK_API_KEY=...        # or OPENAI_API_KEY / ANTHROPIC_API_KEY (opti
 open http://localhost:8000
 ```
 
+Models are configured per tier: `LLM_MODEL` (fast: grading, interjections, figures, widgets),
+`LLM_MODEL_PRO` (lesson plan and session writing), `LLM_MODEL_VISION` (widget screenshot review,
+textbook-figure captions). With a DeepSeek key the defaults are `deepseek-v4-flash`,
+`deepseek-v4-pro`, `deepseek-v4-flash-vision-exp`.
+
 A bundled example course (`examples/courses/`) plays without any API key. With a key the
 "从讲义生成课程" button produces a full Socratic course from pasted Markdown, and the tutor
 answers interruptions and grades free-text answers live.

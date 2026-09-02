@@ -193,11 +193,11 @@ def _doc_header(doc: ParsedDocument) -> str:
 async def plan_course_llm(doc: ParsedDocument, llm: LLMClient, progress=None) -> CourseStructure:
     if doc.char_count() <= SINGLE_CALL_CHAR_LIMIT:
         user = _doc_header(doc) + f"\n讲义全文：\n{doc.raw_markdown}"
-        planned = await llm.complete_model(PLAN_SYSTEM, user, PlannedCourse)
+        planned = await llm.complete_model(PLAN_SYSTEM, user, PlannedCourse, tier="pro")
         return _assign_ids(planned, doc, "llm")
 
     # Hierarchical: group sections into chapters, then plan each chapter from its own text.
-    grouping = await llm.complete_model(OUTLINE_SYSTEM, _doc_header(doc), ChapterGrouping)
+    grouping = await llm.complete_model(OUTLINE_SYSTEM, _doc_header(doc), ChapterGrouping, tier="pro")
     if progress:
         progress("plan", f"long document: {len(grouping.chapters)} chapters to plan separately")
     chapters: List[PlannedChapter] = []
@@ -206,7 +206,7 @@ async def plan_course_llm(doc: ParsedDocument, llm: LLMClient, progress=None) ->
         text = doc.section_text(g.section_ids)
         user = (f"{_doc_header(doc)}\n本章：{g.title} — {g.description}\n只为本章排课，只引用本章小节 id：{g.section_ids}\n\n"
                 f"本章全文：\n{text}")
-        part = await llm.complete_model(PLAN_SYSTEM, user, PlannedCourse)
+        part = await llm.complete_model(PLAN_SYSTEM, user, PlannedCourse, tier="pro")
         for ch in part.chapters:
             chapters.append(PlannedChapter(title=ch.title or g.title, description=ch.description or g.description,
                                            unit=g.unit, sessions=ch.sessions))
