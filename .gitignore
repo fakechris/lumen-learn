@@ -1,0 +1,10 @@
+research/
+AGENTS.md
+agents.md
+CLAUDE.md
+claude.md
+.DS_Store
+*.log
+node_modules/
+.env
+
