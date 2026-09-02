@@ -1,0 +1,150 @@
+"""
+Authored / generated content model and the compiled session that the runtime
+streams.
+
+Pipeline:  SessionScript (steps, authored or LLM-generated)
+           -> compile()  -> CompiledSession (flat action list with step_ids)
+
+Both the LLM path and hand-authored examples produce a SessionScript, so the
+runtime and client only ever see CompiledSession.
+"""
+
+from __future__ import annotations
+
+import hashlib
+from typing import List, Literal, Optional
+
+from pydantic import BaseModel, Field, model_validator
+
+from src.protocol.actions import Action
+
+
+def stable_id(prefix: str, *parts: str, length: int = 10) -> str:
+    """Deterministic id from content (never Python's randomized hash())."""
+    digest = hashlib.sha1("\x1f".join(parts).encode("utf-8")).hexdigest()
+    return f"{prefix}_{digest[:length]}"
+
+
+# --------------------------------------------------------------------------- #
+# Course structure
+# --------------------------------------------------------------------------- #
+
+class SessionOutline(BaseModel):
+    session_id: str
+    title: str
+    learning_goal: str
+    core_concept: str
+    cognitive_hurdle: str = ""
+    source_sections: List[str] = Field(default_factory=list)
+    estimated_duration_min: int = 5
+
+
+class ChapterOutline(BaseModel):
+    chapter_id: str
+    title: str
+    description: str = ""
+    sessions: List[SessionOutline]
+
+
+GenerationMode = Literal["llm", "authored", "heuristic"]
+
+
+class CourseStructure(BaseModel):
+    course_id: str
+    title: str
+    target_audience: str = ""
+    overview: str = ""
+    generation_mode: GenerationMode = "authored"
+    chapters: List[ChapterOutline]
+
+    def all_sessions(self) -> List[SessionOutline]:
+        return [s for ch in self.chapters for s in ch.sessions]
+
+
+# --------------------------------------------------------------------------- #
+# Session script (what content generation produces)
+# --------------------------------------------------------------------------- #
+
+class BoardSpec(BaseModel):
+    title: str = ""
+    markdown: str
+    layout: Literal["follow", "newcol"] = "follow"
+
+
+class DecorationSpec(BaseModel):
+    kind: Literal["highlight", "circle"] = "circle"
+    snippet: str
+    board_index: int = 0
+    trigger_phrase: Optional[str] = Field(
+        None, description="Phrase in spoken_text at which the annotation starts drawing"
+    )
+    color: Optional[str] = None
+
+
+class WidgetSpec(BaseModel):
+    kind: Literal["threejs", "html", "mermaid"]
+    title: str = ""
+    task: str = Field("", description="What the widget should show (used for generation)")
+    html: Optional[str] = None
+    mermaid: Optional[str] = None
+    layout: Literal["follow", "newcol"] = "newcol"
+
+
+class QuestionSpec(BaseModel):
+    mode: Literal["choice", "open"] = "choice"
+    question: str
+    options: List[str] = Field(default_factory=list)
+    correct_index: Optional[int] = None
+    misconceptions: List[Optional[str]] = Field(default_factory=list)
+    explanation: Optional[str] = None
+
+    @model_validator(mode="after")
+    def _check(self) -> "QuestionSpec":
+        if self.mode == "choice":
+            if not 2 <= len(self.options) <= 4:
+                raise ValueError("choice question needs 2-4 options")
+            if self.correct_index is None or not 0 <= self.correct_index < len(self.options):
+                raise ValueError("choice question needs a valid correct_index")
+        return self
+
+
+class RewardSpec(BaseModel):
+    title: str
+    description: str
+
+
+class StepSpec(BaseModel):
+    title: str = ""
+    spoken_text: str
+    boards: List[BoardSpec] = Field(default_factory=list)
+    decorations: List[DecorationSpec] = Field(default_factory=list)
+    widget: Optional[WidgetSpec] = None
+    question: Optional[QuestionSpec] = None
+    reward: Optional[RewardSpec] = None
+    new_page_title: Optional[str] = None
+
+
+class SessionScript(BaseModel):
+    session_id: str
+    course_id: str
+    title: str
+    learning_goal: str = ""
+    steps: List[StepSpec]
+
+
+# --------------------------------------------------------------------------- #
+# Compiled session
+# --------------------------------------------------------------------------- #
+
+class CompiledSession(BaseModel):
+    manifest_version: str = "2.0"
+    session_id: str
+    course_id: str
+    title: str
+    learning_goal: str = ""
+    generation_mode: GenerationMode = "authored"
+    total_duration_ms: int = 0
+    actions: List[Action]
+
+    def step_ids(self) -> List[int]:
+        return [a.step_id for a in self.actions]
