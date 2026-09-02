@@ -85,8 +85,10 @@ def interpolate_marks(text: str, sentences: List[Tuple[int, int, int]]) -> Marks
     return marks
 
 
-def _concat(paths: List[str], out_stem: str) -> Tuple[str, int]:
-    """Concatenate clips (all wav or all mp3). Returns (path, duration_ms)."""
+def _concat(paths: List[str], out_stem: str, want_mp3: bool = False) -> Tuple[str, int]:
+    """Concatenate clips. WAV clips are joined exactly with the wave module (then optionally
+    transcoded once to MP3); MP3 clips go through ffmpeg's concat *filter*, which re-decodes
+    and is robust to encoder padding differences (the concat demuxer was not)."""
     if all(p.endswith(".wav") for p in paths):
         out = out_stem + ".wav"
         with wave.open(paths[0], "rb") as first:
@@ -96,17 +98,24 @@ def _concat(paths: List[str], out_stem: str) -> Tuple[str, int]:
             for p in paths:
                 with wave.open(p, "rb") as r:
                     w.writeframes(r.readframes(r.getnframes()))
-        return out, wav_duration_ms(out)
+        duration = wav_duration_ms(out)
+        if want_mp3 and shutil.which("ffmpeg"):
+            mp3 = out_stem + ".mp3"
+            subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", out, "-codec:a", "libmp3lame", "-b:a", "64k", mp3],
+                           check=True)
+            os.remove(out)
+            return mp3, duration
+        return out, duration
     if not shutil.which("ffmpeg"):
         raise RuntimeError("ffmpeg is required to concatenate mp3 clips")
     out = out_stem + ".mp3"
-    listing = out_stem + "_concat.txt"
-    with open(listing, "w", encoding="utf-8") as f:
-        for p in paths:
-            f.write(f"file '{os.path.abspath(p)}'\n")
-    subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-f", "concat", "-safe", "0", "-i", listing,
-                    "-codec:a", "libmp3lame", "-b:a", "64k", out], check=True)
-    os.remove(listing)
+    cmd = ["ffmpeg", "-y", "-loglevel", "error"]
+    for p in paths:
+        cmd += ["-i", os.path.abspath(p)]
+    inputs = "".join(f"[{i}:a]" for i in range(len(paths)))
+    cmd += ["-filter_complex", f"{inputs}concat=n={len(paths)}:v=0:a=1[out]", "-map", "[out]",
+            "-codec:a", "libmp3lame", "-b:a", "64k", out]
+    subprocess.run(cmd, check=True)
     return out, 0  # duration is summed from clips by the caller
 
 
@@ -126,12 +135,15 @@ async def synthesize_aligned(engine: TtsEngine, text: str, out_stem: str, speed:
     clips: List[str] = []
     sentences: List[Tuple[int, int, int]] = []
     cjk = latin = 0
+    # macOS say: synthesize pieces as WAV so the join is exact; transcode once at the end.
+    piece_kwargs = {"mp3": False} if getattr(engine, "name", "") == "say" else {}
+    want_mp3 = bool(getattr(engine, "mp3", False))
     for k, (a, b) in enumerate(spans):
         piece = text[a:b]
         if not to_spoken(piece).strip():
             sentences.append((a, b, 0))
             continue
-        r = await engine.synthesize(piece, f"{out_stem}_p{k}", speed)
+        r = await engine.synthesize(piece, f"{out_stem}_p{k}", speed, **piece_kwargs)
         cjk += r.cjk
         latin += r.latin
         if r.audio_path:
@@ -140,7 +152,7 @@ async def synthesize_aligned(engine: TtsEngine, text: str, out_stem: str, speed:
     total = sum(d for _, _, d in sentences)
     audio_path: Optional[str] = None
     if clips:
-        audio_path, measured = _concat(clips, out_stem)
+        audio_path, measured = _concat(clips, out_stem, want_mp3=want_mp3)
         for p in clips:
             try:
                 os.remove(p)

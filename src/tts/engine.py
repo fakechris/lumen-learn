@@ -76,7 +76,7 @@ class MacSayEngine:
     def available() -> bool:
         return platform.system() == "Darwin" and shutil.which("say") is not None and shutil.which("afconvert") is not None
 
-    async def synthesize(self, text: str, out_stem: str, speed: float = 1.0) -> TtsResult:
+    async def synthesize(self, text: str, out_stem: str, speed: float = 1.0, mp3: Optional[bool] = None) -> TtsResult:
         spoken = to_spoken(text)
         cjk, latin = count_chars(spoken)
         voice = self.zh_voice if _has_cjk(spoken) else self.en_voice
@@ -88,7 +88,7 @@ class MacSayEngine:
         os.remove(aiff)
         duration_ms = wav_duration_ms(wav_path)
         audio_path = wav_path
-        if self.mp3:
+        if self.mp3 if mp3 is None else mp3:
             mp3_path = out_stem + ".mp3"
             await _run("ffmpeg", "-y", "-loglevel", "error", "-i", wav_path, "-codec:a", "libmp3lame", "-b:a", "64k", mp3_path)
             os.remove(wav_path)
