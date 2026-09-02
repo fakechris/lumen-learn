@@ -341,8 +341,10 @@ class ContentPipeline:
         self.progress("done", course_dir)
         return course_dir
 
-    async def add_exercises(self, course_id: str, roots: Optional[List[str]] = None) -> str:
-        """Generate exercises for an existing package and rewrite its sessions in place."""
+    async def add_exercises(self, course_id: str, roots: Optional[List[str]] = None, only: Optional[set] = None,
+                            missing_only: bool = False) -> str:
+        """Generate exercises for an existing package and rewrite its sessions in place.
+        `only` limits to session ids; `missing_only` skips sessions that already have exercises."""
         store = CourseStore(roots or [self.output_root])
         course = store.get_course(course_id)
         if course is None:
@@ -354,7 +356,9 @@ class ContentPipeline:
             session = store.get_session(course_id, outline.session_id)
             if script is None or session is None:
                 continue
-            script = await self._fill_exercises(script, course_dir)
+            selected = (only is None or outline.session_id in only) and not (missing_only and script.exercises)
+            if selected:
+                script = await self._fill_exercises(script, course_dir)
             scripts.append(script)
             compiled.append(session.model_copy(update={"exercises": list(script.exercises)}))
         write_package(course_dir, course, scripts, compiled)
@@ -591,7 +595,9 @@ def main(argv=None) -> int:
 
     async def run():
         if args.exercises_for:
-            return await pipeline.add_exercises(args.exercises_for, roots=[args.output, "examples/courses"])
+            only = set(x.strip() for x in args.only.split(",")) if args.only else None
+            return await pipeline.add_exercises(args.exercises_for, roots=[args.output, "examples/courses"], only=only,
+                                                missing_only=not args.force)
         if args.script:
             return await pipeline.run_script(args.script)
         if args.from_plan:
