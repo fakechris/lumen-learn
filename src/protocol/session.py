@@ -101,6 +101,16 @@ class DecorationSpec(BaseModel):
     color: Optional[str] = None
 
 
+class WidgetControlSpec(BaseModel):
+    """Teacher-driven widget command. Fired while the step's speech plays: at the
+    moment `trigger_phrase` is spoken (aligned via TTS marks) or at `at_ms` from
+    the step's audio start. Compiled into actions.WidgetControl."""
+    trigger_phrase: Optional[str] = Field(None, description="Verbatim phrase in spoken_text")
+    at_ms: Optional[int] = None
+    op: Literal["set", "highlight", "annotate", "reveal"] = "set"
+    payload: dict = Field(default_factory=dict, description='set: {param: value}; others: {"selector": "#id", "text"?}')
+
+
 class WidgetSpec(BaseModel):
     kind: Literal["explorable", "threejs", "html", "mermaid"]
     title: str = ""
@@ -109,6 +119,9 @@ class WidgetSpec(BaseModel):
     html_path: Optional[str] = Field(None, description="Authored scripts: HTML file relative to the script")
     mermaid: Optional[str] = None
     layout: Literal["follow", "newcol"] = "newcol"
+    params: List[str] = Field(default_factory=list,
+                              description="Parameter names the widget exposes to hkControl.set (e.g. probeX, k)")
+    controls: List[WidgetControlSpec] = Field(default_factory=list)
 
 
 class IllustrationSpec(BaseModel):

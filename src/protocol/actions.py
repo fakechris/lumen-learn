@@ -137,6 +137,15 @@ class AnimationPending(BaseModel):
     layout: Layout = "newcol"
 
 
+class WidgetControl(BaseModel):
+    """Teacher-driven widget command, fired by the audio clock at `at_ms`
+    (offset from the step's audio start). Additive protocol extension: the
+    widget implements window.hkControl[op] inside its sandboxed iframe."""
+    at_ms: int
+    op: Literal["set", "highlight", "annotate", "reveal"] = "set"
+    payload: dict = Field(default_factory=dict)
+
+
 class GeneratedAnimation(BaseModel):
     """Self-contained HTML rendered in a sandboxed iframe."""
     type: Literal["generated_animation"] = "generated_animation"
@@ -146,6 +155,7 @@ class GeneratedAnimation(BaseModel):
     html: str
     layout: Layout = "newcol"
     reveal_gate_step: Optional[int] = None
+    controls: List[WidgetControl] = Field(default_factory=list)
 
 
 class AnimationFailed(BaseModel):

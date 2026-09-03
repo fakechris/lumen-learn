@@ -102,18 +102,33 @@ export class Whiteboard {
     return item;
   }
 
-  addWidget({ uid, title, html, layout, gate }) {
+  addWidget({ uid, title, html, layout, gate, controls = [] }) {
     const el = document.createElement("div");
     el.className = "wb-card wb-widget";
     el.dataset.uid = uid;
     const cap = document.createElement("div");
     cap.className = "caption";
     cap.textContent = title || "";
-    el.append(createWidgetFrame({ html, title }), cap);
-    const item = this._place(el, layout, gate, "widget");
+    const frame = createWidgetFrame({ html, title });
+    el.append(frame, cap);
+    const item = this._place(el, layout, gate, "widget", uid);
+    item.postControl = frame.hkPost;
+    item.controls = (controls || []).map((c) => ({ ...c, applied: false }));
     this.items.set(uid, item);
     if (gate == null) this._reveal(item, 0);
     return item;
+  }
+
+  /** Fire due teacher controls for this widget (called from the audio clock). */
+  tickControls(boardUid, ms) {
+    const item = this.items.get(boardUid);
+    if (!item || !item.postControl || !item.controls) return;
+    for (const c of item.controls) {
+      if (!c.applied && ms >= c.at_ms) {
+        c.applied = true;
+        item.postControl(c.op, c.payload);
+      }
+    }
   }
 
   async addGraph({ uid, title, mermaid, layout, gate }) {

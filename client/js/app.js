@@ -28,6 +28,7 @@ class App {
     this.state = "idle";
     this.speed = 1.0;
     this.transcript = [];
+    this.widgetControls = new Map();
     this.rawLog = [];
     this.activeTab = "transcript";
     this.firstBoardPending = false;
@@ -184,6 +185,7 @@ class App {
     this.board.clear();
     this.speakText.clear();
     this.pendingDecos.clear();
+    this.widgetControls.clear();
     this.transcript = [];
     this.interject = null;
     this.currentStep = null;
@@ -398,8 +400,10 @@ class App {
   }
 
   on_generated_animation(m) {
+    // teacher controls fire on the audio clock of the speak step that reveals this widget
+    if (m.controls && m.controls.length) this.widgetControls.set(m.reveal_gate_step ?? m.step_id, m.board_uid);
     this.noteKind("互动动画");
-    this.board.addWidget({ uid: m.board_uid, title: m.title, html: m.html, layout: m.layout, gate: m.reveal_gate_step });
+    this.board.addWidget({ uid: m.board_uid, title: m.title, html: m.html, layout: m.layout, gate: m.reveal_gate_step, controls: m.controls });
     this.ack(m.step_id);
   }
 
@@ -436,6 +440,7 @@ class App {
     this.renderKeypoints(m.step_id);
     this.board.openGate(m.step_id, m.duration_ms);
     const decos = this.pendingDecos.get(m.step_id) || [];
+    const controlUid = this.widgetControls.get(m.step_id);
     const chars = Array.from(text);
     // marks index the JS string by UTF-16 code units; map to code points for slicing
     const start = (startMs = 0) => this.clock.play({
@@ -447,9 +452,11 @@ class App {
                           : Math.floor(progress * chars.length);
         this.setSubtitle(chars.slice(0, n).join(""), progress < 1);
         for (const d of decos) if (!d.drawn && ms >= d.at_ms) this.drawNow(d);
+        if (controlUid != null) this.board.tickControls(controlUid, ms);
       },
       onEnded: () => {
         for (const d of decos) if (!d.drawn) this.drawNow(d);
+        if (controlUid != null) this.board.tickControls(controlUid, Infinity);
         this.setSubtitle(text, false);
         if (this.currentPlay?.stepId === m.step_id) this.currentPlay = null;
         this.currentStep = null;
