@@ -54,9 +54,13 @@ def sanitize_step(step: StepSpec, label: str) -> Tuple[StepSpec, List[str]]:
         if not 0 <= d.board_index < len(step.boards):
             warnings.append(f"{label}: decoration {d.snippet!r} points at missing board {d.board_index}; dropped")
             continue
-        if not snippet_in(step.boards[d.board_index].markdown, d.snippet):
+        board_md = step.boards[d.board_index].markdown
+        if not snippet_in(board_md, d.snippet):
             warnings.append(f"{label}: snippet {d.snippet!r} not found in board {d.board_index}; dropped")
             continue
+        occurrences = _norm(board_md).count(_norm(d.snippet))
+        if occurrences > 1:
+            warnings.append(f"{label}: snippet {d.snippet!r} occurs {occurrences}x in board {d.board_index}; anchored to the first")
         if d.trigger_phrase and d.trigger_phrase not in step.spoken_text:
             warnings.append(f"{label}: trigger phrase {d.trigger_phrase!r} not in spoken text; timing defaulted")
             d = d.model_copy(update={"trigger_phrase": None})

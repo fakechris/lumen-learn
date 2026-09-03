@@ -351,3 +351,21 @@ def test_degenerate_output_detection_and_budgets():
     assert not looks_degenerate("这是一段正常的、不重复的输出。" + "".join(f"第{i}行内容不同。" for i in range(60)))
     cfg = LLMConfig("openai", "k", "m")
     assert cfg.budget("widget") == 6000 and cfg.budget("plan") == cfg.max_tokens and cfg.budget("synth_repair") == 7000
+
+
+def test_exercise_audit_leak_and_negative():
+    from src.content.exercise_audit import audit_exercise
+    from src.protocol.session import ExerciseSpec
+
+    leaky = ExerciseSpec(kind="fill_blank", stem="批处理时权重矩阵 $W$ 的每一列对应一个神经元的____。",
+                         answer="列", accepted=["column"])
+    problems = audit_exercise(leaky)
+    assert any(p.startswith("leak") for p in problems)
+
+    ok = ExerciseSpec(kind="fill_blank", stem="批处理约定 $H = f(XW + b)$ 中，每一____对应一个神经元。",
+                      answer="列", accepted=["column"])
+    assert audit_exercise(ok) == []
+
+    neg = ExerciseSpec(kind="single_choice", stem="以下哪个不属于三种朴素分词方案？",
+                       options=["字符级", "字节级", "BPE"], correct_index=2)
+    assert any("negative" in p for p in audit_exercise(neg))
