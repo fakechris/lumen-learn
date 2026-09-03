@@ -445,3 +445,29 @@ def test_mastery_record_folds_events_in_db(tmp_path):
     assert len(db.learner_events("c1", "s1")) == 3
     record(db, "c1", "s1", "ask_open", None, 0.9, "my words")
     assert db.learner("c1", "s1")["wrong_streak"] == 0
+
+
+def test_concept_map_structural_and_cleaning():
+    from src.content.concept_map import ConceptEdge, ConceptNode, clean_map, structural_map
+    from src.protocol.session import ChapterOutline, CourseStructure, SessionOutline
+    course = CourseStructure(course_id="c", title="t", chapters=[
+        ChapterOutline(chapter_id="ch_1", title="一", unit="U1", sessions=[
+            SessionOutline(session_id="sess_1", title="神经元", learning_goal="g", core_concept="神经元"),
+            SessionOutline(session_id="sess_2", title="反向传播", learning_goal="g", core_concept="链式法则")]),
+    ])
+    sm = structural_map(course)
+    assert sm.source == "structure" and [n.label for n in sm.nodes] == ["神经元", "链式法则"]
+    assert sm.edges[0].type == "prerequisite" and sm.edges[0].source == "sess-1"
+    cm = clean_map(course, [
+        ConceptNode(id="Chain Rule", label="链式法则", sessions=["sess_2", "ghost"]),
+        ConceptNode(id="chain-rule", label="重复"),
+        ConceptNode(id="neuron", label="神经元", sessions=["sess_1"]),
+    ], [
+        ConceptEdge(source="neuron", target="chain-rule"),
+        ConceptEdge(source="neuron", target="chain-rule"),      # duplicate
+        ConceptEdge(source="neuron", target="neuron"),          # self loop
+        ConceptEdge(source="nowhere", target="chain-rule"),     # dangling
+    ], " 主线 ")
+    assert [n.id for n in cm.nodes] == ["chain-rule", "neuron"]
+    assert cm.nodes[0].sessions == ["sess_2"] and cm.nodes[0].unit == "U1"
+    assert len(cm.edges) == 1 and cm.note == "主线"
