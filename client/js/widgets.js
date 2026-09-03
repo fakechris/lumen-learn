@@ -6,7 +6,20 @@
  * injected so runtime errors inside the widget are reported back via
  * postMessage and shown as an overlay instead of a silent blank box.
  */
-const shimFor = (token) => `<script>
+const SHIM_STORAGE = `<script>
+// null-origin iframe: touching localStorage throws SecurityError and can blank the page.
+try { window.localStorage.getItem("x"); } catch (e) {
+  var mem = {};
+  var shim = { getItem: function(k){ return Object.prototype.hasOwnProperty.call(mem, k) ? mem[k] : null; },
+    setItem: function(k, v){ mem[k] = String(v); }, removeItem: function(k){ delete mem[k]; },
+    clear: function(){ mem = {}; }, key: function(i){ return Object.keys(mem)[i] || null; } };
+  Object.defineProperty(shim, "length", { get: function(){ return Object.keys(mem).length; } });
+  Object.defineProperty(window, "localStorage", { value: shim, configurable: true });
+  Object.defineProperty(window, "sessionStorage", { value: shim, configurable: true });
+}
+</script>`;
+
+const shimFor = (token) => SHIM_STORAGE + `<script>
 (function(){
   var T = ${JSON.stringify(token)};
   function post(m){ try { parent.postMessage(Object.assign({ source: "hk-widget", token: T }, m), "*"); } catch(e){} }

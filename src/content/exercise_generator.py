@@ -29,6 +29,8 @@ EXERCISE_SYSTEM = """你是一名出题老师，为刚刚讲完的一节白板�
 - 题干可用 KaTeX（$...$）；题目严格基于本节内容，难度递进；不要出"以下哪个是本节标题"这类无意义题。
 - interactive 的教具必须沿用**本节板书里的同一个公式/模型/参数**（例如课上是 利率 = 基础利率 + U×斜率，教具就画这条直线），不要换一个新模型。
 - 选项互斥、长度相近，错误选项对应真实误区。
+- **禁止否定式提问**（"以下哪个不…/错误的是"）——一律正向提问；干扰项必须来自本课讲过的内容或该认知误区的真实说法，不许编造学生没见过的说法。
+- 题干与提示里**不得出现答案的字面**（挖空处除外），否则视为泄漏。
 - 只输出 JSON：
 {"exercises": [
   {"kind": "fill_blank", "stem": "在不等式 $-x^2 \\\\le f(x) \\\\le x^2$ 中，$-x^2$ 和 $x^2$ 被称为 ____ 函数。", "answer": "夹逼", "accepted": ["逼近", "包络", "上下界", "边界"], "explanation": "……"},
@@ -74,6 +76,8 @@ def _session_digest(script: SessionScript) -> str:
 async def generate_exercises(script: SessionScript, llm: LLMClient) -> tuple[List[ExerciseSpec], List[str]]:
     warnings: List[str] = []
     generated = await llm.complete_model(EXERCISE_SYSTEM, _session_digest(script), LLMExerciseSet, temperature=0.5, purpose="exercise")
+    from src.content.exercise_audit import audit_exercise
+
     out: List[ExerciseSpec] = []
     for i, ex in enumerate(generated.exercises, start=1):
         data = ex.model_dump()
@@ -84,9 +88,13 @@ async def generate_exercises(script: SessionScript, llm: LLMClient) -> tuple[Lis
             data["kind"] = "single_choice"
         data["exercise_id"] = f"{script.session_id}_ex{i}"
         try:
-            out.append(ExerciseSpec(**data))
+            spec = ExerciseSpec(**data)
         except ValueError as e:
             warnings.append(f"{script.session_id}: exercise {i} invalid ({e}); dropped")
+            continue
+        for problem in audit_exercise(spec):
+            warnings.append(f"{script.session_id} {spec.exercise_id}: {problem}")
+        out.append(spec)
     return out, warnings
 
 

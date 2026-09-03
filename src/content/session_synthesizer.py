@@ -70,6 +70,13 @@ SYNTH_SYSTEM = """你是一名苏格拉底式白板导师，要把一个会话�
 7. reward：最后一步给 master concept 卡（title + description ≤ 60 字）。
 8. 步骤数 5~7，严格基于讲义内容。
 
+# 板面契约（我们的画布参数，务必遵守）
+- 每列宽 560px：正文手写体约 18~21px，一块板书 2~8 行（超过 12 行是事故，拆成两块）。
+- 版式：钩子与主板书起第一列；图/教具 layout 默认 "follow"（跟在板书正下方），大图才 "newcol" 单独成列；一列超出一屏会自动换列，不要刻意塞满。
+- 公式：KaTeX 行内为主；单条公式渲染高度超过两行正文就拆开或改为口语。LaTeX 写进 JSON 必须双反斜杠——自检：成品板书出现 "ext"、"heta"、"rac"、"imes" 这类碎片就是少了一个反斜杠（\t \r \f \b 是 JSON 转义碰撞）。
+- 视觉重量配对：一步只安排一个视觉主角（一张图 / 一个教具 / 一张表格 / 一段推导），其余用文字，不要图文表三连。
+- 交稿前自检（全部通过才输出）：① 每步一个念头 ② spoken 无 LaTeX/Markdown ③ decoration snippet 在板书源码中逐字出现且尽量唯一 ④ trigger_phrase 逐字在 spoken 里 ⑤ 指向语与媒体实际位置一致（下方 vs 右侧）⑥ 公式双反斜杠自检 ⑦ 提问选项是学生口语 ⑧ 最后一步无提问、带 reward。
+
 # 输出（只输出一个 JSON 对象）
 {"steps": [{"title": "", "spoken_text": "", "boards": [{"title": "", "markdown": "", "layout": "follow"}],
   "decorations": [{"kind": "circle", "snippet": "", "board_index": 0, "trigger_phrase": ""}],

@@ -54,6 +54,9 @@ EXPLORABLE_SYSTEM = """你是一名教学可视化工程师，为白板课生成
    对象不限于函数曲线：向量（箭头 + 平行四边形）、网格/点阵、几何变换、面积/长度对比都可以，用同一套视觉规范画。
 4. 必须在脚本末尾**无条件调用一次完整绘制**（resize() 或 draw()），保证页面加载后画布不是空的；所有绘制函数不能依赖用户先动过滑块或鼠标。
 5. 不引入任何外部脚本、字体或图片；不使用 alert；不输出解释文字。
+6. 命名约定：滑块 id 用 `#{量}-slider`、按钮 `#{动作}-btn`、读数 `#{量}-display`（如 `warmup-slider` / `eta-display`），便于外部定位与驱动。
+7. 控制面板（滑块/按钮/读数行）一律放画布下方，不得遮挡画布；启动后必须已有可见画面。
+8. 脚本铁律：动画时间单位一律是**秒**（不要把 dt 再乘 0.001）；**禁用模板字符串**（反引号）——本 HTML 会作为 JSON 字符串内嵌，一律用单引号；括号必须自平衡。
 
 """ + AESTHETIC + """
 
@@ -75,7 +78,9 @@ THREE_SYSTEM = f"""你是一名 Three.js 教学可视化工程师。根据"教�
 3. 监听 window resize 并更新相机与 renderer 尺寸；renderer.setSize(window.innerWidth, window.innerHeight)。
 4. 相机初始位置要让所有关键元素同时可见且不重叠（例如 (4.5, 3.2, 5.5) 看向场景中心），包含 GridHelper 与 AxesHelper；向量用 ArrowHelper；平面用半透明 MeshBasicMaterial（transparent: true, opacity 0.22, DoubleSide）。
 5. 文字标注用 Canvas 绘制的 THREE.Sprite；底部放读数行和必要的 <input type=range> 控件，交互时实时更新读数。
-6. 所有代码放在一个 <script> 中，不使用任何外部图片或字体；不使用 alert/prompt；不输出解释文字。
+6. 所有代码放在一个 <script> 中，不使用任何外部图片或字体；不使用 alert/prompt；不输出解释文字；**禁用模板字符串**（反引号），动画时间单位一律是秒。
+7. 相机自动取景（必做）：用 THREE.Box3().setFromObject(group) 计算包围盒，令 camDist = Math.max(2, radius * 2.4)，并把 group.position.sub(center) 居中，保证所有关键元素入画、不重叠。
+8. 末尾暴露 `window.__hkScene = scene;` 供渲染检查统计场景对象数。
 
 {AESTHETIC}
 （3D 场景中：背景 #faf8f3，主向量 #c0392b，第二向量 #2f6fb5，平面 #b8dcc6 半透明，参考线 #2e8b6f。）

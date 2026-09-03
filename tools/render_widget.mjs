@@ -51,12 +51,21 @@ try {
     out.svgShapes = document.querySelectorAll("svg path, svg line, svg circle, svg rect, svg polyline").length;
     return out;
   });
+  // Three.js widgets expose window.__hkScene (required by THREE_SYSTEM);
+  // count drawables after 900ms so a silent-failure scene (0 objects) is caught.
+  await page.waitForTimeout(900);
+  const sceneObjects = await page.evaluate(() => {
+    if (!window.__hkScene) return null;
+    let n = 0;
+    window.__hkScene.traverse((o) => { if (o.isMesh || o.isLine || o.isPoints) n++; });
+    return n;
+  }).catch(() => null);
 
   const jpeg = await page.screenshot({ type: "jpeg", quality: 60 });
   await page.screenshot({ path: pngOut, type: "png" });
   let blank;
   if (probe.ink !== null) blank = probe.ink < 0.02 && probe.svgShapes < 3;
-  else if (probe.webgl) blank = jpeg.length < 6000;
+  else if (probe.webgl) blank = (sceneObjects !== null ? sceneObjects === 0 : jpeg.length < 6000);
   else blank = probe.svgShapes < 3 && jpeg.length < 6000;
   console.log(JSON.stringify({ errors: errors.slice(0, 5), blank, canvases: probe.canvases, ink: probe.ink, svgShapes: probe.svgShapes, bytes: jpeg.length }));
 } finally {

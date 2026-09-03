@@ -114,8 +114,20 @@ export class ExerciseView {
         card.className = "ex-option";
         card.innerHTML = `<span class="shape s${i}">${SHAPES[i] || "•"}</span><span class="txt">${escapeHtml(text)}</span><span class="num">${i + 1}</span>`;
         if (done) {
-          if (i === ex.correct_index) card.classList.add("correct");
-          if (i === done.answer_index && !done.correct) card.classList.add("wrong");
+          if (i === ex.correct_index) {
+            card.classList.add("correct");
+            const ok = document.createElement("span");
+            ok.className = "mark ok";
+            ok.textContent = "✓";
+            card.appendChild(ok);
+          }
+          if (done.answer_index === i && !done.correct) {
+            card.classList.add("wrong");
+            const bad = document.createElement("span");
+            bad.className = "mark bad";
+            bad.textContent = "✗";
+            card.appendChild(bad);
+          }
           card.disabled = true;
         } else {
           card.addEventListener("click", () => {
