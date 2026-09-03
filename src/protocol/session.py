@@ -92,7 +92,7 @@ class BoardSpec(BaseModel):
 
 
 class DecorationSpec(BaseModel):
-    kind: Literal["highlight", "circle"] = "circle"
+    kind: Literal["highlight", "circle", "spotlight"] = "circle"
     snippet: str
     board_index: int = 0
     trigger_phrase: Optional[str] = Field(

@@ -63,7 +63,7 @@ SYNTH_SYSTEM = """你是一名苏格拉底式白板导师，要把一个会话�
 1. spoken_text：**不要 LaTeX、不要 Markdown**，公式口语化（"c1 乘 v1 加 c2 乘 v2"）。
 2. boards：markdown 用嵌套列表表达缩进层级；可用 KaTeX（$...$）；加粗表示重点词。**对比类内容用 markdown 表格**（2~4 列、2~5 行，单元格里是短语，不是句子），并可用 decorations 高亮某个单元格里的短语。每张板书的 title 是这块内容的小标题（另起一列的板书 title 会被当作分栏大标题显示）。第一步的第一张板书是本节的一句话钩子（≤ 20 字，title 留空）。第一张 layout 用 "follow"；需要另起一列时用 "newcol"。
    板书里如果放代码：用 ``` 代码块，代码里的字符串一律用**单引号**，并且 JSON 字符串内的双引号必须写成 \\"。
-3. decorations：snippet 必须**逐字**出现在该板书 markdown 里（可以是 LaTeX 源码，也可以是中文短语）；trigger_phrase 必须逐字出现在 spoken_text 里。每步 0~2 个。
+3. decorations：snippet 必须**逐字**出现在该板书 markdown 里（可以是 LaTeX 源码，也可以是中文短语）；trigger_phrase 必须逐字出现在 spoken_text 里。每步 0~2 个。可用 kind：`circle`（红圈）、`highlight`（黄底）、`spotlight`（聚光灯：调暗全页只留该对象）——spotlight 每节课**至多 1 次**，只用在全场最关键的一个对象上，且必须配 trigger_phrase。
 4. illustration：整个会话 1~2 张。kind 默认 "svg"，brief 写清元素、数量、标注文字、左右对比；只有纯场景隐喻（没有精确结构）才用 "image"。caption 一句话。
 5. widget：整个会话最多 1 个，而且**必须直接演示本步板书里的对象**（同一个公式、同一组向量、同一张网格），学生动一下就能回答本步的问题。默认 kind "explorable"（2D Canvas：可以是函数曲线 + 包络/参考线 + 探针读数，也可以是向量/平行四边形/网格/几何变换 + 滑块）。task 写明：画什么、坐标范围、探针或滑块读出什么量、预期现象。如果本步概念没有一个自然的"可探索的量"，就写 null，不要硬凑一条无关的曲线。只有真正三维的概念才用 "threejs"；流程/关系用 "mermaid" 并直接给源码。
    **老师驱动教具**：给 explorable/threejs 写 `params`（教具暴露的可调参数名，1~3 个，如 probeX、k）和 `controls`（0~3 条）：讲到某句话时把参数推到某个值——`trigger_phrase` 必须逐字出现在本步 spoken_text 里，`payload` 的键只能来自 params。spoken_text 里要明说这一下（"我把探针推到 1.2，看读数"），学生才知道是老师在动。
