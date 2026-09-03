@@ -103,6 +103,20 @@ Key decisions:
   session-synthesis prompt encodes this and ships a hand-authored exemplar
   (`examples/authored/`), which is what moved model output from lecture prose to the target.
 
+## Learner-facing extras (Stage 9)
+
+- **HandChart** (`src/content/handchart.js`): hand-drawn chart base injected into every generated explorable; the model
+  supplies data and overlays (`marker/vline/segment/note`) instead of hand-writing axes.
+- **Teacher-driven widgets**: a script step's widget declares `params` and `controls` (`trigger_phrase` → `at_ms` from
+  TTS marks); the client fires `hkControl.set/highlight/annotate/reveal` inside the sandboxed iframe on the audio clock.
+- **Spotlight** decoration: dims the page and keeps one board object lit (at most one per session).
+- **讲给我听 (Feynman round)**: `/feynman/start|turn|summary`; a curious classmate probes the vaguest point for four
+  rounds, then summarises; each round is judged 0–1 and feeds mastery.
+- **Four-axis mastery**: `learner` + `learner_events` in `output/hk.db`; evidence from ask answers, `/grade`, Feynman.
+  Wrong answers earn nothing; gains diminish; scores never drop. `GET /api/v1/courses/{id}/mastery`.
+- **Concept map**: `GET /api/v1/courses/{id}/concept_map` builds (once, LLM) a typed concept graph cached as
+  `concept_map.json`; the home's 🗺 button renders it hand-drawn, nodes filled by mastery, click opens the session.
+
 ## Layout
 
 | Path | What |

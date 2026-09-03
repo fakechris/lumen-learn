@@ -75,3 +75,17 @@ choice, interactive; keypoints list; typed transcript; tables in boards.
 18 exercises; "变得更高" accepted for "升高" with justification.
 **Remaining**: handwriting font choice (user will pick later); student name in narration;
 voice interjections; multi-page (new_page) boards for very long sessions.
+
+## Stage 9: Absorb the OSS borrow list (2026-09-03, after reviewing the course/glm-manual-lesson worktree)
+**Goal**: Land the seven research items (research/COMPONENT_BORROW_CATALOG.md) on main, each verified in the browser.
+**Success Criteria**: generated widgets use HandChart and expose `hkControl`; teacher controls fire at the spoken
+trigger phrase; spotlight dims the page at its trigger; Feynman round runs against the live LLM; mastery bars
+appear on the home after grading; concept map renders for a 3-session and a 111-session course.
+**Status**: Complete. Absorbed as-is from the worktree: board contract + gadget rules + exercise audit + storage shim +
+scene-object check + detour discipline (9c6c7c9), SVG geometry conflicts (7843055), spotlight (637017f).
+Reworked on main: HandChart (overlays, legends, fonts in the iframe), widget controls (trigger-phrase timing, per-step
+ticks, `set` op, param validation — the worktree's `set` vs `setState` mismatch meant nothing fired), Feynman
+(broken home button, quality scores), mastery (worktree added score for wrong answers; now wrong earns nothing,
+diminishing monotone gains, tutor-judged quality for open answers), concept map (worktree drew broken circles on a
+ring with course-order edges; now an LLM-built typed graph cached per course, layered hand-drawn rendering).
+Also: client js/css served no-cache (a cached module made spotlights draw as circles).
