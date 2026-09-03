@@ -29,6 +29,27 @@ THREE_CDN = "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"
 ORBIT_CDN = "https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"
 
 EXEMPLAR_PATH = os.path.join(os.path.dirname(__file__), "..", "..", "examples", "authored", "squeeze_explorable.html")
+HANDCHART_PATH = os.path.join(os.path.dirname(__file__), "handchart.js")
+
+
+def handchart_source() -> str:
+    try:
+        with open(HANDCHART_PATH, encoding="utf-8") as f:
+            return f.read()
+    except OSError:
+        return ""
+
+
+def _inject_handchart(html: str) -> str:
+    """Make the HandChart base library available to every generated explorable."""
+    src = handchart_source()
+    if not src:
+        return html
+    m = re.search(r"<head[^>]*>", html, re.I)
+    if not m:
+        return html
+    end = m.end()
+    return html[:end] + "<script>" + src + "</script>" + html[end:]
 
 
 def _exemplar() -> str:
@@ -57,6 +78,12 @@ EXPLORABLE_SYSTEM = """你是一名教学可视化工程师，为白板课生成
 6. 命名约定：滑块 id 用 `#{量}-slider`、按钮 `#{动作}-btn`、读数 `#{量}-display`（如 `warmup-slider` / `eta-display`），便于外部定位与驱动。
 7. 控制面板（滑块/按钮/读数行）一律放画布下方，不得遮挡画布；启动后必须已有可见画面。
 8. 脚本铁律：动画时间单位一律是**秒**（不要把 dt 再乘 0.001）；**禁用模板字符串**（反引号）——本 HTML 会作为 JSON 字符串内嵌，一律用单引号；括号必须自平衡。
+9. **底图库 HandChart（页面已内置，无需引入）**：凡是带坐标轴的图——函数曲线、散点、柱状、多折线——**必须**用它画底图，不要手写坐标轴与刻度：
+   `var ch = HandChart.render(canvas, { type:'function', xlim:[-3,3], ylim:[-2,9], fns:[{fn:function(x){return x*x;}, label:'y = x²'}], xlabel:'x', ylabel:'y', title:'可选标题' })`
+   散点 `type:'points', points:[[x,y],...]`；柱状 `type:'bars', bars:{labels:[...], values:[...], highlight:2}`；多折线 `type:'lines', series:[{name, points, color, dash}]`（自动图例）。
+   `render` 返回 `ch = {ctx, sx, sy, box}`，之后用**世界坐标**叠加标注：`HandChart.marker(ch, x, y, {label:'x = 1.2'})`、`HandChart.vline(ch, x, {label})`、`HandChart.hline(ch, y, {label})`、`HandChart.segment(ch, [x1,y1], [x2,y2], {color, arrow:true})`（切线/向量）、`HandChart.note(ch, x, y, '一句标注')`。
+   探针：`HandChart.attachProbe(canvas, {xlim, ylim}, function(p){ /* p={x,y} 世界坐标：重绘底图 + 叠加 + 更新读数 */ })`。每次交互都重新 `render` 再叠加（底图很便宜）。
+   风格已内建（纸面/手绘墨线坐标轴/主红 HandChart.style.MAIN/辅绿 AUX/手写字）。只有非坐标轴对象（向量场、网格、几何变换、示意图）才自己画，自绘部分沿用视觉规范，字体用 `HandChart.font`。
 
 """ + AESTHETIC + """
 
@@ -112,7 +139,7 @@ def static_check(html: str, kind: str = "threejs") -> Optional[str]:
     if kind == "explorable":
         if "<canvas" not in html and "<svg" not in html:
             return "no canvas or svg"
-        if not re.search(r"pointermove|mousemove|touchmove|pointerdown|input", html):
+        if not re.search(r"pointermove|mousemove|touchmove|pointerdown|input|attachProbe", html, flags=re.I):
             return "no pointer/input interaction"
     return None
 
@@ -149,7 +176,7 @@ async def generate_widget_html(spec: WidgetSpec, llm: LLMClient, attempts: int =
             continue
         problem = static_check(html, spec.kind)
         if problem is None:
-            return html
+            return _inject_handchart(html)
         if problems is not None:
             problems.append(f"static check: {problem}")
     return None

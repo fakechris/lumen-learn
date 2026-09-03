@@ -369,3 +369,13 @@ def test_exercise_audit_leak_and_negative():
     neg = ExerciseSpec(kind="single_choice", stem="以下哪个不属于三种朴素分词方案？",
                        options=["字符级", "字节级", "BPE"], correct_index=2)
     assert any("negative" in p for p in audit_exercise(neg))
+
+
+def test_handchart_injected_into_explorables():
+    from src.content.widget_generator import _inject_handchart, handchart_source
+    src = handchart_source()
+    assert "window.HandChart" in src and "attachProbe" in src and "marker" in src
+    html = "<!doctype html><html><head><meta charset='utf-8'></head><body><canvas></canvas></body></html>"
+    out = _inject_handchart(html)
+    assert out.index("window.HandChart") < out.index("<canvas>")
+    assert _inject_handchart("<div>no head</div>") == "<div>no head</div>"
