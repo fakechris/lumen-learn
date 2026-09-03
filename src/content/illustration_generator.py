@@ -60,19 +60,60 @@ def _strip_to_svg(text: str) -> str:
     return m.group(0).strip() if m else text.strip()
 
 
+
+def svg_geometry_issues(svg: str) -> List[str]:
+    """Deterministic geometry conflicts (OpenMAIC's whiteboard-conflicts idea):
+    elements outside the viewBox and <text> labels sharing the same line."""
+    issues: List[str] = []
+    m = re.search(r"viewBox=['\"]0 0 (\d+(?:\.\d+)?) (\d+(?:\.\d+)?)['\"]", svg)
+    if not m:
+        return ["missing viewBox"]
+    vw, vh = float(m.group(1)), float(m.group(2))
+    texts = []
+    for t in re.finditer(r"<text\b([^>]*)>(.*?)</text>", svg, re.S):
+        attrs, content = t.group(1), re.sub(r"<[^>]+>", "", t.group(2)).strip()
+        if not content:
+            continue
+        x = re.search(r'\bx="([\-\d.]+)"', attrs)
+        y = re.search(r'\by="([\-\d.]+)"', attrs)
+        if not x or not y:
+            continue
+        fx, fy = float(x.group(1)), float(y.group(1))
+        if fx < 8 or fy < 14 or fx > vw - 8 or fy > vh - 6:
+            issues.append(f"text '{content[:12]}' at ({fx:.0f},{fy:.0f}) is outside/flush with the viewBox")
+        texts.append((fx, fy, content))
+    for i in range(len(texts)):
+        for j in range(i + 1, len(texts)):
+            ax, ay, ca = texts[i]
+            bx, by, cb = texts[j]
+            if len(ca) < 2 or len(cb) < 2:
+                continue  # single characters (node digits) sit close by design
+            if abs(ay - by) < 16 and abs(ax - bx) < max(120, (len(ca) + len(cb)) * 10):
+                issues.append(f"text overlap: '{ca[:12]}' and '{cb[:12]}' share the same line")
+                break
+        else:
+            continue
+        break
+    return issues[:4]
+
+
 async def generate_svg(spec: IllustrationSpec, llm: LLMClient, attempts: int = 2) -> Optional[str]:
     user = f"标题/说明：{spec.caption}\nbrief：{spec.brief}"
     problem: Optional[str] = None
     for _ in range(attempts):
         try:
-            prompt = user if not problem else f"{user}\n\n上一次的问题：{problem}。请重新输出完整 SVG。"
+            prompt = user if not problem else f"{user}\n\n上一次的问题：{problem}。请保持全部内容，只修正位置与大小后重新输出完整 SVG。"
             svg = _strip_to_svg(await llm.complete(SVG_SYSTEM, prompt, temperature=0.3, purpose="svg"))
         except LLMError as e:
             problem = str(e)
             continue
         problem = svg_check(svg)
         if problem is None:
-            return svg
+            geo = svg_geometry_issues(svg)
+            if geo:
+                problem = "；".join(geo)  # G2: deterministic conflicts feed the retry
+            else:
+                return svg
     return None
 
 
