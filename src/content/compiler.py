@@ -13,6 +13,8 @@ tts_segment because tts_segment blocks the runtime until the audio finishes.
 
 from __future__ import annotations
 
+import logging
+
 from dataclasses import dataclass
 from typing import Dict, List, Optional
 
@@ -21,6 +23,8 @@ from src.protocol.actions import (
     Graph, Illustration, NewPage, RewardUser, Speak, TtsSegment,
 )
 from src.protocol.session import CompiledSession, GenerationMode, Keypoint, SessionScript, StepSpec
+
+log = logging.getLogger(__name__)
 
 
 @dataclass
@@ -90,6 +94,7 @@ def compile_session(script: SessionScript, audio: Dict[int, StepAudio],
             actions.append(Illustration(step_id=sid(), board_uid=board_uid, caption=il.caption, svg=il.svg,
                                         image_url=il.image_url, layout=il.layout, reveal_gate_step=speak_step))
 
+        a = audio.get(idx) or StepAudio(None, 0, 0, 0)
         w = step.widget
         if w is not None:
             board_uid += 1
@@ -97,13 +102,20 @@ def compile_session(script: SessionScript, audio: Dict[int, StepAudio],
                 actions.append(Graph(step_id=sid(), board_uid=board_uid, title=w.title, mermaid=w.mermaid,
                                      layout=w.layout, reveal_gate_step=speak_step))
             elif w.html:
+                from src.content.widget_generator import filter_controls
+                # teacher-driven controls fire while this step's speech plays: at the spoken
+                # trigger phrase (TTS marks) or at an explicit offset
+                timed = [c.model_copy(update={"at_ms": decoration_offset_ms(step, c.trigger_phrase, a.duration_ms, a.marks)
+                                              if c.trigger_phrase else (c.at_ms or 0)}) for c in w.controls]
+                controls, dropped = filter_controls(w.html, timed)
+                for d in dropped:
+                    log.warning("%s step %d: widget control dropped (%s)", script.session_id, idx + 1, d)
                 actions.append(GeneratedAnimation(step_id=sid(), board_uid=board_uid, title=w.title, html=w.html,
-                                                  layout=w.layout, reveal_gate_step=speak_step))
+                                                  layout=w.layout, reveal_gate_step=speak_step, controls=controls))
             else:
                 actions.append(AnimationFailed(step_id=sid(), board_uid=board_uid,
                                                reason="widget generation failed"))
 
-        a = audio.get(idx) or StepAudio(None, 0, 0, 0)
         actions.append(Speak(step_id=speak_step, spoken_text=step.spoken_text))
         for d in step.decorations:
             if 0 <= d.board_index < len(board_uids):

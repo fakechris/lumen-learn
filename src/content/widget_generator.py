@@ -84,6 +84,7 @@ EXPLORABLE_SYSTEM = """你是一名教学可视化工程师，为白板课生成
    `render` 返回 `ch = {ctx, sx, sy, box}`，之后用**世界坐标**叠加标注：`HandChart.marker(ch, x, y, {label:'x = 1.2'})`、`HandChart.vline(ch, x, {label})`、`HandChart.hline(ch, y, {label})`、`HandChart.segment(ch, [x1,y1], [x2,y2], {color, arrow:true})`（切线/向量）、`HandChart.note(ch, x, y, '一句标注')`。
    探针：`HandChart.attachProbe(canvas, {xlim, ylim}, function(p){ /* p={x,y} 世界坐标：重绘底图 + 叠加 + 更新读数 */ })`。每次交互都重新 `render` 再叠加（底图很便宜）。
    风格已内建（纸面/手绘墨线坐标轴/主红 HandChart.style.MAIN/辅绿 AUX/手写字）。只有非坐标轴对象（向量场、网格、几何变换、示意图）才自己画，自绘部分沿用视觉规范，字体用 `HandChart.font`。
+10. **控制钩子（必做）**：实现 `window.hkControl = { set: function(obj){...}, highlight: function(sel){...}, annotate: function(sel, text){...}, reveal: function(sel){...} }`——老师讲解会用它与语音同步驱动教具（例如 set({probeX: 1.2})）。set 必须接受题目给出的全部"可控参数"键（同名变量、同名滑块），立即重绘并同步滑块位置；highlight/reveal 接收元素 id 选择器（'#eta-slider'），高亮 = 给该元素加一圈红色描边 1.5 秒；给每个可定位元素 id（命名约定见上）。
 
 """ + AESTHETIC + """
 
@@ -108,6 +109,7 @@ THREE_SYSTEM = f"""你是一名 Three.js 教学可视化工程师。根据"教�
 6. 所有代码放在一个 <script> 中，不使用任何外部图片或字体；不使用 alert/prompt；不输出解释文字；**禁用模板字符串**（反引号），动画时间单位一律是秒。
 7. 相机自动取景（必做）：用 THREE.Box3().setFromObject(group) 计算包围盒，令 camDist = Math.max(2, radius * 2.4)，并把 group.position.sub(center) 居中，保证所有关键元素入画、不重叠。
 8. 末尾暴露 `window.__hkScene = scene;` 供渲染检查统计场景对象数。
+9. 控制钩子（必做）：实现 `window.hkControl = {{ set: function(obj){{...}}, highlight: function(sel){{...}}, reveal: function(sel){{...}} }}`——set 接受题目给出的可控参数（滑块、旋转、显示开关）并立即更新场景。
 
 {AESTHETIC}
 （3D 场景中：背景 #faf8f3，主向量 #c0392b，第二向量 #2f6fb5，平面 #b8dcc6 半透明，参考线 #2e8b6f。）
@@ -144,6 +146,31 @@ def static_check(html: str, kind: str = "threejs") -> Optional[str]:
     return None
 
 
+def element_inventory(html: str) -> set:
+    """Real ids present in the generated widget (OpenMAIC's Element Inventory idea):
+    control selectors must reference these, never invented ones."""
+    return set(re.findall(r'''\bid=["']([^"']+)["']''', html))
+
+
+def filter_controls(html: str, controls) -> tuple:
+    """Keep only controls whose target selector exists in the widget's inventory."""
+    import src.protocol.actions as actions
+    ids = element_inventory(html)
+    kept, dropped = [], []
+    for c in controls or []:
+        sel = str((c.payload or {}).get("selector") or "")
+        if c.op in ("highlight", "annotate", "reveal") and sel and sel.lstrip("#.") not in ids and sel not in ids:
+            dropped.append(f"{c.op}:{sel} (no such element)")
+            continue
+        if c.op == "set":
+            unknown = [k for k in (c.payload or {}) if not re.search(r"\b" + re.escape(str(k)) + r"\b", html)]
+            if unknown:
+                dropped.append(f"set:{','.join(map(str, unknown))} (param not in widget)")
+                continue
+        kept.append(actions.WidgetControl(at_ms=c.at_ms or 0, op=c.op, payload=c.payload))
+    return kept, dropped
+
+
 def _strip_fences(text: str) -> str:
     m = re.search(r"```(?:html)?\s*(.*?)```", text, flags=re.S)
     html = m.group(1) if m else text
@@ -162,6 +189,12 @@ async def generate_widget_html(spec: WidgetSpec, llm: LLMClient, attempts: int =
         return spec.html
     system = THREE_SYSTEM if spec.kind == "threejs" else EXPLORABLE_SYSTEM
     user = f"教具标题：{spec.title}\n教具任务：{spec.task}"
+    if spec.params:
+        user += ("\n可控参数（必须原样作为 hkControl.set 接受的键，并且是页面上的滑块/开关）："
+                 + ", ".join(spec.params))
+    if spec.controls:
+        user += "\n讲解中老师会发出这些指令，教具必须能响应：" + "; ".join(
+            f"{c.op} {c.payload}" for c in spec.controls)
     problem: Optional[str] = feedback
     for _ in range(attempts):
         try:
@@ -175,6 +208,12 @@ async def generate_widget_html(spec: WidgetSpec, llm: LLMClient, attempts: int =
                 problems.append(problem)
             continue
         problem = static_check(html, spec.kind)
+        if problem is None and "hkControl" not in html:
+            problem = "missing window.hkControl = { set, highlight, annotate, reveal } hook"
+        if problem is None and spec.params:
+            missing = [k for k in spec.params if not re.search(r"\b" + re.escape(k) + r"\b", html)]
+            if missing:
+                problem = "widget does not expose the required params: " + ", ".join(missing)
         if problem is None:
             return _inject_handchart(html)
         if problems is not None:

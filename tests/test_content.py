@@ -379,3 +379,29 @@ def test_handchart_injected_into_explorables():
     out = _inject_handchart(html)
     assert out.index("window.HandChart") < out.index("<canvas>")
     assert _inject_handchart("<div>no head</div>") == "<div>no head</div>"
+
+
+def test_widget_controls_timed_by_trigger_phrase_and_filtered():
+    from src.content.compiler import StepAudio, compile_session
+    from src.content.widget_generator import filter_controls
+    from src.protocol.session import BoardSpec, SessionScript, StepSpec, WidgetControlSpec, WidgetSpec
+
+    html = ("<!doctype html><html><head></head><body><input id='k-slider'><canvas></canvas>"
+            "<script>var probeX=0; window.hkControl={set:function(s){probeX=s.probeX;}};</script></body></html>")
+    widget = WidgetSpec(kind="explorable", title="t", task="t", html=html, params=["probeX"], controls=[
+        WidgetControlSpec(trigger_phrase="推到一点二", op="set", payload={"probeX": 1.2}),
+        WidgetControlSpec(at_ms=500, op="highlight", payload={"selector": "#k-slider"}),
+        WidgetControlSpec(at_ms=600, op="highlight", payload={"selector": "#nope"}),
+        WidgetControlSpec(at_ms=700, op="set", payload={"ghost": 1}),
+    ])
+    step = StepSpec(title="s", spoken_text="先看曲线，我把探针推到一点二，读数变了。",
+                    boards=[BoardSpec(markdown="y = x^2")], widget=widget)
+    script = SessionScript(session_id="sess_t", course_id="c", title="t", learning_goal="g", steps=[step])
+    text = step.spoken_text
+    marks = [[i, i * 100] for i in range(len(text) + 1)]
+    compiled = compile_session(script, {0: StepAudio(None, len(text) * 100, len(text), 0, marks)})
+    anim = next(a for a in compiled.actions if a.type == "generated_animation")
+    ops = [(c.op, c.at_ms) for c in anim.controls]
+    assert ops == [("set", text.index("推到一点二") * 100), ("highlight", 500)]
+    kept, dropped = filter_controls(html, widget.controls)
+    assert len(kept) == 2 and len(dropped) == 2

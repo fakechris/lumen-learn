@@ -99,6 +99,12 @@
     }
     canvas.addEventListener("pointermove", onPointer);
     canvas.addEventListener("pointerdown", onPointer);
+    // teacher-driven control hook (see WidgetControl in the protocol)
+    window.hkControl = {
+      set: function (s) { if (s && s.probeX != null) { probeX = Math.max(X_MIN, Math.min(X_MAX, +s.probeX)); draw(); } },
+      highlight: function (sel) { var el = document.querySelector(sel); if (!el) return; el.style.outline = "2px solid #c0392b"; setTimeout(function () { el.style.outline = ""; }, 1500); },
+      annotate: function () {}, reveal: function () {},
+    };
     window.addEventListener("resize", resize);
     resize();
   </script>

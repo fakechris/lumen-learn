@@ -25,7 +25,18 @@ const shimFor = (token) => SHIM_STORAGE + `<script>
   function post(m){ try { parent.postMessage(Object.assign({ source: "hk-widget", token: T }, m), "*"); } catch(e){} }
   window.addEventListener("error", function(e){ post({ type: "error", message: e.message || "script error" }); });
   window.addEventListener("unhandledrejection", function(e){ post({ type: "error", message: (e.reason && e.reason.message) || String(e.reason) }); });
-  window.addEventListener("load", function(){ post({ type: "ready" }); });
+  window.addEventListener("message", function(e){
+    var d = e.data;
+    if (!d || d.source !== "hk-host-control" || !window.hkControl) return;
+    var fn = window.hkControl[d.op] || (d.op === "set" ? window.hkControl.setState : null);
+    try { if (fn) { fn.call(window.hkControl, d.payload); post({ type: "control", op: d.op, ok: true }); } else { post({ type: "control", op: d.op, ok: false }); } } catch (err) { post({ type: "error", message: "control " + d.op + ": " + (err.message || err) }); }
+  });
+  window.addEventListener("load", function(){
+    post({ type: "ready" });
+    // The iframe may be laid out after the guest script measured it (widgets draw once on
+    // resize()); re-dispatch once the frame has a real size so first paint is not blank.
+    requestAnimationFrame(function(){ requestAnimationFrame(function(){ window.dispatchEvent(new Event("resize")); }); });
+  });
 })();
 </script>`;
 
@@ -84,5 +95,10 @@ export function createWidgetFrame({ html, title, height = 360 }) {
 
   wrap.append(iframe, status, overlay, fullscreen);
   frames.set(token, { overlay, status });
+  // Teacher-driven control channel (see WidgetControl in the protocol): the
+  // audio clock fires op/payload pairs; the guest implements window.hkControl.
+  wrap.hkPost = (op, payload) => {
+    try { iframe.contentWindow.postMessage({ source: "hk-host-control", op, payload }, "*"); } catch (e) {}
+  };
   return wrap;
 }
