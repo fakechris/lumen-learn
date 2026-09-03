@@ -23,6 +23,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, ValidationError
 
 from src.content.exercise_generator import grade_fill_blank
+from src.content.feynman import FeynmanSession, MAX_ROUNDS, feynman_summary, feynman_turn
 from src.content.pipeline import ContentPipeline
 from src.protocol.session import CourseStructure
 from src.content.store import CourseStore
@@ -362,6 +363,66 @@ async def get_job(job_id: str):
     if not job:
         raise HTTPException(404, "job not found")
     return {k: v for k, v in job.items() if not k.startswith("_")}
+
+
+# ---- feynman round (讲给我听): needs the tutor LLM, degrades honestly without one ----
+
+feynman_sessions: Dict[str, FeynmanSession] = {}
+
+
+def _feynman_key(course_id: str, session_id: str) -> str:
+    return f"{course_id}/{session_id}"
+
+
+def _feynman_digest(course, session_id: str) -> str:
+    for ch in course.chapters:
+        for ss in ch.sessions:
+            if ss.session_id == session_id:
+                boards = []
+                script = store.get_script(course.course_id, session_id)
+                if script:
+                    boards = [b.markdown.replace("\n", " / ")[:120] for st in script.steps for b in st.boards][:6]
+                return f"主题：{ss.title}\n目标：{ss.learning_goal}\n核心概念：{ss.core_concept}\n板书要点：{' | '.join(boards)}"
+    return course.title
+
+
+@app.post("/api/v1/courses/{course_id}/sessions/{session_id}/feynman/start")
+async def feynman_start(course_id: str, session_id: str):
+    course = store.get_course(course_id)
+    session = course and next((s for s in course.all_sessions() if s.session_id == session_id), None)
+    if session is None:
+        raise HTTPException(404, "session not found")
+    key = _feynman_key(course_id, session_id)
+    fs = FeynmanSession(topic=session.title, concept_digest=_feynman_digest(course, session_id))
+    feynman_sessions[key] = fs
+    return {"round": 0, "max_rounds": MAX_ROUNDS, "prompt": fs.opening(), "llm": llm is not None}
+
+
+@app.post("/api/v1/courses/{course_id}/sessions/{session_id}/feynman/turn")
+async def feynman_turn_endpoint(course_id: str, session_id: str, body: dict):
+    if llm is None:
+        raise HTTPException(400, "费曼回合需要配置 LLM（当前服务端未设置任何模型 key）")
+    fs = feynman_sessions.get(_feynman_key(course_id, session_id))
+    if fs is None:
+        raise HTTPException(404, "feynman session not started")
+    if fs.done:
+        raise HTTPException(400, "feynman round limit reached; request a summary")
+    explanation = str(body.get("explanation") or "").strip()
+    if not explanation:
+        raise HTTPException(400, "explanation is empty")
+    round_ = await feynman_turn(llm, fs, explanation)
+    return {"round": len(fs.rounds), "max_rounds": MAX_ROUNDS,
+            "question": round_.question, "vague_point": round_.vague_point, "done": fs.done}
+
+
+@app.post("/api/v1/courses/{course_id}/sessions/{session_id}/feynman/summary")
+async def feynman_summary_endpoint(course_id: str, session_id: str):
+    if llm is None:
+        raise HTTPException(400, "费曼回合需要配置 LLM（当前服务端未设置任何模型 key）")
+    fs = feynman_sessions.get(_feynman_key(course_id, session_id))
+    if fs is None or not fs.rounds:
+        raise HTTPException(404, "feynman session has no rounds")
+    return {"summary": await feynman_summary(llm, fs), "rounds": len(fs.rounds)}
 
 
 # --------------------------------------------------------------------------- #

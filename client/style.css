@@ -302,3 +302,11 @@ svg.wb-annotations { position: absolute; inset: 0; pointer-events: none; overflo
 .ex-option .mark.bad { color: #b91c1c; }
 .ex-option.wrong .txt { text-decoration: line-through; text-decoration-color: rgba(185, 28, 28, .75); text-decoration-thickness: 2px; }
 .ex-option:disabled:not(.correct):not(.wrong) { opacity: .55; }
+
+/* feynman round */
+.fm-log { display: flex; flex-direction: column; gap: 10px; overflow: auto; min-height: 60px; }
+.fm-log .turn { padding: 10px 14px; border-radius: 12px; line-height: 1.6; font-size: .95rem; }
+.fm-log .turn.me { background: #dbeafe; align-self: flex-end; border-bottom-right-radius: 4px; max-width: 85%; }
+.fm-log .turn.buddy { background: #f1f5f9; align-self: flex-start; border-bottom-left-radius: 4px; max-width: 85%; }
+.fm-log .turn.buddy .q { color: var(--accent); }
+.fm-input { width: 100%; padding: 12px 14px; border: 1px solid #cbd5e1; border-radius: 12px; font: inherit; resize: vertical; }

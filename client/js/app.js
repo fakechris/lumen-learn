@@ -43,6 +43,7 @@ class App {
     this.currentStep = null;          // step_id of playing tts
     this.interject = null;            // { id, bubble, text, audioPlayed }
 
+    this.initFeynman();
     this.bindUi();
     this.ws.onMessage = (m) => this.onMessage(m);
     this.ws.onOpen = () => this.setConn(true);
@@ -148,9 +149,14 @@ class App {
             const ok = await this.exercises.open(c.course_id, s.session_id, { onDone: (score) => { this.markProgress(s.session_id, { score }); this.openHome(); } });
             if (!ok) this.toast("这一节还没有课后练习");
           });
+          const feynman = document.createElement("button");
+          feynman.className = "pill btn";
+          feynman.textContent = "🎤 讲给我听";
+          feynman.title = "费曼回合：用自己的话讲，同学只追问不纠错";
+          feynman.addEventListener("click", () => this.feynmanOpen(c.course_id, s.session_id));
           const st = document.createElement("i");
           st.className = `st ${this.statusClass(p)}`;
-          row.append(learn, practice, st);
+          row.append(learn, practice, feynman, st);
           lec.appendChild(row);
         });
         u.appendChild(lec);
@@ -198,6 +204,66 @@ class App {
     $("sessionTitle").textContent = this.sessions[idx]?.title || "";
     this.ws.send({ type: "start_session", course_id: this.course.course_id, session_id: sessionId, from_step_id: fromStep, tts_speed: this.speed });
     this.renderSidebar();
+  }
+
+  // ------------------------------------------------------------------ feynman round
+
+  initFeynman() {
+    this.fm = { courseId: null, sessionId: null, round: 0, max: 4 };
+    $("fmClose").addEventListener("click", () => $("feynmanView").classList.remove("open"));
+    $("fmSend").addEventListener("click", () => this.feynmanSend());
+    $("fmDone").addEventListener("click", () => this.feynmanSummary());
+  }
+
+  async feynmanOpen(courseId, sessionId) {
+    const res = await fetch(`/api/v1/courses/${courseId}/sessions/${sessionId}/feynman/start`, { method: "POST" });
+    if (!res.ok) { this.toast((await res.json().catch(() => ({}))).detail || "无法开始费曼回合"); return; }
+    const data = await res.json();
+    if (data.llm === false) { this.toast("费曼回合需要配置 LLM；当前服务端没有模型 key"); return; }
+    this.fm = { courseId, sessionId, round: 0, max: data.max_rounds };
+    $("feynmanView").classList.add("open");
+    $("fmLog").innerHTML = "";
+    $("fmVerdict").innerHTML = "";
+    $("fmInput").value = "";
+    $("fmRound").textContent = `0 / ${data.max_rounds}`;
+    $("fmPrompt").innerHTML = `<b>${escapeHtml(this.course.title)}</b>`;
+    this.fmAdd("buddy", data.prompt);
+    $("fmInput").focus();
+  }
+
+  fmAdd(who, text) {
+    const el = document.createElement("div");
+    el.className = `turn ${who}`;
+    el.textContent = text;
+    $("fmLog").appendChild(el);
+    el.scrollIntoView({ block: "nearest" });
+  }
+
+  async feynmanSend() {
+    const text = $("fmInput").value.trim();
+    if (!text) return;
+    $("fmInput").value = "";
+    this.fmAdd("me", text);
+    const { courseId, sessionId } = this.fm;
+    const res = await fetch(`/api/v1/courses/${courseId}/sessions/${sessionId}/feynman/turn`,
+      { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ explanation: text }) });
+    if (!res.ok) { this.fmAdd("buddy", "（费曼回合需要配置 LLM，当前无法追问）"); return; }
+    const data = await res.json();
+    this.fm.round = data.round;
+    $("fmRound").textContent = `${data.round} / ${data.max_rounds}`;
+    if (data.question) this.fmAdd("buddy", data.question);
+    if (data.done) { $("fmSend").style.display = "none"; $("fmDone").style.display = ""; }
+  }
+
+  async feynmanSummary() {
+    const { courseId, sessionId } = this.fm;
+    const res = await fetch(`/api/v1/courses/${courseId}/sessions/${sessionId}/feynman/summary`, { method: "POST" });
+    if (!res.ok) { this.toast("总结失败"); return; }
+    const data = await res.json();
+    $("fmVerdict").innerHTML = `<div class="fm-summary">${escapeHtml(data.summary || "")}</div>`;
+    this.markProgress(sessionId, { feynman: true });
+    $("fmDone").style.display = "none";
+    $("fmSend").style.display = "";
   }
 
   // ------------------------------------------------------------------ ui
