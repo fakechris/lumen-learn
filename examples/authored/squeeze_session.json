@@ -48,6 +48,12 @@
           "snippet": "-x^2 \\le x^2 \\sin(1/x) \\le x^2",
           "board_index": 0,
           "trigger_phrase": "永远夹在两条绿线之间"
+        },
+        {
+          "kind": "spotlight",
+          "snippet": "确认汇合：两个界限的极限必须相等",
+          "board_index": 0,
+          "trigger_phrase": "中间的馅料还能往哪跑"
         }
       ],
       "illustration": null,

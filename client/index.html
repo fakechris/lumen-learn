@@ -144,6 +144,7 @@
           <h2 id="homeTitle"></h2>
           <p class="home-overview" id="homeOverview"></p>
         </div>
+        <button class="pill btn" id="openMap" title="这门课的概念怎么连起来">🗺 概念地图</button>
         <button class="icon" id="closeHome" title="关闭">×</button>
       </div>
       <div class="home-legend">
@@ -175,6 +176,18 @@
       <button class="chip big" id="exCheck">检查</button>
       <button class="chip big primary" id="exNext" style="display:none">下一题</button>
     </div>
+  </div>
+
+  <div class="exercise-view" id="mapView">
+    <div class="ex-top">
+      <span class="pill">🗺 概念地图</span>
+      <span class="counter" id="mapMeta"></span>
+      <div class="spacer"></div>
+      <button class="icon" id="mapClose" title="关闭">×</button>
+    </div>
+    <p class="map-note" id="mapNote"></p>
+    <div class="map-canvas" id="mapCanvas"></div>
+    <p class="map-hint">箭头 = 先学它再学这个 · 虚线 = 组成/一种 · 点线 = 容易混淆 · 圈里的数字是掌握度</p>
   </div>
 
   <div class="exercise-view" id="feynmanView">

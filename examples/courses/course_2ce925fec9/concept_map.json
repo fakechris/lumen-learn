@@ -1,0 +1,208 @@
+{
+  "course_id": "course_2ce925fec9",
+  "source": "llm",
+  "nodes": [
+    {
+      "id": "span",
+      "label": "生成子空间",
+      "summary": "一组向量所有线性组合构成的集合，是包含这些向量的最小子空间。",
+      "sessions": [
+        "sess_1"
+      ],
+      "unit": "从平面到空间：生成与维度",
+      "weight": 3.0
+    },
+    {
+      "id": "linear-combination",
+      "label": "线性组合",
+      "summary": "向量乘以标量后相加的结果，是生成和线性相关的基础运算。",
+      "sessions": [
+        "sess_1",
+        "sess_2"
+      ],
+      "unit": "从平面到空间：生成与维度",
+      "weight": 3.0
+    },
+    {
+      "id": "linear-independence",
+      "label": "线性无关",
+      "summary": "一组向量中没有任何一个能表示为其余向量的线性组合，即无冗余。",
+      "sessions": [
+        "sess_2"
+      ],
+      "unit": "冗余信息：线性相关",
+      "weight": 3.0
+    },
+    {
+      "id": "linear-dependence",
+      "label": "线性相关",
+      "summary": "一组向量中存在某个向量是其余向量的线性组合，即存在冗余。",
+      "sessions": [
+        "sess_2"
+      ],
+      "unit": "冗余信息：线性相关",
+      "weight": 3.0
+    },
+    {
+      "id": "basis",
+      "label": "基",
+      "summary": "既能生成整个空间又线性无关的向量组，是空间的最小生成集。",
+      "sessions": [
+        "sess_3"
+      ],
+      "unit": "基与维数的严格定义",
+      "weight": 3.0
+    },
+    {
+      "id": "dimension",
+      "label": "维数",
+      "summary": "向量空间中基的向量个数，是空间大小的度量。",
+      "sessions": [
+        "sess_3"
+      ],
+      "unit": "基与维数的严格定义",
+      "weight": 3.0
+    },
+    {
+      "id": "subspace",
+      "label": "子空间",
+      "summary": "对加法和标量乘法封闭的向量集合，生成集总是子空间。",
+      "sessions": [
+        "sess_1"
+      ],
+      "unit": "从平面到空间：生成与维度",
+      "weight": 2.0
+    },
+    {
+      "id": "spanning-set",
+      "label": "生成集",
+      "summary": "一组向量，其生成子空间等于整个空间，即能覆盖所有向量。",
+      "sessions": [
+        "sess_1"
+      ],
+      "unit": "从平面到空间：生成与维度",
+      "weight": 2.0
+    },
+    {
+      "id": "plane-in-r3",
+      "label": "三维空间中的平面",
+      "summary": "两个不共线向量生成的二维子空间，是三维空间中的平面。",
+      "sessions": [
+        "sess_1"
+      ],
+      "unit": "从平面到空间：生成与维度",
+      "weight": 2.0
+    },
+    {
+      "id": "redundancy",
+      "label": "冗余向量",
+      "summary": "线性相关组中多余的向量，不增加生成空间。",
+      "sessions": [
+        "sess_2"
+      ],
+      "unit": "冗余信息：线性相关",
+      "weight": 2.0
+    },
+    {
+      "id": "minimal-generating-set",
+      "label": "极小生成集",
+      "summary": "去掉任何向量都会缩小生成空间的生成集，是基的等价描述。",
+      "sessions": [
+        "sess_3"
+      ],
+      "unit": "基与维数的严格定义",
+      "weight": 2.0
+    },
+    {
+      "id": "maximal-independent-set",
+      "label": "极大无关组",
+      "summary": "添加任何向量都会变得线性相关的无关组，也是基的等价描述。",
+      "sessions": [
+        "sess_3"
+      ],
+      "unit": "基与维数的严格定义",
+      "weight": 2.0
+    }
+  ],
+  "edges": [
+    {
+      "source": "linear-combination",
+      "target": "span",
+      "type": "part_of",
+      "relation": "构成生成集"
+    },
+    {
+      "source": "span",
+      "target": "subspace",
+      "type": "kind_of",
+      "relation": "是子空间"
+    },
+    {
+      "source": "span",
+      "target": "spanning-set",
+      "type": "causal",
+      "relation": "生成集是生成整个空间的向量组"
+    },
+    {
+      "source": "spanning-set",
+      "target": "plane-in-r3",
+      "type": "causal",
+      "relation": "两个向量生成平面"
+    },
+    {
+      "source": "linear-combination",
+      "target": "linear-dependence",
+      "type": "causal",
+      "relation": "线性组合导致相关"
+    },
+    {
+      "source": "linear-dependence",
+      "target": "redundancy",
+      "type": "causal",
+      "relation": "相关产生冗余"
+    },
+    {
+      "source": "linear-dependence",
+      "target": "linear-independence",
+      "type": "contrast",
+      "relation": "与无关相对"
+    },
+    {
+      "source": "linear-independence",
+      "target": "basis",
+      "type": "part_of",
+      "relation": "基需无关"
+    },
+    {
+      "source": "spanning-set",
+      "target": "basis",
+      "type": "part_of",
+      "relation": "基需生成"
+    },
+    {
+      "source": "basis",
+      "target": "minimal-generating-set",
+      "type": "kind_of",
+      "relation": "基是极小生成集"
+    },
+    {
+      "source": "basis",
+      "target": "maximal-independent-set",
+      "type": "kind_of",
+      "relation": "基是极大无关组"
+    },
+    {
+      "source": "basis",
+      "target": "dimension",
+      "type": "causal",
+      "relation": "基的大小决定维数"
+    },
+    {
+      "source": "redundancy",
+      "target": "basis",
+      "type": "causal",
+      "relation": "基无冗余"
+    }
+  ],
+  "note": "本课程主线从生成子空间出发，理解线性相关与无关，最终掌握基和维数。核心难点是基的双重性质（生成且无关）以及维数定义的严格性。建议通过三维空间中的平面例子，直观感受生成与冗余，再过渡到抽象定义。"
+}

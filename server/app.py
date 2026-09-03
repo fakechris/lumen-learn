@@ -181,6 +181,29 @@ def _record_evidence(course_id: str, session_id: str, kind: str, correct, qualit
         log.warning("mastery evidence failed: %s", exc)
 
 
+@app.get("/api/v1/courses/{course_id}/concept_map")
+async def concept_map(course_id: str, rebuild: bool = False):
+    """Course concept map. Built once by the LLM and cached in the package; without an LLM the
+    explicit structural map (one node per session) is returned and labelled source=structure."""
+    from src.content.concept_map import build_concept_map_llm, load_map, save_map, structural_map
+    course = store.get_course(course_id)
+    if not course:
+        raise HTTPException(404, "course not found")
+    course_dir = store._course_dir(course_id)
+    cached = None if rebuild else load_map(course_dir)
+    if cached and (cached.source == "llm" or llm is None):
+        return cached.model_dump(mode="json")
+    if llm is None:
+        return structural_map(course).model_dump(mode="json")
+    try:
+        cmap = await build_concept_map_llm(course, llm)
+    except Exception as exc:  # noqa: BLE001
+        log.warning("concept map build failed for %s: %s", course_id, exc)
+        raise HTTPException(502, f"concept map generation failed: {exc}")
+    save_map(course_dir, cmap)
+    return cmap.model_dump(mode="json")
+
+
 @app.get("/api/v1/courses/{course_id}/mastery")
 async def course_mastery(course_id: str):
     """Four-axis mastery per session + a course-level average. Sessions without evidence are absent."""
@@ -489,6 +512,17 @@ async def whiteboard_ws(ws: WebSocket):
 # --------------------------------------------------------------------------- #
 # Static
 # --------------------------------------------------------------------------- #
+
+@app.middleware("http")
+async def _no_stale_client(request, call_next):
+    """The client is plain ES modules: make browsers revalidate js/css/html so a deploy never
+    plays with half-old modules (a cached decorations.js once drew spotlights as circles)."""
+    response = await call_next(request)
+    path = request.url.path
+    if path == "/" or path.endswith((".js", ".css", ".html")):
+        response.headers["Cache-Control"] = "no-cache, must-revalidate"
+    return response
+
 
 app.mount("/live", StaticFiles(directory=LIVE_AUDIO_DIR), name="live")
 app.mount("/examples", StaticFiles(directory=os.path.join(ROOT, "examples")), name="examples")

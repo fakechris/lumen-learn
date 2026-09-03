@@ -226,8 +226,39 @@ class App {
   initFeynman() {
     this.fm = { courseId: null, sessionId: null, round: 0, max: 4 };
     $("fmClose").addEventListener("click", () => $("feynmanView").classList.remove("open"));
+    $("mapClose").addEventListener("click", () => $("mapView").classList.remove("open"));
+    $("openMap").addEventListener("click", () => this.openConceptMap());
     $("fmSend").addEventListener("click", () => this.feynmanSend());
     $("fmDone").addEventListener("click", () => this.feynmanSummary());
+  }
+
+  async openConceptMap() {
+    const c = this.course;
+    if (!c) return;
+    $("mapView").classList.add("open");
+    $("mapMeta").textContent = "生成中…";
+    $("mapCanvas").innerHTML = "";
+    let map;
+    try {
+      const res = await fetch(`/api/v1/courses/${c.course_id}/concept_map`);
+      if (!res.ok) throw new Error((await res.json().catch(() => ({}))).detail || res.statusText);
+      map = await res.json();
+    } catch (e) { $("mapMeta").textContent = ""; $("mapNote").textContent = `概念地图生成失败：${e.message}`; return; }
+    const { renderConceptMap } = await import("./concept-map.js");
+    const titles = Object.fromEntries(this.sessions.map((s) => [s.session_id, s.title]));
+    $("mapMeta").textContent = `${map.nodes.length} 个概念 · ${map.edges.length} 条关系${map.source === "structure" ? " · 结构图（未配置模型）" : ""}`;
+    $("mapNote").textContent = map.note || "";
+    renderConceptMap($("mapCanvas"), map, {
+      mastery: this.mastery || {},
+      sessionTitle: (id) => titles[id],
+      onOpen: (n) => {
+        const sid = (n.sessions || [])[0];
+        if (!sid) return;
+        $("mapView").classList.remove("open");
+        $("courseHome").classList.remove("open");
+        this.startSession(sid);
+      },
+    });
   }
 
   async feynmanOpen(courseId, sessionId) {
