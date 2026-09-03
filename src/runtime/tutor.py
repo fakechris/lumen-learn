@@ -116,6 +116,19 @@ class LiveTutor:
         hint = misconception or "这是一个很常见的直觉。"
         return f"这个选择先放一放。{hint}" + (f"我们换个角度想：{ask.explanation}" if ask.explanation else "")
 
+    async def judge_open(self, ask: Ask, answer_text: str) -> Optional[float]:
+        """0..1 quality of an open answer for the learner model; None without an LLM."""
+        if not self.llm or not answer_text.strip():
+            return None
+        user = (f"问题：{ask.question}\n参考解释：{ask.explanation or '无'}\n学生回答：{answer_text}\n"
+                "只输出 JSON：{\"quality\": 0~1 的数}。背书或答非所问 0.2 以下；说对了要点但含糊 0.5；用自己的话讲对并有例子 0.9。")
+        try:
+            from src.llm.client import extract_json
+            raw = await self.llm.complete("你是严格但公平的评卷老师。", user, json_mode=True, temperature=0.0, purpose="judge")
+            return max(0.0, min(1.0, float(extract_json(raw).get("quality"))))
+        except (LLMError, TypeError, ValueError):
+            return None
+
     async def feedback_for_open(self, ctx: TutorContext, ask: Ask, answer_text: str) -> str:
         if self.llm:
             user = (f"{ctx.render()}\n\n你提的问题：{ask.question}\n学生的回答：{answer_text}\n"

@@ -14,6 +14,13 @@ const $ = (id) => document.getElementById(id);
 const SPEEDS = [1.0, 1.25, 1.5, 2.0];
 const ASK_HINT = "点击一个选项，或直接输入你的答案 / 提问";
 
+const AXES = [["memory", "记忆"], ["comprehension", "理解"], ["structure", "结构"], ["application", "应用"]];
+/** four short ink bars, one per axis; labelled when `wide` */
+function masteryBars(scores, wide = false) {
+  return `<span class="mastery${wide ? " wide" : ""}" title="${AXES.map(([k, l]) => `${l} ${Math.round(scores[k] || 0)}`).join(" · ")}">${AXES.map(([k, l]) =>
+    `<i class="${k}" style="--v:${Math.round(scores[k] || 0)}%">${wide ? `<b>${l}</b>` : ""}</i>`).join("")}</span>`;
+}
+
 class App {
   constructor() {
     this.ws = new WhiteboardSocket();
@@ -109,12 +116,19 @@ class App {
     return "todo";
   }
 
-  openHome() {
+  async openHome() {
     const c = this.course;
     if (!c) return;
     $("homeKicker").textContent = `${c.chapters.length} 讲 · ${this.sessions.length} 节 · ${c.generation_mode}`;
     $("homeTitle").textContent = c.title;
     $("homeOverview").textContent = c.overview || "";
+    // four-axis mastery from the server (evidence: 提问回答 / 练习 / 讲给我听)
+    this.mastery = {};
+    try {
+      const m = await (await fetch(`/api/v1/courses/${c.course_id}/mastery`)).json();
+      (m.mastery || []).forEach((r) => { this.mastery[r.session_id] = r; });
+      $("homeMastery").innerHTML = m.course ? `<span class="k">掌握度</span>${masteryBars(m.course, true)}<span class="n">综合 ${Math.round(m.composite)}</span>` : "";
+    } catch (e) { $("homeMastery").innerHTML = ""; }
     const box = $("homeUnits");
     box.innerHTML = "";
     const groups = [];
@@ -137,7 +151,8 @@ class App {
           const row = document.createElement("div");
           row.className = "home-session";
           const tags = (s.tags || []).map((t) => `<span class="tag tag-${t}">${t}</span>`).join("");
-          row.innerHTML = `<div>${escapeHtml(s.title)}<span class="tags">${tags}</span><div class="meta" style="font-size:.76rem;color:#64748b">${escapeHtml(s.learning_goal)}</div></div>`;
+          const m = this.mastery[s.session_id];
+          row.innerHTML = `<div>${escapeHtml(s.title)}<span class="tags">${tags}</span>${m ? masteryBars(m.scores) : ""}<div class="meta" style="font-size:.76rem;color:#64748b">${escapeHtml(m && m.note ? m.note : s.learning_goal)}</div></div>`;
           const learn = document.createElement("button");
           learn.className = "pill btn learn" + (p.finished ? " secondary" : "");
           learn.textContent = p.finished ? "▶ 再学一遍" : "▶ 学习";

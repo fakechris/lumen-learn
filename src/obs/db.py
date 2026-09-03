@@ -39,6 +39,13 @@ CREATE TABLE IF NOT EXISTS usage (
   prompt_tokens INTEGER, completion_tokens INTEGER, reasoning_tokens INTEGER, chars INTEGER,
   seconds REAL, cost_usd REAL);
 CREATE INDEX IF NOT EXISTS usage_run ON usage(run_id);
+CREATE TABLE IF NOT EXISTS learner (
+  course_id TEXT, session_id TEXT, memory REAL, comprehension REAL, structure REAL, application REAL,
+  events INTEGER, wrong_streak INTEGER, note TEXT, updated REAL, PRIMARY KEY (course_id, session_id));
+CREATE TABLE IF NOT EXISTS learner_events (
+  id INTEGER PRIMARY KEY AUTOINCREMENT, course_id TEXT, session_id TEXT, ts REAL,
+  kind TEXT, correct INTEGER, quality REAL, detail TEXT);
+CREATE INDEX IF NOT EXISTS learner_events_session ON learner_events(course_id, session_id, id);
 """
 
 
@@ -145,6 +152,35 @@ class DB:
                  "tokens": sum((r["pt"] or 0) + (r["ct"] or 0) + (r["rt"] or 0) for r in rows),
                  "seconds": round(sum(r["secs"] or 0 for r in rows), 1)}
         return {"total": total, "by_purpose": rows}
+
+
+    # ---- learner model (four-axis mastery) ----
+    def add_learner_event(self, course_id: str, session_id: str, kind: str, correct: Optional[bool],
+                          quality: Optional[float] = None, detail: str = "") -> None:
+        self._exec("INSERT INTO learner_events (course_id, session_id, ts, kind, correct, quality, detail) "
+                   "VALUES (?,?,?,?,?,?,?)",
+                   (course_id, session_id, time.time(), kind, None if correct is None else int(correct), quality,
+                    (detail or "")[:300]))
+
+    def learner_events(self, course_id: str, session_id: Optional[str] = None, limit: int = 500) -> List[Dict[str, Any]]:
+        if session_id:
+            return self._rows("SELECT * FROM learner_events WHERE course_id=? AND session_id=? ORDER BY id LIMIT ?",
+                              (course_id, session_id, limit))
+        return self._rows("SELECT * FROM learner_events WHERE course_id=? ORDER BY id LIMIT ?", (course_id, limit))
+
+    def upsert_learner(self, course_id: str, session_id: str, scores: Dict[str, float], events: int,
+                       wrong_streak: int, note: str) -> None:
+        self._exec("INSERT OR REPLACE INTO learner (course_id, session_id, memory, comprehension, structure, "
+                   "application, events, wrong_streak, note, updated) VALUES (?,?,?,?,?,?,?,?,?,?)",
+                   (course_id, session_id, scores.get("memory"), scores.get("comprehension"), scores.get("structure"),
+                    scores.get("application"), events, wrong_streak, note[:300], time.time()))
+
+    def learner(self, course_id: str, session_id: str) -> Optional[Dict[str, Any]]:
+        rows = self._rows("SELECT * FROM learner WHERE course_id=? AND session_id=?", (course_id, session_id))
+        return rows[0] if rows else None
+
+    def learners(self, course_id: str) -> List[Dict[str, Any]]:
+        return self._rows("SELECT * FROM learner WHERE course_id=? ORDER BY session_id", (course_id,))
 
 
 _DBS: Dict[str, DB] = {}

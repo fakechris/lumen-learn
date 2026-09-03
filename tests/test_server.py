@@ -126,3 +126,17 @@ def test_feynman_round_without_llm(client):
     turn = client.post(f"/api/v1/courses/{cid}/sessions/{sid}/feynman/turn", json={"explanation": "我觉得就是乘一乘"})
     assert turn.status_code == 400
     assert "LLM" in turn.json()["detail"]
+
+
+def test_mastery_endpoint_reports_evidence(client):
+    import os as _os
+    from src.content.mastery import record
+    from src.obs.db import get_db
+    assert client.get("/api/v1/courses/nothing/mastery").json() == {"mastery": [], "course": None, "composite": None}
+    db = get_db(_os.environ["HK_OUTPUT_ROOT"])
+    record(db, "course_m", "sess_1", "fill_blank", True)
+    record(db, "course_m", "sess_2", "interactive", True)
+    data = client.get("/api/v1/courses/course_m/mastery").json()
+    assert {m["session_id"] for m in data["mastery"]} == {"sess_1", "sess_2"}
+    assert data["course"]["memory"] == 8.0 and data["composite"] is not None
+    assert all(m["note"] for m in data["mastery"])
