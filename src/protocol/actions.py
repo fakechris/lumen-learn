@@ -61,7 +61,7 @@ class Board(BaseModel):
     page_id: str = "page-1"
 
 
-DecorationKind = Literal["highlight", "circle"]
+DecorationKind = Literal["highlight", "circle", "spotlight"]  # spotlight is an additive extension (B1)
 
 
 class Decoration(BaseModel):

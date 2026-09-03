@@ -420,6 +420,7 @@ class App {
 
   on_highlight(m) { this.queueDecoration(m); }
   on_circle(m) { this.queueDecoration(m); }
+  on_spotlight(m) { this.queueDecoration(m); }
   queueDecoration(m) {
     const key = m.during_step ?? this.currentStep ?? -1;
     if (this.stepKinds.has(key)) this.stepKinds.get(key).add("圈画");

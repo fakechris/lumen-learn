@@ -89,6 +89,7 @@ function wobblyEllipse(cx, cy, rx, ry, seed) {
  * over `durationMs` starting immediately.
  */
 export function drawDecoration(cardEl, { kind, snippet, color }, durationMs = 800) {
+  if (kind === "spotlight") return drawSpotlight(cardEl, snippet);
   const box = locateSnippet(cardEl, snippet);
   let svg = cardEl.querySelector("svg.wb-annotations");
   if (!svg) {
@@ -126,5 +127,39 @@ export function drawDecoration(cardEl, { kind, snippet, color }, durationMs = 80
   path.style.strokeDashoffset = `${len}`;
   path.style.transition = `stroke-dashoffset ${durationMs}ms cubic-bezier(.4,0,.2,1)`;
   requestAnimationFrame(() => { path.style.strokeDashoffset = "0"; });
+  return svg;
+}
+
+/** B1: dim everything except the snippet — SVG mask cutout over the viewport.
+ *  No backdrop-filter (it breaks inside transformed ancestors). Auto-fades. */
+export function drawSpotlight(cardEl, snippet, holdMs = 5000) {
+  const box = locateSnippet(cardEl, snippet);
+  const cardRect = cardEl.getBoundingClientRect();
+  const vp = { x: cardRect.left + box.x, y: cardRect.top + box.y, w: box.w, h: box.h };
+  const NS = "http://www.w3.org/2000/svg";
+  const svg = document.createElementNS(NS, "svg");
+  svg.style.cssText = "position:fixed;inset:0;width:100vw;height:100vh;z-index:40;pointer-events:none;transition:opacity .5s ease";
+  const mid = "hk-spot-mask";
+  svg.innerHTML = `
+    <defs>
+      <mask id="${mid}">
+        <rect x="0" y="0" width="100%" height="100%" fill="white"/>
+        <rect class="hole" x="${vp.x - 14}" y="${vp.y - 12}" width="${vp.w + 28}" height="${vp.h + 24}" rx="14"
+              fill="black" style="transition: all .45s cubic-bezier(.2,.8,.2,1)"/>
+      </mask>
+    </defs>
+    <rect x="0" y="0" width="100%" height="100%" fill="rgba(43,43,43,.36)" mask="url(#${mid})"/>
+    <rect class="ring" x="${vp.x - 6}" y="${vp.y - 4}" width="${vp.w + 12}" height="${vp.h + 8}" rx="12"
+          fill="none" stroke="#e05656" stroke-width="2.2" stroke-dasharray="6 5" style="transition: all .45s cubic-bezier(.2,.8,.2,1)"/>`;
+  document.body.appendChild(svg);
+  // settle the hole tighter right after paint
+  requestAnimationFrame(() => {
+    const hole = svg.querySelector(".hole"), ring = svg.querySelector(".ring");
+    if (hole) { hole.setAttribute("x", vp.x - 2); hole.setAttribute("y", vp.y); hole.setAttribute("width", vp.w + 4); hole.setAttribute("height", vp.h + 2); }
+    if (ring) { ring.setAttribute("x", vp.x - 4); ring.setAttribute("y", vp.y - 2); ring.setAttribute("width", vp.w + 8); ring.setAttribute("height", vp.h + 4); }
+  });
+  const fade = () => { svg.style.opacity = "0"; setTimeout(() => svg.remove(), 550); };
+  const timer = setTimeout(fade, holdMs);
+  svg.addEventListener("click", () => { clearTimeout(timer); fade(); });
   return svg;
 }
