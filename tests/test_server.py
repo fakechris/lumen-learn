@@ -112,3 +112,17 @@ def test_ingest_pdf_upload(client, tmp_path):
         res = client.post("/api/v1/ingest", files={"file": ("t.pdf", f, "application/pdf")})
     assert res.status_code == 200, res.text
     assert res.json()["pages"] == 1 and res.json()["sections"] >= 1
+
+
+def test_feynman_round_without_llm(client):
+    """start works and reports llm availability; turns degrade with an honest 400."""
+    courses = client.get("/api/v1/courses").json()["courses"]
+    cid = courses[0]["course_id"]
+    sid = client.get(f"/api/v1/courses/{cid}").json()["chapters"][0]["sessions"][0]["session_id"]
+    start = client.post(f"/api/v1/courses/{cid}/sessions/{sid}/feynman/start")
+    assert start.status_code == 200
+    data = start.json()
+    assert data["llm"] is False and data["max_rounds"] == 4 and "讲" in data["prompt"]
+    turn = client.post(f"/api/v1/courses/{cid}/sessions/{sid}/feynman/turn", json={"explanation": "我觉得就是乘一乘"})
+    assert turn.status_code == 400
+    assert "LLM" in turn.json()["detail"]

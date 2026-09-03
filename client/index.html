@@ -176,6 +176,27 @@
     </div>
   </div>
 
+  <div class="exercise-view" id="feynmanView">
+    <div class="ex-top">
+      <span class="pill">费曼回合 · 讲给我听</span>
+      <span class="counter" id="fmRound">0 / 4</span>
+      <div class="spacer"></div>
+      <button class="icon" id="fmClose" title="关闭">×</button>
+    </div>
+    <div class="ex-body">
+      <div class="ex-main">
+        <div class="ex-stem" id="fmPrompt"></div>
+        <div class="fm-log" id="fmLog"></div>
+        <textarea id="fmInput" class="fm-input" rows="4" placeholder="用你自己的话讲给我听……（别背定义）"></textarea>
+      </div>
+      <aside class="ex-side" id="fmVerdict"></aside>
+    </div>
+    <div class="ex-nav">
+      <button class="chip big primary" id="fmSend">讲完了</button>
+      <button class="chip big" id="fmDone" style="display:none">请总结我的讲法</button>
+    </div>
+  </div>
+
   <div id="toasts"></div>
   <script type="module" src="/js/app.js?v=7"></script>
 </body>
