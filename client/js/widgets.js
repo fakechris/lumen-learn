@@ -45,8 +45,11 @@ window.addEventListener("message", (ev) => {
   }
 });
 
+// The page's handwriting fonts, so HandChart labels and widget UI match the board.
+const FONT_LINKS = `<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-lite-webfont@1.7.0/style.css"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap"><style>:root{--hand:"Patrick Hand","LXGW WenKai Lite","PingFang SC",sans-serif}</style>`;
+
 function injectShim(html, token) {
-  const shim = shimFor(token);
+  const shim = FONT_LINKS + shimFor(token);
   const idx = html.search(/<head[^>]*>/i);
   if (idx >= 0) {
     const end = html.indexOf(">", idx) + 1;
