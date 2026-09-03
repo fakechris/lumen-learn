@@ -163,11 +163,31 @@ async def grade(req: GradeRequest):
         raise HTTPException(404, "exercise not found")
     if ex.kind == "fill_blank":
         correct, feedback = await grade_fill_blank(ex, req.answer_text or "", llm)
+        _record_evidence(req.course_id, req.session_id, ex.kind, correct, None, req.answer_text or "")
         return {"correct": correct, "feedback": feedback, "answer": ex.answer, "explanation": ex.explanation,
                 "graded_by": "llm" if (llm and not correct) or (llm and feedback != ex.explanation) else "match"}
     correct = req.answer_index is not None and req.answer_index == ex.correct_index
+    _record_evidence(req.course_id, req.session_id, ex.kind, correct, None, str(req.answer_index))
     return {"correct": correct, "feedback": ex.explanation, "answer": ex.options[ex.correct_index] if ex.correct_index is not None else None,
             "explanation": ex.explanation, "graded_by": "match"}
+
+
+def _record_evidence(course_id: str, session_id: str, kind: str, correct, quality, detail: str = "") -> None:
+    """Learner-model evidence (four-axis mastery); never fails a request."""
+    try:
+        from src.content.mastery import record
+        record(get_db(OUTPUT_ROOT), course_id, session_id, kind, correct, quality, detail)
+    except Exception as exc:  # noqa: BLE001
+        log.warning("mastery evidence failed: %s", exc)
+
+
+@app.get("/api/v1/courses/{course_id}/mastery")
+async def course_mastery(course_id: str):
+    """Four-axis mastery per session + a course-level average. Sessions without evidence are absent."""
+    from src.content.mastery import AXES, composite, row_to_view
+    rows = [row_to_view(r) for r in get_db(OUTPUT_ROOT).learners(course_id)]
+    course = {a: round(sum(r["scores"][a] for r in rows) / len(rows), 1) for a in AXES} if rows else None
+    return {"mastery": rows, "course": course, "composite": composite(course) if course else None}
 
 
 class TtsRequest(BaseModel):
@@ -411,6 +431,7 @@ async def feynman_turn_endpoint(course_id: str, session_id: str, body: dict):
     if not explanation:
         raise HTTPException(400, "explanation is empty")
     round_ = await feynman_turn(llm, fs, explanation)
+    _record_evidence(course_id, session_id, "feynman_round", None, round_.quality, explanation[:80])
     return {"round": len(fs.rounds), "max_rounds": MAX_ROUNDS,
             "question": round_.question, "vague_point": round_.vague_point, "done": fs.done}
 
@@ -422,7 +443,9 @@ async def feynman_summary_endpoint(course_id: str, session_id: str):
     fs = feynman_sessions.get(_feynman_key(course_id, session_id))
     if fs is None or not fs.rounds:
         raise HTTPException(404, "feynman session has no rounds")
-    return {"summary": await feynman_summary(llm, fs), "rounds": len(fs.rounds)}
+    summary, score = await feynman_summary(llm, fs)
+    _record_evidence(course_id, session_id, "feynman_summary", None, score, summary[:80])
+    return {"summary": summary, "rounds": len(fs.rounds), "score": score}
 
 
 # --------------------------------------------------------------------------- #

@@ -405,3 +405,43 @@ def test_widget_controls_timed_by_trigger_phrase_and_filtered():
     assert ops == [("set", text.index("推到一点二") * 100), ("highlight", 500)]
     kept, dropped = filter_controls(html, widget.controls)
     assert len(kept) == 2 and len(dropped) == 2
+
+
+def test_mastery_is_monotone_and_evidence_quality_bound():
+    from src.content.mastery import AXES, apply_evidence, blank, composite, next_step_note
+    s0 = blank()
+    assert composite(s0) is None
+    s1 = apply_evidence(s0, "fill_blank", True)
+    assert s1["memory"] == 16.0 and s1["comprehension"] == 0.0
+    # wrong answers earn nothing (quantity is not score)
+    s2 = apply_evidence(s1, "fill_blank", False)
+    assert s2 == s1
+    # diminishing returns, never above 100, never decreasing
+    s = s1
+    for _ in range(40):
+        nxt = apply_evidence(s, "fill_blank", True)
+        assert all(nxt[a] >= s[a] for a in AXES) and nxt["memory"] <= 100.0
+        s = nxt
+    assert s["memory"] > 95
+    # open evidence scales with judged quality; engagement without judgement is not evidence
+    good = apply_evidence(blank(), "feynman_round", None, 0.9)
+    weak = apply_evidence(blank(), "feynman_round", None, 0.2)
+    none = apply_evidence(blank(), "feynman_round", None, None)
+    assert good["comprehension"] > weak["comprehension"] > 0 and none == blank()
+    assert composite(good) == round(0.3 * good["comprehension"] + 0.2 * good["structure"], 1)
+    assert "理解" in next_step_note(s1) or "结构" in next_step_note(s1) or "应用" in next_step_note(s1)
+    assert "连续答错" in next_step_note(s1, wrong_streak=3)
+
+
+def test_mastery_record_folds_events_in_db(tmp_path):
+    from src.content.mastery import record
+    from src.obs.db import DB
+    db = DB(str(tmp_path / "hk.db"))
+    record(db, "c1", "s1", "single_choice", True, None, "0")
+    record(db, "c1", "s1", "single_choice", False, None, "2")
+    record(db, "c1", "s1", "single_choice", False, None, "1")
+    row = db.learner("c1", "s1")
+    assert row["memory"] == 8.0 and row["events"] == 3 and row["wrong_streak"] == 2
+    assert len(db.learner_events("c1", "s1")) == 3
+    record(db, "c1", "s1", "ask_open", None, 0.9, "my words")
+    assert db.learner("c1", "s1")["wrong_streak"] == 0

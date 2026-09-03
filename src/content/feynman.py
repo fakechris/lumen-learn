@@ -19,20 +19,23 @@ FEYNMAN_TURN_SYSTEM = """你是课堂里坐在学生旁边的一位好奇的同�
 - 只回**一句话**（≤ 40 个汉字），要么追问他讲得最含糊、最像背书的地方，要么请他举一个具体例子；
 - 绝不纠错、绝不公布答案、绝不总结、绝不夸奖长篇大论；
 - 语气好奇、口语，像真的没听懂（“那……为啥不直接……”）。
-只输出 JSON：{"question": "一句话追问", "vague_point": "你追问的点（≤10字）"}"""
+只输出 JSON：{"question": "一句话追问", "vague_point": "你追问的点（≤10字）", "quality": 0.0}
+quality 是 0~1 的数：这一轮解释有多少是用自己的话讲对了（背书=0.2，讲对但含糊=0.5，用自己的例子讲透=0.9）。"""
 
 FEYNMAN_SUMMARY_SYSTEM = """你是刚才那位听讲的同学。对话结束，用 ≤120 字总结：
 1) 他讲对了什么（点名具体说法）；2) 哪里仍然含糊或像背书；3) 下一步建议练什么。
-语气友好、直接，不堆礼貌用语。只输出 JSON：{"summary": "……"}"""
+语气友好、直接，不堆礼貌用语。只输出 JSON：{"summary": "……", "score": 0.0}
+score 是 0~1 的数：整体上他用自己的话讲对了多少。"""
 
 
 class FeynmanRound:
-    __slots__ = ("explanation", "question", "vague_point")
+    __slots__ = ("explanation", "question", "vague_point", "quality")
 
-    def __init__(self, explanation: str, question: str = "", vague_point: str = ""):
+    def __init__(self, explanation: str, question: str = "", vague_point: str = "", quality: float = 0.0):
         self.explanation = explanation
         self.question = question
         self.vague_point = vague_point
+        self.quality = quality
 
 
 class FeynmanSession:
@@ -65,16 +68,24 @@ async def feynman_turn(llm, session: FeynmanSession, explanation: str) -> Option
     raw = await llm.complete(FEYNMAN_TURN_SYSTEM, user, json_mode=True, temperature=0.6, purpose="feynman")
     data = extract_json(raw)
     round_ = FeynmanRound(explanation, question=str(data.get("question") or "").strip(),
-                          vague_point=str(data.get("vague_point") or "").strip())
+                          vague_point=str(data.get("vague_point") or "").strip(),
+                          quality=_unit(data.get("quality")))
     session.rounds.append(round_)
     return round_
 
 
-async def feynman_summary(llm, session: FeynmanSession) -> str:
-    import json
+def _unit(v) -> float:
+    try:
+        return max(0.0, min(1.0, float(v)))
+    except (TypeError, ValueError):
+        return 0.0
 
+
+async def feynman_summary(llm, session: FeynmanSession) -> tuple:
+    """-> (summary text, overall quality 0..1)"""
     from src.llm.client import extract_json
     dialogue = "\n".join(f"学生：{r.explanation}\n同学追问：{r.question}" for r in session.rounds)
     raw = await llm.complete(FEYNMAN_SUMMARY_SYSTEM, f"概念材料：\n{session.concept_digest}\n\n对话：\n{dialogue}",
                              json_mode=True, temperature=0.3, purpose="feynman_summary")
-    return str(extract_json(raw).get("summary") or "").strip()
+    data = extract_json(raw)
+    return str(data.get("summary") or "").strip(), _unit(data.get("score"))

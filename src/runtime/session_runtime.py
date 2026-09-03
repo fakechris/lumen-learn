@@ -218,10 +218,23 @@ class SessionRuntime:
             chosen = ask.options[answer.answer_index].text if 0 <= answer.answer_index < len(ask.options) else "?"
             self.ctx.transcript.append(f"学生：选择了「{chosen}」")
             feedback = await self.tutor.feedback_for_choice(self.ctx, ask, answer.answer_index)
+            correct = ask.correct_index is not None and answer.answer_index == ask.correct_index
+            self.record_evidence("ask_choice", correct, None, chosen)
         else:
             self.ctx.transcript.append(f"学生：{answer.answer_text or ''}")
             feedback = await self.tutor.feedback_for_open(self.ctx, ask, answer.answer_text or "")
+            quality = await self.tutor.judge_open(ask, answer.answer_text or "")
+            self.record_evidence("ask_open", None, quality, (answer.answer_text or "")[:80])
         await self._narrate_live(feedback)
+
+    def record_evidence(self, kind: str, correct, quality, detail: str = "") -> None:
+        """Learner-model evidence; never breaks a lesson."""
+        try:
+            from src.content.mastery import record
+            from src.obs.db import get_db
+            record(get_db(), self.session.course_id, self.session.session_id, kind, correct, quality, detail)
+        except Exception as exc:  # noqa: BLE001
+            log.warning("mastery evidence failed: %s", exc)
 
     async def _narrate_live(self, text: str) -> None:
         """Speak generated text: synthesize, send speak + tts_segment, wait for playback."""
