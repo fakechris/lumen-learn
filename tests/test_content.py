@@ -526,3 +526,16 @@ def test_fast_policy_keeps_at_least_one_gate():
            Keypoint(step_id=7, title="推导", beat="derive")]
     fast = play_policy("fast", kps, [])
     assert fast.skip_steps == {1} and fast.keeps_ask(4) and not fast.keeps_ask(1)
+
+
+def test_posttest_model_rejects_recall_and_bad_items():
+    import pytest as _pytest
+    from src.content.posttest import PostItem, PostTest
+    ok = PostItem(stem="把 x 换成 5 再算一次，结果是？", options=["1", "2", "3", "4"], correct_index=2)
+    with _pytest.raises(ValueError):
+        PostItem(stem="重复选项", options=["a", "a", "b", "c"], correct_index=0)
+    with _pytest.raises(ValueError):
+        PostTest(session_id="s", items=[ok, ok])          # fewer than 3 items
+    with _pytest.raises(ValueError):
+        PostTest(session_id="s", items=[ok, ok, PostItem(stem="越界的题目", options=["1", "2", "3", "4"], correct_index=4)])
+    assert len(PostTest(session_id="s", items=[ok, ok, ok]).items) == 3
