@@ -89,3 +89,14 @@ ticks, `set` op, param validation — the worktree's `set` vs `setState` mismatc
 diminishing monotone gains, tutor-judged quality for open answers), concept map (worktree drew broken circles on a
 ring with course-order edges; now an LLM-built typed graph cached per course, layered hand-drawn rendering).
 Also: client js/css served no-cache (a cached module made spotlights draw as circles).
+
+## Stage 10: 因材施教 — 教会为北极星（2026-09-03 定向，见 SYSTEM_DESIGN §10）
+**Goal**: 同一份教案对不同基础的学生讲得不一样，且学不会时能反复讲到明白。
+**Success Criteria**: 模拟学生评测集（20 节 × 3 种学生）上，三种学生的课后测通过率都高于"按教案直播"基线；
+novice 的先修补救能回到主线断点；fast 学生一节课时长明显缩短且通过率不降。
+**Order** (用户定：1 → 2 → 4 → 3):
+1. 教案分 beat + 入口诊断分层 + 讲解梯子（deeper / compressed 按需生成并缓存）+ 补救回路（换法 → 回先修 → 换形式）；
+2. 媒体配额与教具计划层（每节至少一个可动的量；`{objects, anchors, timeline}` 先于代码）；
+4. 模拟学生评测集与北极星指标；审阅模式把人的反馈写进 DB 并触发 `--only` 重生成；
+3. 声音与节奏（TTS 引擎、句级停顿、首音延迟）最后做。
+**Status**: Not Started
