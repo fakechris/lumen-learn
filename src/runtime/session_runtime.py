@@ -27,13 +27,14 @@ from src.content.store import CourseStore
 from src.llm.usage import GLOBAL_LEDGER
 from src.tts.align import synthesize_aligned
 from src.protocol.actions import (
-    ACK_REQUIRED, ActionStepComplete, Ask, ClientMessage, ErrorMessage, InterjectAudio, InterjectDone,
+    ACK_REQUIRED, ActionStepComplete, Ask, ClientMessage, ErrorMessage, InterjectAudio, InterjectDone, LevelUpdate, SkipStep,
     InterjectQuestion, InterjectReady, InterjectResume, InterjectStart, InterjectText, KeypointRef, PauseSession, Ping, Pong,
     QuestionAnswers, ResponseComplete, ResumeSession, SessionReady, SetTtsConfig, Speak, StartSession, Status,
     TtsSegment,
 )
 from src.protocol.session import CompiledSession
 from src.runtime.tutor import LiveTutor, TutorContext
+from src.content.adaptive import decide_level, fill_beats, play_policy, prereq_sessions
 from src.tts.engine import TtsEngine
 
 log = logging.getLogger("runtime")
@@ -71,6 +72,10 @@ class SessionRuntime:
         self._interject_id: Optional[str] = None
         self._live_step = LIVE_STEP_BASE
         self.ctx = TutorContext(session_title="", learning_goal="")
+        self.policy = None          # adaptive.Policy for this learner (set at start)
+        self.keypoints = []
+        self._skips = 0
+        self._gates = [0, 0]        # answered right, answered total (this session)
 
     # ------------------------------------------------------------------ #
     # Inbound
@@ -89,6 +94,8 @@ class SessionRuntime:
             fut = self._answers.get(msg.step_id)
             if fut and not fut.done():
                 fut.set_result(msg)
+        elif isinstance(msg, SkipStep):
+            await self._skip_step(msg.step_id)
         elif isinstance(msg, SetTtsConfig):
             self.tts_speed = max(0.5, min(2.5, msg.speed))
         elif isinstance(msg, PauseSession):
@@ -123,14 +130,39 @@ class SessionRuntime:
         self.ctx = TutorContext(session_title=session.title, learning_goal=session.learning_goal)
         self._acks.clear()
         self._answers.clear()
+        self._skips, self._gates = 0, [0, 0]
         start_index = self._start_index(session, msg.from_step_id)
+        level, reason = self._decide_level(msg.level)
+        self.keypoints = fill_beats(session, self.store.get_script(session.course_id, session.session_id))
+        self.policy = play_policy(level, self.keypoints, self._prereqs)
         await self.transport.send(SessionReady(course_id=session.course_id, session_id=session.session_id,
                                                title=session.title, learning_goal=session.learning_goal,
                                                total_steps=len(session.actions),
                                                resume_step_id=msg.from_step_id,
-                                               keypoints=[KeypointRef(step_id=k.step_id, title=k.title) for k in session.keypoints]))
+                                               keypoints=[KeypointRef(step_id=k.step_id, title=k.title, beat=k.beat,
+                                                                      has_question=k.has_question,
+                                                                      skipped=k.step_id in self.policy.skip_steps)
+                                                          for k in self.keypoints]))
+        await self.transport.send(LevelUpdate(level=level, reason=reason, skipped_steps=sorted(self.policy.skip_steps)))
         await self._set_state("teaching")
         self._main_task = asyncio.create_task(self._run(start_index))
+
+    def _decide_level(self, requested: Optional[str]):
+        """Evidence-based level (SYSTEM_DESIGN §10.2); an explicit request or a stored choice wins."""
+        self._prereqs = []
+        try:
+            from src.content.concept_map import load_map
+            from src.obs.db import get_db
+            db = get_db()
+            course = self.store.get_course(self.session.course_id)
+            cmap = load_map(self.store._course_dir(self.session.course_id) or "")
+            self._prereqs = prereq_sessions(course, cmap, self.session.session_id) if course else []
+            override = requested or db.profile(self.session.course_id).get("level")
+            entry = decide_level(db, self.session.course_id, self.session.session_id, self._prereqs, override)
+            return entry.level, entry.reason
+        except Exception as exc:  # noqa: BLE001 — never block a lesson on the learner model
+            log.warning("level decision failed: %s", exc)
+            return requested or "standard", "按教案讲"
 
     @staticmethod
     def _start_index(session: CompiledSession, from_step_id: Optional[int]) -> int:
@@ -142,11 +174,28 @@ class SessionRuntime:
             idx -= 1
         return idx
 
+    def _skipped(self, action) -> bool:
+        """An action belongs to a skipped step if it is the step, is gated on it, or decorates it."""
+        if not self.policy or not self.policy.skip_steps:
+            return False
+        skip = self.policy.skip_steps
+        return (action.step_id in skip or getattr(action, "reveal_gate_step", None) in skip
+                or getattr(action, "during_step", None) in skip)
+
     async def _run(self, start_index: int) -> None:
         assert self.session is not None
         try:
+            if start_index == 0 and self.policy and self.policy.prereq_review:
+                await self._prereq_review(self.policy.prereq_review[0])
+            owner = None  # the narrated step an ask/reward belongs to (asks carry their own step id)
             for action in self.session.actions[start_index:]:
                 await self._resume.wait()
+                if action.type == "speak":
+                    owner = action.step_id
+                if self._skipped(action) or (action.type in ("ask", "reward_user") and owner in (self.policy.skip_steps if self.policy else ())):
+                    continue
+                if action.type == "ask" and self.policy and not self.policy.keeps_ask(owner):
+                    continue
                 self.current_step_id = action.step_id
                 self._track_context(action)
                 await self.transport.send(self._with_speed(action))
@@ -197,6 +246,58 @@ class SessionRuntime:
         self._acks.pop(step_id, None)
 
     # ------------------------------------------------------------------ #
+    # Adaptive play (SYSTEM_DESIGN §10)
+    # ------------------------------------------------------------------ #
+
+    async def _skip_step(self, step_id: int) -> None:
+        """"我懂了": release the pending ack so the loop moves on to the step's gate."""
+        ev = self._acks.get(step_id)
+        if ev is None:
+            return
+        ev.set()
+        self._skips += 1
+        self.ctx.transcript.append("学生：我懂了（跳过）")
+        await self._maybe_promote()
+
+    async def _maybe_promote(self) -> None:
+        """Three skips with every gate right → fast (SYSTEM_DESIGN §10.5)."""
+        if not self.policy or self.policy.level == "fast":
+            return
+        ok, total = self._gates
+        if self._skips >= 3 and total >= 1 and ok == total:
+            self.policy = play_policy("fast", self.keypoints, self._prereqs)
+            try:
+                from src.obs.db import get_db
+                get_db().set_profile(self.session.course_id, level="fast", skips=self._skips)
+            except Exception as exc:  # noqa: BLE001
+                log.warning("profile update failed: %s", exc)
+            await self.transport.send(LevelUpdate(level="fast", reason="连续跳过且提问全对，切到快进",
+                                                  skipped_steps=sorted(self.policy.skip_steps)))
+
+    async def _prereq_review(self, prereq_session_id: str) -> None:
+        """Novice entry: replay the prerequisite session's first two narrated steps as a
+        "先修回顾" column before the lesson (same actions, same clock, no generation)."""
+        prev = self.store.get_session(self.session.course_id, prereq_session_id)
+        if prev is None or not prev.keypoints:
+            return
+        keep_steps = {k.step_id for k in prev.keypoints[:2]}
+        actions = []
+        for a in prev.actions:
+            owner = getattr(a, "reveal_gate_step", None) or getattr(a, "during_step", None) or a.step_id
+            if owner in keep_steps and a.type not in ("ask", "reward_user", "done", "new_page"):
+                actions.append(a)
+        if not actions:
+            return
+        first_board = next((i for i, a in enumerate(actions) if a.type == "board"), None)
+        if first_board is not None:
+            b = actions[first_board]
+            actions[first_board] = b.model_copy(update={"title": f"先修回顾：{prev.title}", "layout": "newcol"})
+        self._live_step += 50
+        relabeled = self._relabel(actions, step_base=self._live_step, uid_base=self._live_step)
+        self._live_step += len(actions) + 1
+        await self._play_actions(relabeled)
+
+    # ------------------------------------------------------------------ #
     # Questions
     # ------------------------------------------------------------------ #
 
@@ -219,6 +320,8 @@ class SessionRuntime:
             self.ctx.transcript.append(f"学生：选择了「{chosen}」")
             feedback = await self.tutor.feedback_for_choice(self.ctx, ask, answer.answer_index)
             correct = ask.correct_index is not None and answer.answer_index == ask.correct_index
+            self._gates[1] += 1
+            self._gates[0] += int(correct)
             self.record_evidence("ask_choice", correct, None, chosen)
         else:
             self.ctx.transcript.append(f"学生：{answer.answer_text or ''}")

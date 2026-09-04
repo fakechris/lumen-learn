@@ -7,13 +7,14 @@
 import { WhiteboardSocket } from "./ws.js";
 import { AudioClock, charsAtMs } from "./audio-clock.js";
 import { Whiteboard } from "./board.js";
-import { escapeHtml } from "./markdown.js";
+import { renderMarkdownInto, escapeHtml } from "./markdown.js";
 import { ExerciseView } from "./exercises.js";
 
 const $ = (id) => document.getElementById(id);
 const SPEEDS = [1.0, 1.25, 1.5, 2.0];
 const ASK_HINT = "点击一个选项，或直接输入你的答案 / 提问";
 
+const BEAT_LABEL = { hook: "钩子", analogy: "类比", poe: "预测", define: "定义", derive: "推导", worked_example: "例题", contrast: "对比", counterexample: "反例", apply: "应用", recap: "回顾" };
 const AXES = [["memory", "记忆"], ["comprehension", "理解"], ["structure", "结构"], ["application", "应用"]];
 /** four short ink bars, one per axis; labelled when `wide` */
 function masteryBars(scores, wide = false) {
@@ -195,7 +196,14 @@ class App {
     $("courseHome").classList.add("open");
   }
 
-  startSession(sessionId, fromStep = null) {
+  async startSession(sessionId, fromStep = null, { skipEntry = false, level = null } = {}) {
+    // a fresh start asks the server whether it needs a prerequisite check first; the level itself is
+    // decided server-side from evidence unless the learner picked one (档位 button)
+    if (fromStep == null && !skipEntry) {
+      const entry = await this.fetchEntry(sessionId);
+      if (entry && entry.needs_diagnosis && entry.questions.length) { this.openEntry(sessionId, entry); return; }
+    }
+    level = level || this.profileLevel || null;
     this.sessionId = sessionId;
     this.markProgress(sessionId, { started: true });
     $("courseHome").classList.remove("open");
@@ -217,8 +225,102 @@ class App {
     const idx = this.sessions.findIndex((s) => s.session_id === sessionId);
     $("sessionCounter").textContent = `${idx + 1} / ${this.sessions.length}`;
     $("sessionTitle").textContent = this.sessions[idx]?.title || "";
-    this.ws.send({ type: "start_session", course_id: this.course.course_id, session_id: sessionId, from_step_id: fromStep, tts_speed: this.speed });
+    this.ws.send({ type: "start_session", course_id: this.course.course_id, session_id: sessionId, from_step_id: fromStep, tts_speed: this.speed, level: level || null });
     this.renderSidebar();
+  }
+
+  // ------------------------------------------------------------------ adaptive entry (SYSTEM_DESIGN §10.2)
+  async fetchEntry(sessionId) {
+    try {
+      const r = await fetch(`/api/v1/courses/${this.course.course_id}/sessions/${sessionId}/entry`);
+      return r.ok ? await r.json() : null;
+    } catch (e) { return null; }
+  }
+
+  openEntry(sessionId, entry) {
+    const view = $("entryView");
+    view.classList.add("open");
+    $("entryNote").textContent = `这节课建立在「${entry.prereqs.map((p) => p.title).join("、")}」上。先做 ${entry.questions.length} 道小题，我好知道从哪讲起。`;
+    const body = $("entryBody");
+    body.innerHTML = "";
+    let answered = 0;
+    const done = () => { answered += 1; $("entryCounter").textContent = `${answered} / ${entry.questions.length}`; if (answered >= entry.questions.length) { $("entryDone").style.display = ""; $("entrySkip").style.display = "none"; } };
+    entry.questions.forEach((q, i) => {
+      const box = document.createElement("div");
+      box.className = "entry-q";
+      const stem = document.createElement("div"); stem.className = "stem";
+      renderMarkdownInto(stem, `${i + 1}. ${q.stem}`);
+      box.appendChild(stem);
+      const fb = document.createElement("div"); fb.className = "fb";
+      const grade = async (body) => {
+        const r = await fetch("/api/v1/grade", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ course_id: q.course_id, session_id: q.session_id, exercise_id: q.exercise_id, ...body }) });
+        return r.ok ? await r.json() : { correct: false, feedback: "" };
+      };
+      if (q.kind === "single_choice") {
+        const opts = document.createElement("div"); opts.className = "opts";
+        (q.options || []).forEach((o, j) => {
+          const b = document.createElement("button"); renderMarkdownInto(b, o);
+          b.addEventListener("click", async () => {
+            if (opts.dataset.done) return; opts.dataset.done = "1";
+            const res = await grade({ answer_index: j });
+            b.classList.add(res.correct ? "correct" : "wrong");
+            fb.textContent = res.correct ? "✓ 对" : `✗ 答案是「${res.answer || ""}」`;
+            done();
+          });
+          opts.appendChild(b);
+        });
+        box.appendChild(opts);
+      } else {
+        const input = document.createElement("input"); input.placeholder = "填空，回车提交";
+        input.addEventListener("keydown", async (ev) => {
+          if (ev.key !== "Enter" || input.disabled) return;
+          input.disabled = true;
+          const res = await grade({ answer_text: input.value });
+          fb.textContent = res.correct ? "✓ 对" : `✗ 答案是「${res.answer || ""}」`;
+          done();
+        });
+        box.appendChild(input);
+      }
+      box.appendChild(fb);
+      body.appendChild(box);
+    });
+    $("entryCounter").textContent = `0 / ${entry.questions.length}`;
+    $("entryDone").style.display = "none";
+    $("entrySkip").style.display = "";
+    const close = () => { view.classList.remove("open"); $("entryDone").onclick = $("entrySkip").onclick = $("entryClose").onclick = null; };
+    $("entryDone").onclick = () => { close(); this.startSession(sessionId, null, { skipEntry: true }); };
+    $("entrySkip").onclick = $("entryClose").onclick = () => { close(); this.startSession(sessionId, null, { skipEntry: true }); };
+  }
+
+  on_level_update(m) {
+    this.level = m.level;
+    const btn = $("levelBtn");
+    const label = { novice: "打基础", standard: "标准", fast: "快进" }[m.level] || m.level;
+    btn.textContent = `档位 · ${label}`;
+    btn.dataset.level = m.level;
+    btn.title = m.reason ? `${m.reason}（点击切换：慢一点 / 标准 / 快一点 / 自动）` : "讲解档位";
+    (m.skipped_steps || []).forEach((id) => { const k = this.keypoints.find((x) => x.step_id === id); if (k) k.skipped = true; });
+    this.renderKeypoints(this.currentStep);
+    if (m.reason) this.toast(`${label}：${m.reason}`);
+  }
+
+  async cycleLevel() {
+    const order = [null, "novice", "standard", "fast"];
+    const cur = this.profileLevel === undefined ? null : this.profileLevel;
+    const next = order[(order.indexOf(cur) + 1) % order.length];
+    this.profileLevel = next;
+    await fetch(`/api/v1/courses/${this.course.course_id}/profile`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ level: next }) });
+    const label = next ? { novice: "打基础", standard: "标准", fast: "快进" }[next] : "自动";
+    $("levelBtn").textContent = `档位 · ${label}`;
+    $("levelBtn").dataset.level = next || "";
+    if (this.sessionId && this.state !== "idle") this.startSession(this.sessionId, null, { skipEntry: true, level: next || null });
+  }
+
+  skipStep() {
+    const play = this.currentPlay;
+    if (!play || !play.finish || this.state !== "teaching") return;
+    this.clock.stop();
+    play.finish(true);
   }
 
   // ------------------------------------------------------------------ feynman round
@@ -227,6 +329,8 @@ class App {
     this.fm = { courseId: null, sessionId: null, round: 0, max: 4 };
     $("fmClose").addEventListener("click", () => $("feynmanView").classList.remove("open"));
     $("mapClose").addEventListener("click", () => $("mapView").classList.remove("open"));
+    $("levelBtn").addEventListener("click", () => this.cycleLevel());
+    $("skipBtn").addEventListener("click", () => this.skipStep());
     $("openMap").addEventListener("click", () => this.openConceptMap());
     $("fmSend").addEventListener("click", () => this.feynmanSend());
     $("fmDone").addEventListener("click", () => this.feynmanSummary());
@@ -479,8 +583,9 @@ class App {
     const idx = this.keypoints.findIndex((k) => k.step_id === currentStepId);
     this.keypoints.forEach((k, i) => {
       const el = document.createElement("div");
-      el.className = "kp" + (k.detour ? " detour" : "") + (i === idx ? " current" : i < idx || this.state === "finished" ? " done" : "");
-      el.innerHTML = `<span>${escapeHtml(k.title)}</span><span class="dot"></span>`;
+      el.className = "kp" + (k.detour ? " detour" : "") + (k.skipped ? " skipped" : "") + (i === idx ? " current" : i < idx || this.state === "finished" ? " done" : "");
+      const beat = k.beat ? `<span class="beat">${escapeHtml(BEAT_LABEL[k.beat] || k.beat)}</span>` : "";
+      el.innerHTML = `${beat}<span>${escapeHtml(k.title)}</span><span class="dot"></span>`;
       box.appendChild(el);
     });
   }
@@ -567,16 +672,18 @@ class App {
         for (const d of decos) if (!d.drawn && ms >= d.at_ms) this.drawNow(d);
         if (controlUid != null) this.board.tickControls(controlUid, ms);
       },
-      onEnded: () => {
-        for (const d of decos) if (!d.drawn) this.drawNow(d);
-        if (controlUid != null) this.board.tickControls(controlUid, Infinity);
-        this.setSubtitle(text, false);
-        if (this.currentPlay?.stepId === m.step_id) this.currentPlay = null;
-        this.currentStep = null;
-        this.ack(m.step_id);
-      },
+      onEnded: () => finish(false),
     });
-    if (m.step_id < 100000 || !this.interject) this.currentPlay = { stepId: m.step_id, start };
+    const finish = (skipped) => {
+      for (const d of decos) if (!d.drawn) this.drawNow(d);
+      if (controlUid != null) this.board.tickControls(controlUid, Infinity);
+      this.setSubtitle(text, false);
+      if (this.currentPlay?.stepId === m.step_id) this.currentPlay = null;
+      this.currentStep = null;
+      if (skipped) this.ws.send({ type: "skip_step", step_id: m.step_id });
+      else this.ack(m.step_id);
+    };
+    if (m.step_id < 100000 || !this.interject) this.currentPlay = { stepId: m.step_id, start, finish };
     start(0);
     if (this.state === "paused") this.clock.pause();
   }

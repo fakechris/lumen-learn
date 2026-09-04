@@ -46,6 +46,8 @@ CREATE TABLE IF NOT EXISTS learner_events (
   id INTEGER PRIMARY KEY AUTOINCREMENT, course_id TEXT, session_id TEXT, ts REAL,
   kind TEXT, correct INTEGER, quality REAL, detail TEXT);
 CREATE INDEX IF NOT EXISTS learner_events_session ON learner_events(course_id, session_id, id);
+CREATE TABLE IF NOT EXISTS learner_profile (
+  course_id TEXT PRIMARY KEY, level TEXT, pace REAL, skips INTEGER, gates_ok INTEGER, gates_total INTEGER, updated REAL);
 """
 
 
@@ -181,6 +183,20 @@ class DB:
 
     def learners(self, course_id: str) -> List[Dict[str, Any]]:
         return self._rows("SELECT * FROM learner WHERE course_id=? ORDER BY session_id", (course_id,))
+
+
+    def profile(self, course_id: str) -> Dict[str, Any]:
+        rows = self._rows("SELECT * FROM learner_profile WHERE course_id=?", (course_id,))
+        return rows[0] if rows else {"course_id": course_id, "level": None, "pace": 1.0, "skips": 0, "gates_ok": 0,
+                                     "gates_total": 0, "updated": None}
+
+    def set_profile(self, course_id: str, **fields) -> Dict[str, Any]:
+        cur = self.profile(course_id)
+        cur.update({k: v for k, v in fields.items() if k in ("level", "pace", "skips", "gates_ok", "gates_total")})
+        self._exec("INSERT OR REPLACE INTO learner_profile VALUES (?,?,?,?,?,?,?)",
+                   (course_id, cur.get("level"), cur.get("pace") or 1.0, cur.get("skips") or 0, cur.get("gates_ok") or 0,
+                    cur.get("gates_total") or 0, time.time()))
+        return self.profile(course_id)
 
 
 _DBS: Dict[str, DB] = {}

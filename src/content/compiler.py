@@ -22,6 +22,7 @@ from src.protocol.actions import (
     Action, AnimationFailed, Ask, AskOption, Board, Decoration, Done, GeneratedAnimation,
     Graph, Illustration, NewPage, RewardUser, Speak, TtsSegment,
 )
+from src.content.beats import infer_beat
 from src.protocol.session import CompiledSession, GenerationMode, Keypoint, SessionScript, StepSpec
 
 log = logging.getLogger(__name__)
@@ -80,7 +81,8 @@ def compile_session(script: SessionScript, audio: Dict[int, StepAudio],
             actions.append(NewPage(step_id=sid(), title=step.new_page_title, page_id=f"page-{page_no}"))
 
         speak_step = sid()
-        keypoints.append(Keypoint(step_id=speak_step, title=step.title or f"第 {idx + 1} 段"))
+        keypoints.append(Keypoint(step_id=speak_step, title=step.title or f"第 {idx + 1} 段",
+                                  beat=infer_beat(step, idx, len(script.steps)), has_question=step.question is not None))
         board_uids: List[int] = []
         for b in step.boards:
             board_uid += 1

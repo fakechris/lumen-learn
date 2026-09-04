@@ -23,6 +23,7 @@ from pydantic import BaseModel, Field, field_validator
 from src.content.validators import clean_mermaid, sanitize_script
 from src.llm.client import LLMClient
 from src.protocol.session import (
+    Beat,
     BoardSpec, CourseStructure, DecorationSpec, IllustrationSpec, QuestionSpec, RewardSpec, SessionOutline,
     SessionScript, StepSpec, WidgetSpec,
 )
@@ -60,6 +61,7 @@ SYNTH_SYSTEM = """你是一名苏格拉底式白板导师，要把一个会话�
 - 问题的选项是学生会脱口而出的话（"能，多一根总比少一根强"），不是考卷选项（"维度是 2"）。
 
 # 字段规则
+0. beat：每步标一个教学动作，取值 hook（钩子）/ analogy（类比）/ poe（先猜后看）/ define（定义）/ derive（推导）/ worked_example（例题）/ contrast（对比）/ counterexample（反例）/ apply（应用）/ recap（回顾）。第一步通常是 hook，最后一步是 recap；一节课里 derive 或 worked_example 至少一个。不同水平的学生会按 beat 跳过或加深，所以 hook/analogy 的内容不能承载后面必需的定义。
 1. spoken_text：**不要 LaTeX、不要 Markdown**，公式口语化（"c1 乘 v1 加 c2 乘 v2"）。
 2. boards：markdown 用嵌套列表表达缩进层级；可用 KaTeX（$...$）；加粗表示重点词。**对比类内容用 markdown 表格**（2~4 列、2~5 行，单元格里是短语，不是句子），并可用 decorations 高亮某个单元格里的短语。每张板书的 title 是这块内容的小标题（另起一列的板书 title 会被当作分栏大标题显示）。第一步的第一张板书是本节的一句话钩子（≤ 20 字，title 留空）。第一张 layout 用 "follow"；需要另起一列时用 "newcol"。
    板书里如果放代码：用 ``` 代码块，代码里的字符串一律用**单引号**，并且 JSON 字符串内的双引号必须写成 \\"。
@@ -79,7 +81,7 @@ SYNTH_SYSTEM = """你是一名苏格拉底式白板导师，要把一个会话�
 - 交稿前自检（全部通过才输出）：① 每步一个念头 ② spoken 无 LaTeX/Markdown ③ decoration snippet 在板书源码中逐字出现且尽量唯一 ④ trigger_phrase 逐字在 spoken 里 ⑤ 指向语与媒体实际位置一致（下方 vs 右侧）⑥ 公式双反斜杠自检 ⑦ 提问选项是学生口语 ⑧ 最后一步无提问、带 reward。
 
 # 输出（只输出一个 JSON 对象）
-{"steps": [{"title": "", "spoken_text": "", "boards": [{"title": "", "markdown": "", "layout": "follow"}],
+{"steps": [{"title": "", "beat": "define", "spoken_text": "", "boards": [{"title": "", "markdown": "", "layout": "follow"}],
   "decorations": [{"kind": "circle", "snippet": "", "board_index": 0, "trigger_phrase": ""}],
   "illustration": {"kind": "svg", "caption": "", "brief": "", "layout": "follow"} ,
   "widget": {"kind": "explorable", "title": "", "task": "", "layout": "follow", "params": ["probeX"], "controls": [{"trigger_phrase": "", "op": "set", "payload": {"probeX": 1.2}}]},
@@ -93,6 +95,7 @@ SYNTH_SYSTEM = """你是一名苏格拉底式白板导师，要把一个会话�
 
 class LLMStep(BaseModel):
     title: str = ""
+    beat: Optional[Beat] = None
     spoken_text: str
     boards: List[BoardSpec] = Field(default_factory=list)
     decorations: List[DecorationSpec] = Field(default_factory=list)
