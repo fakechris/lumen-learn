@@ -49,7 +49,7 @@ class Transport(Protocol):
 class SessionRuntime:
     def __init__(self, transport: Transport, store: CourseStore, tutor: LiveTutor, tts: TtsEngine,
                  live_audio_dir: str, live_audio_url: str = "/live",
-                 ack_timeout_s: float = 20.0, answer_timeout_s: Optional[float] = None):
+                 ack_timeout_s: float = 20.0, answer_timeout_s: Optional[float] = None, remediation: bool = True):
         self.transport = transport
         self.store = store
         self.tutor = tutor
@@ -58,6 +58,7 @@ class SessionRuntime:
         self.live_audio_url = live_audio_url.rstrip("/")
         self.ack_timeout_s = ack_timeout_s
         self.answer_timeout_s = answer_timeout_s
+        self.remediation = remediation  # False = baseline: one answer per gate, no ladder (used by the eval harness)
 
         self.state = "idle"
         self.session: Optional[CompiledSession] = None
@@ -349,7 +350,7 @@ class SessionRuntime:
                 if not correct:
                     wrong.append((answer.answer_text or "")[:40])
             await self._narrate_live(feedback)
-            if correct:
+            if correct or not self.remediation:
                 return
             # remediation ladder
             if attempt == 0:
