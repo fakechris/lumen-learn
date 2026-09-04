@@ -556,7 +556,10 @@ class App {
   on_connection_established() {}
   on_pong() {}
   on_error(m) { this.toast(m.message, true); }
-  on_status(m) { this.setState(m.state); }
+  on_status(m) {
+    this.setState(m.state);
+    if (m.detail && m.detail.startsWith("variant:")) this.toast(m.detail === "variant:deeper" ? "换个讲法再讲一遍…" : "压缩成要点…");
+  }
 
   on_session_ready(m) {
     $("sessionTitle").textContent = m.title;
@@ -596,9 +599,11 @@ class App {
   on_new_column() { this.board.newColumn(); }
 
   on_board(m) {
-    this.noteKind(m.title && !this.firstBoardPending ? m.title : "板书");
-    this.board.addBoard({ uid: m.board_uid, title: m.title, markdown: m.board_content, layout: m.layout, gate: m.reveal_gate_step, hook: this.firstBoardPending });
-    this.firstBoardPending = false;
+    // the session's own first board is the hook; live/review boards (ids ≥ 100000) keep their titles
+    const isHook = this.firstBoardPending && m.step_id < 100000;
+    this.noteKind(m.title && !isHook ? m.title : "板书");
+    this.board.addBoard({ uid: m.board_uid, title: m.title, markdown: m.board_content, layout: m.layout, gate: m.reveal_gate_step, hook: isHook });
+    if (m.step_id < 100000) this.firstBoardPending = false;
     this.zoom = 1;
     this.progress = JSON.parse(localStorage.getItem("hk_progress") || "{}"); // courseId/sessionId -> {started, finished, score}
     this.ack(m.step_id);

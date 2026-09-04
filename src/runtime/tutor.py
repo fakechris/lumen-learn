@@ -51,9 +51,61 @@ DETOUR_SYSTEM = """你是白板课上的苏格拉底导师。学生刚刚打断�
   "decorations": [], "illustration": null, "widget": null, "question": null, "reward": null}]}"""
 
 
+VARIANT_SYSTEM = {
+    "deeper": """你是白板课上的苏格拉底导师。学生对刚才这一步没有听懂（答错了两次）。用**和正课完全一样的形式**换一种讲法再讲一遍：
+1~2 步，每步 = 一段口语讲解（50~100 个汉字，不要 LaTeX / Markdown）+ 一张小板书（2~5 行电报体，可用 KaTeX）。
+
+规则：
+- 第一步板书 title 必须是 "换个讲法：<概念 8 字以内>"，layout "newcol"；后续 layout "follow"。
+- **不要重复原来的说法**：换一个新的隐喻或日常例子；给一个带具体数字的小例子，把关键一步拆成两步；直接针对学生答错的选项说明它错在哪。
+- 讲解指着板书说（"看这一行"）。结尾一句把学生带回问题："好，再看一次刚才的问题。"
+- decorations 的 snippet 必须逐字出现在该板书 markdown 中；不要 widget、question、reward、illustration。
+只输出 JSON：{"steps": [{"title": "", "spoken_text": "", "boards": [{"title": "换个讲法：……", "markdown": "", "layout": "newcol"}],
+  "decorations": [], "illustration": null, "widget": null, "question": null, "reward": null}]}""",
+    "compressed": """你是白板课上的导师，学生基础很好。把刚才这一步压缩成**一步**：一段 30~50 字的口语结论（不要 LaTeX / Markdown）+ 一张 1~3 行的板书（可用 KaTeX），只保留结论与关键式子，不要铺垫和比喻。
+板书 title 用 "要点：<概念 8 字以内>"，layout "follow"。不要 widget、question、reward、illustration。
+只输出 JSON：{"steps": [{"title": "", "spoken_text": "", "boards": [{"title": "要点：……", "markdown": "", "layout": "follow"}],
+  "decorations": [], "illustration": null, "widget": null, "question": null, "reward": null}]}""",
+}
+
+
 class LiveTutor:
     def __init__(self, llm: Optional[LLMClient]):
         self.llm = llm
+
+    async def variant_script(self, ctx: TutorContext, kind: str, course_id: str, session_id: str,
+                             ask: Optional[Ask] = None, wrong_answers: Optional[List[str]] = None) -> SessionScript:
+        """A deeper / compressed re-telling of the current step, in lesson form (SYSTEM_DESIGN §10.3)."""
+        from src.content.session_synthesizer import LLMStep
+        from src.content.validators import sanitize_script
+        from pydantic import BaseModel, field_validator
+        from typing import List as _List
+
+        class Variant(BaseModel):
+            steps: _List[LLMStep]
+
+            @field_validator("steps")
+            @classmethod
+            def _n(cls, v):
+                if not 1 <= len(v) <= 2:
+                    raise ValueError("variant needs 1-2 steps")
+                return v
+
+        user = ctx.render()
+        if ask is not None:
+            user += f"\n\n刚才的问题：{ask.question}\n选项：{[o.text for o in ask.options]}"
+            if ask.correct_index is not None and ask.options:
+                user += f"\n正确答案：{ask.options[ask.correct_index].text}"
+            if ask.explanation:
+                user += f"\n参考解释：{ask.explanation}"
+        if wrong_answers:
+            user += f"\n学生答错的选择：{wrong_answers}"
+        generated = await self.llm.complete_model(VARIANT_SYSTEM[kind], user, Variant, temperature=0.6, purpose="variant")
+        steps = [StepSpec(**st.model_dump()).model_copy(update={"widget": None, "question": None, "reward": None,
+                                                                   "illustration": None}) for st in generated.steps]
+        script = SessionScript(session_id=session_id, course_id=course_id, title=f"{kind}", steps=steps)
+        script, _ = sanitize_script(script)
+        return script
 
     async def detour_script(self, ctx: TutorContext, question: str, course_id: str, session_id: str) -> SessionScript:
         """Generate a 1-3 step mini lesson answering the interruption, in lesson form."""

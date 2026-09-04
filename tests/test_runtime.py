@@ -301,3 +301,87 @@ async def test_skip_step_releases_ack_and_promotes_after_three(beat_package, tmp
     levels = [m for m in transport.sent if m["type"] == "level_update"]
     assert levels[0]["level"] == "standard" and levels[-1]["level"] == "fast"
     assert rt._skips >= 3 and rt._gates == [2, 2]
+
+
+@pytest.fixture
+def two_session_package(tmp_path):
+    outlines = [SessionOutline(session_id="sess_1", title="先修", learning_goal="G1", core_concept="C1"),
+                SessionOutline(session_id="sess_2", title="本节", learning_goal="G2", core_concept="C2")]
+    course = CourseStructure(course_id="course_r", title="Course", generation_mode="authored",
+                             chapters=[ChapterOutline(chapter_id="ch_1", title="Ch", sessions=outlines)])
+    s1 = SessionScript(session_id="sess_1", course_id="course_r", title="先修", learning_goal="G1", steps=[
+        StepSpec(title="先修定义", beat="define", spoken_text="先修一", boards=[BoardSpec(markdown="P1")]),
+        StepSpec(title="先修推导", beat="derive", spoken_text="先修二", boards=[BoardSpec(markdown="P2")])])
+    s2 = SessionScript(session_id="sess_2", course_id="course_r", title="本节", learning_goal="G2", steps=[
+        StepSpec(title="推导", beat="derive", spoken_text="推导", boards=[BoardSpec(markdown="D")],
+                 question=QuestionSpec(question="q?", options=["错", "对"], correct_index=1, explanation="因为")),
+        StepSpec(title="回顾", beat="recap", spoken_text="回顾")])
+    c1 = compile_session(s1, {0: StepAudio(None, 300, 3, 0), 1: StepAudio(None, 300, 3, 0)}, "authored")
+    c2 = compile_session(s2, {0: StepAudio(None, 300, 3, 0), 1: StepAudio(None, 300, 3, 0)}, "authored")
+    write_package(str(tmp_path / "course_r"), course, [s1, s2], [c1, c2])
+    return CourseStore([str(tmp_path)])
+
+
+class StubTutor(LiveTutor):
+    """Deterministic tutor: a deeper variant is one step titled 换个讲法."""
+    def __init__(self):
+        super().__init__(None)
+        self.variants = 0
+
+    @property
+    def available(self):
+        return True
+
+    async def variant_script(self, ctx, kind, course_id, session_id, ask=None, wrong_answers=None):
+        self.variants += 1
+        return SessionScript(session_id=session_id, course_id=course_id, title=kind, steps=[
+            StepSpec(spoken_text="换个说法再讲一遍", boards=[BoardSpec(title="换个讲法：概念", markdown="V", layout="newcol")])])
+
+
+async def _drive_answers(rt, transport, answers):
+    """Ack everything; answer asks from `answers` in order (last one repeats)."""
+    seen, n = 0, 0
+    for _ in range(600):
+        await asyncio.sleep(0.01)
+        for m in transport.sent[seen:]:
+            seen += 1
+            if m["type"] in ("tts_segment", "board", "graph", "illustration", "generated_animation", "new_page"):
+                await rt.handle(ActionStepComplete(step_id=m["step_id"]))
+            elif m["type"] == "ask":
+                await rt.handle(QuestionAnswers(step_id=m["step_id"], answer_index=answers[min(n, len(answers) - 1)]))
+                n += 1
+        if any(m["type"] == "response_complete" for m in transport.sent):
+            return
+
+
+@pytest.mark.asyncio
+async def test_remediation_without_llm_reasks_once_then_explains(two_session_package, tmp_path, monkeypatch):
+    monkeypatch.setenv("HK_OUTPUT_ROOT", str(tmp_path / "out"))
+    transport = FakeTransport()
+    rt = SessionRuntime(transport, two_session_package, LiveTutor(None), SilentEngine(), str(tmp_path / "live"))
+    await rt.handle(StartSession(course_id="course_r", session_id="sess_2", level="standard"))
+    await _drive_answers(rt, transport, [0, 0, 0])
+    asks = [m for m in transport.sent if m["type"] == "ask"]
+    assert len(asks) == 2 and asks[1]["step_id"] >= 100000          # asked once more, then gave up
+    speaks = [m["spoken_text"] for m in transport.sent if m["type"] == "speak"]
+    assert any("我们先放一放" in t and "对" in t for t in speaks)
+    assert rt._gates == [0, 2]
+
+
+@pytest.mark.asyncio
+async def test_remediation_ladder_variant_then_prereq_then_pass(two_session_package, tmp_path, monkeypatch):
+    monkeypatch.setenv("HK_OUTPUT_ROOT", str(tmp_path / "out"))
+    transport = FakeTransport()
+    tutor = StubTutor()
+    rt = SessionRuntime(transport, two_session_package, tutor, SilentEngine(), str(tmp_path / "live"))
+    await rt.handle(StartSession(course_id="course_r", session_id="sess_2", level="standard"))
+    await _drive_answers(rt, transport, [0, 0, 0, 1])                 # wrong ×3, then right
+    asks = [m for m in transport.sent if m["type"] == "ask"]
+    assert len(asks) == 4
+    titles = [m["title"] for m in transport.sent if m["type"] == "board"]
+    assert "换个讲法：概念" in titles                                   # level 1: deeper variant
+    assert any(t.startswith("回到先修：先修") for t in titles)           # level 2: prerequisite replay
+    assert tutor.variants == 1
+    assert os.path.isfile(str(tmp_path / "course_r" / "variants" / "sess_2_1_deeper.json"))  # cached
+    assert rt._gates == [1, 4]
+    assert not any("我们先放一放" in m.get("spoken_text", "") for m in transport.sent if m["type"] == "speak")
