@@ -202,7 +202,7 @@ class SessionRuntime:
                 if action.type in ACK_REQUIRED:
                     await self._await_ack(action.step_id, self._timeout_for(action))
                 elif action.type == "ask":
-                    await self._handle_ask(action)
+                    await self._handle_ask(action, owner)
             await self._set_state("finished")
             await self.transport.send(ResponseComplete(session_id=self.session.session_id))
         except asyncio.CancelledError:
@@ -274,7 +274,7 @@ class SessionRuntime:
             await self.transport.send(LevelUpdate(level="fast", reason="连续跳过且提问全对，切到快进",
                                                   skipped_steps=sorted(self.policy.skip_steps)))
 
-    async def _prereq_review(self, prereq_session_id: str) -> None:
+    async def _prereq_review(self, prereq_session_id: str, title_prefix: str = "先修回顾") -> None:
         """Novice entry: replay the prerequisite session's first two narrated steps as a
         "先修回顾" column before the lesson (same actions, same clock, no generation)."""
         prev = self.store.get_session(self.session.course_id, prereq_session_id)
@@ -291,7 +291,7 @@ class SessionRuntime:
         first_board = next((i for i, a in enumerate(actions) if a.type == "board"), None)
         if first_board is not None:
             b = actions[first_board]
-            actions[first_board] = b.model_copy(update={"title": f"先修回顾：{prev.title}", "layout": "newcol"})
+            actions[first_board] = b.model_copy(update={"title": f"{title_prefix}：{prev.title}", "layout": "newcol"})
         self._live_step += 50
         relabeled = self._relabel(actions, step_base=self._live_step, uid_base=self._live_step)
         self._live_step += len(actions) + 1
@@ -301,34 +301,141 @@ class SessionRuntime:
     # Questions
     # ------------------------------------------------------------------ #
 
-    async def _handle_ask(self, ask: Ask) -> None:
+    async def _wait_answer(self, ask: Ask) -> Optional[QuestionAnswers]:
         await self._set_state("awaiting_answer")
         fut: asyncio.Future = asyncio.get_event_loop().create_future()
         self._answers[ask.step_id] = fut
         try:
-            answer: QuestionAnswers = await asyncio.wait_for(fut, timeout=self.answer_timeout_s)
+            return await asyncio.wait_for(fut, timeout=self.answer_timeout_s)
         except asyncio.TimeoutError:
+            return None
+        finally:
             self._answers.pop(ask.step_id, None)
-            await self._set_state("teaching")
-            return
-        self._answers.pop(ask.step_id, None)
-        if self.state == "awaiting_answer":
-            await self._set_state("teaching")
+            if self.state == "awaiting_answer":
+                await self._set_state("teaching")
 
-        if ask.mode == "choice" and answer.answer_index is not None:
-            chosen = ask.options[answer.answer_index].text if 0 <= answer.answer_index < len(ask.options) else "?"
-            self.ctx.transcript.append(f"学生：选择了「{chosen}」")
-            feedback = await self.tutor.feedback_for_choice(self.ctx, ask, answer.answer_index)
-            correct = ask.correct_index is not None and answer.answer_index == ask.correct_index
-            self._gates[1] += 1
-            self._gates[0] += int(correct)
-            self.record_evidence("ask_choice", correct, None, chosen)
+    async def _re_ask(self, ask: Ask) -> Ask:
+        """Send the same question again under a fresh live step id."""
+        self._live_step += 1
+        again = ask.model_copy(update={"step_id": self._live_step})
+        await self.transport.send(again)
+        return again
+
+    async def _handle_ask(self, ask: Ask, owner_step: Optional[int] = None) -> None:
+        """Gate + remediation loop (SYSTEM_DESIGN §10.4): wrong once → try again; wrong twice → a
+        deeper re-telling of the step; still wrong → replay the prerequisite; then explain and move on."""
+        wrong: List[str] = []
+        current = ask
+        for attempt in range(4):
+            answer = await self._wait_answer(current)
+            if answer is None:
+                return
+            if ask.mode == "choice" and answer.answer_index is not None:
+                chosen = ask.options[answer.answer_index].text if 0 <= answer.answer_index < len(ask.options) else "?"
+                self.ctx.transcript.append(f"学生：选择了「{chosen}」")
+                feedback = await self.tutor.feedback_for_choice(self.ctx, ask, answer.answer_index)
+                correct = ask.correct_index is not None and answer.answer_index == ask.correct_index
+                self._gates[1] += 1
+                self._gates[0] += int(correct)
+                self.record_evidence("ask_choice", correct, None, chosen)
+                if not correct:
+                    wrong.append(chosen)
+            else:
+                self.ctx.transcript.append(f"学生：{answer.answer_text or ''}")
+                feedback = await self.tutor.feedback_for_open(self.ctx, ask, answer.answer_text or "")
+                quality = await self.tutor.judge_open(ask, answer.answer_text or "")
+                self.record_evidence("ask_open", None, quality, (answer.answer_text or "")[:80])
+                correct = quality is None or quality >= 0.4
+                if not correct:
+                    wrong.append((answer.answer_text or "")[:40])
+            await self._narrate_live(feedback)
+            if correct:
+                return
+            # remediation ladder
+            if attempt == 0:
+                current = await self._re_ask(ask)
+            elif attempt == 1:
+                played = await self._play_variant("deeper", owner_step, ask, wrong)
+                if not played:
+                    break
+                current = await self._re_ask(ask)
+            elif attempt == 2:
+                played = await self._replay_prereq()
+                if not played:
+                    break
+                current = await self._re_ask(ask)
+        # gave up for now: say the answer, mark the misconception, keep the lesson moving
+        if ask.mode == "choice" and ask.correct_index is not None and ask.options:
+            text = f"这个问题我们先放一放，答案是「{ask.options[ask.correct_index].text}」。{ask.explanation or ''}课后用「讲给我听」再把它讲一遍。"
         else:
-            self.ctx.transcript.append(f"学生：{answer.answer_text or ''}")
-            feedback = await self.tutor.feedback_for_open(self.ctx, ask, answer.answer_text or "")
-            quality = await self.tutor.judge_open(ask, answer.answer_text or "")
-            self.record_evidence("ask_open", None, quality, (answer.answer_text or "")[:80])
-        await self._narrate_live(feedback)
+            text = f"先记住这个点：{ask.explanation or ask.question}。课后用「讲给我听」再把它讲一遍。"
+        self.record_evidence("remediation_failed", False, None, ask.question[:80])
+        await self._narrate_live(text)
+
+    # ---- variants (deeper / compressed), generated once and cached in the package ----
+    def _variant_path(self, owner_step: Optional[int], kind: str) -> Optional[str]:
+        d = self.store._course_dir(self.session.course_id) if self.session else None
+        if not d or owner_step is None:
+            return None
+        return os.path.join(d, "variants", f"{self.session.session_id}_{owner_step}_{kind}.json")
+
+    async def _play_variant(self, kind: str, owner_step: Optional[int], ask: Optional[Ask], wrong: List[str]) -> bool:
+        import json
+        compiled: Optional[CompiledSession] = None
+        path = self._variant_path(owner_step, kind)
+        if path and os.path.isfile(path):
+            with open(path, encoding="utf-8") as f:
+                compiled = CompiledSession(**json.load(f))
+        elif self.tutor.available and self.session is not None:
+            await self.transport.send(Status(state=self.state, detail=f"variant:{kind}"))
+            try:
+                script = await self.tutor.variant_script(self.ctx, kind, self.session.course_id, self.session.session_id,
+                                                         ask=ask, wrong_answers=wrong)
+            except Exception as exc:  # noqa: BLE001
+                log.warning("variant generation failed: %s", exc)
+                return False
+            audio: Dict[int, StepAudio] = {}
+            course_dir = self.store._course_dir(self.session.course_id)
+            for i, st in enumerate(script.steps):
+                stem = f"{self.session.session_id}_{owner_step}_{kind}_{i + 1}"
+                audio[i] = await self._synthesize_cached(st.spoken_text, course_dir, stem)
+            compiled = compile_session(script, audio, generation_mode="llm")
+            if path:
+                os.makedirs(os.path.dirname(path), exist_ok=True)
+                with open(path, "w", encoding="utf-8") as f:
+                    json.dump(compiled.model_dump(mode="json"), f, ensure_ascii=False)
+        if compiled is None:
+            return False
+        self._live_step += 50
+        actions = self._relabel(compiled.actions, step_base=self._live_step, uid_base=self._live_step)
+        self._live_step += len(compiled.actions) + 1
+        await self._play_actions(actions)
+        return True
+
+    async def _synthesize_cached(self, text: str, course_dir: Optional[str], stem: str) -> StepAudio:
+        """Aligned TTS stored in the course package (audio/variants/) so the next learner reuses it."""
+        if not course_dir:
+            return await self._synthesize_live(text, stem)
+        out_dir = os.path.join(course_dir, "audio", "variants")
+        os.makedirs(out_dir, exist_ok=True)
+        try:
+            import time
+            t0 = time.time()
+            res = await synthesize_aligned(self.tts, text, os.path.join(out_dir, stem), speed=1.0)
+            GLOBAL_LEDGER.add_tts(self.tts.name, "tts_variant", len(text), time.time() - t0)
+        except Exception as e:  # noqa: BLE001
+            log.warning("variant TTS failed: %s", e)
+            return StepAudio(None, 0, 0, 0, None)
+        url = f"/courses/{self.session.course_id}/audio/variants/{os.path.basename(res.audio_path)}" if res.audio_path else None
+        return StepAudio(url, res.duration_ms, res.cjk, res.latin, res.marks)
+
+    async def _replay_prereq(self) -> bool:
+        """Remediation level 2: replay the prerequisite session's first two narrated steps."""
+        if not self._prereqs:
+            return False
+        before = self._live_step
+        await self._prereq_review(self._prereqs[0], title_prefix="回到先修")
+        return self._live_step != before
 
     def record_evidence(self, kind: str, correct, quality, detail: str = "") -> None:
         """Learner-model evidence; never breaks a lesson."""
