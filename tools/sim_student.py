@@ -26,7 +26,7 @@ from typing import Any, Dict, List, Optional
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from src.content.exercise_generator import grade_fill_blank  # noqa: E402
+from src.content.posttest import get_posttest  # noqa: E402
 from src.content.store import CourseStore  # noqa: E402
 from src.llm.client import extract_json, make_client  # noqa: E402
 from src.llm.usage import GLOBAL_LEDGER  # noqa: E402
@@ -98,16 +98,18 @@ class Student:
                                       temperature=0.7, purpose="sim_student")
         return str(extract_json(raw).get("answer") or "")
 
-    async def posttest(self, sent: List[dict], ex) -> dict:
+    async def take_item(self, sent: Optional[List[dict]], item) -> int:
+        """Answer one post-test item; `sent=None` is the cold pre-test (no lesson seen)."""
         self.calls += 1
-        if ex.kind == "fill_blank":
-            user = f"课堂记录：\n{self.transcript(sent)}\n\n填空题：{ex.stem}"
-        else:
-            opts = "\n".join(f"{i}. {o}" for i, o in enumerate(ex.options))
-            user = f"课堂记录：\n{self.transcript(sent)}\n\n选择题：{ex.stem}\n{opts}"
+        opts = "\n".join(f"{i}. {o}" for i, o in enumerate(item.options))
+        record = self.transcript(sent) if sent else "（你还没有上这节课，只能凭已有知识作答）"
+        user = f"课堂记录：\n{record}\n\n选择题：{item.stem}\n{opts}"
         raw = await self.llm.complete(POSTTEST_SYSTEM.format(name=self.name, trait=self.trait), user, json_mode=True,
                                       temperature=0.3, purpose="sim_posttest")
-        return extract_json(raw)
+        try:
+            return int(extract_json(raw).get("choice"))
+        except (TypeError, ValueError):
+            return -1
 
 
 async def run_session(store: CourseStore, llm, course_id: str, session_id: str, persona: str, level: Optional[str],
@@ -117,6 +119,9 @@ async def run_session(store: CourseStore, llm, course_id: str, session_id: str, 
     rt = SessionRuntime(transport, store, LiveTutor(llm), SilentEngine(), live_dir, remediation=not baseline)
     mark = GLOBAL_LEDGER.mark()
     t0 = time.time()
+    # the same transfer items serve as pre-test (cold) and post-test → learning gain
+    test = await get_posttest(store._course_dir(course_id), store.get_script(course_id, session_id), llm, n=posttest_n)
+    pre = [await student.take_item(None, it) == it.correct_index for it in test.items]
     await rt.handle(StartSession(course_id=course_id, session_id=session_id, level=level))
     seen = 0
     gates: List[dict] = []
@@ -160,20 +165,11 @@ async def run_session(store: CourseStore, llm, course_id: str, session_id: str, 
     boards = [m for m in transport.sent if m["type"] == "board"]
     variants = sum(1 for b in boards if str(b.get("title") or "").startswith(("换个讲法", "回到先修", "先修回顾")))
     level_msgs = [m for m in transport.sent if m["type"] == "level_update"]
-    # post-test
-    session = store.get_session(course_id, session_id)
-    exercises = [e for e in session.exercises if e.kind in ("single_choice", "fill_blank")][:posttest_n]
+    # post-test (transfer items, generated once per session and cached)
     results = []
-    for ex in exercises:
-        data = await student.posttest(transport.sent, ex)
-        if ex.kind == "fill_blank":
-            ok, _ = await grade_fill_blank(ex, str(data.get("answer") or ""), llm)
-        else:
-            try:
-                ok = int(data.get("choice")) == ex.correct_index
-            except (TypeError, ValueError):
-                ok = False
-        results.append({"exercise_id": ex.exercise_id, "kind": ex.kind, "correct": bool(ok)})
+    for it, was_right in zip(test.items, pre):
+        ok = await student.take_item(transport.sent, it) == it.correct_index
+        results.append({"kind": it.kind, "pre": bool(was_right), "correct": bool(ok), "stem": it.stem[:50]})
     usage = GLOBAL_LEDGER.summary(since=mark)["total"]
     choice_gates = [g for g in gates if not g.get("open")]
     return {
@@ -183,7 +179,10 @@ async def run_session(store: CourseStore, llm, course_id: str, session_id: str, 
         "gate_rate": round(sum(1 for g in choice_gates if g["correct"]) / len(choice_gates), 2) if choice_gates else None,
         "remediations": variants, "interruptions": interrupted,
         "posttest_n": len(results), "posttest_correct": sum(1 for r in results if r["correct"]),
+        "pretest_correct": sum(1 for r in results if r["pre"]),
+        "pretest_rate": round(sum(1 for r in results if r["pre"]) / len(results), 2) if results else None,
         "posttest_rate": round(sum(1 for r in results if r["correct"]) / len(results), 2) if results else None,
+        "gain": round((sum(1 for r in results if r["correct"]) - sum(1 for r in results if r["pre"])) / len(results), 2) if results else None,
         "audio_min": round(audio_ms / 60000, 1), "wall_s": round(time.time() - t0, 1),
         "cost_usd": round(usage["cost_usd"], 4), "gates": gates, "posttest": results,
     }
@@ -215,14 +214,14 @@ async def main() -> int:
                 r = await run_session(store, llm, a.course_id, sid.strip(), persona, level, baseline, a.interrupt, a.posttest, live_dir)
                 rows.append(r)
                 print(f"{r['mode']:8s} {sid:8s} {persona:8s} level={r['level']:8s} gates {r['gates_correct']}/{r['gates_total']} "
-                      f"remed {r['remediations']} post {r['posttest_correct']}/{r['posttest_n']} audio {r['audio_min']}min "
-                      f"${r['cost_usd']:.3f}", flush=True)
+                      f"remed {r['remediations']} pre {r['pretest_correct']}/{r['posttest_n']} post {r['posttest_correct']}/{r['posttest_n']} "
+                      f"gain {r['gain']:+.2f} audio {r['audio_min']}min ${r['cost_usd']:.3f}", flush=True)
     os.makedirs(os.path.join(a.output, "_eval"), exist_ok=True)
     path = os.path.join(a.output, "_eval", f"sim_{time.strftime('%Y%m%d_%H%M%S')}.json")
     with open(path, "w", encoding="utf-8") as f:
         json.dump(rows, f, ensure_ascii=False, indent=2)
-    print("\n| mode | persona | sessions | gate rate | remediations | post-test | audio min | cost |")
-    print("|---|---|---|---|---|---|---|---|")
+    print("\n| mode | persona | sessions | gate rate | remediations | pre-test | post-test | gain | audio min | cost |")
+    print("|---|---|---|---|---|---|---|---|---|---|")
     for mode in sorted({r["mode"] for r in rows}):
         for persona in a.personas.split(","):
             rs = [r for r in rows if r["mode"] == mode and r["persona"] == persona]
@@ -230,8 +229,11 @@ async def main() -> int:
                 continue
             g = [r["gate_rate"] for r in rs if r["gate_rate"] is not None]
             pt = [r["posttest_rate"] for r in rs if r["posttest_rate"] is not None]
-            print(f"| {mode} | {persona} | {len(rs)} | {sum(g)/len(g):.2f} | {sum(r['remediations'] for r in rs)} | "
-                  f"{sum(pt)/len(pt) if pt else 0:.2f} | {sum(r['audio_min'] for r in rs):.1f} | ${sum(r['cost_usd'] for r in rs):.3f} |")
+            pr = [r["pretest_rate"] for r in rs if r["pretest_rate"] is not None]
+            gn = [r["gain"] for r in rs if r["gain"] is not None]
+            avg = lambda xs: (sum(xs) / len(xs)) if xs else 0.0
+            print(f"| {mode} | {persona} | {len(rs)} | {avg(g):.2f} | {sum(r['remediations'] for r in rs)} | "
+                  f"{avg(pr):.2f} | {avg(pt):.2f} | {avg(gn):+.2f} | {sum(r['audio_min'] for r in rs):.1f} | ${sum(r['cost_usd'] for r in rs):.3f} |")
     # gates every persona fails on the first try are content defects (ambiguous question or wrong key),
     # not learner problems — list them for regeneration (--only) or a question rewrite
     first_fail: Dict[tuple, set] = {}
