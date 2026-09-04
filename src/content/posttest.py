@@ -26,6 +26,7 @@ POSTTEST_SYSTEM = """你是一名严格的出题老师。给你一节白板课�
 - **不要**复述课堂原句；题干里不能出现讲稿中原封不动的句子；不要用"以下哪项不…"的否定题。
 - 干扰项必须是学生真的会犯的错误，不许编造无关内容。
 - 每题给 1 句 explanation，写清为什么对、为什么最像的干扰项错。
+- 如果给了"本节认知误区"，至少 2 题的近似干扰项必须正是这个误区（持有该误区的学生会选错）。
 - 用中文；公式可用 $...$。
 
 只输出 JSON：{{"items": [{{"stem": "", "options": ["", "", "", ""], "correct_index": 0, "kind": "transfer|why|near_miss|compute", "explanation": ""}}]}}"""
@@ -65,8 +66,10 @@ class _LLMPost(BaseModel):
     items: List[PostItem]
 
 
-def _digest(script: SessionScript) -> str:
+def _digest(script: SessionScript, hurdle: str = "") -> str:
     lines = [f"课题：{script.title}", f"目标：{script.learning_goal}"]
+    if hurdle:
+        lines.append(f"本节认知误区：{hurdle}")
     for i, st in enumerate(script.steps, 1):
         lines.append(f"\n[{i}] {st.title or ''}（{st.beat or ''}）\n讲解：{st.spoken_text}")
         for b in st.boards:
@@ -88,8 +91,8 @@ def load_posttest(course_dir: str, session_id: str) -> Optional[PostTest]:
         return PostTest(**json.load(f))
 
 
-async def generate_posttest(script: SessionScript, llm, n: int = 6) -> PostTest:
-    generated: _LLMPost = await llm.complete_model(POSTTEST_SYSTEM.format(n=n), _digest(script), _LLMPost,
+async def generate_posttest(script: SessionScript, llm, n: int = 6, hurdle: str = "") -> PostTest:
+    generated: _LLMPost = await llm.complete_model(POSTTEST_SYSTEM.format(n=n), _digest(script, hurdle), _LLMPost,
                                                     temperature=0.4, tier="fast", purpose="posttest")
     # a stem that quotes a whole narration sentence is recall, not transfer — drop it
     sentences = {s.strip() for st in script.steps for s in st.spoken_text.replace("！", "。").split("。") if len(s.strip()) > 12}
@@ -97,12 +100,13 @@ async def generate_posttest(script: SessionScript, llm, n: int = 6) -> PostTest:
     return PostTest(session_id=script.session_id, items=items[:n])
 
 
-async def get_posttest(course_dir: str, script: SessionScript, llm, n: int = 6, regen: bool = False) -> PostTest:
+async def get_posttest(course_dir: str, script: SessionScript, llm, n: int = 6, regen: bool = False,
+                       hurdle: str = "") -> PostTest:
     if not regen:
         cached = load_posttest(course_dir, script.session_id)
         if cached:
             return cached
-    test = await generate_posttest(script, llm, n)
+    test = await generate_posttest(script, llm, n, hurdle)
     os.makedirs(os.path.dirname(posttest_path(course_dir, script.session_id)), exist_ok=True)
     with open(posttest_path(course_dir, script.session_id), "w", encoding="utf-8") as f:
         json.dump(test.model_dump(mode="json"), f, ensure_ascii=False, indent=2)

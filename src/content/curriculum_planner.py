@@ -49,6 +49,7 @@ PLAN_SYSTEM = """你是一名认知科学与课程设计专家，要把讲义写
    - title：小标题
    - intent：这一段必须让学生明白什么（一句话）
    - media：这一段用什么媒介（见指南）
+   - beat：这一段的教学动作，取 hook（钩子）/ analogy（类比）/ poe（先猜后看）/ define（定义）/ derive（推导）/ worked_example（例题）/ contrast（对比）/ counterexample（反例）/ apply（应用）/ recap（回顾）。一节课通常 hook → (analogy|poe) → define → derive|worked_example → (contrast|counterexample|apply) → recap；derive 或 worked_example 至少一段。
    - media_brief：图/教具/流程图必须展示什么（board 留空）
    - figure_id：media 为 reference_figure 时填教材图的 id
    - ask：这一段结尾要不要抛一个预测题（每课 2~3 段为 true，最后一段 false）
@@ -67,7 +68,7 @@ PLAN_SYSTEM = """你是一名认知科学与课程设计专家，要把讲义写
   "chapters": [{"title": "", "description": "", "unit": "", "sessions": [{
     "title": "", "learning_goal": "", "core_concept": "", "cognitive_hurdle": "", "estimated_duration_min": 5,
     "tags": ["Intuition", "Definition"], "source_sections": ["s1"],
-    "segments": [{"title": "", "intent": "", "media": "board", "media_brief": "", "figure_id": null, "ask": false, "source_sections": ["s1"]}]
+    "segments": [{"title": "", "intent": "", "beat": "hook", "media": "board", "media_brief": "", "figure_id": null, "ask": false, "source_sections": ["s1"]}]
   }]}]
 }"""
 
@@ -81,6 +82,7 @@ class PlannedSegment(BaseModel):
     intent: str
     media: MediaKind = "board"
     media_brief: str = ""
+    beat: Optional[str] = None
     figure_id: Optional[str] = None
     ask: bool = False
     source_sections: List[str] = Field(default_factory=list)

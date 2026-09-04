@@ -30,7 +30,8 @@
       "illustration": null,
       "widget": null,
       "question": null,
-      "reward": null
+      "reward": null,
+      "beat": "hook"
     },
     {
       "title": "两片面包",
@@ -97,7 +98,8 @@
         ],
         "explanation": "上下界都趋近 0，被夹在中间的函数别无选择，只能趋近 0。"
       },
-      "reward": null
+      "reward": null,
+      "beat": "worked_example"
     },
     {
       "title": "夹逼定理",
@@ -136,7 +138,8 @@
       "reward": {
         "title": "夹逼定理 = 三明治",
         "description": "算不出来的极限，找两片容易算的面包把它夹住；面包汇合在哪，馅料的极限就在哪。两个条件缺一不可：夹住，且汇合。"
-      }
+      },
+      "beat": "recap"
     }
   ]
 }

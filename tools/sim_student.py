@@ -62,9 +62,15 @@ class SimTransport:
 
 
 class Student:
-    def __init__(self, llm, persona: str):
+    def __init__(self, llm, persona: str, hurdle: str = ""):
         self.llm = llm
         self.name, self.trait = PERSONAS[persona]
+        # the plan's cognitive hurdle becomes a held belief: a novice starts out wrong about it and only
+        # changes their mind if the lesson actually dislodges it — this is what the lesson must achieve
+        if hurdle and persona == "novice":
+            self.trait += f"\n在上课前你坚信一个错误观念：{hurdle}。除非课堂明确纠正了它并让你信服，否则你会按这个观念作答。"
+        elif hurdle and persona == "standard":
+            self.trait += f"\n你对这一点半信半疑：{hurdle}。课堂讲清楚了你就会改过来。"
         self.persona = persona
         self.calls = 0
 
@@ -113,14 +119,18 @@ class Student:
 
 
 async def run_session(store: CourseStore, llm, course_id: str, session_id: str, persona: str, level: Optional[str],
-                      baseline: bool, allow_interrupt: bool, posttest_n: int, live_dir: str) -> Dict[str, Any]:
+                      baseline: bool, allow_interrupt: bool, posttest_n: int, live_dir: str,
+                      regen_posttest: bool = False) -> Dict[str, Any]:
     transport = SimTransport()
-    student = Student(llm, persona)
+    course = store.get_course(course_id)
+    outline = next((x for x in course.all_sessions() if x.session_id == session_id), None) if course else None
+    student = Student(llm, persona, hurdle=(outline.cognitive_hurdle if outline else ""))
     rt = SessionRuntime(transport, store, LiveTutor(llm), SilentEngine(), live_dir, remediation=not baseline)
     mark = GLOBAL_LEDGER.mark()
     t0 = time.time()
     # the same transfer items serve as pre-test (cold) and post-test → learning gain
-    test = await get_posttest(store._course_dir(course_id), store.get_script(course_id, session_id), llm, n=posttest_n)
+    test = await get_posttest(store._course_dir(course_id), store.get_script(course_id, session_id), llm, n=posttest_n,
+                              hurdle=(outline.cognitive_hurdle if outline else ""), regen=regen_posttest)
     pre = [await student.take_item(None, it) == it.correct_index for it in test.items]
     await rt.handle(StartSession(course_id=course_id, session_id=session_id, level=level))
     seen = 0
@@ -197,6 +207,7 @@ async def main() -> int:
     p.add_argument("--both", action="store_true", help="run baseline and adaptive")
     p.add_argument("--interrupt", action="store_true", help="let a confused student interrupt once per session")
     p.add_argument("--posttest", type=int, default=5)
+    p.add_argument("--regen-posttest", action="store_true", help="regenerate the cached transfer post-tests")
     p.add_argument("--output", default="output")
     a = p.parse_args()
     os.environ.setdefault("HK_OUTPUT_ROOT", os.path.abspath(a.output))
@@ -211,7 +222,8 @@ async def main() -> int:
         for sid in a.sessions.split(","):
             for persona in a.personas.split(","):
                 level = "standard" if baseline else persona
-                r = await run_session(store, llm, a.course_id, sid.strip(), persona, level, baseline, a.interrupt, a.posttest, live_dir)
+                r = await run_session(store, llm, a.course_id, sid.strip(), persona, level, baseline, a.interrupt, a.posttest, live_dir,
+                                      regen_posttest=a.regen_posttest and persona == a.personas.split(",")[0] and baseline == modes[0])
                 rows.append(r)
                 print(f"{r['mode']:8s} {sid:8s} {persona:8s} level={r['level']:8s} gates {r['gates_correct']}/{r['gates_total']} "
                       f"remed {r['remediations']} pre {r['pretest_correct']}/{r['posttest_n']} post {r['posttest_correct']}/{r['posttest_n']} "
