@@ -341,6 +341,46 @@ class ContentPipeline:
         self.progress("done", course_dir)
         return course_dir
 
+    async def add_variants(self, course_id: str, roots: Optional[List[str]] = None, only: Optional[set] = None,
+                           kind: str = "compressed", force: bool = False) -> str:
+        """Precompute step variants for an existing package (compressed = for fast learners) so no
+        learner waits on generation. Steps whose beat is define/derive/worked_example/contrast/apply."""
+        from src.content.adaptive import fill_beats
+        from src.content.variants import COMPRESS_BEATS, build_variant, step_context, variant_path
+        from src.runtime.tutor import LiveTutor
+        if self.llm is None:
+            raise SystemExit("variants need an LLM")
+        store = CourseStore(roots or [self.output_root])
+        course = store.get_course(course_id)
+        if course is None:
+            raise SystemExit(f"course {course_id} not found")
+        course_dir = store._course_dir(course_id)
+        tutor = LiveTutor(self.llm)
+        made = skipped = 0
+        for outline in course.all_sessions():
+            if only is not None and outline.session_id not in only:
+                continue
+            script = store.get_script(course_id, outline.session_id)
+            session = store.get_session(course_id, outline.session_id)
+            if script is None or session is None:
+                continue
+            kps = fill_beats(session, script)
+            for i, (st, kp) in enumerate(zip(script.steps, kps)):
+                if kp.beat not in COMPRESS_BEATS:
+                    continue
+                if not force and os.path.isfile(variant_path(course_dir, outline.session_id, kp.step_id, kind)):
+                    skipped += 1
+                    continue
+                try:
+                    await build_variant(tutor, self.tts, step_context(script, i), kind, course_id, course_dir,
+                                        outline.session_id, kp.step_id)
+                    made += 1
+                    self.progress("variant", f"{outline.session_id} step {kp.step_id} ({kp.beat}) {kind}", outline.session_id)
+                except Exception as exc:  # noqa: BLE001
+                    self.progress("warn", f"{outline.session_id} step {kp.step_id}: variant failed ({exc})", outline.session_id)
+        self.progress("done", f"{made} variants made, {skipped} cached, {course_dir}")
+        return course_dir
+
     async def add_exercises(self, course_id: str, roots: Optional[List[str]] = None, only: Optional[set] = None,
                             missing_only: bool = False) -> str:
         """Generate exercises for an existing package and rewrite its sessions in place.
@@ -555,6 +595,7 @@ def main(argv=None) -> int:
     p.add_argument("--plan-only", action="store_true", help="Ingest and plan, write plan.json, stop")
     p.add_argument("--from-plan", help="Build from an (edited) plan.json")
     p.add_argument("--exercises-for", help="Generate exercises for an existing course id (in --output or examples/courses)")
+    p.add_argument("--variants-for", help="Precompute compressed step variants (for fast learners) for an existing course id")
     p.add_argument("--only", help="Comma-separated session ids to (re)build; others are kept from the existing package")
     p.add_argument("--chapters", help="Comma-separated chapter ids to build (e.g. ch_1,ch_2); use with --from-plan")
     p.add_argument("--all-chapters", action="store_true", help="Build every chapter in order, one run per chapter, resumable")
@@ -567,8 +608,8 @@ def main(argv=None) -> int:
     p.add_argument("--tts", default=None, help="say|edge|silent|auto (default: TTS_ENGINE env or auto)")
     args = p.parse_args(argv)
 
-    if not (args.input or args.script or (args.doc and args.from_plan) or args.exercises_for):
-        p.error("need --input, --script, --doc with --from-plan, or --exercises-for")
+    if not (args.input or args.script or (args.doc and args.from_plan) or args.exercises_for or args.variants_for):
+        p.error("need --input, --script, --doc with --from-plan, --exercises-for, or --variants-for")
     llm = make_client() if args.mode != "heuristic" else None
     if args.mode == "auto" and llm is None:
         print("ℹ️  no LLM key found; running heuristic walk-through mode", flush=True)
@@ -594,6 +635,10 @@ def main(argv=None) -> int:
     get_db(pipeline.output_root).abort_stale_runs()  # a fresh CLI run means earlier CLI runs are dead
 
     async def run():
+        if args.variants_for:
+            only = set(args.only.split(",")) if args.only else None
+            return await pipeline.add_variants(args.variants_for, roots=[args.output, "examples/courses"], only=only,
+                                              force=args.force)
         if args.exercises_for:
             only = set(x.strip() for x in args.only.split(",")) if args.only else None
             return await pipeline.add_exercises(args.exercises_for, roots=[args.output, "examples/courses"], only=only,

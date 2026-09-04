@@ -74,6 +74,7 @@ class SessionRuntime:
         self._live_step = LIVE_STEP_BASE
         self.ctx = TutorContext(session_title="", learning_goal="")
         self.policy = None          # adaptive.Policy for this learner (set at start)
+        self._compressed = {}       # speak step -> cached compressed variant path (fast learners)
         self.keypoints = []
         self._skips = 0
         self._gates = [0, 0]        # answered right, answered total (this session)
@@ -136,6 +137,10 @@ class SessionRuntime:
         level, reason = self._decide_level(msg.level)
         self.keypoints = fill_beats(session, self.store.get_script(session.course_id, session.session_id))
         self.policy = play_policy(level, self.keypoints, self._prereqs)
+        self._compressed = {}
+        if level == "fast":
+            from src.content.variants import cached_variants
+            self._compressed = cached_variants(self.store._course_dir(session.course_id), session.session_id, "compressed")
         await self.transport.send(SessionReady(course_id=session.course_id, session_id=session.session_id,
                                                title=session.title, learning_goal=session.learning_goal,
                                                total_steps=len(session.actions),
@@ -195,6 +200,19 @@ class SessionRuntime:
                     owner = action.step_id
                 if self._skipped(action) or (action.type in ("ask", "reward_user") and owner in (self.policy.skip_steps if self.policy else ())):
                     continue
+                # fast learners: a precomputed compressed re-telling replaces the step's own boards and speech
+                step_of = getattr(action, "reveal_gate_step", None) or getattr(action, "during_step", None) or action.step_id
+                if self._compressed and step_of in self._compressed and action.type not in ("ask", "reward_user", "done"):
+                    if action.type == "speak":
+                        self.current_step_id = action.step_id
+                        played = await self._play_variant("compressed", action.step_id, None, [])
+                        if not played:
+                            log.warning("compressed variant missing for step %s; playing the original", action.step_id)
+                            self._compressed.pop(action.step_id, None)
+                        else:
+                            continue
+                    else:
+                        continue
                 if action.type == "ask" and self.policy and not self.policy.keeps_ask(owner):
                     continue
                 self.current_step_id = action.step_id
@@ -373,38 +391,21 @@ class SessionRuntime:
         self.record_evidence("remediation_failed", False, None, ask.question[:80])
         await self._narrate_live(text)
 
-    # ---- variants (deeper / compressed), generated once and cached in the package ----
-    def _variant_path(self, owner_step: Optional[int], kind: str) -> Optional[str]:
-        d = self.store._course_dir(self.session.course_id) if self.session else None
-        if not d or owner_step is None:
-            return None
-        return os.path.join(d, "variants", f"{self.session.session_id}_{owner_step}_{kind}.json")
-
+    # ---- variants (deeper / compressed), cached in the package ----
     async def _play_variant(self, kind: str, owner_step: Optional[int], ask: Optional[Ask], wrong: List[str]) -> bool:
-        import json
+        from src.content.variants import build_variant, load_variant
+        course_dir = self.store._course_dir(self.session.course_id) if self.session else None
         compiled: Optional[CompiledSession] = None
-        path = self._variant_path(owner_step, kind)
-        if path and os.path.isfile(path):
-            with open(path, encoding="utf-8") as f:
-                compiled = CompiledSession(**json.load(f))
-        elif self.tutor.available and self.session is not None:
+        if course_dir and owner_step is not None:
+            compiled = load_variant(course_dir, self.session.session_id, owner_step, kind)
+        if compiled is None and self.tutor.available and self.session is not None and course_dir and owner_step is not None:
             await self.transport.send(Status(state=self.state, detail=f"variant:{kind}"))
             try:
-                script = await self.tutor.variant_script(self.ctx, kind, self.session.course_id, self.session.session_id,
-                                                         ask=ask, wrong_answers=wrong)
+                compiled = await build_variant(self.tutor, self.tts, self.ctx, kind, self.session.course_id, course_dir,
+                                               self.session.session_id, owner_step, ask=ask, wrong_answers=wrong)
             except Exception as exc:  # noqa: BLE001
                 log.warning("variant generation failed: %s", exc)
                 return False
-            audio: Dict[int, StepAudio] = {}
-            course_dir = self.store._course_dir(self.session.course_id)
-            for i, st in enumerate(script.steps):
-                stem = f"{self.session.session_id}_{owner_step}_{kind}_{i + 1}"
-                audio[i] = await self._synthesize_cached(st.spoken_text, course_dir, stem)
-            compiled = compile_session(script, audio, generation_mode="llm")
-            if path:
-                os.makedirs(os.path.dirname(path), exist_ok=True)
-                with open(path, "w", encoding="utf-8") as f:
-                    json.dump(compiled.model_dump(mode="json"), f, ensure_ascii=False)
         if compiled is None:
             return False
         self._live_step += 50
@@ -412,23 +413,6 @@ class SessionRuntime:
         self._live_step += len(compiled.actions) + 1
         await self._play_actions(actions)
         return True
-
-    async def _synthesize_cached(self, text: str, course_dir: Optional[str], stem: str) -> StepAudio:
-        """Aligned TTS stored in the course package (audio/variants/) so the next learner reuses it."""
-        if not course_dir:
-            return await self._synthesize_live(text, stem)
-        out_dir = os.path.join(course_dir, "audio", "variants")
-        os.makedirs(out_dir, exist_ok=True)
-        try:
-            import time
-            t0 = time.time()
-            res = await synthesize_aligned(self.tts, text, os.path.join(out_dir, stem), speed=1.0)
-            GLOBAL_LEDGER.add_tts(self.tts.name, "tts_variant", len(text), time.time() - t0)
-        except Exception as e:  # noqa: BLE001
-            log.warning("variant TTS failed: %s", e)
-            return StepAudio(None, 0, 0, 0, None)
-        url = f"/courses/{self.session.course_id}/audio/variants/{os.path.basename(res.audio_path)}" if res.audio_path else None
-        return StepAudio(url, res.duration_ms, res.cjk, res.latin, res.marks)
 
     async def _replay_prereq(self) -> bool:
         """Remediation level 2: replay the prerequisite session's first two narrated steps."""

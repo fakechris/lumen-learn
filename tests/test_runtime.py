@@ -385,3 +385,42 @@ async def test_remediation_ladder_variant_then_prereq_then_pass(two_session_pack
     assert os.path.isfile(str(tmp_path / "course_r" / "variants" / "sess_2_1_deeper.json"))  # cached
     assert rt._gates == [1, 4]
     assert not any("我们先放一放" in m.get("spoken_text", "") for m in transport.sent if m["type"] == "speak")
+
+
+@pytest.mark.asyncio
+async def test_fast_learner_plays_cached_compressed_variant_instead_of_the_step(two_session_package, tmp_path, monkeypatch):
+    monkeypatch.setenv("HK_OUTPUT_ROOT", str(tmp_path / "out"))
+    from src.content.variants import variant_path
+    # a compressed variant for sess_2's derive step (speak step 1), as --variants-for would cache it
+    variant = compile_session(SessionScript(session_id="sess_2", course_id="course_r", title="compressed", steps=[
+        StepSpec(spoken_text="要点一句话", boards=[BoardSpec(title="要点：推导", markdown="K", layout="follow")])]),
+        {0: StepAudio(None, 200, 2, 0)}, "llm")
+    path = variant_path(str(tmp_path / "course_r"), "sess_2", 1, "compressed")
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(variant.model_dump(mode="json"), f)
+    transport = FakeTransport()
+    rt = SessionRuntime(transport, two_session_package, LiveTutor(None), SilentEngine(), str(tmp_path / "live"))
+    await rt.handle(StartSession(course_id="course_r", session_id="sess_2", level="fast"))
+    await _drive_answers(rt, transport, [1])
+    boards = [m["board_content"] for m in transport.sent if m["type"] == "board"]
+    speaks = [m["spoken_text"] for m in transport.sent if m["type"] == "speak"]
+    assert "D" not in boards and "K" in boards                 # original step replaced
+    assert "推导" not in speaks and "要点一句话" in speaks and "回顾" in speaks
+    assert len([m for m in transport.sent if m["type"] == "ask"]) == 1   # the gate stays
+
+
+@pytest.mark.asyncio
+async def test_pipeline_precomputes_compressed_variants(two_session_package, tmp_path, monkeypatch):
+    from src.content.pipeline import ContentPipeline
+    from src.runtime.tutor import LiveTutor as _LT
+
+    async def fake_variant(self, ctx, kind, course_id, session_id, ask=None, wrong_answers=None):
+        return SessionScript(session_id=session_id, course_id=course_id, title=kind, steps=[
+            StepSpec(spoken_text="压缩版", boards=[BoardSpec(title="要点：x", markdown="K")])])
+    monkeypatch.setattr(_LT, "variant_script", fake_variant)
+    pipeline = ContentPipeline(output_root=str(tmp_path), llm=object(), tts=SilentEngine())
+    await pipeline.add_variants("course_r", roots=[str(tmp_path)], only={"sess_1", "sess_2"})
+    made = sorted(os.listdir(str(tmp_path / "course_r" / "variants")))
+    assert made == ["sess_1_1_compressed.json", "sess_1_4_compressed.json", "sess_2_1_compressed.json"]  # define, derive, derive
+    await pipeline.add_variants("course_r", roots=[str(tmp_path)], only={"sess_2"})              # cached → no rebuild
