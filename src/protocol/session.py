@@ -41,6 +41,7 @@ class SegmentPlan(BaseModel):
     media_brief: str = Field("", description="What the figure/widget must show; empty for board-only")
     figure_id: Optional[str] = Field(None, description="For reference_figure: id of an extracted textbook figure")
     ask: bool = Field(False, description="End this segment with a prediction question")
+    beat: Optional[str] = Field(None, description="Teaching beat: hook/analogy/poe/define/derive/worked_example/contrast/counterexample/apply/recap")
     source_sections: List[str] = Field(default_factory=list)
 
 

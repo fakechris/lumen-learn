@@ -61,7 +61,17 @@ SYNTH_SYSTEM = """你是一名苏格拉底式白板导师，要把一个会话�
 - 问题的选项是学生会脱口而出的话（"能，多一根总比少一根强"），不是考卷选项（"维度是 2"）。
 
 # 字段规则
-0. beat：每步标一个教学动作，取值 hook（钩子）/ analogy（类比）/ poe（先猜后看）/ define（定义）/ derive（推导）/ worked_example（例题）/ contrast（对比）/ counterexample（反例）/ apply（应用）/ recap（回顾）。第一步通常是 hook，最后一步是 recap；一节课里 derive 或 worked_example 至少一个。不同水平的学生会按 beat 跳过或加深，所以 hook/analogy 的内容不能承载后面必需的定义。
+0. beat：每步标一个教学动作（教案给了就用教案的），取值 hook / analogy / poe / define / derive / worked_example / contrast / counterexample / apply / recap。不同水平的学生会按 beat 跳过或加深，所以 hook/analogy 不能承载后面必需的定义。每种 beat 的写法：
+   - hook：一句让人想往下听的反差或问题，板书只有一行钩子；不下定义。
+   - analogy：一个日常隐喻 + 它和概念的一一对应（板书两列对应表或两行）；结尾点破隐喻在哪失效。
+   - poe：先让学生猜（question 放在这步末尾，选项是两种直觉），讲解只铺垫不揭晓。
+   - define：术语、记号、形状/单位一次说清；板书是定义 + 一个最小例子。
+   - derive：一步一个等号，讲解逐行指着板书说"从这一行到下一行做了什么"；decorations 圈出变化的那一项。
+   - worked_example：带具体数字走一遍，读数、中间结果都写在板书上；结尾一句"换个数你会算吗"。
+   - contrast：表格对比（2~4 列），讲解只说差异所在的那一格。
+   - counterexample：一个让规则失效的例子，板书写"为什么失效"。
+   - apply：把概念放回真实场景（工程/生活），一句话说清它决定了什么。
+   - recap：3 条以内要点，回扣钩子；最后一步不提问、带 reward。
 1. spoken_text：**不要 LaTeX、不要 Markdown**，公式口语化（"c1 乘 v1 加 c2 乘 v2"）。
 2. boards：markdown 用嵌套列表表达缩进层级；可用 KaTeX（$...$）；加粗表示重点词。**对比类内容用 markdown 表格**（2~4 列、2~5 行，单元格里是短语，不是句子），并可用 decorations 高亮某个单元格里的短语。每张板书的 title 是这块内容的小标题（另起一列的板书 title 会被当作分栏大标题显示）。第一步的第一张板书是本节的一句话钩子（≤ 20 字，title 留空）。第一张 layout 用 "follow"；需要另起一列时用 "newcol"。
    板书里如果放代码：用 ``` 代码块，代码里的字符串一律用**单引号**，并且 JSON 字符串内的双引号必须写成 \\"。
@@ -139,7 +149,8 @@ def _segments_block(outline: SessionOutline) -> str:
     for i, seg in enumerate(outline.segments, start=1):
         extra = f"；media_brief：{seg.media_brief}" if seg.media_brief else ""
         fig = f"；figure_id：{seg.figure_id}" if seg.figure_id else ""
-        lines.append(f"{i}. 「{seg.title}」意图：{seg.intent}；media：{seg.media}{extra}{fig}；ask：{'true' if seg.ask else 'false'}")
+        beat = f"；beat：{seg.beat}" if seg.beat else ""
+        lines.append(f"{i}. 「{seg.title}」意图：{seg.intent}{beat}；media：{seg.media}{extra}{fig}；ask：{'true' if seg.ask else 'false'}")
     return "\n".join(lines)
 
 
@@ -150,6 +161,8 @@ def _apply_plan(steps: List[StepSpec], outline: SessionOutline) -> List[StepSpec
     out = []
     for step, seg in zip(steps, outline.segments):
         upd = {}
+        if seg.beat and not step.beat:
+            upd["beat"] = seg.beat
         if seg.media == "board":
             upd = {"illustration": None, "widget": None}
         elif seg.media in ("illustration", "reference_figure"):
