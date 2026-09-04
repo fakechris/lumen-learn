@@ -516,3 +516,13 @@ def test_adaptive_prereqs_levels_and_policy(tmp_path):
     assert fast.skip_steps == {1, 4} and fast.keeps_ask(7) and not fast.keeps_ask(4)
     novice = play_policy("novice", kps, ["sess_2"])
     assert novice.prereq_review == ["sess_2"] and novice.keeps_ask(4)
+
+
+def test_fast_policy_keeps_at_least_one_gate():
+    from src.content.adaptive import play_policy
+    from src.protocol.session import Keypoint
+    kps = [Keypoint(step_id=1, title="钩子", beat="hook", has_question=True),
+           Keypoint(step_id=4, title="类比", beat="analogy", has_question=True),
+           Keypoint(step_id=7, title="推导", beat="derive")]
+    fast = play_policy("fast", kps, [])
+    assert fast.skip_steps == {1} and fast.keeps_ask(4) and not fast.keeps_ask(1)

@@ -125,8 +125,14 @@ class Policy:
 def play_policy(level: str, keypoints: Sequence[Keypoint], prereqs: Sequence[str]) -> Policy:
     if level == "fast":
         skip = {k.step_id for k in keypoints if k.beat in SKIP_BEATS_FAST}
-        # never skip a step that carries the session's only question or its recap
         asks = {k.step_id for k in keypoints if k.has_question and k.beat in ASK_BEATS_FAST and k.step_id not in skip}
+        if not asks:
+            # a fast learner still gets at least one gate: keep the last questioned step (and do not skip it)
+            questioned = [k for k in keypoints if k.has_question]
+            if questioned:
+                last = questioned[-1]
+                asks = {last.step_id}
+                skip.discard(last.step_id)
         return Policy("fast", skip, asks, False, [])
     if level == "novice":
         return Policy("novice", set(), set(), True, list(prereqs)[:1])

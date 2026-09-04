@@ -232,6 +232,24 @@ async def main() -> int:
             pt = [r["posttest_rate"] for r in rs if r["posttest_rate"] is not None]
             print(f"| {mode} | {persona} | {len(rs)} | {sum(g)/len(g):.2f} | {sum(r['remediations'] for r in rs)} | "
                   f"{sum(pt)/len(pt) if pt else 0:.2f} | {sum(r['audio_min'] for r in rs):.1f} | ${sum(r['cost_usd'] for r in rs):.3f} |")
+    # gates every persona fails on the first try are content defects (ambiguous question or wrong key),
+    # not learner problems — list them for regeneration (--only) or a question rewrite
+    first_fail: Dict[tuple, set] = {}
+    for r in rows:
+        seen_steps = set()
+        for g in r["gates"]:
+            if g.get("open") or g["step"] >= 100000 or g["step"] in seen_steps:
+                continue
+            seen_steps.add(g["step"])
+            if not g["correct"]:
+                first_fail.setdefault((r["session_id"], g["step"]), set()).add(r["persona"])
+    suspicious = [(k, v) for k, v in first_fail.items() if len(v) >= min(3, len(a.personas.split(",")))]
+    if suspicious:
+        print("\n可疑提问（所有学生第一次都答错 → 题目或答案有问题，不是学生的问题）：")
+        for (sid, step), personas in suspicious:
+            sess = store.get_session(a.course_id, sid)
+            ask = next((x for x in sess.actions if x.type == "ask" and x.step_id == step), None)
+            print(f"  {sid} step {step}: {ask.question if ask else ''}  [{', '.join(sorted(personas))}]")
     print(f"\nsaved {path}")
     return 0
 
