@@ -189,8 +189,12 @@ class ExerciseSpec(BaseModel):
         return self
 
 
+Beat = Literal["hook", "analogy", "poe", "define", "derive", "worked_example", "contrast", "counterexample", "apply", "recap"]
+
+
 class StepSpec(BaseModel):
     title: str = ""
+    beat: Optional[Beat] = Field(None, description="What this step is for (SYSTEM_DESIGN §5); drives the play policy")
     spoken_text: str
     boards: List[BoardSpec] = Field(default_factory=list)
     decorations: List[DecorationSpec] = Field(default_factory=list)
@@ -218,6 +222,8 @@ class Keypoint(BaseModel):
     """One narrated segment as shown in the on-canvas progress list (课堂要点)."""
     step_id: int
     title: str
+    beat: Optional[Beat] = None
+    has_question: bool = False
 
 
 class CompiledSession(BaseModel):

@@ -7,7 +7,7 @@ import pytest
 from src.content.compiler import StepAudio, compile_session
 from src.content.store import CourseStore, write_package
 from src.protocol.actions import (
-    ActionStepComplete, InterjectQuestion, InterjectResume, InterjectStart, QuestionAnswers, StartSession,
+    ActionStepComplete, InterjectQuestion, InterjectResume, InterjectStart, QuestionAnswers, SkipStep, StartSession,
 )
 from src.protocol.session import (
     BoardSpec, ChapterOutline, CourseStructure, QuestionSpec, SessionOutline, SessionScript, StepSpec,
@@ -223,3 +223,81 @@ async def test_detour_is_a_mini_lesson_with_relabeled_ids(package, tmp_path, mon
     await rt.handle(InterjectResume())
     assert rt.state == "teaching"
     await rt.close()
+
+
+async def _drive(rt, transport, answer_index=1):
+    """Ack every ack-required action and answer every ask; returns when the session finishes."""
+    seen = 0
+    for _ in range(400):
+        await asyncio.sleep(0.01)
+        for m in transport.sent[seen:]:
+            seen += 1
+            if m["type"] in ("tts_segment", "board", "graph", "illustration", "generated_animation", "new_page"):
+                await rt.handle(ActionStepComplete(step_id=m["step_id"]))
+            elif m["type"] == "ask":
+                await rt.handle(QuestionAnswers(step_id=m["step_id"], answer_index=answer_index))
+        if any(m["type"] == "response_complete" for m in transport.sent):
+            return
+
+
+@pytest.fixture
+def beat_package(tmp_path):
+    outline = SessionOutline(session_id="sess_1", title="T", learning_goal="G", core_concept="C")
+    course = CourseStructure(course_id="course_b", title="Course", generation_mode="authored",
+                             chapters=[ChapterOutline(chapter_id="ch_1", title="Ch", sessions=[outline])])
+    steps = [
+        StepSpec(title="钩子", beat="hook", spoken_text="钩子", boards=[BoardSpec(markdown="H")]),
+        StepSpec(title="类比", beat="analogy", spoken_text="类比", boards=[BoardSpec(markdown="A")],
+                 question=QuestionSpec(question="q1?", options=["错", "对"], correct_index=1, explanation="因为")),
+        StepSpec(title="推导", beat="derive", spoken_text="推导", boards=[BoardSpec(markdown="D")],
+                 question=QuestionSpec(question="q2?", options=["错", "对"], correct_index=1, explanation="因为")),
+        StepSpec(title="回顾", beat="recap", spoken_text="回顾"),
+    ]
+    script = SessionScript(session_id="sess_1", course_id="course_b", title="T", learning_goal="G", steps=steps)
+    compiled = compile_session(script, {i: StepAudio(None, 300, 3, 0) for i in range(4)}, "authored")
+    write_package(str(tmp_path / "course_b"), course, [script], [compiled])
+    return CourseStore([str(tmp_path)]), compiled
+
+
+@pytest.mark.asyncio
+async def test_fast_level_skips_hook_and_analogy_and_their_asks(beat_package, tmp_path, monkeypatch):
+    monkeypatch.setenv("HK_OUTPUT_ROOT", str(tmp_path / "out"))
+    store, _ = beat_package
+    transport = FakeTransport()
+    rt = SessionRuntime(transport, store, LiveTutor(None), SilentEngine(), str(tmp_path / "live"))
+    await rt.handle(StartSession(course_id="course_b", session_id="sess_1", level="fast"))
+    await _drive(rt, transport)
+    lvl = await transport.wait_for("level_update")
+    assert lvl["level"] == "fast" and len(lvl["skipped_steps"]) == 2
+    boards = [m["board_content"] for m in transport.sent if m["type"] == "board"]
+    assert boards == ["D"]                      # hook + analogy boards skipped
+    asks = [m["question"] for m in transport.sent if m["type"] == "ask"]
+    assert asks == ["q2?"]                      # the analogy gate went with its step
+    ready = await transport.wait_for("session_ready")
+    assert [k["skipped"] for k in ready["keypoints"]] == [True, True, False, False]
+    assert [k["beat"] for k in ready["keypoints"]] == ["hook", "analogy", "derive", "recap"]
+
+
+@pytest.mark.asyncio
+async def test_skip_step_releases_ack_and_promotes_after_three(beat_package, tmp_path, monkeypatch):
+    monkeypatch.setenv("HK_OUTPUT_ROOT", str(tmp_path / "out"))
+    store, _ = beat_package
+    transport = FakeTransport()
+    rt = SessionRuntime(transport, store, LiveTutor(None), SilentEngine(), str(tmp_path / "live"), ack_timeout_s=5)
+    await rt.handle(StartSession(course_id="course_b", session_id="sess_1", level="standard"))
+    seen = 0
+    for _ in range(400):
+        await asyncio.sleep(0.01)
+        for m in transport.sent[seen:]:
+            seen += 1
+            if m["type"] == "tts_segment":
+                await rt.handle(SkipStep(step_id=m["step_id"]))   # "我懂了" instead of listening
+            elif m["type"] in ("board", "graph", "illustration", "generated_animation", "new_page"):
+                await rt.handle(ActionStepComplete(step_id=m["step_id"]))
+            elif m["type"] == "ask":
+                await rt.handle(QuestionAnswers(step_id=m["step_id"], answer_index=1))
+        if any(m["type"] == "response_complete" for m in transport.sent):
+            break
+    levels = [m for m in transport.sent if m["type"] == "level_update"]
+    assert levels[0]["level"] == "standard" and levels[-1]["level"] == "fast"
+    assert rt._skips >= 3 and rt._gates == [2, 2]

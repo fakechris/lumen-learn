@@ -194,9 +194,20 @@ ACK_REQUIRED = {"tts_segment", "board", "graph", "illustration", "generated_anim
 # Non-action server -> client messages
 # --------------------------------------------------------------------------- #
 
+class LevelUpdate(BaseModel):
+    """The play policy in force for this learner (sent at start and whenever it changes)."""
+    type: Literal["level_update"] = "level_update"
+    level: str
+    reason: str = ""
+    skipped_steps: List[int] = Field(default_factory=list)
+
+
 class KeypointRef(BaseModel):
     step_id: int
     title: str
+    beat: Optional[str] = None
+    has_question: bool = False
+    skipped: bool = False  # play policy skipped it for this learner
 
 
 class SessionReady(BaseModel):
@@ -276,6 +287,13 @@ class StartSession(BaseModel):
     session_id: str
     from_step_id: Optional[int] = None
     tts_speed: float = 1.0
+    level: Optional[Literal["novice", "standard", "fast"]] = None  # None = decide from evidence
+
+
+class SkipStep(BaseModel):
+    """"我懂了": the student skips the rest of the current narration and goes straight to its gate."""
+    type: Literal["skip_step"] = "skip_step"
+    step_id: int
 
 
 class ActionStepComplete(BaseModel):
@@ -327,7 +345,7 @@ ClientMessage = Annotated[
     Union[
         StartSession, ActionStepComplete, QuestionAnswers, InterjectStart,
         InterjectQuestion, InterjectResume, SetTtsConfig, PauseSession,
-        ResumeSession, Ping,
+        ResumeSession, Ping, SkipStep,
     ],
     Field(discriminator="type"),
 ]

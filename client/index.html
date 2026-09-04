@@ -53,6 +53,7 @@
       <button class="icon" id="zoomOut">−</button><span class="counter" id="zoomLabel">100%</span><button class="icon" id="zoomIn">+</button>
     </div>
     <button class="pill btn" id="speedBtn" title="语速">沉稳 · 1×</button>
+    <button class="pill btn level" id="levelBtn" title="讲解档位：按证据自动，也可以自己选">档位 · 自动</button>
     <button class="pill btn" id="openHome" title="课程主页">☰ 课程</button>
     <span class="pill" id="capsPill" title="服务端能力">…</span>
     <button class="pill btn primary" id="openGenerate">＋ 从讲义生成</button>
@@ -91,6 +92,7 @@
     <div class="controls">
       <button class="round" id="playPauseBtn" title="播放 / 暂停（空格）"><span id="playIcon">❚❚</span></button>
       <button class="round interject" id="interjectBtn" title="打断提问">✋</button>
+      <button class="round skip" id="skipBtn" title="我懂了：跳过这段讲解，直接到提问">懂了</button>
       <span class="state" id="stateBadge" data-state="idle">空闲</span>
     </div>
   </div>
@@ -175,6 +177,21 @@
       <button class="icon big" id="exPrev" title="上一题">←</button>
       <button class="chip big" id="exCheck">检查</button>
       <button class="chip big primary" id="exNext" style="display:none">下一题</button>
+    </div>
+  </div>
+
+  <div class="exercise-view" id="entryView">
+    <div class="ex-top">
+      <span class="pill">开课前 · 先修小测</span>
+      <span class="counter" id="entryCounter"></span>
+      <div class="spacer"></div>
+      <button class="icon" id="entryClose" title="跳过">×</button>
+    </div>
+    <p class="map-note" id="entryNote"></p>
+    <div class="ex-body"><div class="ex-main" id="entryBody"></div></div>
+    <div class="ex-nav">
+      <button class="chip big" id="entrySkip">直接开始</button>
+      <button class="chip big primary" id="entryDone" style="display:none">开始上课</button>
     </div>
   </div>
 

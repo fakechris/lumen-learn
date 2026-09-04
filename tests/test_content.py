@@ -471,3 +471,48 @@ def test_concept_map_structural_and_cleaning():
     assert [n.id for n in cm.nodes] == ["chain-rule", "neuron"]
     assert cm.nodes[0].sessions == ["sess_2"] and cm.nodes[0].unit == "U1"
     assert len(cm.edges) == 1 and cm.note == "主线"
+
+
+def test_adaptive_prereqs_levels_and_policy(tmp_path):
+    from src.content.adaptive import decide_level, play_policy, prereq_sessions
+    from src.content.concept_map import ConceptEdge, ConceptMap, ConceptNode
+    from src.content.mastery import record
+    from src.obs.db import DB
+    from src.protocol.session import ChapterOutline, CourseStructure, Keypoint, SessionOutline
+    course = CourseStructure(course_id="c", title="t", chapters=[ChapterOutline(chapter_id="ch_1", title="一", sessions=[
+        SessionOutline(session_id="sess_1", title="导数", learning_goal="g", core_concept="导数"),
+        SessionOutline(session_id="sess_2", title="链式法则", learning_goal="g", core_concept="链式法则"),
+        SessionOutline(session_id="sess_3", title="反向传播", learning_goal="g", core_concept="反向传播")])])
+    cmap = ConceptMap(course_id="c", nodes=[
+        ConceptNode(id="derivative", label="导数", sessions=["sess_1"]),
+        ConceptNode(id="chain-rule", label="链式法则", sessions=["sess_2"]),
+        ConceptNode(id="backprop", label="反向传播", sessions=["sess_3"])],
+        edges=[ConceptEdge(source="derivative", target="backprop", type="prerequisite"),
+               ConceptEdge(source="chain-rule", target="backprop", type="prerequisite")])
+    assert prereq_sessions(course, cmap, "sess_3") == ["sess_1", "sess_2"]
+    assert prereq_sessions(course, None, "sess_3") == ["sess_2"]      # fallback: previous session
+    assert prereq_sessions(course, None, "sess_1") == []
+
+    db = DB(str(tmp_path / "hk.db"))
+    e = decide_level(db, "c", "sess_3", ["sess_1", "sess_2"])
+    assert e.level == "standard" and e.needs_diagnosis
+    for _ in range(3):
+        record(db, "c", "sess_1", "single_choice", False)
+    record(db, "c", "sess_2", "fill_blank", True)
+    e = decide_level(db, "c", "sess_3", ["sess_1", "sess_2"])
+    assert e.level == "novice" and not e.needs_diagnosis
+    for _ in range(12):
+        record(db, "c", "sess_1", "interactive", True); record(db, "c", "sess_1", "fill_blank", True)
+        record(db, "c", "sess_2", "interactive", True); record(db, "c", "sess_2", "fill_blank", True)
+        record(db, "c", "sess_1", "ask_open", None, 0.9); record(db, "c", "sess_2", "ask_open", None, 0.9)
+        record(db, "c", "sess_3", "ask_open", None, 0.9)
+    e = decide_level(db, "c", "sess_3", ["sess_1", "sess_2"])
+    assert e.level == "fast", e
+    assert decide_level(db, "c", "sess_3", ["sess_1"], override="novice").level == "novice"
+
+    kps = [Keypoint(step_id=1, title="钩子", beat="hook"), Keypoint(step_id=4, title="类比", beat="analogy", has_question=True),
+           Keypoint(step_id=7, title="推导", beat="derive", has_question=True), Keypoint(step_id=10, title="回顾", beat="recap")]
+    fast = play_policy("fast", kps, ["sess_2"])
+    assert fast.skip_steps == {1, 4} and fast.keeps_ask(7) and not fast.keeps_ask(4)
+    novice = play_policy("novice", kps, ["sess_2"])
+    assert novice.prereq_review == ["sess_2"] and novice.keeps_ask(4)

@@ -204,6 +204,43 @@ async def concept_map(course_id: str, rebuild: bool = False):
     return cmap.model_dump(mode="json")
 
 
+@app.get("/api/v1/courses/{course_id}/sessions/{session_id}/entry")
+async def session_entry(course_id: str, session_id: str):
+    """Where is this learner before the session (SYSTEM_DESIGN §10.2): level + reason,
+    prerequisite sessions, and up to three diagnosis questions when there is no evidence yet."""
+    from src.content.adaptive import decide_level, diagnosis_questions, prereq_sessions
+    from src.content.concept_map import load_map
+    course = store.get_course(course_id)
+    if not course or not any(s.session_id == session_id for s in course.all_sessions()):
+        raise HTTPException(404, "session not found")
+    cmap = load_map(store._course_dir(course_id) or "")
+    prereqs = prereq_sessions(course, cmap, session_id)
+    db = get_db(OUTPUT_ROOT)
+    profile = db.profile(course_id)
+    entry = decide_level(db, course_id, session_id, prereqs, profile.get("level"))
+    questions = diagnosis_questions(store, course_id, prereqs) if entry.needs_diagnosis else []
+    titles = {s.session_id: s.title for s in course.all_sessions()}
+    return {"level": entry.level, "reason": entry.reason, "needs_diagnosis": bool(questions),
+            "prereqs": [{"session_id": p, "title": titles.get(p, p)} for p in prereqs],
+            "questions": questions, "evidence": entry.evidence, "profile_level": profile.get("level")}
+
+
+class ProfileRequest(BaseModel):
+    level: Optional[str] = None  # novice | standard | fast | null (= decide from evidence)
+    pace: Optional[float] = None
+
+
+@app.post("/api/v1/courses/{course_id}/profile")
+async def set_profile(course_id: str, req: ProfileRequest):
+    """The learner's explicit choice (快一点 / 慢一点 / 自动) for this course."""
+    if req.level is not None and req.level not in ("novice", "standard", "fast"):
+        raise HTTPException(400, "level must be novice | standard | fast")
+    fields = {"level": req.level}
+    if req.pace is not None:
+        fields["pace"] = max(0.5, min(2.0, req.pace))
+    return get_db(OUTPUT_ROOT).set_profile(course_id, **fields)
+
+
 @app.get("/api/v1/courses/{course_id}/mastery")
 async def course_mastery(course_id: str):
     """Four-axis mastery per session + a course-level average. Sessions without evidence are absent."""
