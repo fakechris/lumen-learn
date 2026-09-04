@@ -17,6 +17,8 @@ into chapters, then each chapter is planned from its own text.
 
 from __future__ import annotations
 
+import logging
+
 from typing import List, Optional
 
 from pydantic import BaseModel, Field, field_validator
@@ -28,6 +30,8 @@ from src.protocol.session import (
 )
 
 SINGLE_CALL_CHAR_LIMIT = 24_000
+
+log = logging.getLogger(__name__)
 
 MEDIA_GUIDE = """# 媒介决策指南（每段必须二选一地决定，宁缺毋滥）
 - board：纯定义、推导、术语、清单。板书 + 讲解就够，不配图。
@@ -233,6 +237,13 @@ async def plan_chapter_llm(doc: ParsedDocument, g: "ChapterGrouping.Group", llm:
             f"本章如果只是词汇表/附录/目录之类不可讲授的内容，返回 sessions 为空数组。\n\n本章全文：\n{text}")
     part = await llm.complete_model(PLAN_SYSTEM, user, PlannedCourse, tier="pro", purpose="plan")
     sessions = [s for ch in part.chapters for s in ch.sessions]
+    # media quota: a session that only writes on the board gets one figure/gadget decided now
+    from src.content.media_quota import ensure_media_quota
+    for sess in sessions:
+        try:
+            await ensure_media_quota(sess.title, sess.learning_goal, sess.segments, llm)
+        except Exception as exc:  # noqa: BLE001 — a failed quota pass leaves the plan as generated
+            log.warning("media quota pass failed for %s: %s", sess.title, exc)
     desc = next((ch.description for ch in part.chapters if ch.description), "")
     return PlannedChapter(title=g.title, description=desc, unit=g.unit, sessions=sessions)
 
