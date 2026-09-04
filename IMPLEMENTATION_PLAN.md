@@ -99,4 +99,10 @@ novice 的先修补救能回到主线断点；fast 学生一节课时长明显�
 2. 媒体配额与教具计划层（每节至少一个可动的量；`{objects, anchors, timeline}` 先于代码）；
 4. 模拟学生评测集与北极星指标；审阅模式把人的反馈写进 DB 并触发 `--only` 重生成；
 3. 声音与节奏（TTS 引擎、句级停顿、首音延迟）最后做。
-**Status**: Not Started
+**Status**: In Progress. Done (2026-09-03): beats; entry diagnosis + evidence-based level; fast skips hook/analogy,
+novice gets a 先修回顾 column; 我懂了 skip with auto-promotion; remediation ladder (re-ask → deeper variant, cached →
+prerequisite replay → explain); `tools/sim_student.py` harness. First run (3 sessions × 3 personas, baseline vs adaptive,
+$0.05): post-test 0.89 in both modes — the 3-item post-tests are too easy to discriminate yet; the harness did surface a
+content defect (sess_3 gate "为什么批处理时要把 W 写成 nin×nout" — every persona picks the "矩阵乘法" option, the key says
+"每一列对应一个神经元"), now reported as 可疑提问. Next: harder post-tests (generated, not the session's own exercises),
+compressed variants precomputed for fast, beat-aware exemplars, then item 2 (media quota).
