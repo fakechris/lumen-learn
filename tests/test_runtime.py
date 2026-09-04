@@ -422,5 +422,5 @@ async def test_pipeline_precomputes_compressed_variants(two_session_package, tmp
     pipeline = ContentPipeline(output_root=str(tmp_path), llm=object(), tts=SilentEngine())
     await pipeline.add_variants("course_r", roots=[str(tmp_path)], only={"sess_1", "sess_2"})
     made = sorted(os.listdir(str(tmp_path / "course_r" / "variants")))
-    assert made == ["sess_1_1_compressed.json", "sess_1_4_compressed.json", "sess_2_1_compressed.json"]  # define, derive, derive
+    assert made == ["sess_1_1_compressed.json", "sess_1_3_compressed.json", "sess_2_1_compressed.json"]  # define, derive, derive
     await pipeline.add_variants("course_r", roots=[str(tmp_path)], only={"sess_2"})              # cached → no rebuild
