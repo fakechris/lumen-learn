@@ -19,14 +19,19 @@ the result headlessly to catch runtime errors and blank canvases.
 from __future__ import annotations
 
 import os
+import logging
 import re
-from typing import Optional
+from typing import List, Optional
+
+from pydantic import BaseModel, Field
 
 from src.llm.client import LLMClient, LLMError
 from src.protocol.session import WidgetSpec
 
 THREE_CDN = "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"
 ORBIT_CDN = "https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"
+
+log = logging.getLogger(__name__)
 
 EXEMPLAR_PATH = os.path.join(os.path.dirname(__file__), "..", "..", "examples", "authored", "squeeze_explorable.html")
 HANDCHART_PATH = os.path.join(os.path.dirname(__file__), "handchart.js")
@@ -178,8 +183,52 @@ def _strip_fences(text: str) -> str:
     return html[start:].strip() if start >= 0 else html.strip()
 
 
+WIDGET_PLAN_SYSTEM = """你是教具的技术策划。在写任何代码之前，先把这个教具**规划**出来（借鉴动画分镜的做法）：
+画布按 6×6 网格分区（列 A~F，行 1~6，A1 左上）。每个对象放在一个格子锚点上，控制面板固定在画布下方。
+只输出 JSON：
+{"objects": [{"name": "curve", "role": "主角/参考/标注", "anchor": "B3", "color": "MAIN|AUX|INK|MUTED", "what": "画什么，一句话"}],
+ "readouts": [{"name": "slope", "label": "斜率", "from": "怎么算"}],
+ "controls": [{"name": "probeX", "kind": "probe|slider|toggle", "range": [0, 1], "default": 0.5}],
+ "timeline": ["页面加载：画什么", "学生拖动：什么变"],
+ "expected": "学生应该看到的现象，一句话"}
+规则：对象 3~7 个；每个对象一个锚点，不重叠；读数 1~3 个；控制 1~2 个；expected 必须能被截图验证。"""
+
+
+class _Obj(BaseModel):
+    name: str
+    role: str = ""
+    anchor: str = ""
+    color: str = "MAIN"
+    what: str = ""
+
+
+class WidgetPlan(BaseModel):
+    objects: List[_Obj]
+    readouts: List[dict] = Field(default_factory=list)
+    controls: List[dict] = Field(default_factory=list)
+    timeline: List[str] = Field(default_factory=list)
+    expected: str = ""
+
+
+async def plan_widget(spec: WidgetSpec, llm: LLMClient) -> Optional[WidgetPlan]:
+    """Technical plan before code (TEA / Code2Video): objects on grid anchors, readouts, controls, timeline."""
+    try:
+        return await llm.complete_model(WIDGET_PLAN_SYSTEM, f"教具标题：{spec.title}\n任务：{spec.task}\n可控参数：{spec.params}",
+                                        WidgetPlan, temperature=0.3, tier="fast", purpose="widget_plan")
+    except Exception as exc:  # noqa: BLE001
+        log.warning("widget plan failed: %s", exc)
+        return None
+
+
+def plan_text(plan: WidgetPlan) -> str:
+    objs = "; ".join(f"{o.name}@{o.anchor}({o.role},{o.color}): {o.what}" for o in plan.objects)
+    return (f"对象与锚点：{objs}\n读数：{plan.readouts}\n控制：{plan.controls}\n时间线：{' → '.join(plan.timeline)}\n"
+            f"预期现象：{plan.expected}")
+
+
 async def generate_widget_html(spec: WidgetSpec, llm: LLMClient, attempts: int = 2,
-                               feedback: Optional[str] = None, problems: Optional[list] = None) -> Optional[str]:
+                               feedback: Optional[str] = None, problems: Optional[list] = None,
+                               plan_first: bool = True) -> Optional[str]:
     """Generate HTML for an explorable/threejs widget. Returns None on failure.
     `feedback` carries a runtime problem from a previous render check; `problems`
     (if given) collects the reason of every failed attempt for diagnostics."""
@@ -195,6 +244,9 @@ async def generate_widget_html(spec: WidgetSpec, llm: LLMClient, attempts: int =
     if spec.controls:
         user += "\n讲解中老师会发出这些指令，教具必须能响应：" + "; ".join(
             f"{c.op} {c.payload}" for c in spec.controls)
+    plan = await plan_widget(spec, llm) if plan_first else None
+    if plan is not None:
+        user += "\n\n实现计划（先定的，必须照做；锚点 A1~F6 = 画布 6×6 网格，控制面板放画布下方）：\n" + plan_text(plan)
     problem: Optional[str] = feedback
     for _ in range(attempts):
         try:

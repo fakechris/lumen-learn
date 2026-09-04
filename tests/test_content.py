@@ -539,3 +539,20 @@ def test_posttest_model_rejects_recall_and_bad_items():
     with _pytest.raises(ValueError):
         PostTest(session_id="s", items=[ok, ok, PostItem(stem="越界的题目", options=["1", "2", "3", "4"], correct_index=4)])
     assert len(PostTest(session_id="s", items=[ok, ok, ok]).items) == 3
+
+
+def test_media_quota_gap_detection_and_widget_plan_text():
+    from src.content.media_quota import media_gap
+    from src.content.widget_generator import WidgetPlan, plan_text
+    from src.protocol.session import SegmentPlan
+    boards = [SegmentPlan(title="a", intent="i", beat="hook"), SegmentPlan(title="b", intent="i", beat="derive"),
+              SegmentPlan(title="c", intent="i", beat="recap")]
+    assert media_gap(boards)
+    boards[1].media = "explorable"
+    assert not media_gap(boards)
+    assert not media_gap([SegmentPlan(title="a", intent="i", beat="hook")])   # a one-segment hook needs nothing
+    plan = WidgetPlan(objects=[{"name": "curve", "role": "主角", "anchor": "B3", "color": "MAIN", "what": "y=x^2"}],
+                      readouts=[{"name": "slope"}], controls=[{"name": "probeX", "kind": "probe"}],
+                      timeline=["加载：画曲线", "拖动：切线跟着走"], expected="斜率随 x 线性变化")
+    text = plan_text(plan)
+    assert "curve@B3" in text and "斜率随 x 线性变化" in text
