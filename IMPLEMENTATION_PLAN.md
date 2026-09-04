@@ -104,5 +104,11 @@ novice gets a 先修回顾 column; 我懂了 skip with auto-promotion; remediati
 prerequisite replay → explain); `tools/sim_student.py` harness. First run (3 sessions × 3 personas, baseline vs adaptive,
 $0.05): post-test 0.89 in both modes — the 3-item post-tests are too easy to discriminate yet; the harness did surface a
 content defect (sess_3 gate "为什么批处理时要把 W 写成 nin×nout" — every persona picks the "矩阵乘法" option, the key says
-"每一列对应一个神经元"), now reported as 可疑提问. Next: harder post-tests (generated, not the session's own exercises),
-compressed variants precomputed for fast, beat-aware exemplars, then item 2 (media quota).
+"每一列对应一个神经元"), now reported as 可疑提问. Then (same day): transfer post-tests generated per session + cold pre-test → learning gain; novice personas hold the
+session's cognitive hurdle as a belief (sess_3 novice: pre 2/6 → post 5/6, +0.50; sess_2's hurdle does not bite, pre 6/6);
+beats flow plan → synthesis with per-beat writing rules; compressed variants precomputed (`--variants-for`) and played
+for fast learners (sess_3 fast: hook skipped, derive replaced by 要点, gate kept, ~25 s to the first gate);
+media-quota pass in the planner; widget technical plan (grid anchors) before code; SVG grid layout rule.
+Open: the LLM student still knows too much for most items (gain is only visible where a misconception is planted) —
+real-learner data or misconception-targeted items are the honest ruler; 111-session variant precompute not run yet
+(cost ≈ $0.5, ~40 min of `say`); suspicious gate sess_3 step 8 should be rewritten (`--only sess_3 --force`).
