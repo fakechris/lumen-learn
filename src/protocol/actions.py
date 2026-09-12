@@ -5,10 +5,10 @@ Server -> client messages are "actions". Every action that the client must
 acknowledge carries a ``step_id``; the client replies with
 ``action_step_complete`` once it has finished rendering/playing that step.
 
-The vocabulary mirrors the real Lumen Learn whiteboard client
-(see research/WhiteboardPage-*.js): speak / tts_segment / board / highlight /
-circle / graph / ask / new_column / new_page / animation_pending /
-generated_animation / animation_failed / reward_user / done.
+The vocabulary defines the Socratic whiteboard client:
+speak / tts_segment / board / highlight / circle / graph / ask /
+new_column / new_page / animation_pending / generated_animation /
+animation_failed / reward_user / done.
 """
 
 from __future__ import annotations
