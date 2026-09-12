@@ -1,135 +1,205 @@
-# Lumen Learn (Socratic Whiteboard)
+# Lumen Learn (Socratic Whiteboard / 苏格拉底互动白板)
 
-A protocol-driven Socratic whiteboard tutor:
-a lecture note goes in, and out comes an interactive lesson where a tutor voice narrates,
-handwritten notes appear line by line in sync with the speech, formulas get circled as they are mentioned,
-a sandboxed 3D manipulative shows the geometry, and the tutor stops to ask you questions.
-You can interrupt at any time and ask your own.
+<p align="center">
+  <b>A protocol-driven Socratic AI tutor with synchronized handwriting, voice narration, 2D/3D interactive widgets, and adaptive learning.</b><br>
+  <b>基于全双工 Action 协议的苏格拉底式 AI 互动白板导师系统：音画同步、逐步板书、探针交互教具、即时打断与自适应因材施教。</b>
+</p>
 
-The wire protocol defines a complete interactive whiteboard runtime:
-`speak / tts_segment / board / circle / highlight / graph / ask / new_column / new_page / generated_animation / reward_user / done`
-with a per-step `action_step_complete` handshake and reveal gates.
+<p align="center">
+  <a href="#english">English</a> •
+  <a href="#中文说明">中文说明</a> •
+  <a href="#milestones--roadmap-阶段里程碑">Milestones & Roadmap</a> •
+  <a href="#quick-start-快速上手">Quick Start</a> •
+  <a href="#architecture-系统架构">Architecture</a>
+</p>
 
-## Run it
+---
 
-```bash
-python3 -m venv .venv && .venv/bin/pip install -e ".[dev]"
-export DEEPSEEK_API_KEY=...        # or OPENAI_API_KEY / ANTHROPIC_API_KEY (optional)
-.venv/bin/uvicorn server.app:app --port 8000
-open http://localhost:8000
-```
+<a name="english"></a>
+## English
 
-Models are configured per tier: `LLM_MODEL` (fast: session writing, grading, interjections, figures,
-widgets), `LLM_MODEL_PRO` (lesson plan; set `LLM_SYNTH_TIER=pro` to also use it for session writing,
-noticeably slower with reasoning models), `LLM_MODEL_VISION` (widget screenshot review, textbook-figure captions). With a DeepSeek key the defaults are `deepseek-v4-flash`,
-`deepseek-v4-pro`, `deepseek-v4-flash-vision-exp`.
+### What is Lumen Learn?
 
-A bundled example course (`examples/courses/`) plays without any API key. With a key the
-"从讲义生成课程" button produces a full Socratic course from pasted Markdown, and the tutor
-answers interruptions and grades free-text answers live.
+**Lumen Learn** is an open-source, protocol-driven Socratic whiteboard AI tutor. Input a textbook PDF or lecture markdown, and Lumen Learn compiles it into a deeply engaging, multimodal interactive lesson:
+- **Synchronized Handwriting & Audio**: Notes appear line by line on a single handwritten canvas in tight synchronization with voice narration.
+- **Visual Signals**: Formulas and key concepts are circled, underlined, or spotlighted exactly as they are spoken.
+- **Interactive Explorables**: Sandboxed 2D canvas manipulatives (curves, dashed envelopes, live pointer probes) and 3D scenes demonstrate dynamic principles.
+- **Socratic Inquiry**: The tutor pauses to ask prediction and concept-checking questions.
+- **Branch-and-Return Interruptions**: Students can speak up or type questions at any moment. The tutor temporarily branches into a detour explanation, then returns seamlessly to the lecture flow.
+- **Adaptive Teaching**: Generates explanation ladders, entry diagnostic quizzes, prerequisite remediation loops, and dynamic course concept graphs.
 
-TTS: `TTS_ENGINE=say|edge|minimax|silent` (auto: macOS `say`, else edge-tts, else silent),
-`TTS_VOICE` picks the voice, `TTS_MODEL` the MiniMax model. Every narration is synthesized
-sentence by sentence and concatenated, so each `tts_segment` carries character-level
-timing marks; the subtitle typewriter and the circle/highlight timing follow the audio
-exactly (edge-tts additionally provides word marks).
+The entire system is powered by a typed wire protocol (`speak`, `tts_segment`, `board`, `circle`, `highlight`, `graph`, `ask`, `new_column`, `new_page`, `generated_animation`, `reward_user`, `done`) with an explicit `action_step_complete` handshake and reveal gating.
 
-Costs: every LLM/TTS call is recorded in `output/_usage/usage.jsonl` with its purpose; each
-built course gets a `cost.json`; the plan step shows a rough pre-build estimate; interruptions
-report their own cost. Prices are estimates unless set via `LLM_PRICES` / `TTS_PRICES`
-(JSON, USD per 1M tokens / characters). `GET /api/v1/usage` aggregates.
+---
 
-Interruptions (打断) are answered as a mini lesson in exactly the lesson's form: the tutor
-writes 1-3 steps (board opening a "岔路" column, narration, circles, optional figure), they are
-synthesized and streamed through the same action protocol, then the main narration resumes
-from the exact offset.
+<a name="中文说明"></a>
+## 中文说明
 
-Generate from the command line:
+### 项目简介
 
-```bash
-.venv/bin/python -m src.content.pipeline --input examples/linear_algebra_basis.md --mode llm
-```
+**Lumen Learn** 是一个基于第一性原理打造的、面向深度理解的苏格拉底式 AI 互动白板教学系统。系统输入教材 PDF 或讲义 Markdown，即可端到端编译为具备高度交互性的一对一私教课堂：
+- **音画同频与手绘墨迹**：讲到哪里写到哪里，告别机械幻灯片，在单页手绘纸质画布上逐步呈现提纲挈领的板书。
+- **动态信号系统**：公式、符号与关键结论随语音节奏精准触发红圈标注、划线、聚光灯与色块高亮。
+- **探针式可交互教具（Explorables）**：内嵌免依赖的 2D Canvas 探针图（如夹逼定理、曲线包络线、实时读数探针）及 3D 几何教具，学生可亲手拨动参数观察变化。
+- **苏格拉底式发问**：每节课设置认知断点与预测设问，引导学生先猜再验证，针对误概念给予阶梯提示与针对性解析。
+- **随时插话与分岔回归**：支持学习者在任意节点打断提问，系统生成 1~3 步的“岔路解答”分支，讲完后精准回归主线进度。
+- **因材施教与认知闭环**：结合入口诊断分层、快慢学生认知弧线裁剪、先修知识补救回路、四维掌握度模型与手绘概念图谱。
 
-## Architecture
+---
+
+## Key Features / 核心特性
+
+| Feature 模块 | Description (EN) | 核心说明 (CN) |
+| :--- | :--- | :--- |
+| **Audio-Clock Driven** | Client-side audio clock drives typewriter, progressive board reveal, and annotation timings. | 客户端音频时钟主导字幕打字机、渐进式板书展开与标注时序，毫秒级严丝合缝。 |
+| **2D & 3D Explorables** | Zero-dependency 2D Canvas charts with `HandChart` wobbly ink axes, live probes, and teacher-driven controls. | 内置手绘风格 HandChart 探针图表与 3D WebGL，支持教师端按语音锚点驱动教具参数。 |
+| **Headless Render QA** | Playwright runs headless rendering verification on generated widgets to prevent runtime errors or blank outputs. | 自动化 Playwright 无头渲染质检，在生成期捕获脚本报错或空白并自动反馈重试。 |
+| **Bilingual TTS** | Measured speech durations, LaTeX-to-speech phoneme conversion, character/word-level marks (Edge-TTS / macOS / MiniMax). | 支持多引擎真实时长测量与 LaTeX 公式口语化转写，支持字符/单词级同步锚点。 |
+| **Feynman Round** | "Explain to me" mode where a curious peer agent probes the user's understanding for 4 progressive rounds. | 讲给我听（费曼演练）：学生用自己的话解释，AI 好奇学伴连续 4 轮追问深度检验。 |
+| **Mastery & Concept Map** | Append-only learner evidence feeding a 4-axis mastery model and dynamic typed concept graph. | 学习证据驱动的四维掌握度模型，动态生成课程概念拓扑网络与掌握度热力映射。 |
+
+---
+
+<a name="milestones--roadmap-阶段里程碑"></a>
+## Milestones & Roadmap / 阶段里程碑
+
+本项目严格按照分期工程推进，Stage 1 ~ 9 已全部交付并经过 64 项自动化测试与浏览器实测，Stage 10 正在火热迭代：
+
+| Milestone 里程碑 | Target & Scope 目标与交付范围 | Status 状态 | Verification 验证方式 |
+| :--- | :--- | :---: | :--- |
+| **Stage 1: Wire Protocol** | Single source of truth wire protocol (`actions.py`), compiled session model, JSON serialization, and step handshake. | ✅ Complete | Pydantic model roundtrips, compiler gating tests |
+| **Stage 2: Real TTS Engine** | Pluggable TTS engines (`macOS say`, `edge-tts`, `minimax`, `silent`) with real measured durations and LaTeX preprocessing. | ✅ Complete | Audio duration header verification, LaTeX phoneme conversion tests |
+| **Stage 3: Content Pipeline** | LLM structured-output planner, session synthesizer, and strict validators (snippet-in-board, math balance, one correct option). | ✅ Complete | E2E pipeline run on benchmark courses, failure degradation checks |
+| **Stage 4: Session Runtime** | State machine (teaching, awaiting answer, interjecting, paused) streaming via WebSocket, live tutor for interjections. | ✅ Complete | WebSocket TestClient, fake transport handshake & timeout tests |
+| **Stage 5: Whiteboard Client** | ES-module client, audio-clock sync engine, column-packing layout, DOM-located KaTeX annotations, sandboxed widgets. | ✅ Complete | End-to-end browser playback with synced audio, KaTeX circle placement |
+| **Stage 6: Visual Styling Parity** | Handwritten single-page aesthetic (LXGW WenKai), telegraphic boards, LLM-generated SVG diagrams with geometry conflict checks. | ✅ Complete | Visual QA matching reference lessons, multi-column board packing |
+| **Stage 7: 2D Explorables & QA** | Zero-dependency 2D Canvas explorables with pointer probes, Playwright headless render check with one feedback regeneration. | ✅ Complete | Playwright ink sampling check, authored squeeze theorem lesson |
+| **Stage 8: Textbook Ingest & Plan Tree** | PDF textbook parsing, hierarchical course planner (`ingest → plan → build`), editable plan tree, semantic fill-blank grading. | ✅ Complete | CS251 lecture PDF parsing, 18 post-session exercises, semantic grader |
+| **Stage 9: Cognitive Tools & Mastery** | `HandChart` base, teacher-driven widget hooks (`hkControl`), spotlight mask, Feynman rounds, 4-axis mastery, course concept map. | ✅ Complete | Interactive widget control at speech phrases, typed concept graph render |
+| **Stage 10: Adaptive Teaching** | Cognitive-arc beats, entry diagnostic quiz, explanation ladder (deeper / compressed), remediation loops, simulated-student north-star harness. | 🔄 In Progress | `tools/sim_student.py` harness across novice/standard/fast personas |
+
+---
+
+<a name="architecture-系统架构"></a>
+## Architecture / 系统架构
 
 ```
 textbook.pdf / lecture.md
-   │  ingest   document_parser: TOC or font-size headings, page refs, embedded figures (+captions)
+   │
+   ▼ [Ingest] document_parser: TOC / font-size headings, page refs, figure extraction
+ParsedDocument
+   │
+   ▼ [Plan] curriculum_planner (LLM, hierarchical for long documents)
+CourseStructure (Unit → Lecture → Session → Segments with media decisions)
+   │  (Reviewable & editable in UI before execution)
+   ▼ [Build] session_synthesizer
+   ├── Validators: snippet-in-board, balanced math, unambiguous options
+   ├── Widget Generator: 2D Canvas explorables / Three.js + Playwright render QA
+   ├── Illustration Generator: LLM-drawn SVG / diagram geometry conflict check
+   ├── Exercise Generator: fill-blank, multiple-choice, interactive + semantic grader
+   └── TTS Engine: real duration synthesis + LaTeX pronunciation preprocess
+   │
    ▼
-ParsedDocument  ──▶  plan  curriculum_planner (LLM, hierarchical for long docs)
-                                 │   教案: Unit → Lecture(chapter) → Session(tags) → Segment(media decision, ask?)
-                                 ▼   reviewed / edited in the UI before anything expensive runs
-CourseStructure ──▶  build  per session:
-                        session_synthesizer  (one step per planned segment; media enforced)
-                        ├─ validators         (snippet ∈ board, math balanced, one correct option)
-                        ├─ widget_generator   (explorable 2D canvas by default; Playwright render check)
-                        ├─ illustration_gen   (LLM-drawn SVG / MiniMax image / textbook figure)
-                        ├─ exercise_generator (fill-blank, choice, interactive; semantic grading)
-                        └─ tts engine         (real audio + measured duration)
-                        compiler ─▶ CompiledSession (ordered actions with step_ids, keypoints, exercises)
-                                                 ▼
-server/app.py  ──WebSocket──▶  runtime/session_runtime.py  (teaching / awaiting_answer / interjecting / paused)
-                                                 ▼
-client/js  (ws → audio clock → handwritten page → decorations → sandboxed widgets → exercises)
+CompiledSession (ordered actions, step_ids, keypoints, exercises)
+   │
+   ▼ [WebSocket]
+server/app.py ──▶ runtime/session_runtime.py (teaching / interjecting / paused)
+   │
+   ▼ [Full-Duplex Stream]
+client/js (audio clock → handwritten page → KaTeX decorations → sandboxed iframe)
 ```
 
-CLI stages: `--plan-only` writes `output/_docs/<doc_key>/plan.json`; edit it and `--doc <key> --from-plan plan.json`;
-`--exercises-for <course_id>` adds exercises to an existing package.
+---
 
-Key decisions:
+<a name="quick-start-快速上手"></a>
+## Quick Start / 快速上手
 
-- **One protocol for offline and live.** Pre-generated sessions are compiled to the same action
-  stream a live agent would emit, so the client has a single consumption path.
-- **The client owns the clock.** `audio.currentTime` drives the subtitle typewriter, progressive
-  card reveal and annotation timing; the server only knows measured durations.
-- **Content is validated, never faked.** Bad snippets are dropped with warnings, failed widgets
-  degrade to `animation_failed`, and with no LLM the pipeline runs an honest read-through mode
-  labelled `heuristic` instead of pretending.
-- **Widgets are sandboxed.** `sandbox="allow-scripts"` only, with an injected shim that reports
-  runtime errors back to the host.
-- **Widgets are 2D explorables by default.** The real product's "interactive H5" is a
-  function plot with dashed envelopes, a pointer probe and a live readout, not a 3D scene.
-  `kind: "explorable"` generates a zero-dependency Canvas widget from a hand-written exemplar
-  (`examples/authored/squeeze_explorable.html`); every generated widget is rendered headlessly
-  with Playwright (`tools/render_widget.mjs`) to catch runtime errors and blank output, and is
-  regenerated once with the error as feedback before being dropped. Three.js stays available
-  for genuinely 3D concepts.
-- **Figures are drawn, not painted.** Pedagogical diagrams need exact counts and labels, so the
-  default illustration is an LLM-drawn SVG (`kind: "svg"`); MiniMax `image-01` is available for
-  scene metaphors (`kind: "image"`, `MINIMAX_API_KEY`).
-- **The board is one handwritten page**, not cards: telegraphic notes with indentation, a
-  highlighted page title, figures with handwritten captions, and a centered subtitle. The
-  session-synthesis prompt encodes this and ships a hand-authored exemplar
-  (`examples/authored/`), which is what moved model output from lecture prose to the target.
+### 1. Requirements 环境要求
 
-## Learner-facing extras (Stage 9)
+- Python >= 3.11
+- Node.js >= 18 (用于无头交互教具渲染测试，可选)
+- `ffmpeg` (用于音频转码)
 
-- **HandChart** (`src/content/handchart.js`): hand-drawn chart base injected into every generated explorable; the model
-  supplies data and overlays (`marker/vline/segment/note`) instead of hand-writing axes.
-- **Teacher-driven widgets**: a script step's widget declares `params` and `controls` (`trigger_phrase` → `at_ms` from
-  TTS marks); the client fires `hkControl.set/highlight/annotate/reveal` inside the sandboxed iframe on the audio clock.
-- **Spotlight** decoration: dims the page and keeps one board object lit (at most one per session).
-- **讲给我听 (Feynman round)**: `/feynman/start|turn|summary`; a curious classmate probes the vaguest point for four
-  rounds, then summarises; each round is judged 0–1 and feeds mastery.
-- **Four-axis mastery**: `learner` + `learner_events` in `output/hk.db`; evidence from ask answers, `/grade`, Feynman.
-  Wrong answers earn nothing; gains diminish; scores never drop. `GET /api/v1/courses/{id}/mastery`.
-- **Concept map**: `GET /api/v1/courses/{id}/concept_map` builds (once, LLM) a typed concept graph cached as
-  `concept_map.json`; the home's 🗺 button renders it hand-drawn, nodes filled by mastery, click opens the session.
+### 2. Installation 安装
 
-## Layout
+```bash
+# Clone the repository
+git clone https://github.com/fakechris/lumen-learn.git
+cd lumen-learn
 
-| Path | What |
-| --- | --- |
-| `src/protocol/` | Wire protocol (`actions.py`) and content/compiled models (`session.py`) |
-| `src/content/` | Parser, planner, synthesizer, validators, widget generator, compiler, pipeline, store |
-| `src/tts/` | TTS engines with measured durations; LaTeX-to-speech preprocessing |
-| `src/llm/` | Async LLM client with structured output and self-repair |
-| `src/runtime/` | Per-connection session state machine and live tutor |
-| `server/app.py` | FastAPI: REST for packages and generation jobs, WebSocket for sessions |
-| `client/` | ES-module whiteboard client (no build step) |
-| `tests/` | `pytest` (`.venv/bin/python -m pytest`) |
-| `tools/render_widget.mjs` | Headless widget render check (needs `node` and a global `playwright`) |
+# Set up virtual environment
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -e ".[dev]"
+```
 
-Course packages live in `examples/courses/<course_id>/` (bundled) and `output/<course_id>/`
-(generated): `course_structure.json`, `scripts/*.json` (editable source), `sessions/*.json`
-(compiled), `audio/`.
+### 3. Environment Configuration 环境变量
+
+Configure LLM and TTS keys (DeepSeek / OpenAI / Anthropic / MiniMax):
+
+```bash
+export DEEPSEEK_API_KEY="your-deepseek-api-key"
+# Optional overrides:
+# export LLM_MODEL="deepseek-chat"
+# export LLM_MODEL_PRO="deepseek-reasoner"
+# export TTS_ENGINE="edge"   # or "say" on macOS, "minimax", "silent"
+```
+
+### 4. Run Server & Web UI 启动服务
+
+```bash
+# Start FastAPI and WebSocket server
+.venv/bin/uvicorn server.app:app --port 8000 --reload
+```
+
+Open [http://localhost:8000](http://localhost:8000) in your browser:
+- **Play bundled lessons**: Browse the bundled courses in `examples/courses/` directly without any API keys.
+- **Generate new courses**: Paste your own lecture Markdown or upload a textbook PDF to run the automated course builder.
+- **Live interruptions**: Hit the microphone or keyboard button during playback to interrupt and probe the AI tutor.
+
+### 5. CLI Course Generation 命令行生成
+
+```bash
+# Generate a course from markdown
+.venv/bin/python -m src.content.pipeline --input examples/linear_algebra_basis.md --mode llm
+
+# Plan-only mode (generates reviewable plan tree first)
+.venv/bin/python -m src.content.pipeline --input examples/linear_algebra_basis.md --plan-only
+```
+
+### 6. Run Test Suite 运行测试
+
+```bash
+.venv/bin/python -m pytest
+```
+
+---
+
+## Directory Layout / 工程目录
+
+```text
+lumen-learn/
+├── client/                 # ES-module frontend (vanilla JS, CSS, no build step needed)
+│   ├── js/                 # Audio clock, board layout, decorations, widgets, Feynman
+│   └── css/                # Handwritten paper styling, typography, theme
+├── src/
+│   ├── protocol/           # Wire action schemas (actions.py) & session models (session.py)
+│   ├── content/            # Ingest, planner, synthesizer, validators, widgets, compiler
+│   ├── runtime/            # Per-connection state machine, live tutor & interruption handler
+│   ├── tts/                # Pluggable TTS engines & LaTeX-to-speech processor
+│   ├── llm/                # Async LLM adapter with structured JSON repair
+│   └── obs/                # Observability & cost accounting
+├── server/
+│   └── app.py              # FastAPI REST endpoints & WebSocket server
+├── tools/
+│   ├── render_widget.mjs   # Playwright headless widget QA runner
+│   └── sim_student.py      # Multi-persona simulated-student evaluation harness
+├── examples/               # Hand-authored reference lessons & bundled course packages
+└── tests/                  # 64-item pytest verification suite
+```
+
+---
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
