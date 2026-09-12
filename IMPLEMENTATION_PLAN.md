@@ -1,8 +1,7 @@
 # Implementation Plan: Socratic Whiteboard Rebuild
 
 Goal: replace the demo skeleton with a working, protocol-driven Socratic whiteboard
-tutor whose protocol mirrors the real Lumen Learn whiteboard (verified against the
-captured bundles in `research/`, not the design doc).
+tutor with a protocol-driven interactive whiteboard architecture.
 
 ## Stage 1: Protocol & compiled session model
 **Goal**: Single source of truth for server→client actions and client→server messages.
@@ -46,7 +45,7 @@ DOM-located snippet decorations, sandboxed widgets with error reporting, ask/int
 - Headless Chromium: gated reveal in sync with clock, circles located on KaTeX formulas, sandboxed widget interactive, wrong-answer feedback narrated live, interjection streamed + spoken + resumed, pause/speed/navigation, generate modal (heuristic) end to end.
 - Known gaps: no PDF parsing without `pymupdf`; no voice input for interjections; `new_column` action is compiled from `layout: "newcol"` on cards rather than emitted standalone.
 
-## Stage 6: Close the quality gap (2026-09-02, after comparing with real Lumen Learn screenshots)
+## Stage 6: Close the quality gap (2026-09-02, target styling and interaction parity)
 **Goal**: Match the reference look and content style: handwritten single page, telegraphic
 boards, narration that points at the page, figures with exact labels, colloquial prediction
 questions; illustration modality (LLM-drawn SVG, optional MiniMax image); prompt with exemplar.

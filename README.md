@@ -1,14 +1,13 @@
-# Socratic Whiteboard
+# Lumen Learn (Socratic Whiteboard)
 
-An open, protocol-driven re-creation of the Lumen Learn-style "Socratic whiteboard" tutor:
+A protocol-driven Socratic whiteboard tutor:
 a lecture note goes in, and out comes an interactive lesson where a tutor voice narrates,
 handwritten notes appear line by line in sync with the speech, formulas get circled as they are mentioned,
 a sandboxed 3D manipulative shows the geometry, and the tutor stops to ask you questions.
 You can interrupt at any time and ask your own.
 
-The wire protocol mirrors the real Lumen Learn whiteboard client (verified against the
-captured front-end bundles), not a guess: `speak / tts_segment / board / circle /
-highlight / graph / ask / new_column / new_page / generated_animation / reward_user / done`
+The wire protocol defines a complete interactive whiteboard runtime:
+`speak / tts_segment / board / circle / highlight / graph / ask / new_column / new_page / generated_animation / reward_user / done`
 with a per-step `action_step_complete` handshake and reveal gates.
 
 ## Run it
@@ -130,7 +129,6 @@ Key decisions:
 | `client/` | ES-module whiteboard client (no build step) |
 | `tests/` | `pytest` (`.venv/bin/python -m pytest`) |
 | `tools/render_widget.mjs` | Headless widget render check (needs `node` and a global `playwright`) |
-| `research/` | Captured Lumen Learn bundles and notes (git-ignored) |
 
 Course packages live in `examples/courses/<course_id>/` (bundled) and `output/<course_id>/`
 (generated): `course_structure.json`, `scripts/*.json` (editable source), `sessions/*.json`
