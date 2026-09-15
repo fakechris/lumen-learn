@@ -1,0 +1,321 @@
+{
+  "session_id": "sess_3",
+  "course_id": "course_161c4b9518",
+  "title": "批处理：转置的由来",
+  "learning_goal": "理解为什么批处理时权重矩阵形状为 n_in×n_out，并能正确推导 XW+b 的维度",
+  "steps": [
+    {
+      "title": "一次一个太慢",
+      "beat": "hook",
+      "spoken_text": "先看一个尴尬的事实：一次喂一个样本，m 个样本就要跑 m 次矩阵乘法。能不能把 m 个样本摞起来，一次算完？板书第一行说样本按行排成 X，m 行 n_in 列。问题来了：权重该摆成什么形状，才能让一次乘法吐出整批结果？",
+      "boards": [
+        {
+          "title": "",
+          "markdown": "- 一次喂一个样本 → 跑 $m$ 次\n- 想一次算完：样本按行排成 $X$\n- $X \\in \\mathbb{R}^{m \\times n_{in}}$，**每行一个样本**\n- 权重怎么摆？→ 你先猜",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "circle",
+          "snippet": "X \\in \\mathbb{R}^{m \\times n_{in}}",
+          "board_index": 0,
+          "trigger_phrase": "样本按行排成 X",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": {
+        "mode": "choice",
+        "question": "要把 m 个样本一次算完，权重矩阵的形状应该是什么？",
+        "options": [
+          "n_out 行 n_in 列，每行一个神经元",
+          "n_in 行 n_out 列，每列一个神经元"
+        ],
+        "correct_index": 1,
+        "misconceptions": [
+          "直觉上“一行一个神经元”很自然，但这样 X 乘 W 的内侧维度对不上，乘法根本做不了。",
+          null
+        ],
+        "explanation": "要让 X 乘 W 合法，W 的行数必须等于 X 的列数 n_in，所以 W 是 n_in 行 n_out 列。"
+      },
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "行还是列？",
+      "beat": "poe",
+      "spoken_text": "看这张图，左边是候选 A，形状 n_out 行 n_in 列，标注每行一个神经元；右边是候选 B，形状 n_in 行 n_out 列，标注每列一个神经元。图下方画了两次乘法：X 乘 A 时，内侧维度 n_in 撞上 n_out，红色叉；X 乘 B 时，内侧 n_in 和 n_in 相等，绿色勾，输出 m 行 n_out 列。你先别急着下结论，猜猜哪个能跑通？",
+      "boards": [
+        {
+          "title": "两个候选",
+          "markdown": "- 候选 A：$W_A \\in \\mathbb{R}^{n_{out} \\times n_{in}}$，每行一个神经元\n- 候选 B：$W_B \\in \\mathbb{R}^{n_{in} \\times n_{out}}$，每列一个神经元\n- 判据：矩阵乘法**内侧维度必须相等**",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "highlight",
+          "snippet": "内侧维度必须相等",
+          "board_index": 0,
+          "trigger_phrase": "内侧维度 n_in 撞上 n_out",
+          "color": null
+        }
+      ],
+      "illustration": {
+        "kind": "svg",
+        "caption": "左边 W_A 内侧维度撞车，右边 W_B 内侧维度对齐",
+        "brief": "左右对比图。左侧：矩阵 W_A 标注 n_out 行 × n_in 列，下方写“每行一个神经元”，再画 X（m×n_in）乘 W_A，用红色叉标出内侧 n_in 与 n_out 不匹配。右侧：矩阵 W_B 标注 n_in 行 × n_out 列，下方写“每列一个神经元”，再画 X（m×n_in）乘 W_B，用绿色勾标出内侧 n_in 相等，输出标注 m×n_out。中间用竖线分隔，底部各一行结论文字。",
+        "figure_id": null,
+        "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 800 520\" font-family=\"'LXGW WenKai Lite', sans-serif\">\n  <!-- 背景透明，不画外框 -->\n\n  <!-- 标题 -->\n  <text x=\"400\" y=\"36\" text-anchor=\"middle\" font-size=\"24\" fill=\"#333\">W_A 内侧维度撞车 vs W_B 内侧维度对齐</text>\n\n  <!-- 中间分隔竖线 -->\n  <line x1=\"400\" y1=\"60\" x2=\"400\" y2=\"480\" stroke=\"#4b4b4b\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-dasharray=\"8,6\" opacity=\"0.4\"/>\n\n  <!-- ==================== 左侧：W_A ==================== -->\n  <g transform=\"translate(0,0)\">\n    <!-- 矩阵 W_A 矩形 -->\n    <rect x=\"60\" y=\"80\" width=\"120\" height=\"100\" rx=\"6\" fill=\"#f2d5c4\" stroke=\"#4b4b4b\" stroke-width=\"2\"/>\n    <!-- 矩阵内部网格线（示意行列） -->\n    <line x1=\"60\" y1=\"113\" x2=\"180\" y2=\"113\" stroke=\"#4b4b4b\" stroke-width=\"1\" opacity=\"0.3\"/>\n    <line x1=\"60\" y1=\"146\" x2=\"180\" y2=\"146\" stroke=\"#4b4b4b\" stroke-width=\"1\" opacity=\"0.3\"/>\n    <line x1=\"100\" y1=\"80\" x2=\"100\" y2=\"180\" stroke=\"#4b4b4b\" stroke-width=\"1\" opacity=\"0.3\"/>\n    <line x1=\"140\" y1=\"80\" x2=\"140\" y2=\"180\" stroke=\"#4b4b4b\" stroke-width=\"1\" opacity=\"0.3\"/>\n    <!-- 矩阵标签 W_A -->\n    <text x=\"120\" y=\"140\" text-anchor=\"middle\" font-size=\"22\" fill=\"#333\" font-weight=\"bold\">W_A</text>\n\n    <!-- 行标注 n_out -->\n    <text x=\"200\" y=\"110\" font-size=\"18\" fill=\"#333\">n_out 行</text>\n    <line x1=\"195\" y1=\"106\" x2=\"182\" y2=\"106\" stroke=\"#4b4b4b\" stroke-width=\"1.5\" stroke-linecap=\"round\"/>\n\n    <!-- 列标注 n_in -->\n    <text x=\"120\" y=\"205\" text-anchor=\"middle\" font-size=\"18\" fill=\"#333\">n_in 列</text>\n    <line x1=\"120\" y1=\"192\" x2=\"120\" y2=\"182\" stroke=\"#4b4b4b\" stroke-width=\"1.5\" stroke-linecap=\"round\"/>\n\n    <!-- 下方说明 -->\n    <text x=\"120\" y=\"235\" text-anchor=\"middle\" font-size=\"18\" fill=\"#333\">每行一个神经元</text>\n\n    <!-- 乘法表达式 X × W_A -->\n    <text x=\"120\" y=\"290\" text-anchor=\"middle\" font-size=\"20\" fill=\"#333\">X (m × n_in)  ×  W_A</text>\n\n    <!-- 红色叉号 -->\n    <g transform=\"translate(120, 320)\">\n      <line x1=\"-14\" y1=\"-14\" x2=\"14\" y2=\"14\" stroke=\"#e05656\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n      <line x1=\"14\" y1=\"-14\" x2=\"-14\" y2=\"14\" stroke=\"#e05656\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n    </g>\n\n    <!-- 错误说明 -->\n    <text x=\"120\" y=\"360\" text-anchor=\"middle\" font-size=\"18\" fill=\"#e05656\">n_in ≠ n_out</text>\n    <text x=\"120\" y=\"385\" text-anchor=\"middle\" font-size=\"18\" fill=\"#e05656\">内侧维度不匹配</text>\n\n    <!-- 底部结论 -->\n    <text x=\"120\" y=\"460\" text-anchor=\"middle\" font-size=\"18\" fill=\"#333\">W_A 无法直接相乘</text>\n  </g>\n\n  <!-- ==================== 右侧：W_B ==================== -->\n  <g transform=\"translate(0,0)\">\n    <!-- 矩阵 W_B 矩形 -->\n    <rect x=\"480\" y=\"80\" width=\"120\" height=\"100\" rx=\"6\" fill=\"#c9d8e8\" stroke=\"#4b4b4b\" stroke-width=\"2\"/>\n    <!-- 矩阵内部网格线 -->\n    <line x1=\"480\" y1=\"113\" x2=\"600\" y2=\"113\" stroke=\"#4b4b4b\" stroke-width=\"1\" opacity=\"0.3\"/>\n    <line x1=\"480\" y1=\"146\" x2=\"600\" y2=\"146\" stroke=\"#4b4b4b\" stroke-width=\"1\" opacity=\"0.3\"/>\n    <line x1=\"520\" y1=\"80\" x2=\"520\" y2=\"180\" stroke=\"#4b4b4b\" stroke-width=\"1\" opacity=\"0.3\"/>\n    <line x1=\"560\" y1=\"80\" x2=\"560\" y2=\"180\" stroke=\"#4b4b4b\" stroke-width=\"1\" opacity=\"0.3\"/>\n    <!-- 矩阵标签 W_B -->\n    <text x=\"540\" y=\"140\" text-anchor=\"middle\" font-size=\"22\" fill=\"#333\" font-weight=\"bold\">W_B</text>\n\n    <!-- 行标注 n_in -->\n    <text x=\"620\" y=\"110\" font-size=\"18\" fill=\"#333\">n_in 行</text>\n    <line x1=\"615\" y1=\"106\" x2=\"602\" y2=\"106\" stroke=\"#4b4b4b\" stroke-width=\"1.5\" stroke-linecap=\"round\"/>\n\n    <!-- 列标注 n_out -->\n    <text x=\"540\" y=\"205\" text-anchor=\"middle\" font-size=\"18\" fill=\"#333\">n_out 列</text>\n    <line x1=\"540\" y1=\"192\" x2=\"540\" y2=\"182\" stroke=\"#4b4b4b\" stroke-width=\"1.5\" stroke-linecap=\"round\"/>\n\n    <!-- 下方说明 -->\n    <text x=\"540\" y=\"235\" text-anchor=\"middle\" font-size=\"18\" fill=\"#333\">每列一个神经元</text>\n\n    <!-- 乘法表达式 X × W_B -->\n    <text x=\"540\" y=\"290\" text-anchor=\"middle\" font-size=\"20\" fill=\"#333\">X (m × n_in)  ×  W_B</text>\n\n    <!-- 绿色勾号 -->\n    <g transform=\"translate(540, 320)\">\n      <path d=\"M -14 0 L -4 12 L 16 -12\" fill=\"none\" stroke=\"#b8dcc6\" stroke-width=\"3.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>\n    </g>\n\n    <!-- 正确说明 -->\n    <text x=\"540\" y=\"360\" text-anchor=\"middle\" font-size=\"18\" fill=\"#333\">n_in = n_in</text>\n    <text x=\"540\" y=\"385\" text-anchor=\"middle\" font-size=\"18\" fill=\"#333\">内侧维度对齐</text>\n\n    <!-- 输出标注 -->\n    <text x=\"540\" y=\"420\" text-anchor=\"middle\" font-size=\"18\" fill=\"#333\">输出 m × n_out</text>\n\n    <!-- 底部结论 -->\n    <text x=\"540\" y=\"460\" text-anchor=\"middle\" font-size=\"18\" fill=\"#333\">W_B 可以正常相乘</text>\n  </g>\n\n</svg>",
+        "svg_path": null,
+        "image_path": null,
+        "image_url": null,
+        "layout": "follow"
+      },
+      "widget": null,
+      "question": {
+        "mode": "choice",
+        "question": "按内侧维度必须相等这条判据，哪个候选能跑通？",
+        "options": [
+          "候选 A，每行一个神经元更直观",
+          "候选 B，内侧 n_in 和 n_in 对上了"
+        ],
+        "correct_index": 1,
+        "misconceptions": [
+          "“每行一个神经元”听起来顺耳，但 X 的列数是 n_in，W_A 的行数是 n_out，内侧对不上，乘法直接报错。",
+          null
+        ],
+        "explanation": "X 的列数 n_in 必须等于 W 的行数，只有 W_B 满足，输出才是 m 行 n_out 列。"
+      },
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "XW + b 的约定",
+      "beat": "define",
+      "spoken_text": "现在把约定钉死。板书第一行：X 是 m 行 n_in 列，每行一个样本。第二行：W 是 n_in 行 n_out 列，每一列对应一个神经元。第三行：H 等于 X 乘 W 加 b，b 广播到每一行。最后一行：H 是 m 行 n_out 列，每行是一个样本的输出。记住这个形状链，后面所有层都照这个来。",
+      "boards": [
+        {
+          "title": "正式定义",
+          "markdown": "- $X \\in \\mathbb{R}^{m \\times n_{in}}$，每行一个样本\n- $W \\in \\mathbb{R}^{n_{in} \\times n_{out}}$，**每一列对应一个神经元**\n- $H = XW + b$，$b$ 广播到每一行\n- $H \\in \\mathbb{R}^{m \\times n_{out}}$，每行是一个样本的输出",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "circle",
+          "snippet": "每一列对应一个神经元",
+          "board_index": 0,
+          "trigger_phrase": "每一列对应一个神经元",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": null,
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "小例子：手动计算 XW",
+      "beat": "worked_example",
+      "spoken_text": "我们拿两个样本、两个输入、两个神经元来走一遍。板书上 X 是两行两列，第一行是样本一，第二行是样本二。W 是两行两列，第一列是神经元一的权重，第二列是神经元二。你看第一行乘第一列，得到 H 的左上角，那是样本一在神经元一上的输出。换个数你会算吗？",
+      "boards": [
+        {
+          "title": "手算一遍",
+          "markdown": "- $X = \\begin{bmatrix} 1 & 2 \\\\ 3 & 4 \\end{bmatrix}$，两行 = 两个样本\n- $W = \\begin{bmatrix} 1 & 0 \\\\ 0 & 1 \\end{bmatrix}$，两列 = 两个神经元\n- $H = XW = \\begin{bmatrix} 1 & 2 \\\\ 3 & 4 \\end{bmatrix}$\n  - 第 1 行第 1 列 = 样本 1 在神经元 1 的输出\n  - 第 1 行第 2 列 = 样本 1 在神经元 2 的输出",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "circle",
+          "snippet": "第 1 行第 1 列 = 样本 1 在神经元 1 的输出",
+          "board_index": 0,
+          "trigger_phrase": "样本一在神经元一上的输出",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": null,
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "对比：错误形状会怎样？",
+      "beat": "contrast",
+      "spoken_text": "现在把 W 转置一下，变成两行两列但每行一个神经元。看这张表，左边是正确形状，右边是错误形状。右边第一行写着 n_out 行 n_in 列，那么 X 乘 W 的时候，内侧维度变成 m 和 n_out，对不上，乘法直接报错。所以转置不是为了好看，是为了让内侧维度相等。",
+      "boards": [
+        {
+          "title": "正确 vs 错误",
+          "markdown": "| | 正确 $W$ | 错误 $W^T$ |\n|---|---|---|\n| 形状 | $n_{in} \\times n_{out}$ | $n_{out} \\times n_{in}$ |\n| 每列/每行 | 每列一个神经元 | 每行一个神经元 |\n| $XW$ 内侧 | $n_{in}$ 相等 | $m$ 与 $n_{out}$ 不等 |\n| 结果 | 合法，得到 $H$ | 维度不匹配，报错 |",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "highlight",
+          "snippet": "每列一个神经元",
+          "board_index": 0,
+          "trigger_phrase": "每行一个神经元",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": null,
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "应用：形状填空",
+      "beat": "apply",
+      "spoken_text": "最后来一个形状填空。假设一批有 32 个样本，每个样本 784 个输入，这一层有 10 个神经元。那么 X 是 32 行 784 列，W 应该是多少行多少列？你选一个。",
+      "boards": [
+        {
+          "title": "填形状",
+          "markdown": "- 一批 32 个样本，每个 784 维 → $X \\in \\mathbb{R}^{32 \\times 784}$\n- 这一层 10 个神经元 → $W \\in \\mathbb{R}^{? \\times ?}$\n- 输出 $H \\in \\mathbb{R}^{32 \\times 10}$",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "circle",
+          "snippet": "W \\in \\mathbb{R}^{? \\times ?}",
+          "board_index": 0,
+          "trigger_phrase": "W 应该是多少行多少列",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": {
+        "mode": "choice",
+        "question": "W 应该是多少行多少列？",
+        "options": [
+          "10 行 784 列，每行一个神经元",
+          "784 行 10 列，每列一个神经元"
+        ],
+        "correct_index": 1,
+        "misconceptions": [
+          "这是最常见的直觉：以为每行一个神经元更自然。但这样 X 乘 W 的内侧维度是 32 和 10，对不上。",
+          null
+        ],
+        "explanation": "X 是 32 行 784 列，W 必须 784 行 10 列，内侧 784 相等，输出 32 行 10 列。"
+      },
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "回顾：转置的由来",
+      "beat": "recap",
+      "spoken_text": "我们回到最开始那个尴尬的事实：一次喂一个样本，m 个样本要跑 m 次。现在看板书最后一行，X 是 m 行 n_in 列，W 是 n_in 行 n_out 列，内侧的 n_in 对上了，一次乘法就出整批结果。关键就在那个转置：权重从每行一个神经元，翻成每列一个神经元，才让 X 乘得动。所以批处理里，W 的形状不是随便定的，是被 X 的行数逼出来的。",
+      "boards": [
+        {
+          "title": "转置的由来",
+          "markdown": "- 一次喂一个 → 跑 $m$ 次\n- 样本按行排：$X \\in \\mathbb{R}^{m \\times n_{in}}$\n- 权重翻成列：$W \\in \\mathbb{R}^{n_{in} \\times n_{out}}$\n- 内侧 $n_{in}$ 相等 → $H = XW + b$\n- $H \\in \\mathbb{R}^{m \\times n_{out}}$，每行一个样本的输出",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "circle",
+          "snippet": "W \\in \\mathbb{R}^{n_{in} \\times n_{out}}",
+          "board_index": 0,
+          "trigger_phrase": "W 是 n_in 行 n_out 列",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": null,
+      "reward": {
+        "title": "矩阵就是层的全部",
+        "description": "权重按列对应神经元，XW 一次算完整批；形状对了，层就对了。"
+      },
+      "new_page_title": null
+    }
+  ],
+  "exercises": [
+    {
+      "exercise_id": "sess_3_ex1",
+      "kind": "fill_blank",
+      "stem": "在批处理约定 $H = XW + b$ 中，$W$ 的形状是 $n_{in} \\times n_{out}$，其中每一____对应一个神经元。",
+      "options": [],
+      "correct_index": null,
+      "answer": "列",
+      "accepted": [
+        "列向量",
+        "纵列",
+        "column"
+      ],
+      "explanation": "本课的核心约定是权重矩阵的每一列对应一个神经元，这样才能让 $X$ 的每一行（一个样本）与 $W$ 的每一列（一个神经元）做内积，输出 $m \\times n_{out}$ 的矩阵。",
+      "widget": null,
+      "widget_hint": ""
+    },
+    {
+      "exercise_id": "sess_3_ex2",
+      "kind": "single_choice",
+      "stem": "设 $X \\in \\mathbb{R}^{5 \\times 3}$，$W \\in \\mathbb{R}^{3 \\times 4}$，$b \\in \\mathbb{R}^{4}$，则 $H = XW + b$ 的形状是？",
+      "options": [
+        "$5 \\times 3$",
+        "$5 \\times 4$",
+        "$3 \\times 4$",
+        "$4 \\times 5$"
+      ],
+      "correct_index": 1,
+      "answer": null,
+      "accepted": [],
+      "explanation": "矩阵乘法 $XW$ 的内侧维度 $3$ 相等，结果取外侧维度，得到 $5 \\times 4$。$b$ 广播到每一行，不改变形状，所以 $H \\in \\mathbb{R}^{5 \\times 4}$。",
+      "widget": null,
+      "widget_hint": ""
+    },
+    {
+      "exercise_id": "sess_3_ex3",
+      "kind": "single_choice",
+      "stem": "若把权重矩阵写成 $W^T \\in \\mathbb{R}^{n_{out} \\times n_{in}}$（每行一个神经元），则 $XW^T$ 的内侧维度是？",
+      "options": [
+        "$n_{in}$ 与 $n_{in}$，可以相乘",
+        "$m$ 与 $n_{out}$，不匹配",
+        "$n_{in}$ 与 $n_{out}$，不匹配",
+        "$m$ 与 $n_{in}$，可以相乘"
+      ],
+      "correct_index": 1,
+      "answer": null,
+      "accepted": [],
+      "explanation": "$X$ 是 $m \\times n_{in}$，$W^T$ 是 $n_{out} \\times n_{in}$，内侧维度是 $n_{in}$ 与 $n_{out}$，一般不相等，因此乘法报错。这正是必须把权重摆成 $n_{in} \\times n_{out}$ 的原因。",
+      "widget": null,
+      "widget_hint": ""
+    },
+    {
+      "exercise_id": "sess_3_ex4",
+      "kind": "interactive",
+      "stem": "通过调整权重矩阵的形状，观察 $XW$ 是否合法并得到正确的输出形状。",
+      "options": [
+        "$W$ 为 $2 \\times 4$ 时，$H$ 为 $3 \\times 4$",
+        "$W$ 为 $4 \\times 2$ 时，$H$ 为 $3 \\times 4$",
+        "$W$ 为 $2 \\times 4$ 时，$H$ 为 $4 \\times 3$",
+        "$W$ 为 $3 \\times 4$ 时，$H$ 为 $2 \\times 4$"
+      ],
+      "correct_index": 0,
+      "answer": null,
+      "accepted": [],
+      "explanation": "$X$ 是 $3 \\times 2$，$W$ 必须是 $2 \\times n_{out}$ 才能让内侧维度 $2$ 相等，输出 $H$ 的形状为 $3 \\times n_{out}$。因此 $W$ 为 $2 \\times 4$ 时，$H$ 为 $3 \\times 4$。",
+      "widget": {
+        "kind": "explorable",
+        "title": "矩阵乘法形状匹配器",
+        "task": "拖动滑块调整 $W$ 的行数和列数，观察 $XW$ 的内侧维度是否相等，以及输出 $H$ 的形状。",
+        "html": "<!DOCTYPE html>\n<html>\n<head><script>/**\n * HandChart — zero-dependency hand-drawn chart base for explorable widgets.\n *\n * Injected into every generated 2D explorable (widget_generator.py) so the\n * model supplies data + overlays instead of hand-writing axes. The look matches\n * the handwritten page: paper panel, slightly wobbly ink axes, main red /\n * aux green, handwriting labels.\n *\n * API (all coordinates in WORLD units unless noted):\n *   const ch = HandChart.render(canvas, opts)\n *     opts = { type: \"function\"|\"points\"|\"bars\"|\"lines\",\n *              xlim:[x0,x1], ylim:[y0,y1],                  (all but bars)\n *              fn: x=>y | fns:[{fn, color?, label?}],        (function)\n *              points:[[x,y],...],                          (points)\n *              series:[{name, points, color?, dash?}],      (lines; legend drawn)\n *              bars:{labels:[...], values:[...], highlight?} (bars)\n *              xlabel, ylabel, grid:true|false, title }\n *     returns { ctx, sx, sy, box, W, H, opts }  — keep it to draw overlays\n *   HandChart.marker(ch, x, y, {color, label, r})       dot + optional label\n *   HandChart.vline(ch, x, {color, dash, label})         vertical guide\n *   HandChart.hline(ch, y, {color, dash, label})         horizontal guide\n *   HandChart.segment(ch, [x1,y1], [x2,y2], {color, width, dash, arrow})\n *   HandChart.note(ch, x, y, text, {color, align, size}) handwriting annotation\n *   HandChart.attachProbe(canvas, {xlim, ylim}, onProbe, onLeave?)\n *     pointer follow; onProbe({x, y}) in world coords — redraw + readouts there.\n *   HandChart.style = { INK, AXIS, MAIN, AUX, GRID, PAPER, MUTED }\n */\n(function () {\n  const style = {\n    INK: \"#2b2b2b\", AXIS: \"#8a8377\", MAIN: \"#c0392b\", AUX: \"#2e8b6f\",\n    GRID: \"#ece5d4\", PAPER: \"#fbfaf6\", MUTED: \"#8a8377\", PURPLE: \"#7c3aed\", BLUE: \"#2563eb\",\n  };\n  const PALETTE = [style.MAIN, style.AUX, style.BLUE, style.PURPLE, \"#d97706\"];\n  const PAD = { l: 48, r: 18, t: 18, b: 36 };\n  const HAND = \"'Patrick Hand', 'LXGW WenKai Lite', 'PingFang SC', sans-serif\";\n\n  function font(size, italic) { return (italic ? \"italic \" : \"\") + size + \"px \" + HAND; }\n\n  // deterministic wobble so the \"hand\" does not shake on every redraw\n  function wob(seed, amp) { return Math.sin(seed * 12.9898) * amp; }\n\n  function tickVals(min, max, n) {\n    const span = max - min || 1;\n    const raw = span / n;\n    const mag = Math.pow(10, Math.floor(Math.log10(raw)));\n    const step = [1, 2, 2.5, 5, 10].map((m) => m * mag).find((s) => span / s <= n) || mag * 10;\n    const out = [];\n    for (let v = Math.ceil(min / step) * step; v <= max + step * 1e-9; v += step) out.push(+v.toFixed(10));\n    return out;\n  }\n\n  function fmt(v) {\n    const a = Math.abs(v);\n    if (a === 0) return \"0\";\n    if (a >= 10000 || a < 0.01) return v.toExponential(1);\n    return String(+v.toFixed(Math.max(0, 3 - Math.floor(Math.log10(a)))));\n  }\n\n  /** a hand-drawn line: two passes with tiny deterministic wobble */\n  function inkLine(ctx, x1, y1, x2, y2, color, width, seed) {\n    ctx.save();\n    ctx.strokeStyle = color; ctx.lineWidth = width; ctx.lineCap = \"round\";\n    const n = 6, s = seed || (x1 + y2);\n    ctx.beginPath();\n    for (let i = 0; i <= n; i++) {\n      const t = i / n, x = x1 + (x2 - x1) * t, y = y1 + (y2 - y1) * t;\n      const w = i === 0 || i === n ? 0 : wob(s + i, 0.7);\n      i ? ctx.lineTo(x + w, y + w) : ctx.moveTo(x, y);\n    }\n    ctx.stroke();\n    ctx.restore();\n  }\n\n  function frame(ctx, W, H) {\n    ctx.clearRect(0, 0, W, H);\n    ctx.save();\n    ctx.fillStyle = style.PAPER;\n    ctx.fillRect(0, 0, W, H);\n    ctx.restore();\n  }\n\n  function plotBox(W, H, opts) {\n    const t = PAD.t + (opts && opts.title ? 18 : 0);\n    return { x0: PAD.l, y0: t, x1: W - PAD.r, y1: H - PAD.b };\n  }\n\n  function mapping(box, xlim, ylim) {\n    const [x0, x1] = xlim, [y0, y1] = ylim;\n    return {\n      sx: (v) => box.x0 + (v - x0) / (x1 - x0) * (box.x1 - box.x0),\n      sy: (v) => box.y1 - (v - y0) / (y1 - y0) * (box.y1 - box.y0),\n    };\n  }\n\n  function axes(ctx, box, opts) {\n    const [x0, x1] = opts.xlim, [y0, y1] = opts.ylim;\n    const { sx, sy } = mapping(box, opts.xlim, opts.ylim);\n    const xt = tickVals(x0, x1, 6).filter((v) => v >= x0 && v <= x1);\n    const yt = tickVals(y0, y1, 4).filter((v) => v >= y0 && v <= y1);\n    if (opts.grid !== false) {\n      ctx.save(); ctx.strokeStyle = style.GRID; ctx.lineWidth = 1;\n      for (const v of xt) { ctx.beginPath(); ctx.moveTo(sx(v), box.y0); ctx.lineTo(sx(v), box.y1); ctx.stroke(); }\n      for (const v of yt) { ctx.beginPath(); ctx.moveTo(box.x0, sy(v)); ctx.lineTo(box.x1, sy(v)); ctx.stroke(); }\n      ctx.restore();\n    }\n    // axes sit on zero when zero is inside the range, else on the box edge\n    const ax = y0 <= 0 && y1 >= 0 ? sy(0) : box.y1;\n    const ay = x0 <= 0 && x1 >= 0 ? sx(0) : box.x0;\n    inkLine(ctx, box.x0 - 4, ax, box.x1 + 6, ax, style.AXIS, 1.4, 1);\n    inkLine(ctx, ay, box.y1 + 4, ay, box.y0 - 6, style.AXIS, 1.4, 2);\n    // arrow heads\n    ctx.save(); ctx.fillStyle = style.AXIS;\n    ctx.beginPath(); ctx.moveTo(box.x1 + 8, ax); ctx.lineTo(box.x1 + 1, ax - 3.5); ctx.lineTo(box.x1 + 1, ax + 3.5); ctx.fill();\n    ctx.beginPath(); ctx.moveTo(ay, box.y0 - 8); ctx.lineTo(ay - 3.5, box.y0 - 1); ctx.lineTo(ay + 3.5, box.y0 - 1); ctx.fill();\n    ctx.restore();\n    ctx.save();\n    ctx.fillStyle = style.MUTED; ctx.font = font(12);\n    ctx.textAlign = \"center\";\n    for (const v of xt) {\n      if (Math.abs(sx(v) - ay) < 1 && ay !== box.x0) continue; // skip the label under the y axis\n      inkLine(ctx, sx(v), ax - 3, sx(v), ax + 3, style.AXIS, 1, v);\n      ctx.fillText(fmt(v), sx(v), ax + 16);\n    }\n    ctx.textAlign = \"right\";\n    for (const v of yt) {\n      if (Math.abs(sy(v) - ax) < 1 && ax !== box.y1) continue;\n      inkLine(ctx, ay - 3, sy(v), ay + 3, sy(v), style.AXIS, 1, v + 7);\n      ctx.fillText(fmt(v), ay - 7, sy(v) + 4);\n    }\n    ctx.font = font(14, true); ctx.fillStyle = style.INK;\n    if (opts.xlabel) { ctx.textAlign = \"right\"; ctx.fillText(opts.xlabel, box.x1 + 4, ax - 8); }\n    if (opts.ylabel) { ctx.textAlign = \"left\"; ctx.fillText(opts.ylabel, ay + 8, box.y0 + 4); }\n    ctx.restore();\n    return { sx, sy };\n  }\n\n  function stroke(ctx, pts, color, width, dash) {\n    if (!pts.length) return;\n    ctx.save();\n    ctx.strokeStyle = color; ctx.lineWidth = width || 2.2;\n    ctx.lineJoin = \"round\"; ctx.lineCap = \"round\";\n    if (dash) ctx.setLineDash(dash);\n    ctx.beginPath();\n    let pen = false;\n    for (const p of pts) {\n      if (!p) { pen = false; continue; }\n      pen ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1]);\n      pen = true;\n    }\n    ctx.stroke();\n    ctx.restore();\n  }\n\n  function fnPoints(fn, opts, m) {\n    const [x0, x1] = opts.xlim, [y0, y1] = opts.ylim;\n    const n = 400, pts = [];\n    const margin = (y1 - y0) * 0.02;\n    for (let i = 0; i <= n; i++) {\n      const x = x0 + (x1 - x0) * i / n;\n      let y;\n      try { y = fn(x); } catch (e) { y = NaN; }\n      if (!isFinite(y) || y < y0 - margin || y > y1 + margin) { pts.push(null); continue; }\n      pts.push([m.sx(x), m.sy(y)]);\n    }\n    return pts;\n  }\n\n  function legend(ctx, box, items) {\n    if (!items.length) return;\n    ctx.save();\n    ctx.font = font(13); ctx.textAlign = \"left\"; ctx.textBaseline = \"middle\";\n    let x = box.x0 + 10, y = box.y0 + 12;\n    for (const it of items) {\n      inkLine(ctx, x, y, x + 22, y, it.color, 2.4, x);\n      ctx.fillStyle = style.INK;\n      ctx.fillText(it.label, x + 28, y + 1);\n      x += 28 + ctx.measureText(it.label).width + 18;\n    }\n    ctx.restore();\n  }\n\n  function title(ctx, W, text) {\n    ctx.save();\n    ctx.font = font(15); ctx.fillStyle = style.INK; ctx.textAlign = \"center\";\n    ctx.fillText(text, W / 2, 16);\n    ctx.restore();\n  }\n\n  function render(canvas, opts) {\n    const ctx = canvas.getContext(\"2d\");\n    const rect = canvas.getBoundingClientRect();\n    const W = Math.max(60, Math.round(rect.width)), H = Math.max(60, Math.round(rect.height));\n    const dpr = window.devicePixelRatio || 1;\n    if (canvas.width !== Math.round(W * dpr) || canvas.height !== Math.round(H * dpr)) {\n      canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);\n    }\n    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);\n    frame(ctx, W, H);\n    if (opts.title) title(ctx, W, opts.title);\n    const box = plotBox(W, H, opts);\n    const type = opts.type || \"function\";\n\n    if (type === \"bars\") {\n      const labels = opts.bars.labels || [], values = opts.bars.values || [];\n      const n = Math.max(1, values.length);\n      const bw = (box.x1 - box.x0) / n;\n      const vmax = Math.max(...values.map((v) => Math.abs(v)), 0) * 1.15 || 1;\n      const base = box.y1;\n      inkLine(ctx, box.x0 - 4, base, box.x1 + 4, base, style.AXIS, 1.4, 3);\n      ctx.save();\n      values.forEach((v, i) => {\n        const h = (Math.abs(v) / vmax) * (box.y1 - box.y0);\n        const x = box.x0 + i * bw + bw * 0.2, w = bw * 0.6, y = base - h;\n        const hot = opts.bars.highlight != null && i === opts.bars.highlight;\n        ctx.fillStyle = hot ? style.MAIN : \"#e6dfcf\";\n        ctx.fillRect(x, y, w, h);\n        ctx.strokeStyle = hot ? style.MAIN : style.AXIS; ctx.lineWidth = 1.2;\n        ctx.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);\n        ctx.font = font(13); ctx.textAlign = \"center\"; ctx.fillStyle = style.INK;\n        ctx.fillText(String(labels[i] == null ? i + 1 : labels[i]), x + w / 2, base + 17);\n        ctx.fillStyle = hot ? style.MAIN : style.MUTED;\n        ctx.fillText(fmt(v), x + w / 2, y - 6);\n      });\n      ctx.restore();\n      const sx = (i) => box.x0 + (i + 0.5) * bw, sy = (v) => base - (Math.abs(v) / vmax) * (box.y1 - box.y0);\n      return { ctx, sx, sy, box, W, H, opts };\n    }\n\n    const m = axes(ctx, box, opts);\n    const items = [];\n    if (type === \"lines\") {\n      (opts.series || []).forEach((s, i) => {\n        const color = s.color || PALETTE[i % PALETTE.length];\n        stroke(ctx, (s.points || []).map((p) => [m.sx(p[0]), m.sy(p[1])]), color, 2.2, s.dash);\n        if (s.name) items.push({ label: s.name, color });\n      });\n    } else if (type === \"points\") {\n      ctx.save(); ctx.fillStyle = opts.color || style.MAIN;\n      (opts.points || []).forEach((p) => { ctx.beginPath(); ctx.arc(m.sx(p[0]), m.sy(p[1]), opts.r || 3.6, 0, Math.PI * 2); ctx.fill(); });\n      ctx.restore();\n    } else {\n      const fns = opts.fns || (typeof opts.fn === \"function\" ? [{ fn: opts.fn, color: opts.color, label: opts.label }] : []);\n      fns.forEach((f, i) => {\n        const color = f.color || PALETTE[i % PALETTE.length];\n        stroke(ctx, fnPoints(f.fn, opts, m), color, f.width || 2.4, f.dash);\n        if (f.label) items.push({ label: f.label, color });\n      });\n    }\n    legend(ctx, box, items);\n    return { ctx, sx: m.sx, sy: m.sy, box, W, H, opts };\n  }\n\n  // ---- overlays (world coordinates) ----\n  function marker(ch, x, y, o) {\n    o = o || {};\n    const px = ch.sx(x), py = ch.sy(y);\n    ch.ctx.save();\n    ch.ctx.fillStyle = o.color || style.MAIN;\n    ch.ctx.beginPath(); ch.ctx.arc(px, py, o.r || 5, 0, Math.PI * 2); ch.ctx.fill();\n    ch.ctx.strokeStyle = style.PAPER; ch.ctx.lineWidth = 1.5; ch.ctx.stroke();\n    if (o.label) {\n      ch.ctx.font = font(o.size || 13); ch.ctx.fillStyle = o.color || style.MAIN; ch.ctx.textAlign = \"left\";\n      ch.ctx.fillText(o.label, px + 8, py - 8);\n    }\n    ch.ctx.restore();\n  }\n\n  function vline(ch, x, o) {\n    o = o || {};\n    const px = ch.sx(x);\n    stroke(ch.ctx, [[px, ch.box.y0], [px, ch.box.y1]], o.color || style.MUTED, o.width || 1.2, o.dash || [4, 4]);\n    if (o.label) note(ch, x, null, o.label, { color: o.color || style.MUTED, px: px + 4, py: ch.box.y0 + 12, align: \"left\", size: o.size });\n  }\n\n  function hline(ch, y, o) {\n    o = o || {};\n    const py = ch.sy(y);\n    stroke(ch.ctx, [[ch.box.x0, py], [ch.box.x1, py]], o.color || style.MUTED, o.width || 1.2, o.dash || [4, 4]);\n    if (o.label) note(ch, null, y, o.label, { color: o.color || style.MUTED, px: ch.box.x1 - 4, py: py - 5, align: \"right\", size: o.size });\n  }\n\n  function segment(ch, a, b, o) {\n    o = o || {};\n    const x1 = ch.sx(a[0]), y1 = ch.sy(a[1]), x2 = ch.sx(b[0]), y2 = ch.sy(b[1]);\n    const color = o.color || style.AUX;\n    stroke(ch.ctx, [[x1, y1], [x2, y2]], color, o.width || 2, o.dash);\n    if (o.arrow) {\n      const ang = Math.atan2(y2 - y1, x2 - x1), L = 9;\n      ch.ctx.save(); ch.ctx.fillStyle = color; ch.ctx.beginPath();\n      ch.ctx.moveTo(x2, y2);\n      ch.ctx.lineTo(x2 - L * Math.cos(ang - 0.4), y2 - L * Math.sin(ang - 0.4));\n      ch.ctx.lineTo(x2 - L * Math.cos(ang + 0.4), y2 - L * Math.sin(ang + 0.4));\n      ch.ctx.fill(); ch.ctx.restore();\n    }\n  }\n\n  function note(ch, x, y, text, o) {\n    o = o || {};\n    const px = o.px != null ? o.px : ch.sx(x), py = o.py != null ? o.py : ch.sy(y);\n    ch.ctx.save();\n    ch.ctx.font = font(o.size || 14, o.italic);\n    ch.ctx.fillStyle = o.color || style.INK;\n    ch.ctx.textAlign = o.align || \"left\";\n    ch.ctx.fillText(text, px, py);\n    ch.ctx.restore();\n  }\n\n  /** Pointer probe in world coords; the caller redraws and updates readouts. */\n  function attachProbe(canvas, opts, onProbe, onLeave) {\n    const [x0, x1] = opts.xlim;\n    const [y0, y1] = opts.ylim;\n    const toWorld = (px, py) => {\n      const r = canvas.getBoundingClientRect();\n      const box = plotBox(r.width, r.height, opts);\n      const t = (px - r.left - box.x0) / (box.x1 - box.x0);\n      const u = 1 - (py - r.top - box.y0) / (box.y1 - box.y0);\n      return { x: x0 + t * (x1 - x0), y: y0 + u * (y1 - y0), inside: t >= 0 && t <= 1 };\n    };\n    const handler = (e) => {\n      const p = toWorld(e.clientX, e.clientY);\n      if (p.inside) onProbe(p);\n    };\n    canvas.addEventListener(\"pointermove\", handler);\n    canvas.addEventListener(\"pointerdown\", handler);\n    if (onLeave) canvas.addEventListener(\"pointerleave\", onLeave);\n    canvas.style.touchAction = \"none\";\n    return toWorld;\n  }\n\n  window.HandChart = { render, marker, vline, hline, segment, note, attachProbe, style, font: HAND };\n})();\n</script>\n  <meta charset=\"utf-8\">\n  <style>\n    html, body { margin: 0; height: 100%; background: #faf8f3; font-family: \"PingFang SC\", \"Hiragino Sans GB\", sans-serif; color: #333; overflow: hidden; }\n    #wrap { position: absolute; inset: 0; display: flex; flex-direction: column; }\n    #plot { flex: 1; min-height: 0; margin: 10px 10px 4px; border: 1px solid #d9d2c3; border-radius: 12px; background: #fbfaf6; cursor: default; touch-action: none; }\n    #readout { display: flex; justify-content: center; align-items: center; gap: 28px; padding: 4px 0 8px; font-size: 12px; color: #666; flex-wrap: wrap; }\n    #readout .k { display: block; font-size: 11px; letter-spacing: .04em; }\n    #readout .v { display: block; font-family: ui-monospace, Menlo, monospace; font-size: 14px; font-weight: 700; color: #c0392b; min-width: 64px; text-align: center; }\n    #formula { display: inline-block; padding: 3px 10px; border: 1px solid #d9d2c3; border-radius: 6px; background: #fff; font-family: Georgia, \"Times New Roman\", serif; font-style: italic; font-size: 13px; color: #333; }\n    .slider-row { display: flex; justify-content: center; align-items: center; gap: 24px; padding: 0 0 6px; font-size: 12px; color: #555; }\n    .slider-row label { display: flex; align-items: center; gap: 8px; }\n    .slider-row input[type=range] { width: 120px; accent-color: #c0392b; }\n    .slider-row .val { font-family: ui-monospace, Menlo, monospace; font-weight: 700; color: #c0392b; min-width: 20px; text-align: center; }\n  </style>\n</head>\n<body>\n  <div id=\"wrap\">\n    <canvas id=\"plot\"></canvas>\n    <div id=\"readout\">\n      <span><span class=\"k\">内侧维度相等</span><span class=\"v\" id=\"innerDimEqual-display\">—</span></span>\n      <span><span class=\"k\">输出形状 H</span><span class=\"v\" id=\"outputShape-display\">—</span></span>\n      <span id=\"formula\">(3×4) @ (r×c) = 3×c</span>\n    </div>\n    <div class=\"slider-row\">\n      <label>W 行数 r <input type=\"range\" id=\"rowsW-slider\" min=\"1\" max=\"6\" step=\"1\" value=\"4\"><span class=\"val\" id=\"rowsW-val\">4</span></label>\n      <label>W 列数 c <input type=\"range\" id=\"colsW-slider\" min=\"1\" max=\"6\" step=\"1\" value=\"2\"><span class=\"val\" id=\"colsW-val\">2</span></label>\n    </div>\n  </div>\n  <script>\n    // --- 矩阵乘法形状匹配器 --------------------------------------------\n    // 固定矩阵 X: 3 行 4 列\n    const X_ROWS = 3, X_COLS = 4;\n    // 矩阵 W 的行列由滑块控制\n    let rowsW = 4, colsW = 2;\n\n    // --- 画布与网格锚点 (6x6 网格) --------------------------------------\n    const canvas = document.getElementById('plot');\n    const ctx = canvas.getContext('2d');\n    let W = 0, H = 0;\n\n    // 6x6 网格锚点: 列 A-F (0-5), 行 1-6 (0-5)\n    // 每个锚点中心坐标 (col, row) -> 像素\n    function anchor(col, row) {\n      const cellW = W / 6, cellH = H / 6;\n      return { x: (col + 0.5) * cellW, y: (row + 0.5) * cellH };\n    }\n\n    // 矩阵绘制参数\n    const CELL_SIZE = 26;      // 每个格子的边长\n    const CELL_GAP = 2;        // 格子间距\n    const MATRIX_PAD = 6;      // 矩阵内边距\n\n    // 绘制一个矩阵网格，返回其外接矩形信息\n    function drawMatrix(centerX, centerY, rows, cols, labelPrefix, color, highlight) {\n      const totalW = cols * CELL_SIZE + (cols - 1) * CELL_GAP;\n      const totalH = rows * CELL_SIZE + (rows - 1) * CELL_GAP;\n      const startX = centerX - totalW / 2;\n      const startY = centerY - totalH / 2;\n\n      ctx.save();\n      // 矩阵外框\n      ctx.strokeStyle = color;\n      ctx.lineWidth = highlight ? 2.5 : 1.8;\n      ctx.strokeRect(startX - MATRIX_PAD, startY - MATRIX_PAD, totalW + 2 * MATRIX_PAD, totalH + 2 * MATRIX_PAD);\n\n      // 格子\n      for (let r = 0; r < rows; r++) {\n        for (let c = 0; c < cols; c++) {\n          const x = startX + c * (CELL_SIZE + CELL_GAP);\n          const y = startY + r * (CELL_SIZE + CELL_GAP);\n          ctx.fillStyle = '#fbfaf6';\n          ctx.fillRect(x, y, CELL_SIZE, CELL_SIZE);\n          ctx.strokeStyle = '#d9d2c3';\n          ctx.lineWidth = 1;\n          ctx.strokeRect(x, y, CELL_SIZE, CELL_SIZE);\n\n          // 格子内变量名\n          ctx.fillStyle = '#555';\n          ctx.font = 'italic 10px Georgia, serif';\n          ctx.textAlign = 'center';\n          ctx.textBaseline = 'middle';\n          const varName = labelPrefix + (r + 1) + (c + 1);\n          ctx.fillText(varName, x + CELL_SIZE / 2, y + CELL_SIZE / 2);\n        }\n      }\n      ctx.restore();\n\n      return { x: startX - MATRIX_PAD, y: startY - MATRIX_PAD, w: totalW + 2 * MATRIX_PAD, h: totalH + 2 * MATRIX_PAD };\n    }\n\n    // 绘制矩阵名称标签\n    function drawMatrixLabel(x, y, text, color) {\n      ctx.save();\n      ctx.font = 'italic 13px Georgia, serif';\n      ctx.fillStyle = color;\n      ctx.textAlign = 'center';\n      ctx.textBaseline = 'bottom';\n      ctx.fillText(text, x, y);\n      ctx.restore();\n    }\n\n    // 绘制内侧维度比较标签\n    function drawInnerDimLabel(x, y, equal) {\n      ctx.save();\n      ctx.font = 'italic 12px Georgia, serif';\n      ctx.textAlign = 'center';\n      ctx.textBaseline = 'middle';\n      if (equal) {\n        ctx.fillStyle = '#2e8b6f';\n        ctx.fillText('4 = ' + rowsW, x, y);\n      } else {\n        ctx.fillStyle = '#c0392b';\n        ctx.fillText('4 ≠ ' + rowsW, x, y);\n      }\n      ctx.restore();\n    }\n\n    // 绘制形状公式\n    function drawShapeFormula(x, y, equal) {\n      ctx.save();\n      ctx.font = 'italic 13px Georgia, serif';\n      ctx.textAlign = 'center';\n      ctx.textBaseline = 'middle';\n      const formula = '(3×4) @ (' + rowsW + '×' + colsW + ') = 3×' + colsW;\n      if (equal) {\n        ctx.fillStyle = '#2e8b6f';\n        ctx.fillText(formula, x, y);\n      } else {\n        ctx.fillStyle = '#c0392b';\n        ctx.fillText(formula, x, y);\n        // 红色叉号\n        ctx.font = 'bold 16px Georgia, serif';\n        ctx.fillStyle = '#c0392b';\n        ctx.fillText('✗', x + 90, y);\n      }\n      ctx.restore();\n    }\n\n    // 绘制状态提示\n    function drawStatusMessage(x, y, equal) {\n      ctx.save();\n      ctx.font = 'italic 12px Georgia, serif';\n      ctx.textAlign = 'center';\n      ctx.textBaseline = 'middle';\n      if (equal) {\n        ctx.fillStyle = '#2e8b6f';\n        ctx.fillText('内侧维度匹配，乘法可行', x, y);\n      } else {\n        ctx.fillStyle = '#c0392b';\n        ctx.fillText('内侧维度不匹配，无法相乘', x, y);\n      }\n      ctx.restore();\n    }\n\n    // 主绘制函数\n    function draw() {\n      ctx.clearRect(0, 0, W, H);\n\n      const equal = (X_COLS === rowsW);\n\n      // 锚点位置\n      const aB2 = anchor(1, 1); // X 矩阵\n      const aD2 = anchor(3, 1); // W 矩阵\n      const aF2 = anchor(5, 1); // H 矩阵\n      const aC3 = anchor(2, 2); // 内侧维度标签\n      const aE3 = anchor(4, 2); // 形状公式\n      const aC5 = anchor(2, 4); // 状态提示\n\n      // 绘制矩阵 X (3×4)\n      drawMatrix(aB2.x, aB2.y, X_ROWS, X_COLS, 'x', '#c0392b', false);\n      drawMatrixLabel(aB2.x, aB2.y - 50, 'X (3×4)', '#c0392b');\n\n      // 绘制矩阵 W (rowsW × colsW)\n      drawMatrix(aD2.x, aD2.y, rowsW, colsW, 'w', '#c0392b', false);\n      drawMatrixLabel(aD2.x, aD2.y - 50, 'W (' + rowsW + '×' + colsW + ')', '#c0392b');\n\n      // 绘制矩阵 H (3 × colsW)\n      if (equal) {\n        drawMatrix(aF2.x, aF2.y, X_ROWS, colsW, 'h', '#c0392b', false);\n        drawMatrixLabel(aF2.x, aF2.y - 50, 'H (3×' + colsW + ')', '#c0392b');\n      } else {\n        // 不匹配时，H 用虚线框表示未定义\n        ctx.save();\n        ctx.strokeStyle = '#b9b3a6';\n        ctx.lineWidth = 1.5;\n        ctx.setLineDash([5, 4]);\n        const totalW = colsW * CELL_SIZE + (colsW - 1) * CELL_GAP;\n        const totalH = X_ROWS * CELL_SIZE + (X_ROWS - 1) * CELL_GAP;\n        const startX = aF2.x - totalW / 2;\n        const startY = aF2.y - totalH / 2;\n        ctx.strokeRect(startX - MATRIX_PAD, startY - MATRIX_PAD, totalW + 2 * MATRIX_PAD, totalH + 2 * MATRIX_PAD);\n        ctx.restore();\n        drawMatrixLabel(aF2.x, aF2.y - 50, 'H (未定义)', '#b9b3a6');\n      }\n\n      // 绘制内侧维度比较标签\n      drawInnerDimLabel(aC3.x, aC3.y, equal);\n\n      // 绘制形状公式\n      drawShapeFormula(aE3.x, aE3.y, equal);\n\n      // 绘制状态提示\n      drawStatusMessage(aC5.x, aC5.y, equal);\n\n      // 更新读数\n      document.getElementById('innerDimEqual-display').textContent = equal ? '是' : '否';\n      document.getElementById('outputShape-display').textContent = equal ? '3×' + colsW : '未定义';\n      document.getElementById('rowsW-val').textContent = rowsW;\n      document.getElementById('colsW-val').textContent = colsW;\n\n      // 更新公式标签\n      const formulaEl = document.getElementById('formula');\n      formulaEl.textContent = '(3×4) @ (' + rowsW + '×' + colsW + ') = 3×' + colsW;\n      if (equal) {\n        formulaEl.style.borderColor = '#2e8b6f';\n        formulaEl.style.color = '#2e8b6f';\n      } else {\n        formulaEl.style.borderColor = '#c0392b';\n        formulaEl.style.color = '#c0392b';\n      }\n    }\n\n    // 尺寸调整\n    function resize() {\n      const r = canvas.getBoundingClientRect();\n      W = r.width; H = r.height;\n      const dpr = window.devicePixelRatio || 1;\n      canvas.width = Math.round(W * dpr);\n      canvas.height = Math.round(H * dpr);\n      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);\n      draw();\n    }\n\n    // 滑块事件\n    document.getElementById('rowsW-slider').addEventListener('input', function (e) {\n      rowsW = parseInt(e.target.value, 10);\n      draw();\n    });\n    document.getElementById('colsW-slider').addEventListener('input', function (e) {\n      colsW = parseInt(e.target.value, 10);\n      draw();\n    });\n\n    // 教师控制钩子\n    window.hkControl = {\n      set: function (s) {\n        if (!s) return;\n        if (s.rowsW != null) {\n          rowsW = Math.max(1, Math.min(6, parseInt(s.rowsW, 10)));\n          document.getElementById('rowsW-slider').value = rowsW;\n        }\n        if (s.colsW != null) {\n          colsW = Math.max(1, Math.min(6, parseInt(s.colsW, 10)));\n          document.getElementById('colsW-slider').value = colsW;\n        }\n        draw();\n      },\n      highlight: function (sel) {\n        var el = document.querySelector(sel);\n        if (!el) return;\n        el.style.outline = '2px solid #c0392b';\n        setTimeout(function () { el.style.outline = ''; }, 1500);\n      },\n      annotate: function () {},\n      reveal: function () {},\n    };\n\n    window.addEventListener('resize', resize);\n    resize();\n  </script>\n</body>\n</html>",
+        "html_path": null,
+        "mermaid": null,
+        "layout": "newcol",
+        "params": [],
+        "controls": []
+      },
+      "widget_hint": "先固定 $X$ 为 $3 \\times 2$，再拖动滑块改变 $W$ 的形状，看什么时候乘法能跑通。"
+    }
+  ]
+}

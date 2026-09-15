@@ -1,0 +1,353 @@
+{
+  "session_id": "sess_2",
+  "course_id": "course_7cb6a693f5",
+  "title": "猜一个解：简谐振动通解",
+  "learning_goal": "学生能写出简谐振动的通解 x(t)=A cos(ωt+φ)，并解释 A、ω、φ 的物理意义。",
+  "steps": [
+    {
+      "title": "什么函数求两次导变回自己的负数？",
+      "beat": "hook",
+      "spoken_text": "先别急着写公式。我问你一个纯数学的问题：有没有一个函数，你把它求一次导，再求一次导，结果变回它自己的负数？板书第一行就是这个问题的写法。看那个负号，它是整个简谐振动的灵魂。你脑子里第一个蹦出来的函数是什么？",
+      "boards": [
+        {
+          "title": "",
+          "markdown": "- 找一个函数 $x(t)$，满足 $\\dfrac{d^2x}{dt^2} = -x$\n- 求两次导 → **变回自己的负数**",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "circle",
+          "snippet": "-x",
+          "board_index": 0,
+          "trigger_phrase": "变回它自己的负数",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": {
+        "mode": "choice",
+        "question": "你觉得哪个函数求两次导会变回自己的负数？",
+        "options": [
+          "正弦或者余弦吧，它们导来导去就在正负之间转",
+          "指数函数，它求导还是自己，加个负号就行"
+        ],
+        "correct_index": 0,
+        "misconceptions": [
+          null,
+          "指数函数求导还是自己，不会变号；要变号得是 e 的虚数次方，那其实就是正弦余弦。"
+        ],
+        "explanation": "正弦和余弦求两次导正好回到自己的负数，这是它们最特别的性质。"
+      },
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "弹簧的直觉",
+      "beat": "analogy",
+      "spoken_text": "把这个数学问题放到弹簧上。看板书第二行，我圈出来的那个负号：位移往右拉，弹簧力就往左拽，方向和位移相反。所以加速度永远指向平衡位置，这就是负号的物理含义。正弦和余弦正好满足这个关系。那如果我只用 sin，不用 cos，够不够描述所有可能的初始状态？",
+      "boards": [
+        {
+          "title": "弹簧上的负号",
+          "markdown": "- 位移 $x$ 往右 → 弹力往左\n- 加速度方向永远**指向平衡位置**\n- 数学上：$\\dfrac{d^2x}{dt^2} = -\\dfrac{k}{m}x$\n- 正弦、余弦都满足 → 都是候选解",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "highlight",
+          "snippet": "-\\dfrac{k}{m}x",
+          "board_index": 0,
+          "trigger_phrase": "我圈出来的那个负号",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": {
+        "mode": "choice",
+        "question": "只用 sin 一个函数，够不够描述弹簧所有可能的初始状态？",
+        "options": [
+          "够，sin 从零开始，弹簧一般就从零开始动",
+          "不够，有的初始状态 sin 描述不了，得把 cos 也加上"
+        ],
+        "correct_index": 1,
+        "misconceptions": [
+          "sin 只能描述从平衡位置出发的情况；如果一开始就把弹簧拉到最远处再松手，初始速度为零，sin 就描述不了。",
+          null
+        ],
+        "explanation": "sin 和 cos 是同一个方程的两个独立解，要描述任意初始位置和初始速度，必须把它们都保留。"
+      },
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "通解形式",
+      "beat": "define",
+      "spoken_text": "把两个解合起来，再整理一下，就得到板书最后一行：x(t) 等于 A 乘 cos(ωt 加 φ)。三个参数各有名字：A 是振幅，最大偏移；ω 是角频率，每秒转多少弧度，它由根号下 k 除以 m 决定；φ 是初相，t 等于零时的起跑角度。看那个根号，弹簧越硬、质量越小，ω 越大，振动越快。现在你告诉我，ω 和每秒振动几次是一回事吗？",
+      "boards": [
+        {
+          "title": "通解",
+          "markdown": "- 两个解合起来 → $x(t) = A\\cos(\\omega t + \\varphi)$\n- $\\omega = \\sqrt{k/m}$\n- $A$：振幅（最大偏移）\n- $\\omega$：角频率（每秒多少弧度）\n- $\\varphi$：初相（$t=0$ 时的起跑角度）",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "circle",
+          "snippet": "\\omega = \\sqrt{k/m}",
+          "board_index": 0,
+          "trigger_phrase": "根号下 k 除以 m",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": null,
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "代入具体数值",
+      "beat": "worked_example",
+      "spoken_text": "光看字母不够过瘾，我们代一组数进去。取振幅 A 等于 2 米，角频率 ω 等于 3 弧度每秒，初相 φ 等于 0。看板书第二行，t 等于 0 时余弦是 1，所以 x 就是 2 米，正好在最大偏移处。再看 t 等于 π 除以 6 秒，ωt 是 π 除以 2，余弦是 0，物块正好穿过平衡位置。换个数你会算吗？",
+      "boards": [
+        {
+          "title": "代一组数",
+          "markdown": "- 取 $A = 2\\,\\text{m}$，$\\omega = 3\\,\\text{rad/s}$，$\\varphi = 0$\n- $x(t) = 2\\cos(3t)$\n- $t = 0$ → $x = 2$ m（最大偏移）\n- $t = \\pi/6$ → $x = 0$（过平衡位置）",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "circle",
+          "snippet": "x(t) = 2\\cos(3t)",
+          "board_index": 0,
+          "trigger_phrase": "看板书第二行",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": null,
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "三个参数怎么改变图像？",
+      "beat": "poe",
+      "spoken_text": "现在把三个参数都变成滑块，你自己拖一拖。看下面这张探针图，横轴是时间，纵轴是位移。我把振幅 A 推到 1.5，看读数，峰值跟着变高；再把角频率 ω 推到 2.5，看读数，波峰挤得更密；最后把初相 φ 推到 π 除以 2，看读数，整条曲线往左挪了。那么问题来了：如果只把初相 φ 从 0 推到 π 除以 2，这条曲线会变成什么样？",
+      "boards": [
+        {
+          "title": "三个旋钮",
+          "markdown": "- $A$：峰值高度\n- $\\omega$：波动快慢（周期）\n- $\\varphi$：沿时间轴平移\n- 拖滑块 → 看曲线怎么动",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "highlight",
+          "snippet": "\\varphi",
+          "board_index": 0,
+          "trigger_phrase": "初相 φ 从 0 推到 π 除以 2",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": {
+        "kind": "explorable",
+        "title": "拖滑块：A、ω、φ 各自管什么？",
+        "task": "横轴时间 t（0 到 2π），纵轴位移 x(t) = A cos(ωt + φ)。三个滑块：振幅 A（0.5~2.0），角频率 ω（0.5~3.0），初相 φ（0~2π）。实时画出曲线，并在 t=0 处画一个探针点，读出 x(0) 的值。拖动 A 改变峰值高度，拖动 ω 改变周期，拖动 φ 使曲线沿时间轴平移。",
+        "html": "<!DOCTYPE html>\n<html>\n<head><script>/**\n * HandChart — zero-dependency hand-drawn chart base for explorable widgets.\n *\n * Injected into every generated 2D explorable (widget_generator.py) so the\n * model supplies data + overlays instead of hand-writing axes. The look matches\n * the handwritten page: paper panel, slightly wobbly ink axes, main red /\n * aux green, handwriting labels.\n *\n * API (all coordinates in WORLD units unless noted):\n *   const ch = HandChart.render(canvas, opts)\n *     opts = { type: \"function\"|\"points\"|\"bars\"|\"lines\",\n *              xlim:[x0,x1], ylim:[y0,y1],                  (all but bars)\n *              fn: x=>y | fns:[{fn, color?, label?}],        (function)\n *              points:[[x,y],...],                          (points)\n *              series:[{name, points, color?, dash?}],      (lines; legend drawn)\n *              bars:{labels:[...], values:[...], highlight?} (bars)\n *              xlabel, ylabel, grid:true|false, title }\n *     returns { ctx, sx, sy, box, W, H, opts }  — keep it to draw overlays\n *   HandChart.marker(ch, x, y, {color, label, r})       dot + optional label\n *   HandChart.vline(ch, x, {color, dash, label})         vertical guide\n *   HandChart.hline(ch, y, {color, dash, label})         horizontal guide\n *   HandChart.segment(ch, [x1,y1], [x2,y2], {color, width, dash, arrow})\n *   HandChart.note(ch, x, y, text, {color, align, size}) handwriting annotation\n *   HandChart.attachProbe(canvas, {xlim, ylim}, onProbe, onLeave?)\n *     pointer follow; onProbe({x, y}) in world coords — redraw + readouts there.\n *   HandChart.style = { INK, AXIS, MAIN, AUX, GRID, PAPER, MUTED }\n */\n(function () {\n  const style = {\n    INK: \"#2b2b2b\", AXIS: \"#8a8377\", MAIN: \"#c0392b\", AUX: \"#2e8b6f\",\n    GRID: \"#ece5d4\", PAPER: \"#fbfaf6\", MUTED: \"#8a8377\", PURPLE: \"#7c3aed\", BLUE: \"#2563eb\",\n  };\n  const PALETTE = [style.MAIN, style.AUX, style.BLUE, style.PURPLE, \"#d97706\"];\n  const PAD = { l: 48, r: 18, t: 18, b: 36 };\n  const HAND = \"'Patrick Hand', 'LXGW WenKai Lite', 'PingFang SC', sans-serif\";\n\n  function font(size, italic) { return (italic ? \"italic \" : \"\") + size + \"px \" + HAND; }\n\n  // deterministic wobble so the \"hand\" does not shake on every redraw\n  function wob(seed, amp) { return Math.sin(seed * 12.9898) * amp; }\n\n  function tickVals(min, max, n) {\n    const span = max - min || 1;\n    const raw = span / n;\n    const mag = Math.pow(10, Math.floor(Math.log10(raw)));\n    const step = [1, 2, 2.5, 5, 10].map((m) => m * mag).find((s) => span / s <= n) || mag * 10;\n    const out = [];\n    for (let v = Math.ceil(min / step) * step; v <= max + step * 1e-9; v += step) out.push(+v.toFixed(10));\n    return out;\n  }\n\n  function fmt(v) {\n    const a = Math.abs(v);\n    if (a === 0) return \"0\";\n    if (a >= 10000 || a < 0.01) return v.toExponential(1);\n    return String(+v.toFixed(Math.max(0, 3 - Math.floor(Math.log10(a)))));\n  }\n\n  /** a hand-drawn line: two passes with tiny deterministic wobble */\n  function inkLine(ctx, x1, y1, x2, y2, color, width, seed) {\n    ctx.save();\n    ctx.strokeStyle = color; ctx.lineWidth = width; ctx.lineCap = \"round\";\n    const n = 6, s = seed || (x1 + y2);\n    ctx.beginPath();\n    for (let i = 0; i <= n; i++) {\n      const t = i / n, x = x1 + (x2 - x1) * t, y = y1 + (y2 - y1) * t;\n      const w = i === 0 || i === n ? 0 : wob(s + i, 0.7);\n      i ? ctx.lineTo(x + w, y + w) : ctx.moveTo(x, y);\n    }\n    ctx.stroke();\n    ctx.restore();\n  }\n\n  function frame(ctx, W, H) {\n    ctx.clearRect(0, 0, W, H);\n    ctx.save();\n    ctx.fillStyle = style.PAPER;\n    ctx.fillRect(0, 0, W, H);\n    ctx.restore();\n  }\n\n  function plotBox(W, H, opts) {\n    const t = PAD.t + (opts && opts.title ? 18 : 0);\n    return { x0: PAD.l, y0: t, x1: W - PAD.r, y1: H - PAD.b };\n  }\n\n  function mapping(box, xlim, ylim) {\n    const [x0, x1] = xlim, [y0, y1] = ylim;\n    return {\n      sx: (v) => box.x0 + (v - x0) / (x1 - x0) * (box.x1 - box.x0),\n      sy: (v) => box.y1 - (v - y0) / (y1 - y0) * (box.y1 - box.y0),\n    };\n  }\n\n  function axes(ctx, box, opts) {\n    const [x0, x1] = opts.xlim, [y0, y1] = opts.ylim;\n    const { sx, sy } = mapping(box, opts.xlim, opts.ylim);\n    const xt = tickVals(x0, x1, 6).filter((v) => v >= x0 && v <= x1);\n    const yt = tickVals(y0, y1, 4).filter((v) => v >= y0 && v <= y1);\n    if (opts.grid !== false) {\n      ctx.save(); ctx.strokeStyle = style.GRID; ctx.lineWidth = 1;\n      for (const v of xt) { ctx.beginPath(); ctx.moveTo(sx(v), box.y0); ctx.lineTo(sx(v), box.y1); ctx.stroke(); }\n      for (const v of yt) { ctx.beginPath(); ctx.moveTo(box.x0, sy(v)); ctx.lineTo(box.x1, sy(v)); ctx.stroke(); }\n      ctx.restore();\n    }\n    // axes sit on zero when zero is inside the range, else on the box edge\n    const ax = y0 <= 0 && y1 >= 0 ? sy(0) : box.y1;\n    const ay = x0 <= 0 && x1 >= 0 ? sx(0) : box.x0;\n    inkLine(ctx, box.x0 - 4, ax, box.x1 + 6, ax, style.AXIS, 1.4, 1);\n    inkLine(ctx, ay, box.y1 + 4, ay, box.y0 - 6, style.AXIS, 1.4, 2);\n    // arrow heads\n    ctx.save(); ctx.fillStyle = style.AXIS;\n    ctx.beginPath(); ctx.moveTo(box.x1 + 8, ax); ctx.lineTo(box.x1 + 1, ax - 3.5); ctx.lineTo(box.x1 + 1, ax + 3.5); ctx.fill();\n    ctx.beginPath(); ctx.moveTo(ay, box.y0 - 8); ctx.lineTo(ay - 3.5, box.y0 - 1); ctx.lineTo(ay + 3.5, box.y0 - 1); ctx.fill();\n    ctx.restore();\n    ctx.save();\n    ctx.fillStyle = style.MUTED; ctx.font = font(12);\n    ctx.textAlign = \"center\";\n    for (const v of xt) {\n      if (Math.abs(sx(v) - ay) < 1 && ay !== box.x0) continue; // skip the label under the y axis\n      inkLine(ctx, sx(v), ax - 3, sx(v), ax + 3, style.AXIS, 1, v);\n      ctx.fillText(fmt(v), sx(v), ax + 16);\n    }\n    ctx.textAlign = \"right\";\n    for (const v of yt) {\n      if (Math.abs(sy(v) - ax) < 1 && ax !== box.y1) continue;\n      inkLine(ctx, ay - 3, sy(v), ay + 3, sy(v), style.AXIS, 1, v + 7);\n      ctx.fillText(fmt(v), ay - 7, sy(v) + 4);\n    }\n    ctx.font = font(14, true); ctx.fillStyle = style.INK;\n    if (opts.xlabel) { ctx.textAlign = \"right\"; ctx.fillText(opts.xlabel, box.x1 + 4, ax - 8); }\n    if (opts.ylabel) { ctx.textAlign = \"left\"; ctx.fillText(opts.ylabel, ay + 8, box.y0 + 4); }\n    ctx.restore();\n    return { sx, sy };\n  }\n\n  function stroke(ctx, pts, color, width, dash) {\n    if (!pts.length) return;\n    ctx.save();\n    ctx.strokeStyle = color; ctx.lineWidth = width || 2.2;\n    ctx.lineJoin = \"round\"; ctx.lineCap = \"round\";\n    if (dash) ctx.setLineDash(dash);\n    ctx.beginPath();\n    let pen = false;\n    for (const p of pts) {\n      if (!p) { pen = false; continue; }\n      pen ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1]);\n      pen = true;\n    }\n    ctx.stroke();\n    ctx.restore();\n  }\n\n  function fnPoints(fn, opts, m) {\n    const [x0, x1] = opts.xlim, [y0, y1] = opts.ylim;\n    const n = 400, pts = [];\n    const margin = (y1 - y0) * 0.02;\n    for (let i = 0; i <= n; i++) {\n      const x = x0 + (x1 - x0) * i / n;\n      let y;\n      try { y = fn(x); } catch (e) { y = NaN; }\n      if (!isFinite(y) || y < y0 - margin || y > y1 + margin) { pts.push(null); continue; }\n      pts.push([m.sx(x), m.sy(y)]);\n    }\n    return pts;\n  }\n\n  function legend(ctx, box, items) {\n    if (!items.length) return;\n    ctx.save();\n    ctx.font = font(13); ctx.textAlign = \"left\"; ctx.textBaseline = \"middle\";\n    let x = box.x0 + 10, y = box.y0 + 12;\n    for (const it of items) {\n      inkLine(ctx, x, y, x + 22, y, it.color, 2.4, x);\n      ctx.fillStyle = style.INK;\n      ctx.fillText(it.label, x + 28, y + 1);\n      x += 28 + ctx.measureText(it.label).width + 18;\n    }\n    ctx.restore();\n  }\n\n  function title(ctx, W, text) {\n    ctx.save();\n    ctx.font = font(15); ctx.fillStyle = style.INK; ctx.textAlign = \"center\";\n    ctx.fillText(text, W / 2, 16);\n    ctx.restore();\n  }\n\n  function render(canvas, opts) {\n    const ctx = canvas.getContext(\"2d\");\n    const rect = canvas.getBoundingClientRect();\n    const W = Math.max(60, Math.round(rect.width)), H = Math.max(60, Math.round(rect.height));\n    const dpr = window.devicePixelRatio || 1;\n    if (canvas.width !== Math.round(W * dpr) || canvas.height !== Math.round(H * dpr)) {\n      canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);\n    }\n    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);\n    frame(ctx, W, H);\n    if (opts.title) title(ctx, W, opts.title);\n    const box = plotBox(W, H, opts);\n    const type = opts.type || \"function\";\n\n    if (type === \"bars\") {\n      const labels = opts.bars.labels || [], values = opts.bars.values || [];\n      const n = Math.max(1, values.length);\n      const bw = (box.x1 - box.x0) / n;\n      const vmax = Math.max(...values.map((v) => Math.abs(v)), 0) * 1.15 || 1;\n      const base = box.y1;\n      inkLine(ctx, box.x0 - 4, base, box.x1 + 4, base, style.AXIS, 1.4, 3);\n      ctx.save();\n      values.forEach((v, i) => {\n        const h = (Math.abs(v) / vmax) * (box.y1 - box.y0);\n        const x = box.x0 + i * bw + bw * 0.2, w = bw * 0.6, y = base - h;\n        const hot = opts.bars.highlight != null && i === opts.bars.highlight;\n        ctx.fillStyle = hot ? style.MAIN : \"#e6dfcf\";\n        ctx.fillRect(x, y, w, h);\n        ctx.strokeStyle = hot ? style.MAIN : style.AXIS; ctx.lineWidth = 1.2;\n        ctx.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);\n        ctx.font = font(13); ctx.textAlign = \"center\"; ctx.fillStyle = style.INK;\n        ctx.fillText(String(labels[i] == null ? i + 1 : labels[i]), x + w / 2, base + 17);\n        ctx.fillStyle = hot ? style.MAIN : style.MUTED;\n        ctx.fillText(fmt(v), x + w / 2, y - 6);\n      });\n      ctx.restore();\n      const sx = (i) => box.x0 + (i + 0.5) * bw, sy = (v) => base - (Math.abs(v) / vmax) * (box.y1 - box.y0);\n      return { ctx, sx, sy, box, W, H, opts };\n    }\n\n    const m = axes(ctx, box, opts);\n    const items = [];\n    if (type === \"lines\") {\n      (opts.series || []).forEach((s, i) => {\n        const color = s.color || PALETTE[i % PALETTE.length];\n        stroke(ctx, (s.points || []).map((p) => [m.sx(p[0]), m.sy(p[1])]), color, 2.2, s.dash);\n        if (s.name) items.push({ label: s.name, color });\n      });\n    } else if (type === \"points\") {\n      ctx.save(); ctx.fillStyle = opts.color || style.MAIN;\n      (opts.points || []).forEach((p) => { ctx.beginPath(); ctx.arc(m.sx(p[0]), m.sy(p[1]), opts.r || 3.6, 0, Math.PI * 2); ctx.fill(); });\n      ctx.restore();\n    } else {\n      const fns = opts.fns || (typeof opts.fn === \"function\" ? [{ fn: opts.fn, color: opts.color, label: opts.label }] : []);\n      fns.forEach((f, i) => {\n        const color = f.color || PALETTE[i % PALETTE.length];\n        stroke(ctx, fnPoints(f.fn, opts, m), color, f.width || 2.4, f.dash);\n        if (f.label) items.push({ label: f.label, color });\n      });\n    }\n    legend(ctx, box, items);\n    return { ctx, sx: m.sx, sy: m.sy, box, W, H, opts };\n  }\n\n  // ---- overlays (world coordinates) ----\n  function marker(ch, x, y, o) {\n    o = o || {};\n    const px = ch.sx(x), py = ch.sy(y);\n    ch.ctx.save();\n    ch.ctx.fillStyle = o.color || style.MAIN;\n    ch.ctx.beginPath(); ch.ctx.arc(px, py, o.r || 5, 0, Math.PI * 2); ch.ctx.fill();\n    ch.ctx.strokeStyle = style.PAPER; ch.ctx.lineWidth = 1.5; ch.ctx.stroke();\n    if (o.label) {\n      ch.ctx.font = font(o.size || 13); ch.ctx.fillStyle = o.color || style.MAIN; ch.ctx.textAlign = \"left\";\n      ch.ctx.fillText(o.label, px + 8, py - 8);\n    }\n    ch.ctx.restore();\n  }\n\n  function vline(ch, x, o) {\n    o = o || {};\n    const px = ch.sx(x);\n    stroke(ch.ctx, [[px, ch.box.y0], [px, ch.box.y1]], o.color || style.MUTED, o.width || 1.2, o.dash || [4, 4]);\n    if (o.label) note(ch, x, null, o.label, { color: o.color || style.MUTED, px: px + 4, py: ch.box.y0 + 12, align: \"left\", size: o.size });\n  }\n\n  function hline(ch, y, o) {\n    o = o || {};\n    const py = ch.sy(y);\n    stroke(ch.ctx, [[ch.box.x0, py], [ch.box.x1, py]], o.color || style.MUTED, o.width || 1.2, o.dash || [4, 4]);\n    if (o.label) note(ch, null, y, o.label, { color: o.color || style.MUTED, px: ch.box.x1 - 4, py: py - 5, align: \"right\", size: o.size });\n  }\n\n  function segment(ch, a, b, o) {\n    o = o || {};\n    const x1 = ch.sx(a[0]), y1 = ch.sy(a[1]), x2 = ch.sx(b[0]), y2 = ch.sy(b[1]);\n    const color = o.color || style.AUX;\n    stroke(ch.ctx, [[x1, y1], [x2, y2]], color, o.width || 2, o.dash);\n    if (o.arrow) {\n      const ang = Math.atan2(y2 - y1, x2 - x1), L = 9;\n      ch.ctx.save(); ch.ctx.fillStyle = color; ch.ctx.beginPath();\n      ch.ctx.moveTo(x2, y2);\n      ch.ctx.lineTo(x2 - L * Math.cos(ang - 0.4), y2 - L * Math.sin(ang - 0.4));\n      ch.ctx.lineTo(x2 - L * Math.cos(ang + 0.4), y2 - L * Math.sin(ang + 0.4));\n      ch.ctx.fill(); ch.ctx.restore();\n    }\n  }\n\n  function note(ch, x, y, text, o) {\n    o = o || {};\n    const px = o.px != null ? o.px : ch.sx(x), py = o.py != null ? o.py : ch.sy(y);\n    ch.ctx.save();\n    ch.ctx.font = font(o.size || 14, o.italic);\n    ch.ctx.fillStyle = o.color || style.INK;\n    ch.ctx.textAlign = o.align || \"left\";\n    ch.ctx.fillText(text, px, py);\n    ch.ctx.restore();\n  }\n\n  /** Pointer probe in world coords; the caller redraws and updates readouts. */\n  function attachProbe(canvas, opts, onProbe, onLeave) {\n    const [x0, x1] = opts.xlim;\n    const [y0, y1] = opts.ylim;\n    const toWorld = (px, py) => {\n      const r = canvas.getBoundingClientRect();\n      const box = plotBox(r.width, r.height, opts);\n      const t = (px - r.left - box.x0) / (box.x1 - box.x0);\n      const u = 1 - (py - r.top - box.y0) / (box.y1 - box.y0);\n      return { x: x0 + t * (x1 - x0), y: y0 + u * (y1 - y0), inside: t >= 0 && t <= 1 };\n    };\n    const handler = (e) => {\n      const p = toWorld(e.clientX, e.clientY);\n      if (p.inside) onProbe(p);\n    };\n    canvas.addEventListener(\"pointermove\", handler);\n    canvas.addEventListener(\"pointerdown\", handler);\n    if (onLeave) canvas.addEventListener(\"pointerleave\", onLeave);\n    canvas.style.touchAction = \"none\";\n    return toWorld;\n  }\n\n  window.HandChart = { render, marker, vline, hline, segment, note, attachProbe, style, font: HAND };\n})();\n</script>\n  <meta charset=\"utf-8\">\n  <style>\n    html, body { margin: 0; height: 100%; background: #faf8f3; font-family: \"PingFang SC\", \"Hiragino Sans GB\", sans-serif; color: #333; overflow: hidden; }\n    #wrap { position: absolute; inset: 0; display: flex; flex-direction: column; }\n    #plot { flex: 1; min-height: 0; margin: 10px 10px 4px; border: 1px solid #d9d2c3; border-radius: 12px; background: #fbfaf6; cursor: crosshair; touch-action: none; }\n    #readout { display: flex; justify-content: center; align-items: center; gap: 22px; padding: 4px 0 6px; font-size: 12px; color: #666; flex-wrap: wrap; }\n    #readout .k { display: block; font-size: 11px; letter-spacing: .04em; }\n    #readout .v { display: block; font-family: ui-monospace, Menlo, monospace; font-size: 14px; font-weight: 700; color: #c0392b; min-width: 56px; text-align: center; }\n    #formula { display: inline-block; padding: 3px 10px; border: 1px solid #d9d2c3; border-radius: 6px; background: #fff; font-family: Georgia, \"Times New Roman\", serif; font-style: italic; font-size: 13px; color: #333; }\n    #controls { display: flex; justify-content: center; align-items: center; gap: 18px; padding: 0 0 8px; flex-wrap: wrap; }\n    #controls .ctl { display: flex; align-items: center; gap: 6px; font-size: 11px; color: #666; }\n    #controls .ctl label { font-family: Georgia, serif; font-style: italic; font-size: 12px; color: #333; }\n    #controls input[type=range] { width: 96px; accent-color: #c0392b; }\n    #controls .val { font-family: ui-monospace, Menlo, monospace; font-size: 12px; font-weight: 700; color: #c0392b; min-width: 40px; text-align: right; }\n  </style>\n</head>\n<body>\n  <div id=\"wrap\">\n    <canvas id=\"plot\"></canvas>\n    <div id=\"readout\">\n      <span><span class=\"k\">x(0)</span><span class=\"v\" id=\"x0-display\">—</span></span>\n      <span><span class=\"k\">周期 T</span><span class=\"v\" id=\"period-display\">—</span></span>\n      <span><span class=\"k\">振幅 A</span><span class=\"v\" id=\"amplitude-display\">—</span></span>\n      <span id=\"formula\">x(t) = A · cos(ωt + φ)</span>\n    </div>\n    <div id=\"controls\">\n      <span class=\"ctl\"><label>A</label><input id=\"A-slider\" type=\"range\" min=\"0.5\" max=\"2.0\" step=\"0.01\" value=\"1.0\"><span class=\"val\" id=\"A-val\">1.00</span></span>\n      <span class=\"ctl\"><label>ω</label><input id=\"omega-slider\" type=\"range\" min=\"0.5\" max=\"3.0\" step=\"0.01\" value=\"1.0\"><span class=\"val\" id=\"omega-val\">1.00</span></span>\n      <span class=\"ctl\"><label>φ</label><input id=\"phi-slider\" type=\"range\" min=\"0\" max=\"6.283185307179586\" step=\"0.001\" value=\"0.0\"><span class=\"val\" id=\"phi-val\">0.00</span></span>\n    </div>\n  </div>\n  <script>\n    // --- the thing being explored -------------------------------------\n    var A = 1.0, omega = 1.0, phi = 0.0;\n    var T_MIN = 0, T_MAX = 2 * Math.PI;\n    var X_MIN = -2.2, X_MAX = 2.2;\n\n    function xof(t) { return A * Math.cos(omega * t + phi); }\n\n    // --- plumbing ------------------------------------------------------\n    var canvas = document.getElementById('plot');\n    var ctx = canvas.getContext('2d');\n    var W = 0, H = 0;\n    var ch = null;\n\n    function draw() {\n      var x0 = A * Math.cos(phi);\n      var period = 2 * Math.PI / omega;\n\n      ch = HandChart.render(canvas, {\n        type: 'function',\n        xlim: [T_MIN, T_MAX],\n        ylim: [X_MIN, X_MAX],\n        fns: [{ fn: function (t) { return xof(t); }, label: 'x(t) = A cos(ωt + φ)' }],\n        xlabel: 't',\n        ylabel: 'x',\n        title: 'x(t) = A cos(ωt + φ)'\n      });\n\n      // amplitude guides y = ±A\n      HandChart.hline(ch, A, { label: 'x = A', color: '#2e8b6f', dash: [5, 4] });\n      HandChart.hline(ch, -A, { label: 'x = -A', color: '#2e8b6f', dash: [5, 4] });\n\n      // period guide on the t-axis: double arrow from 0 to T\n      var yBase = -X_MAX + 0.28;\n      HandChart.segment(ch, [0, yBase], [period, yBase], { color: '#2e8b6f', arrow: true });\n      HandChart.segment(ch, [period, yBase], [0, yBase], { color: '#2e8b6f', arrow: true });\n      HandChart.note(ch, period / 2, yBase - 0.16, 'T = 2π/ω');\n\n      // phase guide: vertical dashed line at t = 0\n      HandChart.vline(ch, 0, { label: 't = 0', color: '#2e8b6f', dash: [5, 4] });\n\n      // probe point at t = 0\n      HandChart.marker(ch, 0, x0, { label: 'x(0) = ' + x0.toFixed(3), color: '#c0392b' });\n\n      document.getElementById('x0-display').textContent = x0.toFixed(3);\n      document.getElementById('period-display').textContent = period.toFixed(3);\n      document.getElementById('amplitude-display').textContent = A.toFixed(3);\n    }\n\n    function syncSliders() {\n      document.getElementById('A-slider').value = A;\n      document.getElementById('omega-slider').value = omega;\n      document.getElementById('phi-slider').value = phi;\n      document.getElementById('A-val').textContent = A.toFixed(2);\n      document.getElementById('omega-val').textContent = omega.toFixed(2);\n      document.getElementById('phi-val').textContent = phi.toFixed(2);\n    }\n\n    function resize() {\n      var r = canvas.getBoundingClientRect();\n      W = r.width; H = r.height;\n      var dpr = window.devicePixelRatio || 1;\n      canvas.width = Math.round(W * dpr);\n      canvas.height = Math.round(H * dpr);\n      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);\n      draw();\n    }\n\n    // --- controls ------------------------------------------------------\n    document.getElementById('A-slider').addEventListener('input', function (e) {\n      A = +e.target.value; document.getElementById('A-val').textContent = A.toFixed(2); draw();\n    });\n    document.getElementById('omega-slider').addEventListener('input', function (e) {\n      omega = +e.target.value; document.getElementById('omega-val').textContent = omega.toFixed(2); draw();\n    });\n    document.getElementById('phi-slider').addEventListener('input', function (e) {\n      phi = +e.target.value; document.getElementById('phi-val').textContent = phi.toFixed(2); draw();\n    });\n\n    // teacher-driven control hook\n    window.hkControl = {\n      set: function (s) {\n        if (!s) return;\n        if (s.A != null) A = Math.max(0.5, Math.min(2.0, +s.A));\n        if (s.omega != null) omega = Math.max(0.5, Math.min(3.0, +s.omega));\n        if (s.phi != null) phi = Math.max(0, Math.min(2 * Math.PI, +s.phi));\n        syncSliders();\n        draw();\n      },\n      highlight: function (sel) {\n        var el = document.querySelector(sel);\n        if (!el) return;\n        el.style.outline = '2px solid #c0392b';\n        setTimeout(function () { el.style.outline = ''; }, 1500);\n      },\n      annotate: function () {},\n      reveal: function () {}\n    };\n\n    window.addEventListener('resize', resize);\n    syncSliders();\n    resize();\n  </script>\n</body>\n</html>",
+        "html_path": null,
+        "mermaid": null,
+        "layout": "follow",
+        "params": [
+          "A",
+          "omega",
+          "phi"
+        ],
+        "controls": [
+          {
+            "trigger_phrase": "我把振幅 A 推到 1.5",
+            "at_ms": null,
+            "op": "set",
+            "payload": {
+              "A": 1.5
+            }
+          },
+          {
+            "trigger_phrase": "再把角频率 ω 推到 2.5",
+            "at_ms": null,
+            "op": "set",
+            "payload": {
+              "omega": 2.5
+            }
+          },
+          {
+            "trigger_phrase": "最后把初相 φ 推到 π 除以 2",
+            "at_ms": null,
+            "op": "set",
+            "payload": {
+              "phi": 1.5708
+            }
+          }
+        ]
+      },
+      "question": {
+        "mode": "choice",
+        "question": "只把初相 φ 从 0 推到 π 除以 2，曲线会变成什么样？",
+        "options": [
+          "波峰变高了，因为 φ 也是振幅的一部分",
+          "整条曲线沿时间轴平移了，形状不变",
+          "波动变快了，因为 φ 影响周期"
+        ],
+        "correct_index": 1,
+        "misconceptions": [
+          "把 φ 和 A 混在一起，以为初相也管高度。",
+          null,
+          "把 φ 和 ω 混在一起，以为初相也管快慢。"
+        ],
+        "explanation": "φ 只决定 t=0 时曲线从哪里起步，改变它相当于把整条曲线沿时间轴平移，峰值和周期都不变。"
+      },
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "正弦还是余弦？",
+      "beat": "contrast",
+      "spoken_text": "回看上一段的板书，初相 φ 那一行。现在看这张对比表：第一行 φ 等于 0，x 就是 A 乘 cos(ωt)，这是纯余弦；第二行 φ 等于负 π 除以 2，x 变成 A 乘 sin(ωt)，这是纯正弦。所以正弦和余弦根本不是两个解，它们只是同一个通解在 φ 取不同值时的两张脸。那如果 φ 等于 π，曲线又长什么样？",
+      "boards": [
+        {
+          "title": "一张表看穿正弦和余弦",
+          "markdown": "| $\\varphi$ | $x(t)$ | 长相 |\n|---|---|---|\n| $0$ | $A\\cos(\\omega t)$ | 纯余弦 |\n| $-\\pi/2$ | $A\\sin(\\omega t)$ | 纯正弦 |\n| $\\pi$ | $-A\\cos(\\omega t)$ | 倒过来的余弦 |",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "circle",
+          "snippet": "-\\pi/2",
+          "board_index": 0,
+          "trigger_phrase": "φ 等于负 π 除以 2",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": null,
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "回顾：三个参数各管什么",
+      "beat": "recap",
+      "spoken_text": "最后我们把这一路收个尾。回看板书最上面那行，通解就是 A 乘 cos(ωt 加 φ)，一个式子三个旋钮。第二行我圈出来的 ω 等于根号 k 比 m，它只由弹簧和物块决定，你改不了；而 A 和 φ 是初始条件给的，你拉多高、从哪儿放手，就定这两个。所以下次看到振动，先问自己：谁定快慢，谁定大小和起点？",
+      "boards": [
+        {
+          "title": "一句话收尾",
+          "markdown": "- 通解：$x(t) = A\\cos(\\omega t + \\varphi)$\n- $\\omega = \\sqrt{k/m}$ → **系统定快慢**\n- $A$、$\\varphi$ → **初始条件定大小与起点**\n- 三个旋钮，各管一件事",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "circle",
+          "snippet": "$\\omega = \\sqrt{k/m}$",
+          "board_index": 0,
+          "trigger_phrase": "第二行我圈出来的 ω 等于根号 k 比 m",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": null,
+      "reward": {
+        "title": "简谐振动通解",
+        "description": "x(t)=A cos(ωt+φ)：ω 由系统定快慢，A 与 φ 由初始条件定大小和起点。"
+      },
+      "new_page_title": null
+    }
+  ],
+  "exercises": [
+    {
+      "exercise_id": "sess_2_ex1",
+      "kind": "fill_blank",
+      "stem": "在简谐振动通解 $x(t)=A\\cos(\\omega t+\\varphi)$ 中，决定振动快慢、且由系统本身（弹簧劲度系数和质量）决定的量是 ____。",
+      "options": [],
+      "correct_index": null,
+      "answer": "ω",
+      "accepted": [
+        "角频率",
+        "omega",
+        "\\omega",
+        "圆频率"
+      ],
+      "explanation": "ω 是角频率，它等于 √(k/m)，只由弹簧的劲度系数 k 和物块质量 m 决定，因此决定了振动的快慢（周期）。A 和 φ 由初始条件决定，不决定快慢。",
+      "widget": null,
+      "widget_hint": ""
+    },
+    {
+      "exercise_id": "sess_2_ex2",
+      "kind": "single_choice",
+      "stem": "某简谐振动 $x(t)=2\\cos(3t)$（单位：m，s）。求 $t=\\pi/6$ s 时的位移。",
+      "options": [
+        "2 m",
+        "0 m",
+        "-2 m",
+        "1 m"
+      ],
+      "correct_index": 1,
+      "answer": null,
+      "accepted": [],
+      "explanation": "代入 $t=\\pi/6$，得 $\\omega t = 3 \\times \\pi/6 = \\pi/2$，$\\cos(\\pi/2)=0$，所以 $x=2\\times 0=0$ m，物块正好穿过平衡位置。",
+      "widget": null,
+      "widget_hint": ""
+    },
+    {
+      "exercise_id": "sess_2_ex3",
+      "kind": "single_choice",
+      "stem": "若把通解 $x(t)=A\\cos(\\omega t+\\varphi)$ 中的初相 $\\varphi$ 取为 $-\\pi/2$，则 $x(t)$ 等于下列哪个表达式？",
+      "options": [
+        "$A\\cos(\\omega t)$",
+        "$A\\sin(\\omega t)$",
+        "$-A\\cos(\\omega t)$",
+        "$-A\\sin(\\omega t)$"
+      ],
+      "correct_index": 1,
+      "answer": null,
+      "accepted": [],
+      "explanation": "由 $\\cos(\\theta-\\pi/2)=\\sin\\theta$，得 $x(t)=A\\cos(\\omega t-\\pi/2)=A\\sin(\\omega t)$，所以此时曲线是纯正弦。",
+      "widget": null,
+      "widget_hint": ""
+    },
+    {
+      "exercise_id": "sess_2_ex4",
+      "kind": "interactive",
+      "stem": "通过拖动滑块改变初相 $\\varphi$，观察曲线 $x(t)=A\\cos(\\omega t+\\varphi)$ 的变化。若只把 $\\varphi$ 从 $0$ 调到 $\\pi$，曲线会变成什么样？",
+      "options": [
+        "曲线向上平移",
+        "曲线变成倒过来的余弦（峰值反向）",
+        "曲线变成正弦曲线",
+        "曲线周期变小"
+      ],
+      "correct_index": 1,
+      "answer": null,
+      "accepted": [],
+      "explanation": "当 $\\varphi=\\pi$ 时，$x(t)=A\\cos(\\omega t+\\pi)=-A\\cos(\\omega t)$，曲线相对于 $\\varphi=0$ 时上下翻转，即变成倒过来的余弦。",
+      "widget": {
+        "kind": "explorable",
+        "title": "简谐振动参数探索",
+        "task": "画一条简谐振动曲线 $x(t)=A\\cos(\\omega t+\\varphi)$。拖动三个滑块分别调节振幅 $A$、角频率 $\\omega$ 和初相 $\\varphi$，观察曲线峰值、疏密和左右平移的变化。重点把 $\\varphi$ 从 $0$ 慢慢拖到 $\\pi$，看曲线如何翻转。",
+        "html": "<!DOCTYPE html>\n<html>\n<head><script>/**\n * HandChart — zero-dependency hand-drawn chart base for explorable widgets.\n *\n * Injected into every generated 2D explorable (widget_generator.py) so the\n * model supplies data + overlays instead of hand-writing axes. The look matches\n * the handwritten page: paper panel, slightly wobbly ink axes, main red /\n * aux green, handwriting labels.\n *\n * API (all coordinates in WORLD units unless noted):\n *   const ch = HandChart.render(canvas, opts)\n *     opts = { type: \"function\"|\"points\"|\"bars\"|\"lines\",\n *              xlim:[x0,x1], ylim:[y0,y1],                  (all but bars)\n *              fn: x=>y | fns:[{fn, color?, label?}],        (function)\n *              points:[[x,y],...],                          (points)\n *              series:[{name, points, color?, dash?}],      (lines; legend drawn)\n *              bars:{labels:[...], values:[...], highlight?} (bars)\n *              xlabel, ylabel, grid:true|false, title }\n *     returns { ctx, sx, sy, box, W, H, opts }  — keep it to draw overlays\n *   HandChart.marker(ch, x, y, {color, label, r})       dot + optional label\n *   HandChart.vline(ch, x, {color, dash, label})         vertical guide\n *   HandChart.hline(ch, y, {color, dash, label})         horizontal guide\n *   HandChart.segment(ch, [x1,y1], [x2,y2], {color, width, dash, arrow})\n *   HandChart.note(ch, x, y, text, {color, align, size}) handwriting annotation\n *   HandChart.attachProbe(canvas, {xlim, ylim}, onProbe, onLeave?)\n *     pointer follow; onProbe({x, y}) in world coords — redraw + readouts there.\n *   HandChart.style = { INK, AXIS, MAIN, AUX, GRID, PAPER, MUTED }\n */\n(function () {\n  const style = {\n    INK: \"#2b2b2b\", AXIS: \"#8a8377\", MAIN: \"#c0392b\", AUX: \"#2e8b6f\",\n    GRID: \"#ece5d4\", PAPER: \"#fbfaf6\", MUTED: \"#8a8377\", PURPLE: \"#7c3aed\", BLUE: \"#2563eb\",\n  };\n  const PALETTE = [style.MAIN, style.AUX, style.BLUE, style.PURPLE, \"#d97706\"];\n  const PAD = { l: 48, r: 18, t: 18, b: 36 };\n  const HAND = \"'Patrick Hand', 'LXGW WenKai Lite', 'PingFang SC', sans-serif\";\n\n  function font(size, italic) { return (italic ? \"italic \" : \"\") + size + \"px \" + HAND; }\n\n  // deterministic wobble so the \"hand\" does not shake on every redraw\n  function wob(seed, amp) { return Math.sin(seed * 12.9898) * amp; }\n\n  function tickVals(min, max, n) {\n    const span = max - min || 1;\n    const raw = span / n;\n    const mag = Math.pow(10, Math.floor(Math.log10(raw)));\n    const step = [1, 2, 2.5, 5, 10].map((m) => m * mag).find((s) => span / s <= n) || mag * 10;\n    const out = [];\n    for (let v = Math.ceil(min / step) * step; v <= max + step * 1e-9; v += step) out.push(+v.toFixed(10));\n    return out;\n  }\n\n  function fmt(v) {\n    const a = Math.abs(v);\n    if (a === 0) return \"0\";\n    if (a >= 10000 || a < 0.01) return v.toExponential(1);\n    return String(+v.toFixed(Math.max(0, 3 - Math.floor(Math.log10(a)))));\n  }\n\n  /** a hand-drawn line: two passes with tiny deterministic wobble */\n  function inkLine(ctx, x1, y1, x2, y2, color, width, seed) {\n    ctx.save();\n    ctx.strokeStyle = color; ctx.lineWidth = width; ctx.lineCap = \"round\";\n    const n = 6, s = seed || (x1 + y2);\n    ctx.beginPath();\n    for (let i = 0; i <= n; i++) {\n      const t = i / n, x = x1 + (x2 - x1) * t, y = y1 + (y2 - y1) * t;\n      const w = i === 0 || i === n ? 0 : wob(s + i, 0.7);\n      i ? ctx.lineTo(x + w, y + w) : ctx.moveTo(x, y);\n    }\n    ctx.stroke();\n    ctx.restore();\n  }\n\n  function frame(ctx, W, H) {\n    ctx.clearRect(0, 0, W, H);\n    ctx.save();\n    ctx.fillStyle = style.PAPER;\n    ctx.fillRect(0, 0, W, H);\n    ctx.restore();\n  }\n\n  function plotBox(W, H, opts) {\n    const t = PAD.t + (opts && opts.title ? 18 : 0);\n    return { x0: PAD.l, y0: t, x1: W - PAD.r, y1: H - PAD.b };\n  }\n\n  function mapping(box, xlim, ylim) {\n    const [x0, x1] = xlim, [y0, y1] = ylim;\n    return {\n      sx: (v) => box.x0 + (v - x0) / (x1 - x0) * (box.x1 - box.x0),\n      sy: (v) => box.y1 - (v - y0) / (y1 - y0) * (box.y1 - box.y0),\n    };\n  }\n\n  function axes(ctx, box, opts) {\n    const [x0, x1] = opts.xlim, [y0, y1] = opts.ylim;\n    const { sx, sy } = mapping(box, opts.xlim, opts.ylim);\n    const xt = tickVals(x0, x1, 6).filter((v) => v >= x0 && v <= x1);\n    const yt = tickVals(y0, y1, 4).filter((v) => v >= y0 && v <= y1);\n    if (opts.grid !== false) {\n      ctx.save(); ctx.strokeStyle = style.GRID; ctx.lineWidth = 1;\n      for (const v of xt) { ctx.beginPath(); ctx.moveTo(sx(v), box.y0); ctx.lineTo(sx(v), box.y1); ctx.stroke(); }\n      for (const v of yt) { ctx.beginPath(); ctx.moveTo(box.x0, sy(v)); ctx.lineTo(box.x1, sy(v)); ctx.stroke(); }\n      ctx.restore();\n    }\n    // axes sit on zero when zero is inside the range, else on the box edge\n    const ax = y0 <= 0 && y1 >= 0 ? sy(0) : box.y1;\n    const ay = x0 <= 0 && x1 >= 0 ? sx(0) : box.x0;\n    inkLine(ctx, box.x0 - 4, ax, box.x1 + 6, ax, style.AXIS, 1.4, 1);\n    inkLine(ctx, ay, box.y1 + 4, ay, box.y0 - 6, style.AXIS, 1.4, 2);\n    // arrow heads\n    ctx.save(); ctx.fillStyle = style.AXIS;\n    ctx.beginPath(); ctx.moveTo(box.x1 + 8, ax); ctx.lineTo(box.x1 + 1, ax - 3.5); ctx.lineTo(box.x1 + 1, ax + 3.5); ctx.fill();\n    ctx.beginPath(); ctx.moveTo(ay, box.y0 - 8); ctx.lineTo(ay - 3.5, box.y0 - 1); ctx.lineTo(ay + 3.5, box.y0 - 1); ctx.fill();\n    ctx.restore();\n    ctx.save();\n    ctx.fillStyle = style.MUTED; ctx.font = font(12);\n    ctx.textAlign = \"center\";\n    for (const v of xt) {\n      if (Math.abs(sx(v) - ay) < 1 && ay !== box.x0) continue; // skip the label under the y axis\n      inkLine(ctx, sx(v), ax - 3, sx(v), ax + 3, style.AXIS, 1, v);\n      ctx.fillText(fmt(v), sx(v), ax + 16);\n    }\n    ctx.textAlign = \"right\";\n    for (const v of yt) {\n      if (Math.abs(sy(v) - ax) < 1 && ax !== box.y1) continue;\n      inkLine(ctx, ay - 3, sy(v), ay + 3, sy(v), style.AXIS, 1, v + 7);\n      ctx.fillText(fmt(v), ay - 7, sy(v) + 4);\n    }\n    ctx.font = font(14, true); ctx.fillStyle = style.INK;\n    if (opts.xlabel) { ctx.textAlign = \"right\"; ctx.fillText(opts.xlabel, box.x1 + 4, ax - 8); }\n    if (opts.ylabel) { ctx.textAlign = \"left\"; ctx.fillText(opts.ylabel, ay + 8, box.y0 + 4); }\n    ctx.restore();\n    return { sx, sy };\n  }\n\n  function stroke(ctx, pts, color, width, dash) {\n    if (!pts.length) return;\n    ctx.save();\n    ctx.strokeStyle = color; ctx.lineWidth = width || 2.2;\n    ctx.lineJoin = \"round\"; ctx.lineCap = \"round\";\n    if (dash) ctx.setLineDash(dash);\n    ctx.beginPath();\n    let pen = false;\n    for (const p of pts) {\n      if (!p) { pen = false; continue; }\n      pen ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1]);\n      pen = true;\n    }\n    ctx.stroke();\n    ctx.restore();\n  }\n\n  function fnPoints(fn, opts, m) {\n    const [x0, x1] = opts.xlim, [y0, y1] = opts.ylim;\n    const n = 400, pts = [];\n    const margin = (y1 - y0) * 0.02;\n    for (let i = 0; i <= n; i++) {\n      const x = x0 + (x1 - x0) * i / n;\n      let y;\n      try { y = fn(x); } catch (e) { y = NaN; }\n      if (!isFinite(y) || y < y0 - margin || y > y1 + margin) { pts.push(null); continue; }\n      pts.push([m.sx(x), m.sy(y)]);\n    }\n    return pts;\n  }\n\n  function legend(ctx, box, items) {\n    if (!items.length) return;\n    ctx.save();\n    ctx.font = font(13); ctx.textAlign = \"left\"; ctx.textBaseline = \"middle\";\n    let x = box.x0 + 10, y = box.y0 + 12;\n    for (const it of items) {\n      inkLine(ctx, x, y, x + 22, y, it.color, 2.4, x);\n      ctx.fillStyle = style.INK;\n      ctx.fillText(it.label, x + 28, y + 1);\n      x += 28 + ctx.measureText(it.label).width + 18;\n    }\n    ctx.restore();\n  }\n\n  function title(ctx, W, text) {\n    ctx.save();\n    ctx.font = font(15); ctx.fillStyle = style.INK; ctx.textAlign = \"center\";\n    ctx.fillText(text, W / 2, 16);\n    ctx.restore();\n  }\n\n  function render(canvas, opts) {\n    const ctx = canvas.getContext(\"2d\");\n    const rect = canvas.getBoundingClientRect();\n    const W = Math.max(60, Math.round(rect.width)), H = Math.max(60, Math.round(rect.height));\n    const dpr = window.devicePixelRatio || 1;\n    if (canvas.width !== Math.round(W * dpr) || canvas.height !== Math.round(H * dpr)) {\n      canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);\n    }\n    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);\n    frame(ctx, W, H);\n    if (opts.title) title(ctx, W, opts.title);\n    const box = plotBox(W, H, opts);\n    const type = opts.type || \"function\";\n\n    if (type === \"bars\") {\n      const labels = opts.bars.labels || [], values = opts.bars.values || [];\n      const n = Math.max(1, values.length);\n      const bw = (box.x1 - box.x0) / n;\n      const vmax = Math.max(...values.map((v) => Math.abs(v)), 0) * 1.15 || 1;\n      const base = box.y1;\n      inkLine(ctx, box.x0 - 4, base, box.x1 + 4, base, style.AXIS, 1.4, 3);\n      ctx.save();\n      values.forEach((v, i) => {\n        const h = (Math.abs(v) / vmax) * (box.y1 - box.y0);\n        const x = box.x0 + i * bw + bw * 0.2, w = bw * 0.6, y = base - h;\n        const hot = opts.bars.highlight != null && i === opts.bars.highlight;\n        ctx.fillStyle = hot ? style.MAIN : \"#e6dfcf\";\n        ctx.fillRect(x, y, w, h);\n        ctx.strokeStyle = hot ? style.MAIN : style.AXIS; ctx.lineWidth = 1.2;\n        ctx.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);\n        ctx.font = font(13); ctx.textAlign = \"center\"; ctx.fillStyle = style.INK;\n        ctx.fillText(String(labels[i] == null ? i + 1 : labels[i]), x + w / 2, base + 17);\n        ctx.fillStyle = hot ? style.MAIN : style.MUTED;\n        ctx.fillText(fmt(v), x + w / 2, y - 6);\n      });\n      ctx.restore();\n      const sx = (i) => box.x0 + (i + 0.5) * bw, sy = (v) => base - (Math.abs(v) / vmax) * (box.y1 - box.y0);\n      return { ctx, sx, sy, box, W, H, opts };\n    }\n\n    const m = axes(ctx, box, opts);\n    const items = [];\n    if (type === \"lines\") {\n      (opts.series || []).forEach((s, i) => {\n        const color = s.color || PALETTE[i % PALETTE.length];\n        stroke(ctx, (s.points || []).map((p) => [m.sx(p[0]), m.sy(p[1])]), color, 2.2, s.dash);\n        if (s.name) items.push({ label: s.name, color });\n      });\n    } else if (type === \"points\") {\n      ctx.save(); ctx.fillStyle = opts.color || style.MAIN;\n      (opts.points || []).forEach((p) => { ctx.beginPath(); ctx.arc(m.sx(p[0]), m.sy(p[1]), opts.r || 3.6, 0, Math.PI * 2); ctx.fill(); });\n      ctx.restore();\n    } else {\n      const fns = opts.fns || (typeof opts.fn === \"function\" ? [{ fn: opts.fn, color: opts.color, label: opts.label }] : []);\n      fns.forEach((f, i) => {\n        const color = f.color || PALETTE[i % PALETTE.length];\n        stroke(ctx, fnPoints(f.fn, opts, m), color, f.width || 2.4, f.dash);\n        if (f.label) items.push({ label: f.label, color });\n      });\n    }\n    legend(ctx, box, items);\n    return { ctx, sx: m.sx, sy: m.sy, box, W, H, opts };\n  }\n\n  // ---- overlays (world coordinates) ----\n  function marker(ch, x, y, o) {\n    o = o || {};\n    const px = ch.sx(x), py = ch.sy(y);\n    ch.ctx.save();\n    ch.ctx.fillStyle = o.color || style.MAIN;\n    ch.ctx.beginPath(); ch.ctx.arc(px, py, o.r || 5, 0, Math.PI * 2); ch.ctx.fill();\n    ch.ctx.strokeStyle = style.PAPER; ch.ctx.lineWidth = 1.5; ch.ctx.stroke();\n    if (o.label) {\n      ch.ctx.font = font(o.size || 13); ch.ctx.fillStyle = o.color || style.MAIN; ch.ctx.textAlign = \"left\";\n      ch.ctx.fillText(o.label, px + 8, py - 8);\n    }\n    ch.ctx.restore();\n  }\n\n  function vline(ch, x, o) {\n    o = o || {};\n    const px = ch.sx(x);\n    stroke(ch.ctx, [[px, ch.box.y0], [px, ch.box.y1]], o.color || style.MUTED, o.width || 1.2, o.dash || [4, 4]);\n    if (o.label) note(ch, x, null, o.label, { color: o.color || style.MUTED, px: px + 4, py: ch.box.y0 + 12, align: \"left\", size: o.size });\n  }\n\n  function hline(ch, y, o) {\n    o = o || {};\n    const py = ch.sy(y);\n    stroke(ch.ctx, [[ch.box.x0, py], [ch.box.x1, py]], o.color || style.MUTED, o.width || 1.2, o.dash || [4, 4]);\n    if (o.label) note(ch, null, y, o.label, { color: o.color || style.MUTED, px: ch.box.x1 - 4, py: py - 5, align: \"right\", size: o.size });\n  }\n\n  function segment(ch, a, b, o) {\n    o = o || {};\n    const x1 = ch.sx(a[0]), y1 = ch.sy(a[1]), x2 = ch.sx(b[0]), y2 = ch.sy(b[1]);\n    const color = o.color || style.AUX;\n    stroke(ch.ctx, [[x1, y1], [x2, y2]], color, o.width || 2, o.dash);\n    if (o.arrow) {\n      const ang = Math.atan2(y2 - y1, x2 - x1), L = 9;\n      ch.ctx.save(); ch.ctx.fillStyle = color; ch.ctx.beginPath();\n      ch.ctx.moveTo(x2, y2);\n      ch.ctx.lineTo(x2 - L * Math.cos(ang - 0.4), y2 - L * Math.sin(ang - 0.4));\n      ch.ctx.lineTo(x2 - L * Math.cos(ang + 0.4), y2 - L * Math.sin(ang + 0.4));\n      ch.ctx.fill(); ch.ctx.restore();\n    }\n  }\n\n  function note(ch, x, y, text, o) {\n    o = o || {};\n    const px = o.px != null ? o.px : ch.sx(x), py = o.py != null ? o.py : ch.sy(y);\n    ch.ctx.save();\n    ch.ctx.font = font(o.size || 14, o.italic);\n    ch.ctx.fillStyle = o.color || style.INK;\n    ch.ctx.textAlign = o.align || \"left\";\n    ch.ctx.fillText(text, px, py);\n    ch.ctx.restore();\n  }\n\n  /** Pointer probe in world coords; the caller redraws and updates readouts. */\n  function attachProbe(canvas, opts, onProbe, onLeave) {\n    const [x0, x1] = opts.xlim;\n    const [y0, y1] = opts.ylim;\n    const toWorld = (px, py) => {\n      const r = canvas.getBoundingClientRect();\n      const box = plotBox(r.width, r.height, opts);\n      const t = (px - r.left - box.x0) / (box.x1 - box.x0);\n      const u = 1 - (py - r.top - box.y0) / (box.y1 - box.y0);\n      return { x: x0 + t * (x1 - x0), y: y0 + u * (y1 - y0), inside: t >= 0 && t <= 1 };\n    };\n    const handler = (e) => {\n      const p = toWorld(e.clientX, e.clientY);\n      if (p.inside) onProbe(p);\n    };\n    canvas.addEventListener(\"pointermove\", handler);\n    canvas.addEventListener(\"pointerdown\", handler);\n    if (onLeave) canvas.addEventListener(\"pointerleave\", onLeave);\n    canvas.style.touchAction = \"none\";\n    return toWorld;\n  }\n\n  window.HandChart = { render, marker, vline, hline, segment, note, attachProbe, style, font: HAND };\n})();\n</script>\n  <meta charset=\"utf-8\">\n  <style>\n    html, body { margin: 0; height: 100%; background: #faf8f3; font-family: \"PingFang SC\", \"Hiragino Sans GB\", sans-serif; color: #333; overflow: hidden; }\n    #wrap { position: absolute; inset: 0; display: flex; flex-direction: column; }\n    #plot { flex: 1; min-height: 0; margin: 10px 10px 4px; border: 1px solid #d9d2c3; border-radius: 12px; background: #fbfaf6; cursor: crosshair; touch-action: none; }\n    #readout { display: flex; justify-content: center; align-items: center; gap: 28px; padding: 4px 0 8px; font-size: 12px; color: #666; flex-wrap: wrap; }\n    #readout .k { display: block; font-size: 11px; letter-spacing: .04em; }\n    #readout .v { display: block; font-family: ui-monospace, Menlo, monospace; font-size: 14px; font-weight: 700; color: #c0392b; min-width: 64px; text-align: center; }\n    #formula { display: inline-block; padding: 3px 10px; border: 1px solid #d9d2c3; border-radius: 6px; background: #fff; font-family: Georgia, \"Times New Roman\", serif; font-style: italic; font-size: 13px; color: #333; }\n    .ctrl-row { display: flex; justify-content: center; align-items: center; gap: 18px; padding: 2px 0 6px; font-size: 12px; color: #555; flex-wrap: wrap; }\n    .ctrl-row label { display: flex; align-items: center; gap: 6px; }\n    .ctrl-row input[type=range] { width: 110px; accent-color: #c0392b; }\n    .ctrl-row .val { font-family: ui-monospace, Menlo, monospace; font-weight: 700; color: #c0392b; min-width: 36px; text-align: center; }\n  </style>\n</head>\n<body>\n  <div id=\"wrap\">\n    <canvas id=\"plot\"></canvas>\n    <div id=\"readout\">\n      <span><span class=\"k\">振幅 A</span><span class=\"v\" id=\"amplitude-display\">—</span></span>\n      <span><span class=\"k\">角频率 ω</span><span class=\"v\" id=\"omega-display\">—</span></span>\n      <span><span class=\"k\">初相 φ</span><span class=\"v\" id=\"phi-display\">—</span></span>\n      <span id=\"formula\">x(t) = A · cos(ω t + φ)</span>\n    </div>\n    <div class=\"ctrl-row\">\n      <label>振幅 A <input type=\"range\" id=\"amplitude-slider\" min=\"0.5\" max=\"2\" step=\"0.01\" value=\"1\"><span class=\"val\" id=\"amplitude-val\">1.00</span></label>\n      <label>角频率 ω <input type=\"range\" id=\"omega-slider\" min=\"0.5\" max=\"3\" step=\"0.01\" value=\"1\"><span class=\"val\" id=\"omega-val\">1.00</span></label>\n      <label>初相 φ <input type=\"range\" id=\"phi-slider\" min=\"0\" max=\"3.141592653589793\" step=\"0.01\" value=\"0\"><span class=\"val\" id=\"phi-val\">0.00</span></label>\n    </div>\n  </div>\n  <script>\n    // --- 被探索的对象：简谐振动 x(t) = A cos(ω t + φ) --------------------\n    var A = 1, omega = 1, phi = 0;\n    var T_MIN = 0, T_MAX = 4 * Math.PI;\n    var X_MIN = -2, X_MAX = 2;\n\n    // --- 画布与坐标变换 --------------------------------------------------\n    var canvas = document.getElementById('plot');\n    var ctx = canvas.getContext('2d');\n    var W = 0, H = 0;\n    var PAD = { l: 38, r: 22, t: 22, b: 30 };\n    var probeT = null;\n\n    function sx(t) { return PAD.l + (t - T_MIN) / (T_MAX - T_MIN) * (W - PAD.l - PAD.r); }\n    function sy(x) { return PAD.t + (X_MAX - x) / (X_MAX - X_MIN) * (H - PAD.t - PAD.b); }\n    function ux(px) { return T_MIN + (px - PAD.l) / (W - PAD.l - PAD.r) * (T_MAX - T_MIN); }\n\n    function resize() {\n      var r = canvas.getBoundingClientRect();\n      W = r.width; H = r.height;\n      var dpr = window.devicePixelRatio || 1;\n      canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);\n      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);\n      draw();\n    }\n\n    // --- 绘制辅助函数 ----------------------------------------------------\n    function drawAxes() {\n      ctx.save();\n      ctx.strokeStyle = '#b9b3a6'; ctx.lineWidth = 1;\n      // 横轴\n      ctx.beginPath(); ctx.moveTo(PAD.l, sy(0)); ctx.lineTo(W - PAD.r, sy(0)); ctx.stroke();\n      // 纵轴\n      ctx.beginPath(); ctx.moveTo(sx(0), PAD.t); ctx.lineTo(sx(0), H - PAD.b); ctx.stroke();\n      // 刻度与标签\n      ctx.fillStyle = '#8a8377'; ctx.font = 'italic 11px Georgia, serif'; ctx.textAlign = 'center';\n      var tTicks = [0, Math.PI, 2 * Math.PI, 3 * Math.PI, 4 * Math.PI];\n      var tLabels = ['0', 'π', '2π', '3π', '4π'];\n      for (var i = 0; i < tTicks.length; i++) {\n        var px = sx(tTicks[i]);\n        ctx.beginPath(); ctx.moveTo(px, sy(0) - 3); ctx.lineTo(px, sy(0) + 3); ctx.stroke();\n        ctx.fillText(tLabels[i], px, sy(0) + 15);\n      }\n      ctx.textAlign = 'right';\n      var xTicks = [-2, -1, 1, 2];\n      for (var j = 0; j < xTicks.length; j++) {\n        var py = sy(xTicks[j]);\n        ctx.beginPath(); ctx.moveTo(sx(0) - 3, py); ctx.lineTo(sx(0) + 3, py); ctx.stroke();\n        ctx.fillText(xTicks[j], sx(0) - 6, py + 4);\n      }\n      ctx.textAlign = 'left';\n      ctx.fillText('t', W - PAD.r - 2, sy(0) - 6);\n      ctx.fillText('x', sx(0) + 6, PAD.t + 8);\n      ctx.restore();\n    }\n\n    function drawCurve() {\n      ctx.save();\n      ctx.strokeStyle = '#c0392b'; ctx.lineWidth = 2;\n      ctx.beginPath();\n      var n = 800;\n      for (var i = 0; i <= n; i++) {\n        var t = T_MIN + (T_MAX - T_MIN) * i / n;\n        var x = A * Math.cos(omega * t + phi);\n        var px = sx(t), py = sy(x);\n        if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);\n      }\n      ctx.stroke();\n      ctx.restore();\n    }\n\n    function drawAmplitudeMarker() {\n      // 在纵轴上用双箭头标出振幅 A 的范围\n      var xTop = A, xBot = -A;\n      var px = sx(0) - 14;\n      var pyTop = sy(xTop), pyBot = sy(xBot);\n      ctx.save();\n      ctx.strokeStyle = '#2e8b6f'; ctx.lineWidth = 1.2; ctx.setLineDash([5, 4]);\n      ctx.beginPath(); ctx.moveTo(px, pyTop); ctx.lineTo(px, pyBot); ctx.stroke();\n      ctx.setLineDash([]);\n      // 箭头\n      ctx.fillStyle = '#2e8b6f';\n      ctx.beginPath(); ctx.moveTo(px, pyTop); ctx.lineTo(px - 4, pyTop + 6); ctx.lineTo(px + 4, pyTop + 6); ctx.closePath(); ctx.fill();\n      ctx.beginPath(); ctx.moveTo(px, pyBot); ctx.lineTo(px - 4, pyBot - 6); ctx.lineTo(px + 4, pyBot - 6); ctx.closePath(); ctx.fill();\n      // 标签\n      ctx.font = 'italic 12px Georgia, serif'; ctx.fillStyle = '#2e8b6f'; ctx.textAlign = 'right';\n      ctx.fillText('A = ' + A.toFixed(2), px - 6, (pyTop + pyBot) / 2 + 4);\n      ctx.restore();\n    }\n\n    function drawPeriodMarker() {\n      // 在横轴上用双箭头标出一个周期 T = 2π/ω\n      var T = 2 * Math.PI / omega;\n      var t0 = 0, t1 = T;\n      var py = sy(0) + 18;\n      var px0 = sx(t0), px1 = sx(t1);\n      ctx.save();\n      ctx.strokeStyle = '#2e8b6f'; ctx.lineWidth = 1.2; ctx.setLineDash([5, 4]);\n      ctx.beginPath(); ctx.moveTo(px0, py); ctx.lineTo(px1, py); ctx.stroke();\n      ctx.setLineDash([]);\n      // 箭头\n      ctx.fillStyle = '#2e8b6f';\n      ctx.beginPath(); ctx.moveTo(px0, py); ctx.lineTo(px0 + 6, py - 4); ctx.lineTo(px0 + 6, py + 4); ctx.closePath(); ctx.fill();\n      ctx.beginPath(); ctx.moveTo(px1, py); ctx.lineTo(px1 - 6, py - 4); ctx.lineTo(px1 - 6, py + 4); ctx.closePath(); ctx.fill();\n      // 标签\n      ctx.font = 'italic 12px Georgia, serif'; ctx.fillStyle = '#2e8b6f'; ctx.textAlign = 'center';\n      ctx.fillText('T = ' + T.toFixed(2), (px0 + px1) / 2, py - 6);\n      ctx.restore();\n    }\n\n    function drawPhaseMarker() {\n      // 在 t=0 处用竖直虚线标出初相 φ 对应的起点位置\n      var px = sx(0);\n      var x0 = A * Math.cos(phi);\n      var py = sy(x0);\n      ctx.save();\n      ctx.strokeStyle = '#8a8377'; ctx.lineWidth = 1; ctx.setLineDash([3, 4]);\n      ctx.beginPath(); ctx.moveTo(px, PAD.t); ctx.lineTo(px, H - PAD.b); ctx.stroke();\n      ctx.setLineDash([]);\n      // 起点圆点\n      ctx.fillStyle = '#8a8377';\n      ctx.beginPath(); ctx.arc(px, py, 3.5, 0, Math.PI * 2); ctx.fill();\n      // 标签\n      ctx.font = 'italic 12px Georgia, serif'; ctx.fillStyle = '#8a8377'; ctx.textAlign = 'left';\n      ctx.fillText('φ = ' + phi.toFixed(2), px + 6, py - 8);\n      ctx.restore();\n    }\n\n    function drawProbe() {\n      if (probeT === null) return;\n      var t = probeT;\n      var x = A * Math.cos(omega * t + phi);\n      var px = sx(t), py = sy(x);\n      // 竖直虚线\n      ctx.save();\n      ctx.strokeStyle = 'rgba(192,57,43,.55)'; ctx.setLineDash([3, 4]); ctx.lineWidth = 1;\n      ctx.beginPath(); ctx.moveTo(px, PAD.t); ctx.lineTo(px, H - PAD.b); ctx.stroke();\n      ctx.restore();\n      // 探针点\n      ctx.save();\n      ctx.fillStyle = '#c0392b';\n      ctx.beginPath(); ctx.arc(px, py, 4, 0, Math.PI * 2); ctx.fill();\n      ctx.restore();\n      // 更新读数\n      document.getElementById('amplitude-display').textContent = A.toFixed(2);\n      document.getElementById('omega-display').textContent = omega.toFixed(2);\n      document.getElementById('phi-display').textContent = phi.toFixed(2);\n    }\n\n    function draw() {\n      ctx.clearRect(0, 0, W, H);\n      drawAxes();\n      drawCurve();\n      drawAmplitudeMarker();\n      drawPeriodMarker();\n      drawPhaseMarker();\n      drawProbe();\n      // 更新读数（即使没有探针也显示参数）\n      document.getElementById('amplitude-display').textContent = A.toFixed(2);\n      document.getElementById('omega-display').textContent = omega.toFixed(2);\n      document.getElementById('phi-display').textContent = phi.toFixed(2);\n    }\n\n    // --- 交互：探针 ------------------------------------------------------\n    function onPointer(e) {\n      var r = canvas.getBoundingClientRect();\n      var t = ux(e.clientX - r.left);\n      probeT = Math.max(T_MIN, Math.min(T_MAX, t));\n      draw();\n    }\n    canvas.addEventListener('pointermove', onPointer);\n    canvas.addEventListener('pointerdown', onPointer);\n\n    // --- 滑块控制 --------------------------------------------------------\n    var ampSlider = document.getElementById('amplitude-slider');\n    var omegaSlider = document.getElementById('omega-slider');\n    var phiSlider = document.getElementById('phi-slider');\n\n    function updateFromSliders() {\n      A = parseFloat(ampSlider.value);\n      omega = parseFloat(omegaSlider.value);\n      phi = parseFloat(phiSlider.value);\n      document.getElementById('amplitude-val').textContent = A.toFixed(2);\n      document.getElementById('omega-val').textContent = omega.toFixed(2);\n      document.getElementById('phi-val').textContent = phi.toFixed(2);\n      draw();\n    }\n\n    ampSlider.addEventListener('input', updateFromSliders);\n    omegaSlider.addEventListener('input', updateFromSliders);\n    phiSlider.addEventListener('input', updateFromSliders);\n\n    // --- 教师控制钩子 ----------------------------------------------------\n    window.hkControl = {\n      set: function (s) {\n        if (!s) return;\n        if (s.amplitude != null) { A = Math.max(0.5, Math.min(2, +s.amplitude)); ampSlider.value = A; }\n        if (s.omega != null) { omega = Math.max(0.5, Math.min(3, +s.omega)); omegaSlider.value = omega; }\n        if (s.phi != null) { phi = Math.max(0, Math.min(Math.PI, +s.phi)); phiSlider.value = phi; }\n        if (s.probeT != null) { probeT = Math.max(T_MIN, Math.min(T_MAX, +s.probeT)); }\n        document.getElementById('amplitude-val').textContent = A.toFixed(2);\n        document.getElementById('omega-val').textContent = omega.toFixed(2);\n        document.getElementById('phi-val').textContent = phi.toFixed(2);\n        draw();\n      },\n      highlight: function (sel) {\n        var el = document.querySelector(sel);\n        if (!el) return;\n        el.style.outline = '2px solid #c0392b';\n        setTimeout(function () { el.style.outline = ''; }, 1500);\n      },\n      annotate: function () {},\n      reveal: function () {}\n    };\n\n    // --- 初始化 ----------------------------------------------------------\n    window.addEventListener('resize', resize);\n    resize();\n  </script>\n</body>\n</html>",
+        "html_path": null,
+        "mermaid": null,
+        "layout": "newcol",
+        "params": [],
+        "controls": []
+      },
+      "widget_hint": "拖动初相滑块，让 $\\varphi$ 从 $0$ 增加到 $\\pi$，注意曲线峰值的方向。"
+    }
+  ]
+}

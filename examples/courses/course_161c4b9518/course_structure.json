@@ -1,0 +1,422 @@
+{
+  "course_id": "course_161c4b9518",
+  "title": "神经网络的线性层：矩阵就是层的全部",
+  "target_audience": "",
+  "overview": "",
+  "generation_mode": "llm",
+  "document_id": "doc_aac71cd400",
+  "chapters": [
+    {
+      "chapter_id": "ch_1",
+      "title": "从一个神经元说起",
+      "description": "单个神经元的计算：加权求和加偏置。",
+      "unit": "",
+      "sessions": [
+        {
+          "session_id": "sess_1",
+          "title": "一个神经元：加权求和 + 偏置",
+          "learning_goal": "能写出单个神经元对输入向量 x 的输出公式 h = w·x + b，并解释权重与偏置各自的作用。",
+          "core_concept": "单个神经元实现的是仿射变换：对输入加权求和后加偏置。",
+          "cognitive_hurdle": "以为神经元输出的只是输入的简单总和或直接复制某个输入，忽略权重会缩放各输入、偏置会整体平移输出。",
+          "source_sections": [
+            "s1"
+          ],
+          "estimated_duration_min": 5,
+          "tags": [
+            "Definition",
+            "Application"
+          ],
+          "segments": [
+            {
+              "title": "神经元收到三个数，会输出什么？",
+              "intent": "让学生意识到单个神经元不是黑箱，而是对输入做某种可写出的运算。",
+              "media": "board",
+              "media_brief": "写出三个输入 x1, x2, x3，以及一个输出 h，用问号表示中间计算。",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s1"
+              ]
+            },
+            {
+              "title": "三位评委打分的加权合计",
+              "intent": "用加权评分直观理解权重放大或缩小每个输入的重要性。",
+              "media": "board",
+              "media_brief": "列出评委分数 x1,x2,x3 与对应权重 w1,w2,w3，旁边画一个求和符号。",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s1"
+              ]
+            },
+            {
+              "title": "神经元 = 加权求和 + 偏置",
+              "intent": "让学生能写出 h = Σ w_i x_i + b，并说明偏置 b 是平移项。",
+              "media": "illustration",
+              "media_brief": "画 3 个输入节点 x1,x2,x3，分别乘权重 w1,w2,w3，汇聚到求和符号 Σ，再加上偏置 b，箭头指向输出 h；标注各项名称。",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s1"
+              ]
+            },
+            {
+              "title": "代入具体数字算一遍",
+              "intent": "通过具体数值计算，固化加权求和加偏置的计算顺序。",
+              "media": "board",
+              "media_brief": "x=(2,3,4), w=(0.5,-1,2), b=1；写出 h=0.5*2 + (-1)*3 + 2*4 + 1 = 1 -3 +8 +1 =7。",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s1"
+              ]
+            },
+            {
+              "title": "有没有偏置，差了一个平移",
+              "intent": "让学生理解偏置不是可有可无，它把整个输出平移。",
+              "media": "board",
+              "media_brief": "同一组 x,w，b=0 时 h=6；b=1 时 h=7；在数轴上标出这两个点，说明偏置只移动位置。",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s1"
+              ]
+            },
+            {
+              "title": "神经元公式 = w·x + b",
+              "intent": "回顾本课核心公式与各符号含义。",
+              "media": "board",
+              "media_brief": "写 h = Σ w_i x_i + b；标注 w 决定各输入贡献大小，b 整体平移输出。",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s1"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "chapter_id": "ch_2",
+      "title": "一层 = 一堆神经元并行",
+      "description": "用权重矩阵和偏置向量一次性计算全连接层的所有神经元输出。",
+      "unit": "",
+      "sessions": [
+        {
+          "session_id": "sess_2",
+          "title": "矩阵就是层的全部",
+          "learning_goal": "学生能够解释线性层的前向计算 h = Wx + b，并正确识别权重矩阵 W 的行与输出神经元、列与输入特征的对应关系。",
+          "core_concept": "权重矩阵行堆叠 = 多个神经元并行计算",
+          "cognitive_hurdle": "学生往往把权重矩阵当作无结构的一堆数字，弄不清矩阵的行列顺序为什么必须是 n_out × n_in，忘记每一行对应一个具体神经元的权重向量。",
+          "source_sections": [
+            "s2"
+          ],
+          "estimated_duration_min": 6,
+          "tags": [
+            "Intuition",
+            "Definition"
+          ],
+          "segments": [
+            {
+              "title": "从单个神经元到一层",
+              "intent": "学生回忆起单个神经元就是权重向量与输入的点积加偏置，并意识到一层有多个这样的神经元。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s2"
+              ]
+            },
+            {
+              "title": "共享输入，各自打分",
+              "intent": "学生明白所有神经元读取同一个输入向量 x，只是权重和偏置不同，因此每个神经元可以看作独立打分。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s2"
+              ]
+            },
+            {
+              "title": "把权重行向量摞成矩阵",
+              "intent": "学生直观看到把每个神经元的权重行向量按行堆叠就得到权重矩阵 W，并且 W 的形状是 n_out × n_in。",
+              "media": "illustration",
+              "media_brief": "图中左边是 3 个神经元的权重行向量（长度 n_in=4），按行堆叠成 3×4 的矩阵 W；每行标注“神经元 j 的权重”；右边是输出向量 h (3×1)，用颜色和行对应。",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s2"
+              ]
+            },
+            {
+              "title": "紧凑公式 h = Wx + b",
+              "intent": "学生掌握整层前向计算的矩阵-向量形式，并理解 h 的每个分量就是对应神经元的输出。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s2"
+              ]
+            },
+            {
+              "title": "具体算一遍：2 个神经元，3 个输入",
+              "intent": "学生通过数值例子验证矩阵乘法与逐神经元点积结果一致，并会判断如果再加一个神经元 W 会增加一行。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s2"
+              ]
+            },
+            {
+              "title": "行与神经元的对应关系",
+              "intent": "学生能够从矩阵形状读出网络结构：行数等于输出神经元个数，列数等于输入特征数。",
+              "media": "illustration",
+              "media_brief": "对比图：左侧矩阵 W 标注行代表“第几个输出”，列代表“第几个输入特征”；右侧写 W ∈ R^{n_in × n_out} 与列向量 x 维度不匹配，突出行列顺序的重要性。",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s2"
+              ]
+            },
+            {
+              "title": "小结",
+              "intent": "学生回顾本课核心结论：一层并行神经元 = 权重矩阵乘输入加偏置。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s2"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "chapter_id": "ch_3",
+      "title": "批处理：转置的由来",
+      "description": "从单样本计算过渡到批量矩阵乘法，解释权重矩阵为何是 n_in×n_out 且每列对应一个神经元",
+      "unit": "",
+      "sessions": [
+        {
+          "session_id": "sess_3",
+          "title": "批处理：转置的由来",
+          "learning_goal": "理解为什么批处理时权重矩阵形状为 n_in×n_out，并能正确推导 XW+b 的维度",
+          "core_concept": "将权重组织为每列对应一个神经元的矩阵 W，使得 XW 一次计算整批输出",
+          "cognitive_hurdle": "学生可能认为权重矩阵的每行应该对应一个神经元（即 W 形状为 n_out×n_in），导致矩阵乘法维度不匹配；没有意识到列对应神经元是转置的关键",
+          "source_sections": [
+            "s3"
+          ],
+          "estimated_duration_min": 6,
+          "tags": [
+            "Definition",
+            "Derivation"
+          ],
+          "segments": [
+            {
+              "title": "从单样本到批量：如何组织权重？",
+              "intent": "让学生意识到批量计算时需要重新组织权重矩阵才能用一次矩阵乘法",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s3"
+              ]
+            },
+            {
+              "title": "先猜：权重矩阵的行还是列对应神经元？",
+              "intent": "通过维度约束排除错误形状，建立列对应神经元的直觉",
+              "media": "illustration",
+              "media_brief": "图展示两个候选权重矩阵：左边 W_A 形状 n_out×n_in，标注“每行一个神经元”；右边 W_B 形状 n_in×n_out，标注“每列一个神经元”。下方展示矩阵乘法 X @ W_A 时内侧维度 n_in 与 n_out 不匹配（红色叉），X @ W_B 内侧 n_in 相等（绿色勾），输出形状 m×n_out。",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s3"
+              ]
+            },
+            {
+              "title": "正式定义：XW + b",
+              "intent": "明确 X、W、H 的形状和每一列对应一个神经元的约定",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s3"
+              ]
+            },
+            {
+              "title": "小例子：手动计算 XW",
+              "intent": "展示具体数字下矩阵乘法得到每个样本每个神经元的输出",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s3"
+              ]
+            },
+            {
+              "title": "对比：错误形状会怎样？",
+              "intent": "强化“每一列对应一个神经元”与“每一行对应一个神经元”的转置关系",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s3"
+              ]
+            },
+            {
+              "title": "应用：形状填空",
+              "intent": "让学生预测新场景下的矩阵形状，检验理解",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s3"
+              ]
+            },
+            {
+              "title": "回顾：转置的由来",
+              "intent": "总结批处理中转置的本质：权重从行组织转为列组织以适应矩阵乘法",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s3"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "chapter_id": "ch_4",
+      "title": "框架里的坑",
+      "description": "辨析 PyTorch 线性层权重方向与数学教材列向量约定的差异，聚焦转置视图与维度对齐。",
+      "unit": "",
+      "sessions": [
+        {
+          "session_id": "sess_4",
+          "title": "PyTorch 线性层的权重方向",
+          "learning_goal": "学生能区分数学教材列向量权重 W(n_out×n_in) 与 PyTorch nn.Linear 权重存储 out×in 的差异，并理解前向传播 X W^T 的等价性。",
+          "core_concept": "PyTorch nn.Linear(in, out) 的权重存储形状为 out×in，前向传播通过计算 X W^T 等价于数学教材列向量约定的 Wx，转置仅改存储步幅几乎免费。",
+          "cognitive_hurdle": "以为 PyTorch nn.Linear(in, out) 的权重形状和数学教材一样是 in×out，在代码中直接算 X @ weight 而不转置，导致维度无法对齐。",
+          "source_sections": [
+            "s4"
+          ],
+          "estimated_duration_min": 5,
+          "tags": [
+            "Definition",
+            "Derivation"
+          ],
+          "segments": [
+            {
+              "title": "一个看似简单的维度问题",
+              "intent": "让学生暴露对 PyTorch 线性层权重形状的直觉误区。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s4"
+              ]
+            },
+            {
+              "title": "数学教材与框架代码的并置",
+              "intent": "让学生看到数学教材列向量公式与 PyTorch 前向公式的差异。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s4"
+              ]
+            },
+            {
+              "title": "定义 PyTorch 的权重存储",
+              "intent": "学生必须明确 nn.Linear(in, out) 的权重形状是 out×in，前向为 X W^T。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s4"
+              ]
+            },
+            {
+              "title": "形状推导：为什么要转置",
+              "intent": "学生能推导出输入 X 与权重存储 W 相乘需要转置才能得到正确输出形状。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s4"
+              ]
+            },
+            {
+              "title": "两种约定的对比",
+              "intent": "学生能对比数学教材列向量输入与 PyTorch 批输入矩阵前向公式，识别常见维度错误。",
+              "media": "illustration",
+              "media_brief": "并排两幅图。左图：数学教材列向量约定，权重矩阵 W 标注 n_out×n_in，输入列向量 x 标注 n_in×1，输出 y=Wx 标注 n_out×1。右图：PyTorch 线性层权重存储 W_p 标注 out×in，输入 X 标注 batch×in，计算 X W_p^T 输出 batch×out，用箭头标出 W_p 转置视图。两图各含 3 个形状标注，右图额外标注一个转置箭头。",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s4"
+              ]
+            },
+            {
+              "title": "回顾与避坑",
+              "intent": "学生能记住 PyTorch 存储 out×in 且计算 X W^T，避免方向混淆。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s4"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

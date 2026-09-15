@@ -662,3 +662,20 @@ def test_cheatsheet_compiles_with_coverage_and_clean_math(tmp_path):
     cs2 = write_cheatsheet(str(d))
     assert (d / "cheatsheet.md").exists() and (d / "cheatsheet.html").stat().st_size > 0
     assert cs2.coverage == cs.coverage                            # deterministic compilation
+
+
+def test_suspicious_gate_detection_exempts_hook_prediction_gates():
+    # a hook beat is a POE prediction asked before the reveal — everyone missing
+    # it first is the design working (INV-568 math_taylor triage), not a defect
+    rows = [{"session_id": "sess_t", "persona": p, "mode": "adaptive",
+             "gates": [{"step": 4, "choice": 1, "correct": False, "confused": False, "beat": "hook"},
+                       {"step": 7, "choice": 1, "correct": False, "confused": False, "beat": "poe"},
+                       {"step": 10, "choice": 0, "correct": False, "confused": False, "beat": "define"}]}
+            for p in ("novice", "standard", "fast")]
+    flagged = _find_suspicious_gates(rows)
+    assert [(sid, step) for (sid, step), _ in flagged] == [("sess_t", 10)]   # hook & poe exempt, define still caught
+    # legacy rows without beat tags keep the old behaviour (nothing skipped)
+    for r in rows:
+        for g in r["gates"]:
+            g.pop("beat")
+    assert len(_find_suspicious_gates(rows)) == 3

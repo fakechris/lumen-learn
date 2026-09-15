@@ -1,0 +1,43 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8">
+<title>泰勒展开：用多项式逼近函数 · 速查表</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<style>
+@media print { @page { size: A4; margin: 10mm; } body { -webkit-print-color-adjust: exact; } }
+body { font-family: 'LXGW WenKai Lite', 'Patrick Hand', sans-serif; color: #2b2b2b; background: #fbfaf7;
+       max-width: 210mm; margin: 0 auto; padding: 6mm; font-size: 11.5px; line-height: 1.45; }
+h1 { font-size: 17px; margin: 0 0 2mm; } h2 { font-size: 12.5px; margin: 3mm 0 1mm; border-bottom: 1.5px solid #4b4b4b; }
+.meta { color: #6b6b6b; font-size: 10px; margin-bottom: 2mm; }
+.cols { column-count: 2; column-gap: 6mm; }
+table { border-collapse: collapse; width: 100%; font-size: 10.5px; }
+td { border-bottom: 0.5px solid #d8d2c4; padding: 1mm 1.5mm 1mm 0; vertical-align: top; }
+td:first-child { white-space: nowrap; font-weight: 600; }
+ul { margin: 0.5mm 0 1.5mm 4mm; padding: 0; } li { margin-bottom: 0.6mm; }
+.rel { color: #4b4b4b; } .rel b { color: #8a4b2b; }
+.mis { background: #f7ece8; border-left: 2.5px solid #b0553a; padding: 0.8mm 2mm; margin-bottom: 1mm; }
+</style></head><body>
+<h1>泰勒展开：用多项式逼近函数 · 速查表</h1>
+<p class=meta>｜编译自课程包（概念图 / 要点 / 板书 / 误区），不含课堂之外的内容。</p>
+<h2>每节要点</h2>
+<p><b>为什么要用多项式逼近函数？</b></p>
+<ul><li><b>局部逼近</b> — 多项式简单，光滑函数复杂；用多项式在一点附近近似光滑函数，逼近是局部的，不是全局的。</li></ul>
+<p><b>匹配导数构造泰勒多项式</b></p>
+<ul><li><b>泰勒多项式</b> — 在 a 点匹配函数值与各阶导数，分母的 k! 抵消求导产生的倍数，复制局部形状。</li></ul>
+<p><b>e^x 的麦克劳林展开：多项式逼近的威力</b></p>
+<ul><li><b>e^x 的麦克劳林级数</b> — e^x = 1 + x + x²/2! + x³/3! + ⋯，对一切实数 x 收敛；x 越大只需更多项，精度照样能追上。</li></ul>
+<p><b>sin x 的展开与小角度近似</b></p>
+<ul><li><b>小角度近似</b> — sin x ≈ x 是麦克劳林级数的一阶截断，x 在约 10 度内误差可接受。</li></ul>
+<p><b>ln(1+x) 的展开及其收敛域</b></p>
+<ul><li><b>展开有边界</b> — 泰勒展开不是万能钥匙：e^x、sin x 处处收敛，ln(1+x) 只在 |x|&lt;1 内有效。用前先查收敛域。</li></ul>
+<p><b>余项：被丢掉的尾巴</b></p>
+<ul><li><b>拉格朗日余项</b> — 余项 = 导数因子 × 距离因子，ξ 夹在 a 与 x 之间；它精确刻画截断误差，也决定收敛半径。</li></ul>
+<p><b>为什么 ln(1+x) 的级数只在 |x|&lt;1 收敛</b></p>
+<ul><li><b>余项裁判</b> — 泰勒级数收不收敛，不看函数长什么样，看拉格朗日余项是否趋于零。余项趋于零的范围，就是收敛半径。</li></ul>
+<h2>关键板书与公式</h2>
+<ul><li>给定：光滑函数 $f$，点 $a$</li><li>找一个多项式 $p$</li><li>要求：在 $a$ <b>附近</b> $|p(x)-f(x)|$ 很小</li><li>注意：是 <b>附近</b>，不是处处</li><li>多项式：只有 <b>加法</b> 和 <b>乘法</b></li><li>目标：在一点附近用多项式近似光滑函数</li><li>逼近是 <b>局部的</b>，不是全局的</li><li>下一步 → 怎么找系数？</li><li>$p_0$：只匹配 $f(a)$ → 过点，方向不对</li><li>$p_1$：再匹配 $f'(a)$ → 贴着切线</li><li>$p_2$：再匹配 $f''(a)$ → 弯曲也同向</li><li>规律：<b>多匹配一阶，局部更像</b></li><li>匹配到 $n$ 阶导数：</li><li>$f(a) + f'(a)(x-a) + \frac{f''(a)}{2!}(x-a)^2 + \cdots + \frac{f^{(n)}(a)}{n!}(x-a)^n$</li><li>第 $k$ 项系数：$\frac{f^{(k)}(a)}{k!}$</li><li>为什么除 $k!$？→ 求 $k$ 次导会乘出 $k!$，除回去才等于 $f^{(k)}(a)$</li><li>设第 $k$ 项：$c_k (x-a)^k$</li><li>求 $k$ 次导 → 指数掉下来：$k \cdot (k-1) \cdots 1 = k!$</li><li>在 $a$ 点：这一项贡献 $c_k \cdot k!$</li><li>要它 $= f^{(k)}(a)$ → $c_k = \dfrac{f^{(k)}(a)}{k!}$</li><li>所以分母的 $k!$ 是<b>除回去</b>的</li><li>匹配 $f(a)$ → 过同一点</li><li>匹配 $f'(a)$ → 同斜率</li><li>匹配 $f''(a)$ → 同弯曲</li></ul>
+<h2>常见误区（对的说法）</h2>
+<ul><li>查表或者背过常用值：查表确实能查到，但表也是别人算好的，你还是不会自己算。</li><li>只能按计算器，没别的办法：计算器内部其实就是用加法和乘法算的，只是你不知道而已。</li><li>因为多项式可以无限逼近任何函数：能逼近是结果，不是原因——选它是因为它好算。</li><li>因为多项式次数高，什么都能表示：次数高不等于好算，而且高次多项式反而更难控制。</li><li>误差一直很小，到某个点突然崩掉：误差是连续增大的，不会突然跳变。</li><li>误差始终为零，因为 p 就是 sin 的近似：p(x)=x 只在原点附近近似，远处误差很大。</li><li>能，至少那个点对上了，附近应该差不多：这是最自然的直觉：以为抓住一个点就抓住了局部。但一个点只给了一个条件，斜率、弯曲都还没管。</li><li>多项式在 a 点附近越来越贴原函数：有人会担心条件越多越冲突，其实每多匹配一阶，只是把 a 点附近的形状锁得更紧。</li><li>没关系，反正多项式在 a 点的值还是对的：只盯着函数值，忽略了高阶导数的匹配——这正是典型误区。</li><li>不能，多项式只能在零附近像，远了就散架：这是最常见的直觉：以为多项式增长不够快，远处一定崩。其实项数足够多时，多项式可以一路贴住 e 的 x 次方。</li><li>还是差很远，多项式根本追不上指数：这是没动手之前的直觉：以为多项式增长太慢，远处永远追不上。拖一下滑块就会发现，项数够多时误差掉得很快。</li><li>x 太大了，多项式根本追不上：这是典型误区：把“x 越大需要项数越多”误当成“x 大了就不收敛”。收敛和收敛快慢是两件事。</li></ul>
+<script>addEventListener('DOMContentLoaded', () => renderMathInElement(document.body,
+  {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]}));</script>
+</body></html>

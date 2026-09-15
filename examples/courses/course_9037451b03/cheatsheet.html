@@ -1,0 +1,39 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8">
+<title>注意力机制入门：每个词该看谁 · 速查表</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<style>
+@media print { @page { size: A4; margin: 10mm; } body { -webkit-print-color-adjust: exact; } }
+body { font-family: 'LXGW WenKai Lite', 'Patrick Hand', sans-serif; color: #2b2b2b; background: #fbfaf7;
+       max-width: 210mm; margin: 0 auto; padding: 6mm; font-size: 11.5px; line-height: 1.45; }
+h1 { font-size: 17px; margin: 0 0 2mm; } h2 { font-size: 12.5px; margin: 3mm 0 1mm; border-bottom: 1.5px solid #4b4b4b; }
+.meta { color: #6b6b6b; font-size: 10px; margin-bottom: 2mm; }
+.cols { column-count: 2; column-gap: 6mm; }
+table { border-collapse: collapse; width: 100%; font-size: 10.5px; }
+td { border-bottom: 0.5px solid #d8d2c4; padding: 1mm 1.5mm 1mm 0; vertical-align: top; }
+td:first-child { white-space: nowrap; font-weight: 600; }
+ul { margin: 0.5mm 0 1.5mm 4mm; padding: 0; } li { margin-bottom: 0.6mm; }
+.rel { color: #4b4b4b; } .rel b { color: #8a4b2b; }
+.mis { background: #f7ece8; border-left: 2.5px solid #b0553a; padding: 0.8mm 2mm; margin-bottom: 1mm; }
+</style></head><body>
+<h1>注意力机制入门：每个词该看谁 · 速查表</h1>
+<p class=meta>｜编译自课程包（概念图 / 要点 / 板书 / 误区），不含课堂之外的内容。</p>
+<h2>每节要点</h2>
+<p><b>一词多义的挑战</b></p>
+<ul><li><b>上下文相关表示</b> — 同一个词在不同语境下算出不同向量，词义由它看的上下文决定。</li></ul>
+<p><b>查询、键、值：注意力的三种角色</b></p>
+<ul><li><b>QKV 投影</b> — 每个词投影成查询、键、值三个角色；查询与键的点积决定注意力权重。</li></ul>
+<p><b>softmax 归一化与缩放因子</b></p>
+<ul><li><b>缩放点积注意力</b> — softmax 把缩放后的点积变成权重，输出是值的加权和；除以根号 d_k 防止饱和与梯度消失。</li></ul>
+<p><b>多头注意力：并行的小世界</b></p>
+<ul><li><b>多头注意力</b> — 并行跑 h 组小维度 Q、K、V，各头关注不同关系，拼接投影融合输出，总维度不变。</li></ul>
+<p><b>因果掩码：别偷看未来</b></p>
+<ul><li><b>因果掩码</b> — 在 QK 转置矩阵上三角填负无穷再 softmax，未来词权重为零，生成时只能看左边。</li></ul>
+<h2>关键板书与公式</h2>
+<ul><li>词表：每个词 → <b>一个固定向量</b></li><li>苹果的向量，在任何句子里都一样</li><li>一个向量 → 一个位置</li><li>结果：<b>分不开公司和水果</b></li><li>不再：一个词 → 一个固定向量</li><li>而是：一个词 + <b>上下文</b> → 现场算出的向量</li><li>“苹果发布了新手机” → 苹果靠近<b>科技堆</b></li><li>“苹果很甜” → 苹果靠近<b>水果堆</b></li><li>词不变，<b>表示变</b></li><li>固定表示：一个词 → 一个位置</li><li>问题：<b>一词多义分不开</b></li><li>需要：上下文相关表示（动态词向量）</li><li>下一步：每个词该看谁？</li><li>每个词先投影成三个角色：$q, k, v$</li><li>$q$：我在找什么信息</li><li>$k$：我能提供什么信息</li><li>$v$：我实际交出去的内容</li><li>相关度：$\text{score}(q_i, k_j) = q_i \cdot k_j$</li><li>分数越高 → 词 $i$ 从词 $j$ 拿走越多信息</li><li>每个词投影成三个角色：$q, k, v$</li><li>分数越高 → 拿的信息越多</li><li>关键：用<b>投影后</b>的 q, k 算，不是原始向量</li><li>点积方差 $\propto d_k$ → 维度大，分数大</li><li>缩放：$\dfrac{q_i \cdot k_j}{\sqrt{d_k}}$</li></ul>
+<h2>常见误区（对的说法）</h2>
+<ul><li>能，因为可以存多个向量：这是把固定向量和动态表示搞混了：固定表示就是一个词一个向量，存不了多个。</li><li>能，多存点维度就行了：加维度只是让空间更大，不会让同一个词在不同句子里自动变位置。</li><li>因为训练数据不够多：数据再多，一个词还是一个向量，位置不会变。</li><li>因为向量维度太低了：加维度只是让空间更大，不会让同一个词在不同句子里自动换位置。</li><li>靠近水果堆，因为苹果最常见的意思是水果：这是把词频当词义：常见义不等于唯一义，固定向量只能选一个位置。</li><li>靠近科技堆，因为科技公司更“大”：这是把重要性当语义：公司再大也不能让“苹果很甜”里的苹果变成公司。</li><li>看哪个词离得近，就近原则：距离只是位置，不是内容。真正决定的是它要找什么、别人能提供什么。</li><li>还是正的，因为长度都是正的：长度确实都是正的，但点积看的是方向对齐程度，方向相反时乘积为负。</li><li>差不多大，因为只差 1：差 1 在原始分数上确实小，但 softmax 是指数放大，100 和 99 的指数比是 e 倍，权重会明显偏向大的那个。</li><li>没法算，100 太大了：softmax 对任意实数都有定义，100 也能算，只是结果会非常极端。</li><li>变大，因为输出更确定了：输出更确定不等于梯度更大，恰恰相反，饱和区里输出对输入几乎不敏感。</li><li>不变，梯度跟分数大小无关：softmax 的梯度依赖输出分布，分布越极端，梯度越小。</li></ul>
+<script>addEventListener('DOMContentLoaded', () => renderMathInElement(document.body,
+  {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]}));</script>
+</body></html>

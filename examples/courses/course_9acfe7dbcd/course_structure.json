@@ -1,0 +1,653 @@
+{
+  "course_id": "course_9acfe7dbcd",
+  "title": "泰勒展开：用多项式逼近函数",
+  "target_audience": "",
+  "overview": "",
+  "generation_mode": "llm",
+  "document_id": "doc_aace7f268a",
+  "chapters": [
+    {
+      "chapter_id": "ch_1",
+      "title": "动机",
+      "description": "引入用多项式逼近复杂函数的动机。",
+      "unit": "",
+      "sessions": [
+        {
+          "session_id": "sess_1",
+          "title": "为什么要用多项式逼近函数？",
+          "learning_goal": "理解为什么需要多项式逼近，并认识到逼近是局部的。",
+          "core_concept": "用多项式局部逼近光滑函数。",
+          "cognitive_hurdle": "以为多项式逼近必须全局精确，而忽略“在一点附近”这一关键限制。",
+          "source_sections": [
+            "s1"
+          ],
+          "estimated_duration_min": 5,
+          "tags": [
+            "Intuition",
+            "Definition"
+          ],
+          "segments": [
+            {
+              "title": "手算 sin(0.5) 的挑战",
+              "intent": "让学生意识到许多常用函数无法手算精确值，只能依赖计算器。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s1"
+              ]
+            },
+            {
+              "title": "多项式是万能积木",
+              "intent": "让学生理解多项式运算简单，可作为构建复杂函数的积木。",
+              "media": "board",
+              "media_brief": "板书：多项式只涉及加法和乘法，像乐高积木一样简单；sin x、e^x 像复杂的雕塑。",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s1"
+              ]
+            },
+            {
+              "title": "什么叫“长得一模一样”",
+              "intent": "明确逼近的目标是在某一点附近，多项式的值、变化趋势等与 f 接近。",
+              "media": "board",
+              "media_brief": "板书：给定光滑函数 f 和点 a，找一个多项式 p，使得在 a 附近 |p(x)-f(x)| 很小。",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s1"
+              ]
+            },
+            {
+              "title": "试试 p(x)=x 逼近 sin x",
+              "intent": "通过具体计算展示多项式逼近的可行性与局部性。",
+              "media": "illustration",
+              "media_brief": "展示一个数值表，列出 x=0.1, 0.5, 1.0 时 sin x 与 x 的值及误差；旁边画坐标图，显示 y=x 与 y=sin x 在原点附近几乎重合，远离后分开，标注误差随 x 增大。",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s1"
+              ]
+            },
+            {
+              "title": "局部 vs 全局",
+              "intent": "破除“多项式必须在所有地方都像原函数”的误区，强调“在一点附近”这个关键限定。",
+              "media": "board",
+              "media_brief": "板书对比：全局逼近——多项式在远处偏离，误差变大；局部逼近——在 a 点附近误差很小，可以接受。",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s1"
+              ]
+            },
+            {
+              "title": "动机已明，方法待寻",
+              "intent": "回顾本课要点：多项式简单，希望局部逼近复杂函数；下一步要解决如何找多项式系数。",
+              "media": "board",
+              "media_brief": "板书总结：1) 多项式运算简单；2) 希望在一点附近用多项式近似光滑函数；3) 逼近是局部的，不是全局。",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s1"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "chapter_id": "ch_2",
+      "title": "匹配导数就匹配局部形状",
+      "description": "通过逐步匹配函数值、一阶导、二阶导直到 n 阶导，构造泰勒多项式。",
+      "unit": "",
+      "sessions": [
+        {
+          "session_id": "sess_2",
+          "title": "匹配导数构造泰勒多项式",
+          "learning_goal": "学生能写出 a 点展开的 n 阶泰勒多项式，并解释分母中 k! 的来源。",
+          "core_concept": "泰勒多项式通过在 a 点匹配函数值及各阶导数来复制函数的局部形状。",
+          "cognitive_hurdle": "以为多项式系数直接等于各阶导数值，忘记每求一次导会乘出 k!，必须除回去。",
+          "source_sections": [
+            "s2"
+          ],
+          "estimated_duration_min": 6,
+          "tags": [
+            "Definition",
+            "Derivation"
+          ],
+          "segments": [
+            {
+              "title": "一个复杂的函数怎么用多项式模仿？",
+              "intent": "让学生意识到仅靠函数值相同远远不够，需要更精细的匹配。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s2"
+              ]
+            },
+            {
+              "title": "逐步匹配：值、斜率、弯曲",
+              "intent": "让学生看到每多匹配一阶导数，多项式在 a 点附近的形状就更接近原函数。",
+              "media": "illustration",
+              "media_brief": "展示原函数 f(x) 与三个多项式 p0、p1、p2 在 x=a 附近的曲线；p0 只匹配函数值，p1 匹配函数值与一阶导，p2 匹配到二阶导；标注 a 点、切线和弯曲方向。",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s2"
+              ]
+            },
+            {
+              "title": "泰勒多项式通式",
+              "intent": "让学生记住匹配到 n 阶导数的多项式结构。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s2"
+              ]
+            },
+            {
+              "title": "阶乘从哪来？",
+              "intent": "让学生理解分母 k! 是为了抵消求 k 次导产生的 k! 倍数。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s2"
+              ]
+            },
+            {
+              "title": "回到局部形状匹配",
+              "intent": "让学生把构造过程总结为：匹配到 n 阶导就是在 a 点复制局部形状。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s2"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "chapter_id": "ch_3",
+      "title": "三个最好用的展开",
+      "description": "展示 e^x、sin x、ln(1+x) 在 a=0 处的麦克劳林级数，并通过小角度近似和收敛域对比建立应用直觉。",
+      "unit": "",
+      "sessions": [
+        {
+          "session_id": "sess_3",
+          "title": "e^x 的麦克劳林展开：多项式逼近的威力",
+          "learning_goal": "能写出 e^x 的麦克劳林级数，并理解它对一切实数 x 收敛。",
+          "core_concept": "e^x 的麦克劳林级数及全局收敛性",
+          "cognitive_hurdle": "误以为多项式逼近只能在 x=0 附近有效，对较大的 x 误差会很大。",
+          "source_sections": [
+            "s3"
+          ],
+          "estimated_duration_min": 5,
+          "tags": [
+            "Intuition",
+            "Definition"
+          ],
+          "segments": [
+            {
+              "title": "多项式能表示指数函数吗？",
+              "intent": "引发学生对用多项式逼近 e^x 的兴趣，并意识到局部近似与全局的差异。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s3"
+              ]
+            },
+            {
+              "title": "从切线到完美贴合",
+              "intent": "建立直觉：增加多项式项数可以让近似在更大范围内贴合原函数。",
+              "media": "explorable",
+              "media_brief": "横轴 x，纵轴 y；显示 e^x 曲线和 P_n(x)=∑_{k=0}^{n} x^k/k! 曲线；滑块 n=1..10；预期随 n 增大，多项式在更宽范围内贴合 e^x，甚至 x=5 时 n=10 已很接近。",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s3"
+              ]
+            },
+            {
+              "title": "e^x 的麦克劳林级数",
+              "intent": "给出 e^x 在 a=0 处的麦克劳林展开的严格形式，并说明它“对一切 x”收敛。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s3"
+              ]
+            },
+            {
+              "title": "算一个具体值：e^1",
+              "intent": "通过计算 e 的近似值，展示级数应用与收敛速度。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s3"
+              ]
+            },
+            {
+              "title": "为什么对一切 x 都成立？",
+              "intent": "对比常见函数展开的收敛域差异，强调 e^x 的特殊性（对一切 x）。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s3"
+              ]
+            },
+            {
+              "title": "回顾：多项式逼近指数函数",
+              "intent": "总结 e^x 麦克劳林级数及收敛性，为后续 sin、ln 做铺垫。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s3"
+              ]
+            }
+          ]
+        },
+        {
+          "session_id": "sess_4",
+          "title": "sin x 的展开与小角度近似",
+          "learning_goal": "能写出 sin x 的麦克劳林级数，解释小角度近似的来源和适用条件。",
+          "core_concept": "sin x 的麦克劳林级数及一阶近似 sin x ≈ x",
+          "cognitive_hurdle": "误以为小角度近似太粗略，只在极小角度（如 1 度内）才可用，实际上在物理中常见的小角度（约 10 度内）误差可接受。",
+          "source_sections": [
+            "s3"
+          ],
+          "estimated_duration_min": 5,
+          "tags": [
+            "Definition",
+            "Application"
+          ],
+          "segments": [
+            {
+              "title": "单摆为什么能简化？",
+              "intent": "引入小角度近似的动机：单摆方程中的 sin θ 使得方程非线性。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s3"
+              ]
+            },
+            {
+              "title": "sin x 和 x 有多接近？",
+              "intent": "先让学生预测 sin x 与 x 在小范围内的接近程度，再通过可视化验证。",
+              "media": "explorable",
+              "media_brief": "横轴 x（弧度，范围 -0.5 到 0.5），纵轴 y；显示 y=sin x 和 y=x；滑块或探针读 x，显示差值 |sin x - x|；预期在 |x|<0.1 时两条线几乎重合，差值小于 0.0005。",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s3"
+              ]
+            },
+            {
+              "title": "sin x 的麦克劳林展开",
+              "intent": "写出 sin x 的展开式，让学生看到第一项是 x，后续项是高次项。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s3"
+              ]
+            },
+            {
+              "title": "只用第一项：sin x ≈ x",
+              "intent": "从展开式推导出小角度近似，说明它是泰勒展开的一阶截断。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s3"
+              ]
+            },
+            {
+              "title": "单摆线性化",
+              "intent": "应用小角度近似到单摆方程，得到简谐振动方程。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s3"
+              ]
+            },
+            {
+              "title": "回顾：小角度近似不是魔法",
+              "intent": "总结小角度近似本质是泰勒一阶近似，适用于小 x。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s3"
+              ]
+            }
+          ]
+        },
+        {
+          "session_id": "sess_5",
+          "title": "ln(1+x) 的展开及其收敛域",
+          "learning_goal": "能写出 ln(1+x) 的麦克劳林级数，并指明其收敛域 |x|<1。",
+          "core_concept": "ln(1+x) 的麦克劳林级数及收敛域限制",
+          "cognitive_hurdle": "以为所有泰勒级数都像 e^x、sin x 一样对一切 x 收敛，忽略收敛域。",
+          "source_sections": [
+            "s3"
+          ],
+          "estimated_duration_min": 5,
+          "tags": [
+            "Definition",
+            "Advanced"
+          ],
+          "segments": [
+            {
+              "title": "ln(1+x) 的级数也处处收敛吗？",
+              "intent": "引发学生思考 ln(1+x) 的泰勒级数是否像 e^x 一样对一切 x 收敛。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s3"
+              ]
+            },
+            {
+              "title": "在 x=2 处发生了什么？",
+              "intent": "通过探索或计算展示级数在 x=2 时发散，产生认知冲突。",
+              "media": "explorable",
+              "media_brief": "横轴 x（范围 -1.5 到 2），纵轴 y；显示 ln(1+x) 曲线和 S_n(x)=∑_{k=1}^{n} (-1)^{k-1} x^k/k；滑块 n=1..20；预期：在 -1<x<1 内 S_n 随 n 增大逼近 ln(1+x)，在 x=2 时 S_n 振荡且不收敛。",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s3"
+              ]
+            },
+            {
+              "title": "收敛域：|x| < 1",
+              "intent": "明确 ln(1+x) 级数的收敛区间，与 e^x、sin x 对比。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s3"
+              ]
+            },
+            {
+              "title": "对比三个展开的收敛域",
+              "intent": "通过对比巩固“收敛域”概念，避免误以为所有展开都处处收敛。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s3"
+              ]
+            },
+            {
+              "title": "用级数计算 ln(1.1)",
+              "intent": "通过一个收敛域内的应用，展示级数计算对数的方法。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s3"
+              ]
+            },
+            {
+              "title": "回顾：展开都有适用范围",
+              "intent": "总结三个常用展开及其收敛域，强调使用前必须检查定义域。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s3"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "chapter_id": "ch_4",
+      "title": "余项：逼近有多好",
+      "description": "本章介绍泰勒公式的余项概念，给出拉格朗日余项形式，并通过具体函数展示余项收敛与发散的行为，引出收敛半径的直观理解。",
+      "unit": "",
+      "sessions": [
+        {
+          "session_id": "sess_6",
+          "title": "余项：被丢掉的尾巴",
+          "learning_goal": "理解泰勒多项式逼近的误差可以用拉格朗日余项公式精确表示。",
+          "core_concept": "拉格朗日余项公式 R_n(x) = f^{(n+1)}(ξ)/(n+1)! (x-a)^{n+1}",
+          "cognitive_hurdle": "学生误以为截断误差无法用公式表达，或者认为余项只是抽象的“高阶无穷小”，而忽略了拉格朗日形式中 ξ 的重要性。",
+          "source_sections": [
+            "s4"
+          ],
+          "estimated_duration_min": 5,
+          "tags": [
+            "Definition",
+            "Derivation"
+          ],
+          "segments": [
+            {
+              "title": "误差有多大？",
+              "intent": "让学生意识到泰勒多项式逼近存在误差，并且我们需要一个精确的表达式来描述这个误差。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s4"
+              ]
+            },
+            {
+              "title": "余项就像找零",
+              "intent": "用找零的比喻帮助学生直观理解余项是原函数与多项式之间的差额。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s4"
+              ]
+            },
+            {
+              "title": "拉格朗日余项形式",
+              "intent": "给出拉格朗日余项公式，并解释其中 ξ 的含义。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s4"
+              ]
+            },
+            {
+              "title": "读懂公式的两个因子",
+              "intent": "让学生看出余项大小由 f^{(n+1)}(ξ) 和 (x-a)^{n+1}/(n+1)! 共同决定。",
+              "media": "explorable",
+              "media_brief": "对象：以 x 为横轴，展示函数 f(x)=e^x 在 a=0 处的 n 阶泰勒多项式 P_n(x) 与原函数曲线，以及两者之间的竖直误差带。滑块/探针：一个滑块控制阶数 n（1~8），一个探针点 x0 可沿横轴拖动，读出该点处的余项 R_n(x0)=f(x0)-P_n(x0)。预期现象：随 n 增大，多项式曲线在原点附近越来越贴合 e^x，误差带变窄；拖动 x0 远离原点时误差明显变大，直观看出 (x-a)^{n+1}/(n+1)! 因子的作用。",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s4"
+              ]
+            },
+            {
+              "title": "e^x 的余项趋于零",
+              "intent": "演示如何用拉格朗日余项公式判断 e^x 的余项随 n 增大而趋于零。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s4"
+              ]
+            },
+            {
+              "title": "回顾：余项公式的意义",
+              "intent": "总结拉格朗日余项公式提供了截断误差的精确表达，为后续判断收敛性打下基础。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s4"
+              ]
+            }
+          ]
+        },
+        {
+          "session_id": "sess_7",
+          "title": "为什么 ln(1+x) 的级数只在 |x|<1 收敛",
+          "learning_goal": "理解不同函数的泰勒级数收敛范围不同，余项是否趋于零决定收敛半径。",
+          "core_concept": "收敛半径（余项衰减与发散）",
+          "cognitive_hurdle": "误以为所有泰勒级数都在整个实数轴收敛到原函数，特别是以为 ln(1+x) 的级数对所有 x 都收敛。",
+          "source_sections": [
+            "s4"
+          ],
+          "estimated_duration_min": 5,
+          "tags": [
+            "Intuition",
+            "Application"
+          ],
+          "segments": [
+            {
+              "title": "所有函数都完美逼近吗？",
+              "intent": "引发思考：是否所有函数的泰勒级数都能在整个实数轴收敛到函数本身。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s4"
+              ]
+            },
+            {
+              "title": "猜一猜 ln(1+x) 在 x=2 的行为",
+              "intent": "让学生先猜测 ln(1+x) 的泰勒级数在 x=2 时是否收敛到 ln 3。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s4"
+              ]
+            },
+            {
+              "title": "收敛半径的直观",
+              "intent": "引入收敛半径概念：使余项 R_n(x) 趋于零的 x 范围。",
+              "media": "illustration",
+              "media_brief": "数轴图，标注 -1 到 1 区间为绿色（表示收敛），区间外为红色（表示发散），并标注 e^x 和 sin x 的整个数轴为绿色。",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s4"
+              ]
+            },
+            {
+              "title": "对比 e^x 与 ln(1+x) 在 x=2 的余项",
+              "intent": "通过具体例子展示 e^x 余项趋于零而 ln(1+x) 在 x=2 时余项不趋于零。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s4"
+              ]
+            },
+            {
+              "title": "判断 x=0.5 与 x=1.5 时 ln(1+x) 的余项",
+              "intent": "让学生应用收敛半径概念判断不同 x 取值下余项的行为。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s4"
+              ]
+            },
+            {
+              "title": "回顾：余项决定收敛半径",
+              "intent": "总结拉格朗日余项揭示了泰勒级数收敛范围的本质差异。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s4"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

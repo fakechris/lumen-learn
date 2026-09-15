@@ -1,0 +1,37 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8">
+<title>神经网络的线性层：矩阵就是层的全部 · 速查表</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<style>
+@media print { @page { size: A4; margin: 10mm; } body { -webkit-print-color-adjust: exact; } }
+body { font-family: 'LXGW WenKai Lite', 'Patrick Hand', sans-serif; color: #2b2b2b; background: #fbfaf7;
+       max-width: 210mm; margin: 0 auto; padding: 6mm; font-size: 11.5px; line-height: 1.45; }
+h1 { font-size: 17px; margin: 0 0 2mm; } h2 { font-size: 12.5px; margin: 3mm 0 1mm; border-bottom: 1.5px solid #4b4b4b; }
+.meta { color: #6b6b6b; font-size: 10px; margin-bottom: 2mm; }
+.cols { column-count: 2; column-gap: 6mm; }
+table { border-collapse: collapse; width: 100%; font-size: 10.5px; }
+td { border-bottom: 0.5px solid #d8d2c4; padding: 1mm 1.5mm 1mm 0; vertical-align: top; }
+td:first-child { white-space: nowrap; font-weight: 600; }
+ul { margin: 0.5mm 0 1.5mm 4mm; padding: 0; } li { margin-bottom: 0.6mm; }
+.rel { color: #4b4b4b; } .rel b { color: #8a4b2b; }
+.mis { background: #f7ece8; border-left: 2.5px solid #b0553a; padding: 0.8mm 2mm; margin-bottom: 1mm; }
+</style></head><body>
+<h1>神经网络的线性层：矩阵就是层的全部 · 速查表</h1>
+<p class=meta>｜编译自课程包（概念图 / 要点 / 板书 / 误区），不含课堂之外的内容。</p>
+<h2>每节要点</h2>
+<p><b>一个神经元：加权求和 + 偏置</b></p>
+<ul><li><b>一个神经元 = 加权求和 + 偏置</b> — h = w·x + b：w 决定各输入贡献多大，b 把输出整体平移。</li></ul>
+<p><b>矩阵就是层的全部</b></p>
+<ul><li><b>线性层 = 矩阵乘加偏置</b> — 一层并行神经元的前向计算就是 h = Wx + b；W 每行对应一个输出神经元，每列对应一个输入特征。</li></ul>
+<p><b>批处理：转置的由来</b></p>
+<ul><li><b>矩阵就是层的全部</b> — 权重按列对应神经元，XW 一次算完整批；形状对了，层就对了。</li></ul>
+<p><b>PyTorch 线性层的权重方向</b></p>
+<ul><li><b>PyTorch 线性层方向口诀</b> — 权重存 out×in，前向算 X W^T；转置只改步幅，写码先看 shape。</li></ul>
+<h2>关键板书与公式</h2>
+<ul><li>加权求和：$\sum_i w_i x_i$</li><li>再加偏置：$h = \sum_i w_i x_i + b$</li><li>向量写法：$h = w \cdot x + b$</li><li>$h = w \cdot x + b = \sum_i w_i x_i + b$</li><li>$w$ → 各输入贡献大小</li><li>$b$ → 整体平移输出</li><li>中间那个问号 = <b>加权求和 + 偏置</b></li><li>输入 $\vec{x}$，权重 $\vec{w}$，偏置 $b$</li><li>计算：$\vec{w} \cdot \vec{x} + b$</li><li>输出 → <b>一个标量</b>（不是向量）</li><li>$n_{out}$ 个神经元，共享同一个 $\vec{x}$</li><li>第 $j$ 个：$\vec{w}_j \cdot \vec{x} + b_j$</li><li>输出 → <b>$n_{out}$ 维向量 $\vec{h}$</b></li><li>每个神经元 → 一个权重<b>行向量</b>（长度 $n_{in}$）</li><li>$n_{out}$ 行摞起来 → $W$</li><li>形状：$n_{out} \times n_{in}$</li><li>$W \in \mathbb{R}^{n_{out} \times n_{in}}$，$\vec{x} \in \mathbb{R}^{n_{in}}$，$\vec{b} \in \mathbb{R}^{n_{out}}$</li><li>整层：$\vec{h} = W\vec{x} + \vec{b}$</li><li>$\vec{h}$ 的第 $j$ 个分量 = 第 $j$ 个神经元的输出</li><li>形状检查：$(n_{out} \times n_{in})(n_{in} \times 1) = n_{out} \times 1$</li><li>一个神经元：$\vec{w} \cdot \vec{x} + b$ → 一个标量</li><li>一层 $n_{out}$ 个神经元：共享 $\vec{x}$，各自打分</li><li>权重行向量按行摞 → $W \in \mathbb{R}^{n_{out} \times n_{in}}$</li><li>整层：$\vec{h} = W\vec{x} + \vec{b}$，$\vec{h} \in \mathbb{R}^{n_{out}}$</li></ul>
+<h2>常见误区（对的说法）</h2>
+<ul><li>把三个数直接加起来，不做别的：直接相加是一种直觉，但那样每个输入的地位就完全一样了，神经元没法区分谁更重要。</li><li>还是 7，b 不影响结果：以为 b 只是形式上的符号，不参与计算。</li><li>8，因为 b 是加上的：把 b 的符号搞反了，以为加偏置是减。</li><li>从 7 变成 9，整体往上移：把负号当成加号，以为 b 越大输出越大。</li><li>不变，b 只影响权重：把偏置和权重混为一谈，以为 b 会改变各输入的贡献比例。</li><li>一个向量，长度跟输入一样：这是最常见的直觉：以为输出还跟输入一样长。其实点积把整个向量压成了一个数。</li><li>4 行 3 列，输入在前：这是把行列顺序记反了：行数应该等于输出神经元个数，列数等于输入特征数。</li><li>变成两行四列，多一列输入：这是把行和列搞反了：多一个神经元是加一行，不是加一列。</li><li>还是两行三列，只是数值变了：以为神经元数量不影响矩阵形状，其实行数就是神经元个数。</li><li>n_out 行 n_in 列，每行一个神经元：直觉上“一行一个神经元”很自然，但这样 X 乘 W 的内侧维度对不上，乘法根本做不了。</li><li>候选 A，每行一个神经元更直观：“每行一个神经元”听起来顺耳，但 X 的列数是 n_in，W_A 的行数是 n_out，内侧对不上，乘法直接报错。</li><li>10 行 784 列，每行一个神经元：这是最常见的直觉：以为每行一个神经元更自然。但这样 X 乘 W 的内侧维度是 32 和 10，对不上。</li></ul>
+<script>addEventListener('DOMContentLoaded', () => renderMathInElement(document.body,
+  {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]}));</script>
+</body></html>

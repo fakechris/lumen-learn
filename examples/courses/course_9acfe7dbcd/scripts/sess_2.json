@@ -1,0 +1,277 @@
+{
+  "session_id": "sess_2",
+  "course_id": "course_9acfe7dbcd",
+  "title": "匹配导数构造泰勒多项式",
+  "learning_goal": "学生能写出 a 点展开的 n 阶泰勒多项式，并解释分母中 k! 的来源。",
+  "steps": [
+    {
+      "title": "只对上值，够吗？",
+      "beat": "hook",
+      "spoken_text": "先别急着写公式。假设我随便造一个多项式，只要求它在 a 点和 f 的函数值一样。那它长什么样？可能是一条横线，也可能是一条歪七扭八的曲线，只要穿过同一个点就行。这样模仿出来的函数，你觉得像吗？",
+      "boards": [
+        {
+          "title": "只匹配一个点",
+          "markdown": "- 要求：$p(a) = f(a)$\n- 满足的多项式 → **无穷多个**\n- 它们都过 $(a, f(a))$\n- 但斜率、弯曲可能完全不同\n- 够不够？→ 你先猜",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "circle",
+          "snippet": "p(a) = f(a)",
+          "board_index": 0,
+          "trigger_phrase": "只要求它在 a 点和 f 的函数值一样",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": {
+        "mode": "choice",
+        "question": "只让多项式在 a 点和 f 的函数值相等，它能模仿出 f 的形状吗？",
+        "options": [
+          "能，至少那个点对上了，附近应该差不多",
+          "不能，过同一个点的曲线可以长得完全不一样"
+        ],
+        "correct_index": 1,
+        "misconceptions": [
+          "这是最自然的直觉：以为抓住一个点就抓住了局部。但一个点只给了一个条件，斜率、弯曲都还没管。",
+          null
+        ],
+        "explanation": "一个点只锁住函数值，斜率、弯曲都自由，所以形状可以差很远。"
+      },
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "值、斜率、弯曲，一层层加上去",
+      "beat": "derive",
+      "spoken_text": "看这张图。黑色是原函数 f。蓝色 p0 只匹配了函数值，它在 a 点穿过去，但方向完全不对。绿色 p1 多匹配了一阶导，也就是斜率，它贴着切线走，可一离开 a 点就弯错了。红色 p2 再匹配二阶导，连弯曲方向也对上了。每多匹配一阶，a 点附近就更贴。",
+      "boards": [
+        {
+          "title": "逐阶匹配",
+          "markdown": "- $p_0$：只匹配 $f(a)$ → 过点，方向不对\n- $p_1$：再匹配 $f'(a)$ → 贴着切线\n- $p_2$：再匹配 $f''(a)$ → 弯曲也同向\n- 规律：**多匹配一阶，局部更像**",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "highlight",
+          "snippet": "多匹配一阶，局部更像",
+          "board_index": 0,
+          "trigger_phrase": "每多匹配一阶，a 点附近就更贴",
+          "color": null
+        }
+      ],
+      "illustration": {
+        "kind": "svg",
+        "caption": "p0 只过点，p1 贴切线，p2 连弯曲也匹配",
+        "brief": "坐标轴中画黑色原函数 f(x)，在 x=a 处标出点 (a,f(a)) 和切线。蓝色 p0 为水平线只过该点；绿色 p1 为切线，在 a 点与 f 相切；红色 p2 为抛物线，在 a 点与 f 有相同的一阶、二阶导。三条曲线在 a 点附近逐渐贴合，右侧标注 p0、p1、p2。",
+        "figure_id": null,
+        "svg": "<svg viewBox=\"0 0 800 520\" xmlns=\"http://www.w3.org/2000/svg\">\n  <!-- 背景透明，无外框 -->\n\n  <!-- 标题 -->\n  <text x=\"400\" y=\"40\" text-anchor=\"middle\" font-family=\"'LXGW WenKai Lite', sans-serif\" font-size=\"24\" fill=\"#333\">p0 只过点，p1 贴切线，p2 连弯曲也匹配</text>\n\n  <!-- 坐标轴区域：列 A~F，行 2~5 大致范围 -->\n  <!-- 坐标轴 -->\n  <g stroke=\"#4b4b4b\" stroke-width=\"2\" stroke-linecap=\"round\" fill=\"none\">\n    <!-- x 轴 -->\n    <line x1=\"80\" y1=\"400\" x2=\"720\" y2=\"400\"/>\n    <!-- y 轴 -->\n    <line x1=\"120\" y1=\"120\" x2=\"120\" y2=\"440\"/>\n    <!-- x 轴箭头 -->\n    <path d=\"M 712 394 L 722 400 L 712 406\"/>\n    <!-- y 轴箭头 -->\n    <path d=\"M 114 128 L 120 118 L 126 128\"/>\n  </g>\n  <text x=\"730\" y=\"405\" font-family=\"'LXGW WenKai Lite', sans-serif\" font-size=\"20\" fill=\"#333\">x</text>\n  <text x=\"100\" y=\"115\" font-family=\"'LXGW WenKai Lite', sans-serif\" font-size=\"20\" fill=\"#333\">y</text>\n\n  <!-- 原函数 f(x)：黑色曲线，从左上到右下再上翘 -->\n  <path d=\"M 140 180 C 220 180, 260 260, 320 300 C 380 340, 420 360, 480 340 C 540 320, 580 260, 640 220\"\n        stroke=\"#4b4b4b\" stroke-width=\"2.5\" stroke-linecap=\"round\" fill=\"none\"/>\n\n  <!-- a 点位置：x=380, y=340 附近 -->\n  <!-- 切线：绿色 p1，在 a 点与 f 相切，斜率约 -0.5 -->\n  <line x1=\"260\" y1=\"280\" x2=\"520\" y2=\"410\" stroke=\"#b8dcc6\" stroke-width=\"2.5\" stroke-linecap=\"round\"/>\n\n  <!-- p0：蓝色水平线，只过 a 点 -->\n  <line x1=\"260\" y1=\"340\" x2=\"520\" y2=\"340\" stroke=\"#c9d8e8\" stroke-width=\"2.5\" stroke-linecap=\"round\"/>\n\n  <!-- p2：红色抛物线，在 a 点与 f 有相同一阶、二阶导 -->\n  <path d=\"M 260 300 Q 380 340 520 380\" stroke=\"#e05656\" stroke-width=\"2.5\" stroke-linecap=\"round\" fill=\"none\"/>\n\n  <!-- a 点标记 -->\n  <circle cx=\"380\" cy=\"340\" r=\"5\" fill=\"#e05656\" stroke=\"#4b4b4b\" stroke-width=\"1.5\"/>\n  <text x=\"360\" y=\"370\" font-family=\"'LXGW WenKai Lite', sans-serif\" font-size=\"20\" fill=\"#333\">(a, f(a))</text>\n\n  <!-- 虚线辅助线：从 a 点到 x 轴 -->\n  <line x1=\"380\" y1=\"340\" x2=\"380\" y2=\"400\" stroke=\"#4b4b4b\" stroke-width=\"1.5\" stroke-dasharray=\"5,5\" stroke-linecap=\"round\"/>\n  <text x=\"375\" y=\"425\" font-family=\"'LXGW WenKai Lite', sans-serif\" font-size=\"20\" fill=\"#333\">a</text>\n\n  <!-- 右侧标注 p0、p1、p2，用短引线指向对应曲线 -->\n  <!-- p0 标注 -->\n  <text x=\"620\" y=\"330\" font-family=\"'LXGW WenKai Lite', sans-serif\" font-size=\"22\" fill=\"#333\">p0</text>\n  <line x1=\"610\" y1=\"335\" x2=\"530\" y2=\"340\" stroke=\"#4b4b4b\" stroke-width=\"1.5\" stroke-linecap=\"round\"/>\n\n  <!-- p1 标注 -->\n  <text x=\"620\" y=\"390\" font-family=\"'LXGW WenKai Lite', sans-serif\" font-size=\"22\" fill=\"#333\">p1</text>\n  <line x1=\"610\" y1=\"385\" x2=\"530\" y2=\"405\" stroke=\"#4b4b4b\" stroke-width=\"1.5\" stroke-linecap=\"round\"/>\n\n  <!-- p2 标注 -->\n  <text x=\"620\" y=\"440\" font-family=\"'LXGW WenKai Lite', sans-serif\" font-size=\"22\" fill=\"#333\">p2</text>\n  <line x1=\"610\" y1=\"435\" x2=\"530\" y2=\"385\" stroke=\"#4b4b4b\" stroke-width=\"1.5\" stroke-linecap=\"round\"/>\n\n  <!-- f(x) 标注 -->\n  <text x=\"650\" y=\"210\" font-family=\"'LXGW WenKai Lite', sans-serif\" font-size=\"22\" fill=\"#333\">f(x)</text>\n  <line x1=\"640\" y1=\"215\" x2=\"620\" y2=\"225\" stroke=\"#4b4b4b\" stroke-width=\"1.5\" stroke-linecap=\"round\"/>\n\n  <!-- 说明文字 -->\n  <text x=\"400\" y=\"490\" text-anchor=\"middle\" font-family=\"'LXGW WenKai Lite', sans-serif\" font-size=\"18\" fill=\"#333\">三条曲线在 a 点附近逐渐贴合：p0 只过点，p1 贴切线，p2 连弯曲也匹配</text>\n</svg>",
+        "svg_path": null,
+        "image_path": null,
+        "image_url": null,
+        "layout": "follow"
+      },
+      "widget": null,
+      "question": {
+        "mode": "choice",
+        "question": "从 p0 到 p1 再到 p2，多匹配一阶导数带来了什么变化？",
+        "options": [
+          "多项式在 a 点附近越来越贴原函数",
+          "多项式在 a 点附近越来越远，因为条件变多了"
+        ],
+        "correct_index": 0,
+        "misconceptions": [
+          "有人会担心条件越多越冲突，其实每多匹配一阶，只是把 a 点附近的形状锁得更紧。",
+          null
+        ],
+        "explanation": "每多匹配一阶导数，多项式在 a 点附近的局部形状就更接近原函数。"
+      },
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "通式：每阶导数配一个阶乘",
+      "beat": "define",
+      "spoken_text": "把刚才的规律写成通式。在 a 点匹配到 n 阶导数，就是这一串：f(a) 加上 f'(a) 乘 (x-a)，加上 f''(a) 除以 2 的阶乘乘 (x-a) 平方，一直加到 f 的 n 阶导除以 n 的阶乘乘 (x-a) 的 n 次方。注意分母的阶乘：求 k 次导会把系数乘出 k 的阶乘，所以必须除回去，系数才恰好等于那一阶导数值。",
+      "boards": [
+        {
+          "title": "泰勒多项式通式",
+          "markdown": "- 匹配到 $n$ 阶导数：\n- $f(a) + f'(a)(x-a) + \\frac{f''(a)}{2!}(x-a)^2 + \\cdots + \\frac{f^{(n)}(a)}{n!}(x-a)^n$\n- 第 $k$ 项系数：$\\frac{f^{(k)}(a)}{k!}$\n- 为什么除 $k!$？→ 求 $k$ 次导会乘出 $k!$，除回去才等于 $f^{(k)}(a)$",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "circle",
+          "snippet": "\\frac{f^{(k)}(a)}{k!}",
+          "board_index": 0,
+          "trigger_phrase": null,
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": null,
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "阶乘从哪来？",
+      "beat": "derive",
+      "spoken_text": "看第二行，我圈出来的这一项。假设第 k 项系数是 c_k，把它写成 c_k 乘 (x-a) 的 k 次方。现在对整项求 k 次导，幂函数每求一次导就掉下来一个指数：k、k-1、一直到 1，乘起来正好是 k 的阶乘。所以在 a 点，这一项贡献的是 c_k 乘 k 的阶乘。要让它等于 f 的第 k 阶导，c_k 就必须是 f 的第 k 阶导除以 k 的阶乘。分母那个阶乘，就是除回去的。",
+      "boards": [
+        {
+          "title": "阶乘是除回去的",
+          "markdown": "- 设第 $k$ 项：$c_k (x-a)^k$\n- 求 $k$ 次导 → 指数掉下来：$k \\cdot (k-1) \\cdots 1 = k!$\n- 在 $a$ 点：这一项贡献 $c_k \\cdot k!$\n- 要它 $= f^{(k)}(a)$ → $c_k = \\dfrac{f^{(k)}(a)}{k!}$\n- 所以分母的 $k!$ 是**除回去**的",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "circle",
+          "snippet": "c_k \\cdot k!",
+          "board_index": 0,
+          "trigger_phrase": "我圈出来的这一项",
+          "color": null
+        },
+        {
+          "kind": "highlight",
+          "snippet": "\\dfrac{f^{(k)}(a)}{k!}",
+          "board_index": 0,
+          "trigger_phrase": "c_k 就必须是 f 的第 k 阶导除以 k 的阶乘",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": {
+        "mode": "choice",
+        "question": "如果忘了除 k 的阶乘，直接让系数等于 f 的第 k 阶导，会发生什么？",
+        "options": [
+          "在 a 点第 k 阶导会变成原来的 k 的阶乘倍，匹配不上",
+          "没关系，反正多项式在 a 点的值还是对的"
+        ],
+        "correct_index": 0,
+        "misconceptions": [
+          null,
+          "只盯着函数值，忽略了高阶导数的匹配——这正是典型误区。"
+        ],
+        "explanation": "求 k 次导会乘出 k 的阶乘，不除回去，第 k 阶导就偏大 k 的阶乘倍。"
+      },
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "匹配到 n 阶，就复制了局部形状",
+      "beat": "recap",
+      "spoken_text": "回看这一段板书，最后一行。值一样、斜率一样、弯曲一样，一直到 n 阶导都一样——这些导数就是函数在 a 点的局部形状。泰勒多项式不是碰巧像，它是把 a 点的局部形状一层层复制过来。所以离 a 越近，复制得越准；离远了，形状就慢慢走样。",
+      "boards": [
+        {
+          "title": "匹配 = 复制局部形状",
+          "markdown": "- 匹配 $f(a)$ → 过同一点\n- 匹配 $f'(a)$ → 同斜率\n- 匹配 $f''(a)$ → 同弯曲\n- 一直到 $n$ 阶 → **在 $a$ 点复制局部形状**\n- 离 $a$ 越近越准，越远越走样",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "highlight",
+          "snippet": "在 $a$ 点复制局部形状",
+          "board_index": 0,
+          "trigger_phrase": "把 a 点的局部形状一层层复制过来",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": null,
+      "reward": {
+        "title": "泰勒多项式",
+        "description": "在 a 点匹配函数值与各阶导数，分母的 k! 抵消求导产生的倍数，复制局部形状。"
+      },
+      "new_page_title": null
+    }
+  ],
+  "exercises": [
+    {
+      "exercise_id": "sess_2_ex1",
+      "kind": "fill_blank",
+      "stem": "在泰勒多项式中，第 $k$ 项 $(x-a)^k$ 的系数是 $\\frac{f^{(k)}(a)}{k!}$，分母中的 $k!$ 是为了把求 $k$ 次导时乘出的 $k!$ ____ 回去。",
+      "options": [],
+      "correct_index": null,
+      "answer": "除",
+      "accepted": [
+        "除以",
+        "除回",
+        "除掉",
+        "抵消"
+      ],
+      "explanation": "因为对 $(x-a)^k$ 求 $k$ 次导会得到 $k!$，所以系数必须除以 $k!$ 才能保证在 $a$ 点该项的 $k$ 阶导数恰好等于 $f^{(k)}(a)$。",
+      "widget": null,
+      "widget_hint": ""
+    },
+    {
+      "exercise_id": "sess_2_ex2",
+      "kind": "single_choice",
+      "stem": "已知 $f(x)=x^3$，则 $f$ 在 $a=1$ 处的 2 阶泰勒多项式是（　）",
+      "options": [
+        "$1+3(x-1)+3(x-1)^2$",
+        "$1+3(x-1)+6(x-1)^2$",
+        "$1+3(x-1)+\\frac{3}{2}(x-1)^2$",
+        "$1+3(x-1)+\\frac{1}{2}(x-1)^2$"
+      ],
+      "correct_index": 0,
+      "answer": null,
+      "accepted": [],
+      "explanation": "$f(1)=1$，$f'(x)=3x^2\\Rightarrow f'(1)=3$，$f''(x)=6x\\Rightarrow f''(1)=6$。2 阶泰勒多项式为 $1+3(x-1)+\\frac{6}{2!}(x-1)^2=1+3(x-1)+3(x-1)^2$。",
+      "widget": null,
+      "widget_hint": ""
+    },
+    {
+      "exercise_id": "sess_2_ex3",
+      "kind": "single_choice",
+      "stem": "若某函数 $f$ 在 $a$ 点的 3 阶泰勒多项式为 $p_3(x)=2- (x-a)+4(x-a)^2-5(x-a)^3$，则 $f'''(a)$ 等于（　）",
+      "options": [
+        "$-5$",
+        "$-30$",
+        "$30$",
+        "$-10$"
+      ],
+      "correct_index": 1,
+      "answer": null,
+      "accepted": [],
+      "explanation": "三次项系数为 $\\frac{f'''(a)}{3!}=-5$，所以 $f'''(a)=-5\\cdot 3!=-30$。",
+      "widget": null,
+      "widget_hint": ""
+    },
+    {
+      "exercise_id": "sess_2_ex4",
+      "kind": "interactive",
+      "stem": "通过拖动滑块改变 $n$，观察泰勒多项式 $p_n(x)$ 在 $a$ 点附近与原函数 $f(x)$ 的贴合程度。",
+      "options": [
+        "阶数越高，在 $a$ 点附近贴合越好",
+        "阶数越高，在 $a$ 点附近贴合越差",
+        "阶数不影响贴合程度",
+        "只有奇数阶多项式才贴合"
+      ],
+      "correct_index": 0,
+      "answer": null,
+      "accepted": [],
+      "explanation": "泰勒多项式匹配了 $f$ 在 $a$ 点的各阶导数，阶数越高，匹配的导数阶数越多，因此在 $a$ 点附近的局部形状复制得越准确。",
+      "widget": {
+        "kind": "explorable",
+        "title": "泰勒多项式阶数探索",
+        "task": "画原函数 $f(x)=\\sin x$ 和它的泰勒多项式 $p_n(x)$（在 $a=0$ 处展开）。拖动滑块调节阶数 $n$（从 0 到 6），观察 $p_n(x)$ 在 $a=0$ 附近与 $f(x)$ 的贴合情况。",
+        "html": "<!DOCTYPE html>\n<html>\n<head><script>/**\n * HandChart — zero-dependency hand-drawn chart base for explorable widgets.\n *\n * Injected into every generated 2D explorable (widget_generator.py) so the\n * model supplies data + overlays instead of hand-writing axes. The look matches\n * the handwritten page: paper panel, slightly wobbly ink axes, main red /\n * aux green, handwriting labels.\n *\n * API (all coordinates in WORLD units unless noted):\n *   const ch = HandChart.render(canvas, opts)\n *     opts = { type: \"function\"|\"points\"|\"bars\"|\"lines\",\n *              xlim:[x0,x1], ylim:[y0,y1],                  (all but bars)\n *              fn: x=>y | fns:[{fn, color?, label?}],        (function)\n *              points:[[x,y],...],                          (points)\n *              series:[{name, points, color?, dash?}],      (lines; legend drawn)\n *              bars:{labels:[...], values:[...], highlight?} (bars)\n *              xlabel, ylabel, grid:true|false, title }\n *     returns { ctx, sx, sy, box, W, H, opts }  — keep it to draw overlays\n *   HandChart.marker(ch, x, y, {color, label, r})       dot + optional label\n *   HandChart.vline(ch, x, {color, dash, label})         vertical guide\n *   HandChart.hline(ch, y, {color, dash, label})         horizontal guide\n *   HandChart.segment(ch, [x1,y1], [x2,y2], {color, width, dash, arrow})\n *   HandChart.note(ch, x, y, text, {color, align, size}) handwriting annotation\n *   HandChart.attachProbe(canvas, {xlim, ylim}, onProbe, onLeave?)\n *     pointer follow; onProbe({x, y}) in world coords — redraw + readouts there.\n *   HandChart.style = { INK, AXIS, MAIN, AUX, GRID, PAPER, MUTED }\n */\n(function () {\n  const style = {\n    INK: \"#2b2b2b\", AXIS: \"#8a8377\", MAIN: \"#c0392b\", AUX: \"#2e8b6f\",\n    GRID: \"#ece5d4\", PAPER: \"#fbfaf6\", MUTED: \"#8a8377\", PURPLE: \"#7c3aed\", BLUE: \"#2563eb\",\n  };\n  const PALETTE = [style.MAIN, style.AUX, style.BLUE, style.PURPLE, \"#d97706\"];\n  const PAD = { l: 48, r: 18, t: 18, b: 36 };\n  const HAND = \"'Patrick Hand', 'LXGW WenKai Lite', 'PingFang SC', sans-serif\";\n\n  function font(size, italic) { return (italic ? \"italic \" : \"\") + size + \"px \" + HAND; }\n\n  // deterministic wobble so the \"hand\" does not shake on every redraw\n  function wob(seed, amp) { return Math.sin(seed * 12.9898) * amp; }\n\n  function tickVals(min, max, n) {\n    const span = max - min || 1;\n    const raw = span / n;\n    const mag = Math.pow(10, Math.floor(Math.log10(raw)));\n    const step = [1, 2, 2.5, 5, 10].map((m) => m * mag).find((s) => span / s <= n) || mag * 10;\n    const out = [];\n    for (let v = Math.ceil(min / step) * step; v <= max + step * 1e-9; v += step) out.push(+v.toFixed(10));\n    return out;\n  }\n\n  function fmt(v) {\n    const a = Math.abs(v);\n    if (a === 0) return \"0\";\n    if (a >= 10000 || a < 0.01) return v.toExponential(1);\n    return String(+v.toFixed(Math.max(0, 3 - Math.floor(Math.log10(a)))));\n  }\n\n  /** a hand-drawn line: two passes with tiny deterministic wobble */\n  function inkLine(ctx, x1, y1, x2, y2, color, width, seed) {\n    ctx.save();\n    ctx.strokeStyle = color; ctx.lineWidth = width; ctx.lineCap = \"round\";\n    const n = 6, s = seed || (x1 + y2);\n    ctx.beginPath();\n    for (let i = 0; i <= n; i++) {\n      const t = i / n, x = x1 + (x2 - x1) * t, y = y1 + (y2 - y1) * t;\n      const w = i === 0 || i === n ? 0 : wob(s + i, 0.7);\n      i ? ctx.lineTo(x + w, y + w) : ctx.moveTo(x, y);\n    }\n    ctx.stroke();\n    ctx.restore();\n  }\n\n  function frame(ctx, W, H) {\n    ctx.clearRect(0, 0, W, H);\n    ctx.save();\n    ctx.fillStyle = style.PAPER;\n    ctx.fillRect(0, 0, W, H);\n    ctx.restore();\n  }\n\n  function plotBox(W, H, opts) {\n    const t = PAD.t + (opts && opts.title ? 18 : 0);\n    return { x0: PAD.l, y0: t, x1: W - PAD.r, y1: H - PAD.b };\n  }\n\n  function mapping(box, xlim, ylim) {\n    const [x0, x1] = xlim, [y0, y1] = ylim;\n    return {\n      sx: (v) => box.x0 + (v - x0) / (x1 - x0) * (box.x1 - box.x0),\n      sy: (v) => box.y1 - (v - y0) / (y1 - y0) * (box.y1 - box.y0),\n    };\n  }\n\n  function axes(ctx, box, opts) {\n    const [x0, x1] = opts.xlim, [y0, y1] = opts.ylim;\n    const { sx, sy } = mapping(box, opts.xlim, opts.ylim);\n    const xt = tickVals(x0, x1, 6).filter((v) => v >= x0 && v <= x1);\n    const yt = tickVals(y0, y1, 4).filter((v) => v >= y0 && v <= y1);\n    if (opts.grid !== false) {\n      ctx.save(); ctx.strokeStyle = style.GRID; ctx.lineWidth = 1;\n      for (const v of xt) { ctx.beginPath(); ctx.moveTo(sx(v), box.y0); ctx.lineTo(sx(v), box.y1); ctx.stroke(); }\n      for (const v of yt) { ctx.beginPath(); ctx.moveTo(box.x0, sy(v)); ctx.lineTo(box.x1, sy(v)); ctx.stroke(); }\n      ctx.restore();\n    }\n    // axes sit on zero when zero is inside the range, else on the box edge\n    const ax = y0 <= 0 && y1 >= 0 ? sy(0) : box.y1;\n    const ay = x0 <= 0 && x1 >= 0 ? sx(0) : box.x0;\n    inkLine(ctx, box.x0 - 4, ax, box.x1 + 6, ax, style.AXIS, 1.4, 1);\n    inkLine(ctx, ay, box.y1 + 4, ay, box.y0 - 6, style.AXIS, 1.4, 2);\n    // arrow heads\n    ctx.save(); ctx.fillStyle = style.AXIS;\n    ctx.beginPath(); ctx.moveTo(box.x1 + 8, ax); ctx.lineTo(box.x1 + 1, ax - 3.5); ctx.lineTo(box.x1 + 1, ax + 3.5); ctx.fill();\n    ctx.beginPath(); ctx.moveTo(ay, box.y0 - 8); ctx.lineTo(ay - 3.5, box.y0 - 1); ctx.lineTo(ay + 3.5, box.y0 - 1); ctx.fill();\n    ctx.restore();\n    ctx.save();\n    ctx.fillStyle = style.MUTED; ctx.font = font(12);\n    ctx.textAlign = \"center\";\n    for (const v of xt) {\n      if (Math.abs(sx(v) - ay) < 1 && ay !== box.x0) continue; // skip the label under the y axis\n      inkLine(ctx, sx(v), ax - 3, sx(v), ax + 3, style.AXIS, 1, v);\n      ctx.fillText(fmt(v), sx(v), ax + 16);\n    }\n    ctx.textAlign = \"right\";\n    for (const v of yt) {\n      if (Math.abs(sy(v) - ax) < 1 && ax !== box.y1) continue;\n      inkLine(ctx, ay - 3, sy(v), ay + 3, sy(v), style.AXIS, 1, v + 7);\n      ctx.fillText(fmt(v), ay - 7, sy(v) + 4);\n    }\n    ctx.font = font(14, true); ctx.fillStyle = style.INK;\n    if (opts.xlabel) { ctx.textAlign = \"right\"; ctx.fillText(opts.xlabel, box.x1 + 4, ax - 8); }\n    if (opts.ylabel) { ctx.textAlign = \"left\"; ctx.fillText(opts.ylabel, ay + 8, box.y0 + 4); }\n    ctx.restore();\n    return { sx, sy };\n  }\n\n  function stroke(ctx, pts, color, width, dash) {\n    if (!pts.length) return;\n    ctx.save();\n    ctx.strokeStyle = color; ctx.lineWidth = width || 2.2;\n    ctx.lineJoin = \"round\"; ctx.lineCap = \"round\";\n    if (dash) ctx.setLineDash(dash);\n    ctx.beginPath();\n    let pen = false;\n    for (const p of pts) {\n      if (!p) { pen = false; continue; }\n      pen ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1]);\n      pen = true;\n    }\n    ctx.stroke();\n    ctx.restore();\n  }\n\n  function fnPoints(fn, opts, m) {\n    const [x0, x1] = opts.xlim, [y0, y1] = opts.ylim;\n    const n = 400, pts = [];\n    const margin = (y1 - y0) * 0.02;\n    for (let i = 0; i <= n; i++) {\n      const x = x0 + (x1 - x0) * i / n;\n      let y;\n      try { y = fn(x); } catch (e) { y = NaN; }\n      if (!isFinite(y) || y < y0 - margin || y > y1 + margin) { pts.push(null); continue; }\n      pts.push([m.sx(x), m.sy(y)]);\n    }\n    return pts;\n  }\n\n  function legend(ctx, box, items) {\n    if (!items.length) return;\n    ctx.save();\n    ctx.font = font(13); ctx.textAlign = \"left\"; ctx.textBaseline = \"middle\";\n    let x = box.x0 + 10, y = box.y0 + 12;\n    for (const it of items) {\n      inkLine(ctx, x, y, x + 22, y, it.color, 2.4, x);\n      ctx.fillStyle = style.INK;\n      ctx.fillText(it.label, x + 28, y + 1);\n      x += 28 + ctx.measureText(it.label).width + 18;\n    }\n    ctx.restore();\n  }\n\n  function title(ctx, W, text) {\n    ctx.save();\n    ctx.font = font(15); ctx.fillStyle = style.INK; ctx.textAlign = \"center\";\n    ctx.fillText(text, W / 2, 16);\n    ctx.restore();\n  }\n\n  function render(canvas, opts) {\n    const ctx = canvas.getContext(\"2d\");\n    const rect = canvas.getBoundingClientRect();\n    const W = Math.max(60, Math.round(rect.width)), H = Math.max(60, Math.round(rect.height));\n    const dpr = window.devicePixelRatio || 1;\n    if (canvas.width !== Math.round(W * dpr) || canvas.height !== Math.round(H * dpr)) {\n      canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);\n    }\n    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);\n    frame(ctx, W, H);\n    if (opts.title) title(ctx, W, opts.title);\n    const box = plotBox(W, H, opts);\n    const type = opts.type || \"function\";\n\n    if (type === \"bars\") {\n      const labels = opts.bars.labels || [], values = opts.bars.values || [];\n      const n = Math.max(1, values.length);\n      const bw = (box.x1 - box.x0) / n;\n      const vmax = Math.max(...values.map((v) => Math.abs(v)), 0) * 1.15 || 1;\n      const base = box.y1;\n      inkLine(ctx, box.x0 - 4, base, box.x1 + 4, base, style.AXIS, 1.4, 3);\n      ctx.save();\n      values.forEach((v, i) => {\n        const h = (Math.abs(v) / vmax) * (box.y1 - box.y0);\n        const x = box.x0 + i * bw + bw * 0.2, w = bw * 0.6, y = base - h;\n        const hot = opts.bars.highlight != null && i === opts.bars.highlight;\n        ctx.fillStyle = hot ? style.MAIN : \"#e6dfcf\";\n        ctx.fillRect(x, y, w, h);\n        ctx.strokeStyle = hot ? style.MAIN : style.AXIS; ctx.lineWidth = 1.2;\n        ctx.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);\n        ctx.font = font(13); ctx.textAlign = \"center\"; ctx.fillStyle = style.INK;\n        ctx.fillText(String(labels[i] == null ? i + 1 : labels[i]), x + w / 2, base + 17);\n        ctx.fillStyle = hot ? style.MAIN : style.MUTED;\n        ctx.fillText(fmt(v), x + w / 2, y - 6);\n      });\n      ctx.restore();\n      const sx = (i) => box.x0 + (i + 0.5) * bw, sy = (v) => base - (Math.abs(v) / vmax) * (box.y1 - box.y0);\n      return { ctx, sx, sy, box, W, H, opts };\n    }\n\n    const m = axes(ctx, box, opts);\n    const items = [];\n    if (type === \"lines\") {\n      (opts.series || []).forEach((s, i) => {\n        const color = s.color || PALETTE[i % PALETTE.length];\n        stroke(ctx, (s.points || []).map((p) => [m.sx(p[0]), m.sy(p[1])]), color, 2.2, s.dash);\n        if (s.name) items.push({ label: s.name, color });\n      });\n    } else if (type === \"points\") {\n      ctx.save(); ctx.fillStyle = opts.color || style.MAIN;\n      (opts.points || []).forEach((p) => { ctx.beginPath(); ctx.arc(m.sx(p[0]), m.sy(p[1]), opts.r || 3.6, 0, Math.PI * 2); ctx.fill(); });\n      ctx.restore();\n    } else {\n      const fns = opts.fns || (typeof opts.fn === \"function\" ? [{ fn: opts.fn, color: opts.color, label: opts.label }] : []);\n      fns.forEach((f, i) => {\n        const color = f.color || PALETTE[i % PALETTE.length];\n        stroke(ctx, fnPoints(f.fn, opts, m), color, f.width || 2.4, f.dash);\n        if (f.label) items.push({ label: f.label, color });\n      });\n    }\n    legend(ctx, box, items);\n    return { ctx, sx: m.sx, sy: m.sy, box, W, H, opts };\n  }\n\n  // ---- overlays (world coordinates) ----\n  function marker(ch, x, y, o) {\n    o = o || {};\n    const px = ch.sx(x), py = ch.sy(y);\n    ch.ctx.save();\n    ch.ctx.fillStyle = o.color || style.MAIN;\n    ch.ctx.beginPath(); ch.ctx.arc(px, py, o.r || 5, 0, Math.PI * 2); ch.ctx.fill();\n    ch.ctx.strokeStyle = style.PAPER; ch.ctx.lineWidth = 1.5; ch.ctx.stroke();\n    if (o.label) {\n      ch.ctx.font = font(o.size || 13); ch.ctx.fillStyle = o.color || style.MAIN; ch.ctx.textAlign = \"left\";\n      ch.ctx.fillText(o.label, px + 8, py - 8);\n    }\n    ch.ctx.restore();\n  }\n\n  function vline(ch, x, o) {\n    o = o || {};\n    const px = ch.sx(x);\n    stroke(ch.ctx, [[px, ch.box.y0], [px, ch.box.y1]], o.color || style.MUTED, o.width || 1.2, o.dash || [4, 4]);\n    if (o.label) note(ch, x, null, o.label, { color: o.color || style.MUTED, px: px + 4, py: ch.box.y0 + 12, align: \"left\", size: o.size });\n  }\n\n  function hline(ch, y, o) {\n    o = o || {};\n    const py = ch.sy(y);\n    stroke(ch.ctx, [[ch.box.x0, py], [ch.box.x1, py]], o.color || style.MUTED, o.width || 1.2, o.dash || [4, 4]);\n    if (o.label) note(ch, null, y, o.label, { color: o.color || style.MUTED, px: ch.box.x1 - 4, py: py - 5, align: \"right\", size: o.size });\n  }\n\n  function segment(ch, a, b, o) {\n    o = o || {};\n    const x1 = ch.sx(a[0]), y1 = ch.sy(a[1]), x2 = ch.sx(b[0]), y2 = ch.sy(b[1]);\n    const color = o.color || style.AUX;\n    stroke(ch.ctx, [[x1, y1], [x2, y2]], color, o.width || 2, o.dash);\n    if (o.arrow) {\n      const ang = Math.atan2(y2 - y1, x2 - x1), L = 9;\n      ch.ctx.save(); ch.ctx.fillStyle = color; ch.ctx.beginPath();\n      ch.ctx.moveTo(x2, y2);\n      ch.ctx.lineTo(x2 - L * Math.cos(ang - 0.4), y2 - L * Math.sin(ang - 0.4));\n      ch.ctx.lineTo(x2 - L * Math.cos(ang + 0.4), y2 - L * Math.sin(ang + 0.4));\n      ch.ctx.fill(); ch.ctx.restore();\n    }\n  }\n\n  function note(ch, x, y, text, o) {\n    o = o || {};\n    const px = o.px != null ? o.px : ch.sx(x), py = o.py != null ? o.py : ch.sy(y);\n    ch.ctx.save();\n    ch.ctx.font = font(o.size || 14, o.italic);\n    ch.ctx.fillStyle = o.color || style.INK;\n    ch.ctx.textAlign = o.align || \"left\";\n    ch.ctx.fillText(text, px, py);\n    ch.ctx.restore();\n  }\n\n  /** Pointer probe in world coords; the caller redraws and updates readouts. */\n  function attachProbe(canvas, opts, onProbe, onLeave) {\n    const [x0, x1] = opts.xlim;\n    const [y0, y1] = opts.ylim;\n    const toWorld = (px, py) => {\n      const r = canvas.getBoundingClientRect();\n      const box = plotBox(r.width, r.height, opts);\n      const t = (px - r.left - box.x0) / (box.x1 - box.x0);\n      const u = 1 - (py - r.top - box.y0) / (box.y1 - box.y0);\n      return { x: x0 + t * (x1 - x0), y: y0 + u * (y1 - y0), inside: t >= 0 && t <= 1 };\n    };\n    const handler = (e) => {\n      const p = toWorld(e.clientX, e.clientY);\n      if (p.inside) onProbe(p);\n    };\n    canvas.addEventListener(\"pointermove\", handler);\n    canvas.addEventListener(\"pointerdown\", handler);\n    if (onLeave) canvas.addEventListener(\"pointerleave\", onLeave);\n    canvas.style.touchAction = \"none\";\n    return toWorld;\n  }\n\n  window.HandChart = { render, marker, vline, hline, segment, note, attachProbe, style, font: HAND };\n})();\n</script>\n  <meta charset=\"utf-8\">\n  <style>\n    html, body { margin: 0; height: 100%; background: #faf8f3; font-family: \"PingFang SC\", \"Hiragino Sans GB\", sans-serif; color: #333; overflow: hidden; }\n    #wrap { position: absolute; inset: 0; display: flex; flex-direction: column; }\n    #plot { flex: 1; min-height: 0; margin: 10px 10px 4px; border: 1px solid #d9d2c3; border-radius: 12px; background: #fbfaf6; cursor: crosshair; touch-action: none; }\n    #readout { display: flex; justify-content: center; align-items: center; gap: 28px; padding: 4px 0 8px; font-size: 12px; color: #666; }\n    #readout .k { display: block; font-size: 11px; letter-spacing: .04em; }\n    #readout .v { display: block; font-family: ui-monospace, Menlo, monospace; font-size: 14px; font-weight: 700; color: #c0392b; min-width: 64px; text-align: center; }\n    #formula { display: inline-block; padding: 3px 10px; border: 1px solid #d9d2c3; border-radius: 6px; background: #fff; font-family: Georgia, \"Times New Roman\", serif; font-style: italic; font-size: 13px; color: #333; }\n    #controls { display: flex; justify-content: center; align-items: center; gap: 16px; padding: 0 0 10px; }\n    #controls label { font-size: 12px; color: #555; }\n    #order-slider { width: 180px; accent-color: #c0392b; }\n  </style>\n</head>\n<body>\n  <div id=\"wrap\">\n    <canvas id=\"plot\"></canvas>\n    <div id=\"readout\">\n      <span><span class=\"k\">当前阶数 n</span><span class=\"v\" id=\"order-display\">—</span></span>\n      <span><span class=\"k\">最大误差</span><span class=\"v\" id=\"maxError-display\">—</span></span>\n      <span id=\"formula\">p<sub>n</sub>(x) ≈ sin x</span>\n    </div>\n    <div id=\"controls\">\n      <label for=\"order-slider\">阶数 n</label>\n      <input type=\"range\" id=\"order-slider\" min=\"0\" max=\"6\" step=\"1\" value=\"3\">\n    </div>\n  </div>\n  <script>\n    // --- 泰勒多项式与正弦函数 ------------------------------------------\n    const X_MIN = -Math.PI, X_MAX = Math.PI, Y_MIN = -2, Y_MAX = 2;\n\n    // 阶乘\n    function factorial(k) {\n      let r = 1;\n      for (let i = 2; i <= k; i++) r *= i;\n      return r;\n    }\n\n    // 泰勒多项式 p_n(x) = sum_{k=0}^{n} f^{(k)}(0)/k! * x^k\n    // sin 在 0 处的展开：仅奇次项，符号交替\n    function taylorSin(x, n) {\n      let sum = 0;\n      for (let k = 0; k <= n; k++) {\n        if (k % 2 === 1) {\n          const sign = ((k - 1) / 2) % 2 === 0 ? 1 : -1;\n          sum += sign * Math.pow(x, k) / factorial(k);\n        }\n      }\n      return sum;\n    }\n\n    // 最大误差：在 [-π, π] 上采样\n    function maxError(n) {\n      let maxErr = 0;\n      const steps = 400;\n      for (let i = 0; i <= steps; i++) {\n        const x = X_MIN + (X_MAX - X_MIN) * i / steps;\n        const err = Math.abs(Math.sin(x) - taylorSin(x, n));\n        if (err > maxErr) maxErr = err;\n      }\n      return maxErr;\n    }\n\n    // --- 绘图设置 ------------------------------------------------------\n    const canvas = document.getElementById('plot');\n    const ctx = canvas.getContext('2d');\n    let W = 0, H = 0;\n    let currentOrder = 3;\n\n    const PAD = { l: 40, r: 20, t: 20, b: 30 };\n\n    function sx(x) {\n      return PAD.l + (x - X_MIN) / (X_MAX - X_MIN) * (W - PAD.l - PAD.r);\n    }\n    function sy(y) {\n      return PAD.t + (Y_MAX - y) / (Y_MAX - Y_MIN) * (H - PAD.t - PAD.b);\n    }\n\n    // --- 绘制辅助函数 --------------------------------------------------\n    function drawAxes() {\n      ctx.save();\n      ctx.strokeStyle = '#b9b3a6';\n      ctx.lineWidth = 1;\n      // x 轴\n      ctx.beginPath();\n      ctx.moveTo(PAD.l, sy(0));\n      ctx.lineTo(W - PAD.r, sy(0));\n      ctx.stroke();\n      // y 轴\n      ctx.beginPath();\n      ctx.moveTo(sx(0), PAD.t);\n      ctx.lineTo(sx(0), H - PAD.b);\n      ctx.stroke();\n\n      // 刻度与标签\n      ctx.fillStyle = '#8a8377';\n      ctx.font = 'italic 11px Georgia, serif';\n      ctx.textAlign = 'center';\n      // x 轴刻度：-π, -π/2, 0, π/2, π\n      const xTicks = [-Math.PI, -Math.PI/2, 0, Math.PI/2, Math.PI];\n      const xLabels = ['-π', '-π/2', '0', 'π/2', 'π'];\n      for (let i = 0; i < xTicks.length; i++) {\n        const px = sx(xTicks[i]);\n        ctx.beginPath();\n        ctx.moveTo(px, sy(0) - 3);\n        ctx.lineTo(px, sy(0) + 3);\n        ctx.stroke();\n        ctx.fillText(xLabels[i], px, sy(0) + 15);\n      }\n      // y 轴刻度：-2, -1, 0, 1, 2\n      ctx.textAlign = 'right';\n      const yTicks = [-2, -1, 0, 1, 2];\n      for (let i = 0; i < yTicks.length; i++) {\n        const py = sy(yTicks[i]);\n        ctx.beginPath();\n        ctx.moveTo(sx(0) - 3, py);\n        ctx.lineTo(sx(0) + 3, py);\n        ctx.stroke();\n        if (yTicks[i] !== 0) {\n          ctx.fillText(yTicks[i], sx(0) - 6, py + 4);\n        }\n      }\n      // 轴名\n      ctx.textAlign = 'right';\n      ctx.fillText('x', W - PAD.r - 2, sy(0) - 6);\n      ctx.textAlign = 'left';\n      ctx.fillText('y', sx(0) + 6, PAD.t + 10);\n      ctx.restore();\n    }\n\n    function drawSinCurve() {\n      ctx.save();\n      ctx.strokeStyle = '#2e8b6f'; // 辅助绿？但任务要求正弦用蓝色实线，这里用主色？规范说主曲线用 #c0392b，但任务指定正弦为蓝色实线，泰勒为红色虚线。\n      // 按任务描述：正弦曲线用蓝色实线，泰勒用红色虚线。但视觉规范主色是 #c0392b，辅助是 #2e8b6f。\n      // 为了符合任务描述，正弦用蓝色（#2e8b6f 是绿色，不是蓝），这里用 #2e8b6f 作为辅助色？但任务明确说蓝色。\n      // 重新阅读：任务描述中“sinCurve@C3(主角,MAIN): 正弦曲线 f(x)=sin x，用蓝色实线绘制; taylorCurve@D3(主角,AUX): 泰勒多项式 p_n(x) 的曲线，用红色虚线绘制”\n      // 但视觉规范要求主曲线 #c0392b，辅助 #2e8b6f。这里为了尊重任务描述，正弦用蓝色（#2e8b6f 是绿，不是蓝），但规范里没有蓝色。\n      // 折中：使用 #2e8b6f 作为正弦（辅助色），泰勒用 #c0392b（主色）。但任务说正弦蓝色，泰勒红色。规范里主色红，辅助绿。\n      // 为了统一，我决定：正弦用 #2e8b6f（绿，但任务说蓝，可能色差），泰勒用 #c0392b（红）。这样符合规范的主辅色。\n      // 但任务明确“蓝色实线”，我改用 #2e8b6f 是绿色，不行。那就用 #2e8b6f 吧，因为规范里只有这个辅助色。或者用 #2e8b6f 近似蓝？不。\n      // 重新看规范：主曲线/主元素 #c0392b，辅助线/包络/参考线 #2e8b6f 虚线。这里正弦是主角，泰勒也是主角？任务里正弦是主角，泰勒是辅助？但任务说泰勒是主角。\n      // 为了视觉统一，我让正弦用 #2e8b6f 实线（辅助色但实线），泰勒用 #c0392b 虚线（主色但虚线）。这样颜色符合规范，线型符合任务。\n      // 但任务说正弦蓝色，泰勒红色。规范里没有蓝色，只有红绿。我决定用 #2e8b6f 作为正弦（绿），#c0392b 作为泰勒（红）。这样颜色符合规范，线型符合任务。\n      // 最终：正弦 #2e8b6f 实线，泰勒 #c0392b 虚线。\n      ctx.strokeStyle = '#2e8b6f';\n      ctx.lineWidth = 2;\n      ctx.beginPath();\n      const steps = 400;\n      for (let i = 0; i <= steps; i++) {\n        const x = X_MIN + (X_MAX - X_MIN) * i / steps;\n        const y = Math.sin(x);\n        const px = sx(x), py = sy(y);\n        if (i === 0) ctx.moveTo(px, py);\n        else ctx.lineTo(px, py);\n      }\n      ctx.stroke();\n      ctx.restore();\n    }\n\n    function drawTaylorCurve(n) {\n      ctx.save();\n      ctx.strokeStyle = '#c0392b';\n      ctx.lineWidth = 2;\n      ctx.setLineDash([5, 4]);\n      ctx.beginPath();\n      const steps = 400;\n      for (let i = 0; i <= steps; i++) {\n        const x = X_MIN + (X_MAX - X_MIN) * i / steps;\n        const y = taylorSin(x, n);\n        const px = sx(x), py = sy(y);\n        if (i === 0) ctx.moveTo(px, py);\n        else ctx.lineTo(px, py);\n      }\n      ctx.stroke();\n      ctx.restore();\n    }\n\n    function drawCenterPoint() {\n      ctx.save();\n      ctx.fillStyle = '#333';\n      ctx.beginPath();\n      ctx.arc(sx(0), sy(0), 4, 0, Math.PI * 2);\n      ctx.fill();\n      ctx.restore();\n    }\n\n    function drawOrderLabel(n) {\n      ctx.save();\n      ctx.font = 'italic 12px Georgia, serif';\n      ctx.fillStyle = '#333';\n      ctx.textAlign = 'left';\n      ctx.fillText('n = ' + n, sx(0) + 10, sy(0) - 10);\n      ctx.restore();\n    }\n\n    function draw() {\n      ctx.clearRect(0, 0, W, H);\n      drawAxes();\n      drawSinCurve();\n      drawTaylorCurve(currentOrder);\n      drawCenterPoint();\n      drawOrderLabel(currentOrder);\n\n      // 更新读数\n      document.getElementById('order-display').textContent = currentOrder;\n      const err = maxError(currentOrder);\n      document.getElementById('maxError-display').textContent = err.toFixed(4);\n    }\n\n    // --- 尺寸与重绘 ----------------------------------------------------\n    function resize() {\n      const r = canvas.getBoundingClientRect();\n      W = r.width;\n      H = r.height;\n      const dpr = window.devicePixelRatio || 1;\n      canvas.width = Math.round(W * dpr);\n      canvas.height = Math.round(H * dpr);\n      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);\n      draw();\n    }\n\n    // --- 滑块交互 ------------------------------------------------------\n    const slider = document.getElementById('order-slider');\n    slider.addEventListener('input', function () {\n      currentOrder = parseInt(this.value, 10);\n      draw();\n    });\n\n    // --- 控制钩子 ------------------------------------------------------\n    window.hkControl = {\n      set: function (obj) {\n        if (obj && obj.order != null) {\n          currentOrder = Math.max(0, Math.min(6, Math.round(+obj.order)));\n          slider.value = currentOrder;\n          draw();\n        }\n      },\n      highlight: function (sel) {\n        var el = document.querySelector(sel);\n        if (!el) return;\n        el.style.outline = '2px solid #c0392b';\n        setTimeout(function () { el.style.outline = ''; }, 1500);\n      },\n      annotate: function () {},\n      reveal: function () {}\n    };\n\n    // --- 初始化 --------------------------------------------------------\n    window.addEventListener('resize', resize);\n    resize();\n  </script>\n</body>\n</html>",
+        "html_path": null,
+        "mermaid": null,
+        "layout": "newcol",
+        "params": [],
+        "controls": []
+      },
+      "widget_hint": "拖动滑块增加 $n$，看曲线在 $a=0$ 附近是否越来越接近 $\\sin x$。"
+    }
+  ]
+}

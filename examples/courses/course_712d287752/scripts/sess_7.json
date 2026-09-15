@@ -1,0 +1,299 @@
+{
+  "session_id": "sess_7",
+  "course_id": "course_712d287752",
+  "title": "浮点数的不可结合性",
+  "learning_goal": "理解浮点数范围与精度的权衡，认识到不可结合性是浮点运算的固有属性，并能在算法设计中将误差作为设计因素。",
+  "steps": [
+    {
+      "title": "浮点数违反直觉？",
+      "beat": "hook",
+      "spoken_text": "先别看定义。你在任何一台电脑上敲 0.1 加 0.2，屏幕回你 0.30000000000000004。数学课上这题闭着眼都对，机器却给你一个尾巴。那问题来了：是电脑算错了，还是它其实在按另一套规则算？先别急着下结论，我们一步一步看。",
+      "boards": [
+        {
+          "title": "",
+          "markdown": "- 0.1 + 0.2 → **0.30000000000000004**\n- 数学里：闭着眼都对\n- 机器里：多了一条尾巴\n- 是算错了？还是另有规则？",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "circle",
+          "snippet": "0.30000000000000004",
+          "board_index": 0,
+          "trigger_phrase": "0.30000000000000004",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": {
+        "mode": "choice",
+        "question": "0.1 加 0.2 冒出个尾巴，你觉得是怎么回事？",
+        "options": [
+          "电脑算错了，修个 bug 就好",
+          "电脑没算错，它在按另一套规则算"
+        ],
+        "correct_index": 1,
+        "misconceptions": [
+          "这是最常见的直觉：把结果不对当成程序有 bug。但换任何语言、任何机器都是这个尾巴，说明它是规则本身带来的。",
+          null
+        ],
+        "explanation": "同样的尾巴出现在所有遵循 IEEE 754 的机器上，说明这不是偶发错误，而是这套算术的固有行为。"
+      },
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "科学计数法的不完美实现",
+      "beat": "analogy",
+      "spoken_text": "换个熟悉的说法。中学的科学计数法，一个数写成尾数乘十的多少次方。浮点数就是它的机器版，只不过尾数的位数被卡死了。看板书第二行，尾数只有那么多格，写不下就四舍五入。所以它能表示的范围大得吓人，可每个数都只是近似。这就是那个尾巴的来源。",
+      "boards": [
+        {
+          "title": "浮点数 ≈ 科学计数法",
+          "markdown": "- 科学计数法：尾数 × 10 的幂\n- 机器版：**尾数位数被卡死**\n- 写不下 → 四舍五入\n- 范围巨大 ≈ $10^{\\pm 308}$\n- 代价：每个数只是**近似**",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "highlight",
+          "snippet": "尾数位数被卡死",
+          "board_index": 0,
+          "trigger_phrase": "尾数只有那么多格",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": null,
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "表达范围与精度不可兼得",
+      "beat": "define",
+      "spoken_text": "看下面这张示意图。左边那条长数轴，从 10 的负 308 次方一直拉到 10 的正 308 次方，这是它能表达的范围，大得能装下宇宙。右边把数轴上很小的一段放大，你看到上面只落了几个点，点与点之间是空的。也就是说，范围给得越大，同样多的格子摊得越开，精度就越粗。这两件事，天生只能二选一。",
+      "boards": [
+        {
+          "title": "两个特性",
+          "markdown": "- **范围**：约 $10^{\\pm 308}$，巨大\n- **精度**：可表示的点有限，点间有缝\n- 格子总数固定 → 摊得越开，越粗\n- 范围与精度：**不可兼得**",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "spotlight",
+          "snippet": "不可兼得",
+          "board_index": 0,
+          "trigger_phrase": "天生只能二选一",
+          "color": null
+        }
+      ],
+      "illustration": {
+        "kind": "svg",
+        "caption": "浮点数不完美实现：范围巨大，精度有限。",
+        "brief": "左右对比图。左侧：一条水平数轴，左端标注 10^-308，右端标注 10^308，中间用省略号表示跨度极大，标题写“范围巨大”。右侧：把数轴上很小的一段放大成一个方框，框内只画 4 个实心圆点代表可表示的浮点数，点与点之间留明显空隙，标注“可表示的点有限”，并画一个问号指向两个点之间的空隙，标题写“精度有限”。整图上方大标题：浮点数不完美实现。",
+        "figure_id": null,
+        "svg": "<svg viewBox=\"0 0 800 520\" xmlns=\"http://www.w3.org/2000/svg\">\n  <!-- 大标题 -->\n  <text x=\"400\" y=\"42\" text-anchor=\"middle\" font-family=\"'LXGW WenKai Lite', sans-serif\" font-size=\"24\" fill=\"#333\">浮点数不完美实现</text>\n\n  <!-- ================= 左侧：范围巨大 ================= -->\n  <!-- 左侧标题 -->\n  <text x=\"200\" y=\"90\" text-anchor=\"middle\" font-family=\"'LXGW WenKai Lite', sans-serif\" font-size=\"24\" fill=\"#333\">范围巨大</text>\n\n  <!-- 数轴主线 -->\n  <line x1=\"60\" y1=\"230\" x2=\"340\" y2=\"230\" stroke=\"#4b4b4b\" stroke-width=\"2\" stroke-linecap=\"round\"/>\n  <!-- 左端箭头 -->\n  <path d=\"M 60 230 L 74 224 M 60 230 L 74 236\" stroke=\"#4b4b4b\" stroke-width=\"2\" stroke-linecap=\"round\" fill=\"none\"/>\n  <!-- 右端箭头 -->\n  <path d=\"M 340 230 L 326 224 M 340 230 L 326 236\" stroke=\"#4b4b4b\" stroke-width=\"2\" stroke-linecap=\"round\" fill=\"none\"/>\n\n  <!-- 左端刻度 -->\n  <line x1=\"70\" y1=\"220\" x2=\"70\" y2=\"240\" stroke=\"#4b4b4b\" stroke-width=\"2\" stroke-linecap=\"round\"/>\n  <!-- 右端刻度 -->\n  <line x1=\"330\" y1=\"220\" x2=\"330\" y2=\"240\" stroke=\"#4b4b4b\" stroke-width=\"2\" stroke-linecap=\"round\"/>\n\n  <!-- 左端标注 10^-308 -->\n  <text x=\"70\" y=\"270\" text-anchor=\"middle\" font-family=\"'LXGW WenKai Lite', sans-serif\" font-size=\"18\" fill=\"#333\">10⁻³⁰⁸</text>\n  <!-- 右端标注 10^308 -->\n  <text x=\"330\" y=\"270\" text-anchor=\"middle\" font-family=\"'LXGW WenKai Lite', sans-serif\" font-size=\"18\" fill=\"#333\">10³⁰⁸</text>\n\n  <!-- 中间省略号 -->\n  <text x=\"200\" y=\"215\" text-anchor=\"middle\" font-family=\"'LXGW WenKai Lite', sans-serif\" font-size=\"22\" fill=\"#333\">· · ·</text>\n\n  <!-- 数轴下方说明 -->\n  <text x=\"200\" y=\"310\" text-anchor=\"middle\" font-family=\"'LXGW WenKai Lite', sans-serif\" font-size=\"18\" fill=\"#333\">跨度极大</text>\n\n  <!-- 左侧装饰：数轴下方一条柔和色带 -->\n  <rect x=\"70\" y=\"340\" width=\"260\" height=\"14\" rx=\"7\" fill=\"#c9d8e8\" opacity=\"0.6\"/>\n\n  <!-- ================= 右侧：精度有限 ================= -->\n  <!-- 右侧标题 -->\n  <text x=\"600\" y=\"90\" text-anchor=\"middle\" font-family=\"'LXGW WenKai Lite', sans-serif\" font-size=\"24\" fill=\"#333\">精度有限</text>\n\n  <!-- 放大方框 -->\n  <rect x=\"470\" y=\"150\" width=\"260\" height=\"150\" rx=\"10\" fill=\"#ece6da\" stroke=\"#4b4b4b\" stroke-width=\"2\"/>\n\n  <!-- 框内 4 个实心圆点 -->\n  <circle cx=\"510\" cy=\"225\" r=\"7\" fill=\"#e05656\"/>\n  <circle cx=\"570\" cy=\"225\" r=\"7\" fill=\"#e05656\"/>\n  <circle cx=\"630\" cy=\"225\" r=\"7\" fill=\"#e05656\"/>\n  <circle cx=\"690\" cy=\"225\" r=\"7\" fill=\"#e05656\"/>\n\n  <!-- 点之间的空隙标注：问号指向第2和第3个点之间 -->\n  <text x=\"600\" y=\"185\" text-anchor=\"middle\" font-family=\"'LXGW WenKai Lite', sans-serif\" font-size=\"22\" fill=\"#e05656\">?</text>\n  <path d=\"M 600 192 L 600 212\" stroke=\"#e05656\" stroke-width=\"2\" stroke-linecap=\"round\" fill=\"none\"/>\n\n  <!-- 框下方标注 -->\n  <text x=\"600\" y=\"330\" text-anchor=\"middle\" font-family=\"'LXGW WenKai Lite', sans-serif\" font-size=\"18\" fill=\"#333\">可表示的点有限</text>\n\n  <!-- 右侧装饰：方框下方柔和色带 -->\n  <rect x=\"490\" y=\"360\" width=\"220\" height=\"14\" rx=\"7\" fill=\"#f2d5c4\" opacity=\"0.7\"/>\n\n  <!-- 从左侧数轴指向右侧方框的放大示意引线 -->\n  <path d=\"M 340 230 C 390 230 420 200 470 200\" stroke=\"#4b4b4b\" stroke-width=\"2\" stroke-linecap=\"round\" fill=\"none\" stroke-dasharray=\"6 5\"/>\n  <path d=\"M 470 200 L 458 194 M 470 200 L 458 206\" stroke=\"#4b4b4b\" stroke-width=\"2\" stroke-linecap=\"round\" fill=\"none\"/>\n\n  <!-- 放大说明小字 -->\n  <text x=\"405\" y=\"185\" text-anchor=\"middle\" font-family=\"'LXGW WenKai Lite', sans-serif\" font-size=\"18\" fill=\"#333\">放大</text>\n\n  <!-- 底部总结 -->\n  <text x=\"400\" y=\"460\" text-anchor=\"middle\" font-family=\"'LXGW WenKai Lite', sans-serif\" font-size=\"18\" fill=\"#333\">范围巨大，但可表示的点之间仍有空隙</text>\n</svg>",
+        "svg_path": null,
+        "image_path": null,
+        "image_url": null,
+        "layout": "follow"
+      },
+      "widget": null,
+      "question": null,
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "先算哪两个，结果就不一样",
+      "beat": "derive",
+      "spoken_text": "回看前面几段的板书，我们已经知道尾数位数被卡死、写不下就四舍五入。现在把这条规则用到三个数上。左边这条路，先算 a 加 b，得到一个中间结果，它可能写不下，被舍入一次；再拿这个被舍过的数去加 c。右边这条路，先算 b 加 c，在另一个位置舍入，再拿它去加 a。两条路的舍入点不一样，最后落到的格点就可能不一样。你猜，结果会差多少？",
+      "boards": [
+        {
+          "title": "两条路，两个舍入点",
+          "markdown": "- 左边：$(a+b)+c$\n  - 先算 $a+b$ → 舍入一次\n  - 再 $+c$ → 可能再舍入\n- 右边：$a+(b+c)$\n  - 先算 $b+c$ → 在**另一个位置**舍入\n  - 再 $+a$\n- 舍入点不同 → 落到的格点可能不同",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "circle",
+          "snippet": "在**另一个位置**舍入",
+          "board_index": 0,
+          "trigger_phrase": "在另一个位置舍入",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": {
+        "mode": "choice",
+        "question": "既然两条路都只是舍入了一两次，最后结果会怎样？",
+        "options": [
+          "顶多差一丁点，四舍五入回来肯定相等",
+          "可能不相等，中间结果被舍到哪个格点不一样"
+        ],
+        "correct_index": 1,
+        "misconceptions": [
+          "这是最常见的直觉：以为舍入误差小到可以忽略，两边会撞回同一个格点。但舍入点不同，落点就可能差一格。",
+          null
+        ],
+        "explanation": "有限精度下，中间结果被舍入到哪个格点取决于先算哪两个，两条路的舍入点不同，最终结果就可能不相等。"
+      },
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "误差不是 bug，是物理属性",
+      "beat": "apply",
+      "spoken_text": "所以写算法的时候，第一条纪律就是：接受它不可结合，别假设这是精确算术。比如累加一长串小数，你从最小的开始加，还是从最大的开始加，结果会不一样。这不是代码写错了，是这门算术自带的性质。设计的时候就要问自己：我的求和顺序、我的中间量，会不会把误差放大？看板书最后一行，误差是要被设计进去的，不是事后去修的。",
+      "boards": [
+        {
+          "title": "把它设计进去",
+          "markdown": "- 写算法时：**接受不可结合**\n- 不要假设：$(a+b)+c = a+(b+c)$\n- 例：累加一长串小数，顺序不同结果不同\n- 误差不是 bug → 是这门算术的**物理属性**\n- 设计时考虑舍入误差",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "highlight",
+          "snippet": "物理属性",
+          "board_index": 0,
+          "trigger_phrase": "是这门算术自带的性质",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": null,
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "不完美，但可以被设计",
+      "beat": "recap",
+      "spoken_text": "回到最开始那个 0.1 加 0.2。它不是算错了，是科学计数法的不完美机器版：范围巨大，精度有限，写不下就舍入。舍入点不同，加法就不满足结合律。但这不是灾难——误差是这门算术的物理属性，你可以在算法设计里把它安排进去。记住这三行，你就拿到了浮点数的工程直觉。",
+      "boards": [
+        {
+          "title": "本章三句话",
+          "markdown": "- 浮点数 = 科学计数法的**不完美实现**\n- 范围大、精度有限 → 加法**不可结合**\n- 误差不可避免 → **设计进去**",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "spotlight",
+          "snippet": "不可结合",
+          "board_index": 0,
+          "trigger_phrase": "加法就不满足结合律",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": null,
+      "reward": {
+        "title": "浮点数的工程直觉",
+        "description": "范围大但精度有限，加法不可结合；误差是这门算术的物理属性，要在算法设计里安排进去。"
+      },
+      "new_page_title": null
+    }
+  ],
+  "exercises": [
+    {
+      "exercise_id": "sess_7_ex1",
+      "kind": "fill_blank",
+      "stem": "浮点数用固定位数的尾数表示数，写不下时进行舍入，因此每个可表示的数都只是真实值的 ____。",
+      "options": [],
+      "correct_index": null,
+      "answer": "近似",
+      "accepted": [
+        "近似值",
+        "逼近",
+        "约等",
+        "不精确表示"
+      ],
+      "explanation": "尾数位数被卡死，无法精确表示所有实数，只能四舍五入到最近的格点，所以每个数都是近似值。这是后续舍入误差和不可结合性的根源。",
+      "widget": null,
+      "widget_hint": ""
+    },
+    {
+      "exercise_id": "sess_7_ex2",
+      "kind": "fill_blank",
+      "stem": "由于舍入点的位置不同，浮点加法不满足 ____ 律。",
+      "options": [],
+      "correct_index": null,
+      "answer": "结合",
+      "accepted": [
+        "结合律",
+        "结合性",
+        "associative"
+      ],
+      "explanation": "$(a+b)+c$ 和 $a+(b+c)$ 的中间舍入位置不同，可能落到不同的格点，因此加法不满足结合律。这是浮点运算的固有属性，不是 bug。",
+      "widget": null,
+      "widget_hint": ""
+    },
+    {
+      "exercise_id": "sess_7_ex3",
+      "kind": "single_choice",
+      "stem": "在浮点数系统中，可表示的格子总数是固定的。若将表示范围扩大到约 $10^{\\pm 308}$，那么相邻两个可表示数之间的间隔会如何变化？",
+      "options": [
+        "间隔变小，精度提高",
+        "间隔变大，精度降低",
+        "间隔不变，精度不变",
+        "间隔先变小后变大"
+      ],
+      "correct_index": 1,
+      "answer": null,
+      "accepted": [],
+      "explanation": "格子总数固定，摊到越大的范围上，每个格子分到的宽度就越大，即相邻可表示数之间的间隔变大，精度降低。范围与精度不可兼得。",
+      "widget": null,
+      "widget_hint": ""
+    },
+    {
+      "exercise_id": "sess_7_ex4",
+      "kind": "single_choice",
+      "stem": "已知浮点数系统中 $a=0.1$，$b=0.2$，$c=0.3$ 均为近似值。计算 $(a+b)+c$ 与 $a+(b+c)$，下列哪项最符合浮点运算的实际情况？",
+      "options": [
+        "两者严格相等，因为数学上加法结合律成立",
+        "两者可能不相等，因为中间舍入位置不同",
+        "两者一定不相等，因为浮点数总是错误",
+        "两者相等，因为 $a,b,c$ 都是精确值"
+      ],
+      "correct_index": 1,
+      "answer": null,
+      "accepted": [],
+      "explanation": "$(a+b)+c$ 先对 $a+b$ 舍入一次，再与 $c$ 相加可能再舍入；$a+(b+c)$ 先对 $b+c$ 在另一个位置舍入。舍入点不同，结果可能不同，因此两者可能不相等。",
+      "widget": null,
+      "widget_hint": ""
+    },
+    {
+      "exercise_id": "sess_7_ex5",
+      "kind": "interactive",
+      "stem": "通过调整上下边界来夹住振荡，确定极限。",
+      "options": [
+        "极限为 1",
+        "极限为 0",
+        "极限为 -1",
+        "极限不存在"
+      ],
+      "correct_index": 1,
+      "answer": null,
+      "accepted": [],
+      "explanation": "当上下边界线都趋近于 0 时，振荡被夹在任意小的范围内，因此极限为 0。这体现了夹逼思想：若上下界都趋于同一值，则函数极限存在且等于该值。",
+      "widget": {
+        "kind": "explorable",
+        "title": "用上下边界夹住振荡",
+        "task": "画一条振荡曲线，例如 $y=\\sin(1/x)$ 在 $x\\to 0$ 附近。拖动上下两条水平边界线，使它们逐渐靠近并夹住振荡。观察：当两条边界线之间的距离趋近于 0 时，振荡被限制在什么范围内？",
+        "html": "<!DOCTYPE html>\n<html>\n<head><script>/**\n * HandChart — zero-dependency hand-drawn chart base for explorable widgets.\n *\n * Injected into every generated 2D explorable (widget_generator.py) so the\n * model supplies data + overlays instead of hand-writing axes. The look matches\n * the handwritten page: paper panel, slightly wobbly ink axes, main red /\n * aux green, handwriting labels.\n *\n * API (all coordinates in WORLD units unless noted):\n *   const ch = HandChart.render(canvas, opts)\n *     opts = { type: \"function\"|\"points\"|\"bars\"|\"lines\",\n *              xlim:[x0,x1], ylim:[y0,y1],                  (all but bars)\n *              fn: x=>y | fns:[{fn, color?, label?}],        (function)\n *              points:[[x,y],...],                          (points)\n *              series:[{name, points, color?, dash?}],      (lines; legend drawn)\n *              bars:{labels:[...], values:[...], highlight?} (bars)\n *              xlabel, ylabel, grid:true|false, title }\n *     returns { ctx, sx, sy, box, W, H, opts }  — keep it to draw overlays\n *   HandChart.marker(ch, x, y, {color, label, r})       dot + optional label\n *   HandChart.vline(ch, x, {color, dash, label})         vertical guide\n *   HandChart.hline(ch, y, {color, dash, label})         horizontal guide\n *   HandChart.segment(ch, [x1,y1], [x2,y2], {color, width, dash, arrow})\n *   HandChart.note(ch, x, y, text, {color, align, size}) handwriting annotation\n *   HandChart.attachProbe(canvas, {xlim, ylim}, onProbe, onLeave?)\n *     pointer follow; onProbe({x, y}) in world coords — redraw + readouts there.\n *   HandChart.style = { INK, AXIS, MAIN, AUX, GRID, PAPER, MUTED }\n */\n(function () {\n  const style = {\n    INK: \"#2b2b2b\", AXIS: \"#8a8377\", MAIN: \"#c0392b\", AUX: \"#2e8b6f\",\n    GRID: \"#ece5d4\", PAPER: \"#fbfaf6\", MUTED: \"#8a8377\", PURPLE: \"#7c3aed\", BLUE: \"#2563eb\",\n  };\n  const PALETTE = [style.MAIN, style.AUX, style.BLUE, style.PURPLE, \"#d97706\"];\n  const PAD = { l: 48, r: 18, t: 18, b: 36 };\n  const HAND = \"'Patrick Hand', 'LXGW WenKai Lite', 'PingFang SC', sans-serif\";\n\n  function font(size, italic) { return (italic ? \"italic \" : \"\") + size + \"px \" + HAND; }\n\n  // deterministic wobble so the \"hand\" does not shake on every redraw\n  function wob(seed, amp) { return Math.sin(seed * 12.9898) * amp; }\n\n  function tickVals(min, max, n) {\n    const span = max - min || 1;\n    const raw = span / n;\n    const mag = Math.pow(10, Math.floor(Math.log10(raw)));\n    const step = [1, 2, 2.5, 5, 10].map((m) => m * mag).find((s) => span / s <= n) || mag * 10;\n    const out = [];\n    for (let v = Math.ceil(min / step) * step; v <= max + step * 1e-9; v += step) out.push(+v.toFixed(10));\n    return out;\n  }\n\n  function fmt(v) {\n    const a = Math.abs(v);\n    if (a === 0) return \"0\";\n    if (a >= 10000 || a < 0.01) return v.toExponential(1);\n    return String(+v.toFixed(Math.max(0, 3 - Math.floor(Math.log10(a)))));\n  }\n\n  /** a hand-drawn line: two passes with tiny deterministic wobble */\n  function inkLine(ctx, x1, y1, x2, y2, color, width, seed) {\n    ctx.save();\n    ctx.strokeStyle = color; ctx.lineWidth = width; ctx.lineCap = \"round\";\n    const n = 6, s = seed || (x1 + y2);\n    ctx.beginPath();\n    for (let i = 0; i <= n; i++) {\n      const t = i / n, x = x1 + (x2 - x1) * t, y = y1 + (y2 - y1) * t;\n      const w = i === 0 || i === n ? 0 : wob(s + i, 0.7);\n      i ? ctx.lineTo(x + w, y + w) : ctx.moveTo(x, y);\n    }\n    ctx.stroke();\n    ctx.restore();\n  }\n\n  function frame(ctx, W, H) {\n    ctx.clearRect(0, 0, W, H);\n    ctx.save();\n    ctx.fillStyle = style.PAPER;\n    ctx.fillRect(0, 0, W, H);\n    ctx.restore();\n  }\n\n  function plotBox(W, H, opts) {\n    const t = PAD.t + (opts && opts.title ? 18 : 0);\n    return { x0: PAD.l, y0: t, x1: W - PAD.r, y1: H - PAD.b };\n  }\n\n  function mapping(box, xlim, ylim) {\n    const [x0, x1] = xlim, [y0, y1] = ylim;\n    return {\n      sx: (v) => box.x0 + (v - x0) / (x1 - x0) * (box.x1 - box.x0),\n      sy: (v) => box.y1 - (v - y0) / (y1 - y0) * (box.y1 - box.y0),\n    };\n  }\n\n  function axes(ctx, box, opts) {\n    const [x0, x1] = opts.xlim, [y0, y1] = opts.ylim;\n    const { sx, sy } = mapping(box, opts.xlim, opts.ylim);\n    const xt = tickVals(x0, x1, 6).filter((v) => v >= x0 && v <= x1);\n    const yt = tickVals(y0, y1, 4).filter((v) => v >= y0 && v <= y1);\n    if (opts.grid !== false) {\n      ctx.save(); ctx.strokeStyle = style.GRID; ctx.lineWidth = 1;\n      for (const v of xt) { ctx.beginPath(); ctx.moveTo(sx(v), box.y0); ctx.lineTo(sx(v), box.y1); ctx.stroke(); }\n      for (const v of yt) { ctx.beginPath(); ctx.moveTo(box.x0, sy(v)); ctx.lineTo(box.x1, sy(v)); ctx.stroke(); }\n      ctx.restore();\n    }\n    // axes sit on zero when zero is inside the range, else on the box edge\n    const ax = y0 <= 0 && y1 >= 0 ? sy(0) : box.y1;\n    const ay = x0 <= 0 && x1 >= 0 ? sx(0) : box.x0;\n    inkLine(ctx, box.x0 - 4, ax, box.x1 + 6, ax, style.AXIS, 1.4, 1);\n    inkLine(ctx, ay, box.y1 + 4, ay, box.y0 - 6, style.AXIS, 1.4, 2);\n    // arrow heads\n    ctx.save(); ctx.fillStyle = style.AXIS;\n    ctx.beginPath(); ctx.moveTo(box.x1 + 8, ax); ctx.lineTo(box.x1 + 1, ax - 3.5); ctx.lineTo(box.x1 + 1, ax + 3.5); ctx.fill();\n    ctx.beginPath(); ctx.moveTo(ay, box.y0 - 8); ctx.lineTo(ay - 3.5, box.y0 - 1); ctx.lineTo(ay + 3.5, box.y0 - 1); ctx.fill();\n    ctx.restore();\n    ctx.save();\n    ctx.fillStyle = style.MUTED; ctx.font = font(12);\n    ctx.textAlign = \"center\";\n    for (const v of xt) {\n      if (Math.abs(sx(v) - ay) < 1 && ay !== box.x0) continue; // skip the label under the y axis\n      inkLine(ctx, sx(v), ax - 3, sx(v), ax + 3, style.AXIS, 1, v);\n      ctx.fillText(fmt(v), sx(v), ax + 16);\n    }\n    ctx.textAlign = \"right\";\n    for (const v of yt) {\n      if (Math.abs(sy(v) - ax) < 1 && ax !== box.y1) continue;\n      inkLine(ctx, ay - 3, sy(v), ay + 3, sy(v), style.AXIS, 1, v + 7);\n      ctx.fillText(fmt(v), ay - 7, sy(v) + 4);\n    }\n    ctx.font = font(14, true); ctx.fillStyle = style.INK;\n    if (opts.xlabel) { ctx.textAlign = \"right\"; ctx.fillText(opts.xlabel, box.x1 + 4, ax - 8); }\n    if (opts.ylabel) { ctx.textAlign = \"left\"; ctx.fillText(opts.ylabel, ay + 8, box.y0 + 4); }\n    ctx.restore();\n    return { sx, sy };\n  }\n\n  function stroke(ctx, pts, color, width, dash) {\n    if (!pts.length) return;\n    ctx.save();\n    ctx.strokeStyle = color; ctx.lineWidth = width || 2.2;\n    ctx.lineJoin = \"round\"; ctx.lineCap = \"round\";\n    if (dash) ctx.setLineDash(dash);\n    ctx.beginPath();\n    let pen = false;\n    for (const p of pts) {\n      if (!p) { pen = false; continue; }\n      pen ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1]);\n      pen = true;\n    }\n    ctx.stroke();\n    ctx.restore();\n  }\n\n  function fnPoints(fn, opts, m) {\n    const [x0, x1] = opts.xlim, [y0, y1] = opts.ylim;\n    const n = 400, pts = [];\n    const margin = (y1 - y0) * 0.02;\n    for (let i = 0; i <= n; i++) {\n      const x = x0 + (x1 - x0) * i / n;\n      let y;\n      try { y = fn(x); } catch (e) { y = NaN; }\n      if (!isFinite(y) || y < y0 - margin || y > y1 + margin) { pts.push(null); continue; }\n      pts.push([m.sx(x), m.sy(y)]);\n    }\n    return pts;\n  }\n\n  function legend(ctx, box, items) {\n    if (!items.length) return;\n    ctx.save();\n    ctx.font = font(13); ctx.textAlign = \"left\"; ctx.textBaseline = \"middle\";\n    let x = box.x0 + 10, y = box.y0 + 12;\n    for (const it of items) {\n      inkLine(ctx, x, y, x + 22, y, it.color, 2.4, x);\n      ctx.fillStyle = style.INK;\n      ctx.fillText(it.label, x + 28, y + 1);\n      x += 28 + ctx.measureText(it.label).width + 18;\n    }\n    ctx.restore();\n  }\n\n  function title(ctx, W, text) {\n    ctx.save();\n    ctx.font = font(15); ctx.fillStyle = style.INK; ctx.textAlign = \"center\";\n    ctx.fillText(text, W / 2, 16);\n    ctx.restore();\n  }\n\n  function render(canvas, opts) {\n    const ctx = canvas.getContext(\"2d\");\n    const rect = canvas.getBoundingClientRect();\n    const W = Math.max(60, Math.round(rect.width)), H = Math.max(60, Math.round(rect.height));\n    const dpr = window.devicePixelRatio || 1;\n    if (canvas.width !== Math.round(W * dpr) || canvas.height !== Math.round(H * dpr)) {\n      canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);\n    }\n    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);\n    frame(ctx, W, H);\n    if (opts.title) title(ctx, W, opts.title);\n    const box = plotBox(W, H, opts);\n    const type = opts.type || \"function\";\n\n    if (type === \"bars\") {\n      const labels = opts.bars.labels || [], values = opts.bars.values || [];\n      const n = Math.max(1, values.length);\n      const bw = (box.x1 - box.x0) / n;\n      const vmax = Math.max(...values.map((v) => Math.abs(v)), 0) * 1.15 || 1;\n      const base = box.y1;\n      inkLine(ctx, box.x0 - 4, base, box.x1 + 4, base, style.AXIS, 1.4, 3);\n      ctx.save();\n      values.forEach((v, i) => {\n        const h = (Math.abs(v) / vmax) * (box.y1 - box.y0);\n        const x = box.x0 + i * bw + bw * 0.2, w = bw * 0.6, y = base - h;\n        const hot = opts.bars.highlight != null && i === opts.bars.highlight;\n        ctx.fillStyle = hot ? style.MAIN : \"#e6dfcf\";\n        ctx.fillRect(x, y, w, h);\n        ctx.strokeStyle = hot ? style.MAIN : style.AXIS; ctx.lineWidth = 1.2;\n        ctx.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);\n        ctx.font = font(13); ctx.textAlign = \"center\"; ctx.fillStyle = style.INK;\n        ctx.fillText(String(labels[i] == null ? i + 1 : labels[i]), x + w / 2, base + 17);\n        ctx.fillStyle = hot ? style.MAIN : style.MUTED;\n        ctx.fillText(fmt(v), x + w / 2, y - 6);\n      });\n      ctx.restore();\n      const sx = (i) => box.x0 + (i + 0.5) * bw, sy = (v) => base - (Math.abs(v) / vmax) * (box.y1 - box.y0);\n      return { ctx, sx, sy, box, W, H, opts };\n    }\n\n    const m = axes(ctx, box, opts);\n    const items = [];\n    if (type === \"lines\") {\n      (opts.series || []).forEach((s, i) => {\n        const color = s.color || PALETTE[i % PALETTE.length];\n        stroke(ctx, (s.points || []).map((p) => [m.sx(p[0]), m.sy(p[1])]), color, 2.2, s.dash);\n        if (s.name) items.push({ label: s.name, color });\n      });\n    } else if (type === \"points\") {\n      ctx.save(); ctx.fillStyle = opts.color || style.MAIN;\n      (opts.points || []).forEach((p) => { ctx.beginPath(); ctx.arc(m.sx(p[0]), m.sy(p[1]), opts.r || 3.6, 0, Math.PI * 2); ctx.fill(); });\n      ctx.restore();\n    } else {\n      const fns = opts.fns || (typeof opts.fn === \"function\" ? [{ fn: opts.fn, color: opts.color, label: opts.label }] : []);\n      fns.forEach((f, i) => {\n        const color = f.color || PALETTE[i % PALETTE.length];\n        stroke(ctx, fnPoints(f.fn, opts, m), color, f.width || 2.4, f.dash);\n        if (f.label) items.push({ label: f.label, color });\n      });\n    }\n    legend(ctx, box, items);\n    return { ctx, sx: m.sx, sy: m.sy, box, W, H, opts };\n  }\n\n  // ---- overlays (world coordinates) ----\n  function marker(ch, x, y, o) {\n    o = o || {};\n    const px = ch.sx(x), py = ch.sy(y);\n    ch.ctx.save();\n    ch.ctx.fillStyle = o.color || style.MAIN;\n    ch.ctx.beginPath(); ch.ctx.arc(px, py, o.r || 5, 0, Math.PI * 2); ch.ctx.fill();\n    ch.ctx.strokeStyle = style.PAPER; ch.ctx.lineWidth = 1.5; ch.ctx.stroke();\n    if (o.label) {\n      ch.ctx.font = font(o.size || 13); ch.ctx.fillStyle = o.color || style.MAIN; ch.ctx.textAlign = \"left\";\n      ch.ctx.fillText(o.label, px + 8, py - 8);\n    }\n    ch.ctx.restore();\n  }\n\n  function vline(ch, x, o) {\n    o = o || {};\n    const px = ch.sx(x);\n    stroke(ch.ctx, [[px, ch.box.y0], [px, ch.box.y1]], o.color || style.MUTED, o.width || 1.2, o.dash || [4, 4]);\n    if (o.label) note(ch, x, null, o.label, { color: o.color || style.MUTED, px: px + 4, py: ch.box.y0 + 12, align: \"left\", size: o.size });\n  }\n\n  function hline(ch, y, o) {\n    o = o || {};\n    const py = ch.sy(y);\n    stroke(ch.ctx, [[ch.box.x0, py], [ch.box.x1, py]], o.color || style.MUTED, o.width || 1.2, o.dash || [4, 4]);\n    if (o.label) note(ch, null, y, o.label, { color: o.color || style.MUTED, px: ch.box.x1 - 4, py: py - 5, align: \"right\", size: o.size });\n  }\n\n  function segment(ch, a, b, o) {\n    o = o || {};\n    const x1 = ch.sx(a[0]), y1 = ch.sy(a[1]), x2 = ch.sx(b[0]), y2 = ch.sy(b[1]);\n    const color = o.color || style.AUX;\n    stroke(ch.ctx, [[x1, y1], [x2, y2]], color, o.width || 2, o.dash);\n    if (o.arrow) {\n      const ang = Math.atan2(y2 - y1, x2 - x1), L = 9;\n      ch.ctx.save(); ch.ctx.fillStyle = color; ch.ctx.beginPath();\n      ch.ctx.moveTo(x2, y2);\n      ch.ctx.lineTo(x2 - L * Math.cos(ang - 0.4), y2 - L * Math.sin(ang - 0.4));\n      ch.ctx.lineTo(x2 - L * Math.cos(ang + 0.4), y2 - L * Math.sin(ang + 0.4));\n      ch.ctx.fill(); ch.ctx.restore();\n    }\n  }\n\n  function note(ch, x, y, text, o) {\n    o = o || {};\n    const px = o.px != null ? o.px : ch.sx(x), py = o.py != null ? o.py : ch.sy(y);\n    ch.ctx.save();\n    ch.ctx.font = font(o.size || 14, o.italic);\n    ch.ctx.fillStyle = o.color || style.INK;\n    ch.ctx.textAlign = o.align || \"left\";\n    ch.ctx.fillText(text, px, py);\n    ch.ctx.restore();\n  }\n\n  /** Pointer probe in world coords; the caller redraws and updates readouts. */\n  function attachProbe(canvas, opts, onProbe, onLeave) {\n    const [x0, x1] = opts.xlim;\n    const [y0, y1] = opts.ylim;\n    const toWorld = (px, py) => {\n      const r = canvas.getBoundingClientRect();\n      const box = plotBox(r.width, r.height, opts);\n      const t = (px - r.left - box.x0) / (box.x1 - box.x0);\n      const u = 1 - (py - r.top - box.y0) / (box.y1 - box.y0);\n      return { x: x0 + t * (x1 - x0), y: y0 + u * (y1 - y0), inside: t >= 0 && t <= 1 };\n    };\n    const handler = (e) => {\n      const p = toWorld(e.clientX, e.clientY);\n      if (p.inside) onProbe(p);\n    };\n    canvas.addEventListener(\"pointermove\", handler);\n    canvas.addEventListener(\"pointerdown\", handler);\n    if (onLeave) canvas.addEventListener(\"pointerleave\", onLeave);\n    canvas.style.touchAction = \"none\";\n    return toWorld;\n  }\n\n  window.HandChart = { render, marker, vline, hline, segment, note, attachProbe, style, font: HAND };\n})();\n</script>\n  <meta charset=\"utf-8\">\n  <style>\n    html, body { margin: 0; height: 100%; background: #faf8f3; font-family: \"PingFang SC\", \"Hiragino Sans GB\", sans-serif; color: #333; overflow: hidden; }\n    #wrap { position: absolute; inset: 0; display: flex; flex-direction: column; }\n    #plot { flex: 1; min-height: 0; margin: 10px 10px 4px; border: 1px solid #d9d2c3; border-radius: 12px; background: #fbfaf6; cursor: crosshair; touch-action: none; }\n    #readout { display: flex; justify-content: center; align-items: center; gap: 28px; padding: 4px 0 8px; font-size: 12px; color: #666; flex-wrap: wrap; }\n    #readout .k { display: block; font-size: 11px; letter-spacing: .04em; }\n    #readout .v { display: block; font-family: ui-monospace, Menlo, monospace; font-size: 14px; font-weight: 700; color: #c0392b; min-width: 64px; text-align: center; }\n    #formula { display: inline-block; padding: 3px 10px; border: 1px solid #d9d2c3; border-radius: 6px; background: #fff; font-family: Georgia, \"Times New Roman\", serif; font-style: italic; font-size: 13px; color: #333; }\n    .slider-wrap { display: flex; align-items: center; gap: 6px; }\n    .slider-wrap label { font-size: 11px; color: #666; }\n    input[type=range] { width: 100px; accent-color: #c0392b; }\n  </style>\n</head>\n<body>\n  <div id=\"wrap\">\n    <canvas id=\"plot\"></canvas>\n    <div id=\"readout\">\n      <span><span class=\"k\">上边界 b</span><span class=\"v\" id=\"upperValue-display\">—</span></span>\n      <span><span class=\"k\">下边界 a</span><span class=\"v\" id=\"lowerValue-display\">—</span></span>\n      <span><span class=\"k\">边界间距 b-a</span><span class=\"v\" id=\"gap-display\">—</span></span>\n      <span class=\"slider-wrap\">\n        <label for=\"upperBoundY-slider\">b</label>\n        <input type=\"range\" id=\"upperBoundY-slider\" min=\"0\" max=\"1\" step=\"0.01\" value=\"1\">\n      </span>\n      <span class=\"slider-wrap\">\n        <label for=\"lowerBoundY-slider\">a</label>\n        <input type=\"range\" id=\"lowerBoundY-slider\" min=\"-1\" max=\"0\" step=\"0.01\" value=\"-1\">\n      </span>\n      <span id=\"formula\">y = sin(1/x)</span>\n    </div>\n  </div>\n  <script>\n    // --- the thing being explored -------------------------------------\n    // y = sin(1/x) on x in (0, 1]\n    const f = (x) => (x <= 0 ? 0 : Math.sin(1 / x));\n    const X_MIN = 0.0, X_MAX = 1.0, Y_MIN = -1.2, Y_MAX = 1.2;\n\n    // --- state ---------------------------------------------------------\n    let upperBoundY = 1.0;\n    let lowerBoundY = -1.0;\n    let probeX = null;\n\n    // --- plumbing ------------------------------------------------------\n    const canvas = document.getElementById(\"plot\");\n    const ctx = canvas.getContext(\"2d\");\n    let W = 0, H = 0;\n    const PAD = { l: 44, r: 24, t: 22, b: 30 };\n    const sx = (x) => PAD.l + (x - X_MIN) / (X_MAX - X_MIN) * (W - PAD.l - PAD.r);\n    const sy = (y) => PAD.t + (Y_MAX - y) / (Y_MAX - Y_MIN) * (H - PAD.t - PAD.b);\n    const ux = (px) => X_MIN + (px - PAD.l) / (W - PAD.l - PAD.r) * (X_MAX - X_MIN);\n\n    function resize() {\n      const r = canvas.getBoundingClientRect();\n      W = r.width; H = r.height;\n      const dpr = window.devicePixelRatio || 1;\n      canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);\n      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);\n      draw();\n    }\n\n    // --- drawing helpers -----------------------------------------------\n    function drawAxes() {\n      ctx.save();\n      ctx.strokeStyle = \"#b9b3a6\";\n      ctx.lineWidth = 1;\n      // x axis at y=0\n      ctx.beginPath();\n      ctx.moveTo(PAD.l, sy(0));\n      ctx.lineTo(W - PAD.r, sy(0));\n      ctx.stroke();\n      // y axis at x=0\n      ctx.beginPath();\n      ctx.moveTo(sx(0), PAD.t);\n      ctx.lineTo(sx(0), H - PAD.b);\n      ctx.stroke();\n      // ticks and labels\n      ctx.fillStyle = \"#8a8377\";\n      ctx.font = \"italic 11px Georgia, serif\";\n      ctx.textAlign = \"center\";\n      // x ticks\n      for (const x of [0.25, 0.5, 0.75, 1.0]) {\n        ctx.beginPath();\n        ctx.moveTo(sx(x), sy(0) - 3);\n        ctx.lineTo(sx(x), sy(0) + 3);\n        ctx.stroke();\n        ctx.fillText(x.toFixed(2), sx(x), sy(0) + 14);\n      }\n      // y ticks\n      ctx.textAlign = \"right\";\n      for (const y of [-1, -0.5, 0.5, 1]) {\n        ctx.beginPath();\n        ctx.moveTo(sx(0) - 3, sy(y));\n        ctx.lineTo(sx(0) + 3, sy(y));\n        ctx.stroke();\n        ctx.fillText(y.toFixed(1), sx(0) - 6, sy(y) + 4);\n      }\n      // axis labels\n      ctx.textAlign = \"left\";\n      ctx.fillText(\"x\", W - PAD.r - 2, sy(0) - 6);\n      ctx.fillText(\"y\", sx(0) + 6, PAD.t + 8);\n      // origin\n      ctx.textAlign = \"right\";\n      ctx.fillText(\"O\", sx(0) - 6, sy(0) + 14);\n      ctx.restore();\n    }\n\n    function drawCurve() {\n      ctx.save();\n      ctx.strokeStyle = \"#c0392b\";\n      ctx.lineWidth = 2;\n      ctx.beginPath();\n      const n = 2000;\n      let started = false;\n      for (let i = 0; i <= n; i++) {\n        const x = X_MIN + (X_MAX - X_MIN) * i / n;\n        if (x <= 0.0001) continue;\n        const y = f(x);\n        if (!isFinite(y)) continue;\n        const px = sx(x);\n        const py = sy(Math.max(Y_MIN, Math.min(Y_MAX, y)));\n        if (!started) { ctx.moveTo(px, py); started = true; }\n        else ctx.lineTo(px, py);\n      }\n      ctx.stroke();\n      ctx.restore();\n    }\n\n    function drawBounds() {\n      // shaded region between bounds\n      ctx.save();\n      ctx.fillStyle = \"rgba(46, 139, 111, 0.08)\";\n      ctx.fillRect(sx(0), sy(upperBoundY), sx(1) - sx(0), sy(lowerBoundY) - sy(upperBoundY));\n      ctx.restore();\n\n      // upper bound line\n      ctx.save();\n      ctx.strokeStyle = \"#2e8b6f\";\n      ctx.lineWidth = 1.5;\n      ctx.setLineDash([5, 4]);\n      ctx.beginPath();\n      ctx.moveTo(sx(0), sy(upperBoundY));\n      ctx.lineTo(sx(1), sy(upperBoundY));\n      ctx.stroke();\n      ctx.restore();\n\n      // lower bound line\n      ctx.save();\n      ctx.strokeStyle = \"#2e8b6f\";\n      ctx.lineWidth = 1.5;\n      ctx.setLineDash([5, 4]);\n      ctx.beginPath();\n      ctx.moveTo(sx(0), sy(lowerBoundY));\n      ctx.lineTo(sx(1), sy(lowerBoundY));\n      ctx.stroke();\n      ctx.restore();\n\n      // labels\n      ctx.save();\n      ctx.font = \"italic 12px Georgia, serif\";\n      ctx.fillStyle = \"#2e8b6f\";\n      ctx.textAlign = \"left\";\n      ctx.fillText(\"y = b = \" + upperBoundY.toFixed(2), sx(0.55), sy(upperBoundY) - 6);\n      ctx.fillText(\"y = a = \" + lowerBoundY.toFixed(2), sx(0.55), sy(lowerBoundY) + 16);\n      ctx.restore();\n    }\n\n    function drawProbe() {\n      if (probeX === null) return;\n      const px = sx(probeX);\n      const y = f(probeX);\n      const py = sy(y);\n      // vertical dashed line\n      ctx.save();\n      ctx.strokeStyle = \"rgba(192,57,43,.55)\";\n      ctx.setLineDash([3, 4]);\n      ctx.lineWidth = 1;\n      ctx.beginPath();\n      ctx.moveTo(px, PAD.t);\n      ctx.lineTo(px, H - PAD.b);\n      ctx.stroke();\n      ctx.restore();\n      // point on curve\n      ctx.save();\n      ctx.fillStyle = \"#c0392b\";\n      ctx.beginPath();\n      ctx.arc(px, py, 4, 0, Math.PI * 2);\n      ctx.fill();\n      ctx.restore();\n      // readout\n      document.getElementById(\"rx\").textContent = probeX.toFixed(3);\n      document.getElementById(\"ry\").textContent = y.toFixed(3);\n    }\n\n    function updateReadouts() {\n      document.getElementById(\"upperValue-display\").textContent = upperBoundY.toFixed(2);\n      document.getElementById(\"lowerValue-display\").textContent = lowerBoundY.toFixed(2);\n      document.getElementById(\"gap-display\").textContent = (upperBoundY - lowerBoundY).toFixed(2);\n    }\n\n    function draw() {\n      ctx.clearRect(0, 0, W, H);\n      drawAxes();\n      drawBounds();\n      drawCurve();\n      drawProbe();\n      updateReadouts();\n    }\n\n    // --- interaction ---------------------------------------------------\n    function onPointer(e) {\n      const r = canvas.getBoundingClientRect();\n      const x = ux(e.clientX - r.left);\n      probeX = Math.max(0.001, Math.min(1.0, x));\n      draw();\n    }\n    canvas.addEventListener(\"pointermove\", onPointer);\n    canvas.addEventListener(\"pointerdown\", onPointer);\n\n    // sliders\n    const upperSlider = document.getElementById(\"upperBoundY-slider\");\n    const lowerSlider = document.getElementById(\"lowerBoundY-slider\");\n\n    upperSlider.addEventListener(\"input\", function () {\n      upperBoundY = parseFloat(this.value);\n      if (upperBoundY < lowerBoundY) {\n        upperBoundY = lowerBoundY;\n        this.value = upperBoundY;\n      }\n      draw();\n    });\n\n    lowerSlider.addEventListener(\"input\", function () {\n      lowerBoundY = parseFloat(this.value);\n      if (lowerBoundY > upperBoundY) {\n        lowerBoundY = upperBoundY;\n        this.value = lowerBoundY;\n      }\n      draw();\n    });\n\n    // --- teacher control hook ------------------------------------------\n    window.hkControl = {\n      set: function (s) {\n        if (!s) return;\n        if (s.upperBoundY != null) {\n          upperBoundY = Math.max(0, Math.min(1, +s.upperBoundY));\n          upperSlider.value = upperBoundY;\n        }\n        if (s.lowerBoundY != null) {\n          lowerBoundY = Math.max(-1, Math.min(0, +s.lowerBoundY));\n          lowerSlider.value = lowerBoundY;\n        }\n        if (s.probeX != null) {\n          probeX = Math.max(0.001, Math.min(1.0, +s.probeX));\n        }\n        draw();\n      },\n      highlight: function (sel) {\n        var el = document.querySelector(sel);\n        if (!el) return;\n        el.style.outline = \"2px solid #c0392b\";\n        setTimeout(function () { el.style.outline = \"\"; }, 1500);\n      },\n      annotate: function () {},\n      reveal: function () {},\n    };\n\n    window.addEventListener(\"resize\", resize);\n    resize();\n  </script>\n</body>\n</html>",
+        "html_path": null,
+        "mermaid": null,
+        "layout": "newcol",
+        "params": [],
+        "controls": []
+      },
+      "widget_hint": "沿 y 轴拖动蓝线和红线，让它们从上下两侧夹住波形。"
+    }
+  ]
+}

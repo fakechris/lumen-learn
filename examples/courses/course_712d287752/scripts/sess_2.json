@@ -1,0 +1,302 @@
+{
+  "session_id": "sess_2",
+  "course_id": "course_712d287752",
+  "title": "64位三段：符号、指数、尾数",
+  "learning_goal": "能够说出双精度浮点数的64位布局，并用公式计算简单的浮点数值。",
+  "steps": [
+    {
+      "title": "64位能表示多少个数？",
+      "beat": "hook",
+      "spoken_text": "先别管公式。我问你一个数数的问题：64 个二进制位，每一位是 0 或 1，一共能摆出多少种不同的组合？你可能会说，那太多了，肯定够表示所有实数了吧。但你先猜一猜：它到底是无限多个，还是有限多个？",
+      "boards": [
+        {
+          "title": "",
+          "markdown": "- 64 位，每位 0 或 1\n- 组合数 = $2^{64}$ ≈ 1.8×10¹⁹\n- 实数有无限多个 → 只能挑出**有限个**来代表",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "circle",
+          "snippet": "2^{64}",
+          "board_index": 0,
+          "trigger_phrase": "一共能摆出多少种不同的组合",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": {
+        "mode": "choice",
+        "question": "64 位浮点数能表示多少个不同的数？",
+        "options": [
+          "无限多个，位数够多就能表示所有实数",
+          "有限多个，最多 2 的 64 次方个左右"
+        ],
+        "correct_index": 1,
+        "misconceptions": [
+          "这是最常见的直觉：以为位数多就等于能覆盖整个实数轴。但 64 位只有 2 的 64 次方种组合，实数却是无限多的。",
+          null
+        ],
+        "explanation": "64 位只有 2 的 64 次方种 0/1 组合，所以最多只能表示这么多不同的数，实数中的绝大多数根本排不上号。"
+      },
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "二进制科学计数法",
+      "beat": "analogy",
+      "spoken_text": "既然只能挑有限个数，那怎么挑？用科学计数法。十进制里你写 1.23 乘 10 的 5 次方，分成三块：正负号、指数 5、还有 1.23 这些有效数字。二进制也一样，只不过底数换成 2。看板书第二行：一个符号 s、一个指数 e、一串有效数字 f。这三块，就是接下来 64 位要装的东西。",
+      "boards": [
+        {
+          "title": "科学计数法：三块",
+          "markdown": "- 十进制：$\\pm 1.23 \\times 10^{5}$\n  - 符号、指数 5、有效数字 1.23\n- 二进制：$\\pm 1.f \\times 2^{e}$\n  - 符号 $s$、指数 $e$、尾数 $f$\n- 三块 → 正好对应 64 位的三段",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "highlight",
+          "snippet": "\\pm 1.f \\times 2^{e}",
+          "board_index": 0,
+          "trigger_phrase": "二进制也一样，只不过底数换成 2",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": null,
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "64位布局：1+11+52",
+      "beat": "define",
+      "spoken_text": "现在把这三块塞进 64 位。看这张长条图：最左边 1 位是符号 s，中间 11 位是指数 e，右边 52 位是尾数 f。1 加 11 加 52，正好 64。注意右边那段最长，占了 52 位——你觉得为什么指数只要 11 位，尾数却要 52 位？",
+      "boards": [
+        {
+          "title": "双精度 64 位布局",
+          "markdown": "- 符号 $s$：**1 位**\n- 指数 $e$：**11 位**\n- 尾数 $f$：**52 位**\n- $1 + 11 + 52 = 64$",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "circle",
+          "snippet": "1 + 11 + 52 = 64",
+          "board_index": 0,
+          "trigger_phrase": "1 加 11 加 52，正好 64",
+          "color": null
+        }
+      ],
+      "illustration": {
+        "kind": "svg",
+        "caption": "双精度浮点数的 64 位划分：1 位符号、11 位指数、52 位尾数。",
+        "brief": "一条水平长条代表 64 位，从左到右分成三段：最左 1 个小格标 s（符号），中间 11 个小格标 e（指数），右边 52 个小格标 f（尾数）。每段下方用括号标注位数：1 位、11 位、52 位。长条上方标总长 64 位。三段用不同颜色区分，尾数段明显最长。",
+        "figure_id": null,
+        "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 800 520\">\n  <defs>\n    <style>\n      text { font-family: 'LXGW WenKai Lite', sans-serif; fill: #333; }\n      .title { font-size: 24px; font-weight: bold; }\n      .label { font-size: 20px; }\n      .small { font-size: 18px; }\n      .bit-text { font-size: 16px; fill: #555; }\n      .bracket { stroke: #4b4b4b; stroke-width: 2; fill: none; stroke-linecap: round; }\n      .leader { stroke: #4b4b4b; stroke-width: 1.5; fill: none; stroke-linecap: round; }\n    </style>\n  </defs>\n\n  <!-- 标题 -->\n  <text x=\"400\" y=\"45\" text-anchor=\"middle\" class=\"title\">双精度浮点数的 64 位划分</text>\n\n  <!-- 总长标注：64 位 -->\n  <text x=\"400\" y=\"95\" text-anchor=\"middle\" class=\"label\">总长 64 位</text>\n\n  <!-- 顶部总括号 -->\n  <path d=\"M 60 110 Q 60 120 70 120 L 730 120 Q 740 120 740 110\" class=\"bracket\" />\n  <line x1=\"60\" y1=\"110\" x2=\"60\" y2=\"120\" class=\"bracket\" />\n  <line x1=\"740\" y1=\"110\" x2=\"740\" y2=\"120\" class=\"bracket\" />\n\n  <!-- ================= 长条 ================= -->\n  <!-- 符号段：1 位 -->\n  <rect x=\"60\" y=\"140\" width=\"20\" height=\"60\" rx=\"4\" fill=\"#f2d5c4\" stroke=\"#4b4b4b\" stroke-width=\"2\" />\n  <text x=\"70\" y=\"178\" text-anchor=\"middle\" class=\"label\" font-weight=\"bold\">s</text>\n\n  <!-- 指数段：11 位 -->\n  <rect x=\"80\" y=\"140\" width=\"220\" height=\"60\" rx=\"4\" fill=\"#c9d8e8\" stroke=\"#4b4b4b\" stroke-width=\"2\" />\n  <text x=\"190\" y=\"178\" text-anchor=\"middle\" class=\"label\" font-weight=\"bold\">e</text>\n\n  <!-- 尾数段：52 位 -->\n  <rect x=\"300\" y=\"140\" width=\"440\" height=\"60\" rx=\"4\" fill=\"#b8dcc6\" stroke=\"#4b4b4b\" stroke-width=\"2\" />\n  <text x=\"520\" y=\"178\" text-anchor=\"middle\" class=\"label\" font-weight=\"bold\">f</text>\n\n  <!-- 分段内部刻度线（示意） -->\n  <!-- 指数段 11 格 -->\n  <line x1=\"100\" y1=\"140\" x2=\"100\" y2=\"200\" stroke=\"#4b4b4b\" stroke-width=\"1\" opacity=\"0.4\" />\n  <line x1=\"120\" y1=\"140\" x2=\"120\" y2=\"200\" stroke=\"#4b4b4b\" stroke-width=\"1\" opacity=\"0.4\" />\n  <line x1=\"140\" y1=\"140\" x2=\"140\" y2=\"200\" stroke=\"#4b4b4b\" stroke-width=\"1\" opacity=\"0.4\" />\n  <line x1=\"160\" y1=\"140\" x2=\"160\" y2=\"200\" stroke=\"#4b4b4b\" stroke-width=\"1\" opacity=\"0.4\" />\n  <line x1=\"180\" y1=\"140\" x2=\"180\" y2=\"200\" stroke=\"#4b4b4b\" stroke-width=\"1\" opacity=\"0.4\" />\n  <line x1=\"200\" y1=\"140\" x2=\"200\" y2=\"200\" stroke=\"#4b4b4b\" stroke-width=\"1\" opacity=\"0.4\" />\n  <line x1=\"220\" y1=\"140\" x2=\"220\" y2=\"200\" stroke=\"#4b4b4b\" stroke-width=\"1\" opacity=\"0.4\" />\n  <line x1=\"240\" y1=\"140\" x2=\"240\" y2=\"200\" stroke=\"#4b4b4b\" stroke-width=\"1\" opacity=\"0.4\" />\n  <line x1=\"260\" y1=\"140\" x2=\"260\" y2=\"200\" stroke=\"#4b4b4b\" stroke-width=\"1\" opacity=\"0.4\" />\n  <line x1=\"280\" y1=\"140\" x2=\"280\" y2=\"200\" stroke=\"#4b4b4b\" stroke-width=\"1\" opacity=\"0.4\" />\n\n  <!-- 尾数段 52 格示意刻度 -->\n  <line x1=\"320\" y1=\"140\" x2=\"320\" y2=\"200\" stroke=\"#4b4b4b\" stroke-width=\"1\" opacity=\"0.3\" />\n  <line x1=\"340\" y1=\"140\" x2=\"340\" y2=\"200\" stroke=\"#4b4b4b\" stroke-width=\"1\" opacity=\"0.3\" />\n  <line x1=\"360\" y1=\"140\" x2=\"360\" y2=\"200\" stroke=\"#4b4b4b\" stroke-width=\"1\" opacity=\"0.3\" />\n  <line x1=\"380\" y1=\"140\" x2=\"380\" y2=\"200\" stroke=\"#4b4b4b\" stroke-width=\"1\" opacity=\"0.3\" />\n  <line x1=\"400\" y1=\"140\" x2=\"400\" y2=\"200\" stroke=\"#4b4b4b\" stroke-width=\"1\" opacity=\"0.3\" />\n  <line x1=\"420\" y1=\"140\" x2=\"420\" y2=\"200\" stroke=\"#4b4b4b\" stroke-width=\"1\" opacity=\"0.3\" />\n  <line x1=\"440\" y1=\"140\" x2=\"440\" y2=\"200\" stroke=\"#4b4b4b\" stroke-width=\"1\" opacity=\"0.3\" />\n  <line x1=\"460\" y1=\"140\" x2=\"460\" y2=\"200\" stroke=\"#4b4b4b\" stroke-width=\"1\" opacity=\"0.3\" />\n  <line x1=\"480\" y1=\"140\" x2=\"480\" y2=\"200\" stroke=\"#4b4b4b\" stroke-width=\"1\" opacity=\"0.3\" />\n  <line x1=\"500\" y1=\"140\" x2=\"500\" y2=\"200\" stroke=\"#4b4b4b\" stroke-width=\"1\" opacity=\"0.3\" />\n  <line x1=\"520\" y1=\"140\" x2=\"520\" y2=\"200\" stroke=\"#4b4b4b\" stroke-width=\"1\" opacity=\"0.3\" />\n  <line x1=\"540\" y1=\"140\" x2=\"540\" y2=\"200\" stroke=\"#4b4b4b\" stroke-width=\"1\" opacity=\"0.3\" />\n  <line x1=\"560\" y1=\"140\" x2=\"560\" y2=\"200\" stroke=\"#4b4b4b\" stroke-width=\"1\" opacity=\"0.3\" />\n  <line x1=\"580\" y1=\"140\" x2=\"580\" y2=\"200\" stroke=\"#4b4b4b\" stroke-width=\"1\" opacity=\"0.3\" />\n  <line x1=\"600\" y1=\"140\" x2=\"600\" y2=\"200\" stroke=\"#4b4b4b\" stroke-width=\"1\" opacity=\"0.3\" />\n  <line x1=\"620\" y1=\"140\" x2=\"620\" y2=\"200\" stroke=\"#4b4b4b\" stroke-width=\"1\" opacity=\"0.3\" />\n  <line x1=\"640\" y1=\"140\" x2=\"640\" y2=\"200\" stroke=\"#4b4b4b\" stroke-width=\"1\" opacity=\"0.3\" />\n  <line x1=\"660\" y1=\"140\" x2=\"660\" y2=\"200\" stroke=\"#4b4b4b\" stroke-width=\"1\" opacity=\"0.3\" />\n  <line x1=\"680\" y1=\"140\" x2=\"680\" y2=\"200\" stroke=\"#4b4b4b\" stroke-width=\"1\" opacity=\"0.3\" />\n  <line x1=\"700\" y1=\"140\" x2=\"700\" y2=\"200\" stroke=\"#4b4b4b\" stroke-width=\"1\" opacity=\"0.3\" />\n  <line x1=\"720\" y1=\"140\" x2=\"720\" y2=\"200\" stroke=\"#4b4b4b\" stroke-width=\"1\" opacity=\"0.3\" />\n\n  <!-- ================= 下方括号与位数标注 ================= -->\n\n  <!-- 符号段括号 -->\n  <path d=\"M 60 215 Q 60 230 70 230 L 70 230 Q 80 230 80 215\" class=\"bracket\" />\n  <line x1=\"60\" y1=\"215\" x2=\"60\" y2=\"225\" class=\"bracket\" />\n  <line x1=\"80\" y1=\"215\" x2=\"80\" y2=\"225\" class=\"bracket\" />\n  <text x=\"70\" y=\"260\" text-anchor=\"middle\" class=\"small\">1 位</text>\n\n  <!-- 指数段括号 -->\n  <path d=\"M 80 215 Q 80 235 100 235 L 280 235 Q 300 235 300 215\" class=\"bracket\" />\n  <line x1=\"80\" y1=\"215\" x2=\"80\" y2=\"225\" class=\"bracket\" />\n  <line x1=\"300\" y1=\"215\" x2=\"300\" y2=\"225\" class=\"bracket\" />\n  <text x=\"190\" y=\"260\" text-anchor=\"middle\" class=\"small\">11 位</text>\n\n  <!-- 尾数段括号 -->\n  <path d=\"M 300 215 Q 300 235 320 235 L 720 235 Q 740 235 740 215\" class=\"bracket\" />\n  <line x1=\"300\" y1=\"215\" x2=\"300\" y2=\"225\" class=\"bracket\" />\n  <line x1=\"740\" y1=\"215\" x2=\"740\" y2=\"225\" class=\"bracket\" />\n  <text x=\"520\" y=\"260\" text-anchor=\"middle\" class=\"small\">52 位</text>\n\n  <!-- ================= 引线标注 ================= -->\n\n  <!-- 符号 s 标注 -->\n  <line x1=\"70\" y1=\"140\" x2=\"70\" y2=\"100\" class=\"leader\" />\n  <text x=\"70\" y=\"90\" text-anchor=\"middle\" class=\"small\">符号位 s</text>\n\n  <!-- 指数 e 标注 -->\n  <line x1=\"190\" y1=\"140\" x2=\"190\" y2=\"100\" class=\"leader\" />\n  <text x=\"190\" y=\"90\" text-anchor=\"middle\" class=\"small\">指数位 e</text>\n\n  <!-- 尾数 f 标注 -->\n  <line x1=\"520\" y1=\"140\" x2=\"520\" y2=\"100\" class=\"leader\" />\n  <text x=\"520\" y=\"90\" text-anchor=\"middle\" class=\"small\">尾数位 f</text>\n\n  <!-- ================= 底部说明 ================= -->\n  <text x=\"400\" y=\"320\" text-anchor=\"middle\" class=\"small\">符号位决定正负，指数位决定大小范围，尾数位决定精度</text>\n\n  <!-- 底部颜色图例 -->\n  <rect x=\"180\" y=\"360\" width=\"20\" height=\"20\" rx=\"3\" fill=\"#f2d5c4\" stroke=\"#4b4b4b\" stroke-width=\"1.5\" />\n  <text x=\"210\" y=\"376\" class=\"small\">符号段</text>\n\n  <rect x=\"330\" y=\"360\" width=\"20\" height=\"20\" rx=\"3\" fill=\"#c9d8e8\" stroke=\"#4b4b4b\" stroke-width=\"1.5\" />\n  <text x=\"360\" y=\"376\" class=\"small\">指数段</text>\n\n  <rect x=\"480\" y=\"360\" width=\"20\" height=\"20\" rx=\"3\" fill=\"#b8dcc6\" stroke=\"#4b4b4b\" stroke-width=\"1.5\" />\n  <text x=\"510\" y=\"376\" class=\"small\">尾数段</text>\n\n  <!-- 底部装饰性手绘线条 -->\n  <path d=\"M 200 430 Q 300 425 400 430 Q 500 435 600 430\" stroke=\"#4b4b4b\" stroke-width=\"1.5\" fill=\"none\" stroke-linecap=\"round\" opacity=\"0.3\" />\n\n</svg>",
+        "svg_path": null,
+        "image_path": null,
+        "image_url": null,
+        "layout": "follow"
+      },
+      "widget": null,
+      "question": {
+        "mode": "choice",
+        "question": "为什么指数只要 11 位，尾数却要 52 位？",
+        "options": [
+          "因为指数管范围，尾数管精度，精度更重要所以给得多",
+          "因为指数越大越好，位数越多指数范围越大"
+        ],
+        "correct_index": 0,
+        "misconceptions": [
+          "这是把位数和重要性搞反了：指数决定能表示多大或多小的数，尾数决定能表示多精细的数。日常计算里精度更常被用到，所以尾数分到更多位。",
+          null
+        ],
+        "explanation": "指数 11 位决定数值范围，尾数 52 位决定精度；52 位尾数对应大约 15 到 16 位十进制有效数字。"
+      },
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "值公式：(-1)^s × 1.f × 2^{e-1023}",
+      "beat": "derive",
+      "spoken_text": "现在把三段拼成一个数。看板书第一行，符号位 s 决定正负，就是负一的 s 次方。第二行，尾数那 52 位前面默认藏着一个 1，写成 1 点 f。第三行，指数不是直接乘，要先减去 1023 这个偏移量，因为指数位要能表示负指数。所以整条公式就是负一的 s 次方乘 1 点 f 再乘 2 的 e 减 1023 次方。",
+      "boards": [
+        {
+          "title": "三段拼成数",
+          "markdown": "- 符号：$(-1)^s$\n- 尾数：**隐含前导 1** → $1.f$\n- 指数：$e$ 要减偏移量 $1023$ → $2^{e-1023}$\n- 合起来：$(-1)^s \\times 1.f \\times 2^{e-1023}$",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "circle",
+          "snippet": "(-1)^s \\times 1.f \\times 2^{e-1023}",
+          "board_index": 0,
+          "trigger_phrase": "整条公式就是负一的 s 次方乘 1 点 f 再乘 2 的 e 减 1023 次方",
+          "color": null
+        },
+        {
+          "kind": "highlight",
+          "snippet": "1023",
+          "board_index": 0,
+          "trigger_phrase": "要先减去 1023 这个偏移量",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": null,
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "示例：解码一个简单位模式",
+      "beat": "worked_example",
+      "spoken_text": "拿一个具体位模式来算。假设符号位是 0，指数位是 1023，尾数位全是 0。看板书，e 等于 1023，减 1023 得 0，2 的 0 次方是 1；尾数 1 点 f 里 f 是 0，所以就是 1 点 0；符号 0 表示正。结果就是 1。那如果指数位是 1024 呢，你猜值会变成多少？",
+      "boards": [
+        {
+          "title": "解码：s=0, e=1023, f=0",
+          "markdown": "- $s=0$ → $(-1)^0 = 1$\n- $e=1023$ → $2^{1023-1023} = 2^0 = 1$\n- $f=0$ → $1.f = 1.0$\n- 值 $= 1 \\times 1.0 \\times 1 = 1$",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "highlight",
+          "snippet": "2^{1023-1023}",
+          "board_index": 0,
+          "trigger_phrase": "减 1023 得 0",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": {
+        "mode": "choice",
+        "question": "如果指数位从 1023 变成 1024，其他不变，这个数会变成多少？",
+        "options": [
+          "还是 1，指数位只是编号",
+          "变成 2，因为 2 的 1 次方"
+        ],
+        "correct_index": 1,
+        "misconceptions": [
+          "以为指数位是直接的值，忘了要减 1023。",
+          null
+        ],
+        "explanation": "e 减 1023 得到 1，2 的 1 次方是 2，所以值翻倍变成 2。"
+      },
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "回顾：三段布局和公式",
+      "beat": "recap",
+      "spoken_text": "最后收个尾。第一，64 位分成三段：1 位符号、11 位指数、52 位尾数。第二，解码公式是负一的 s 次方乘 1 点 f 再乘 2 的 e 减 1023 次方。第三，尾数只有 52 位，所以能表示的实数只有有限个，相邻两个数之间有空隙，这就是 0.1 加 0.2 不等于 0.3 的根源。",
+      "boards": [
+        {
+          "title": "带走三件事",
+          "markdown": "- 布局：$1 + 11 + 52 = 64$\n- 公式：$(-1)^s \\times 1.f \\times 2^{e-1023}$\n- 本质：**有限个离散值**，相邻有间隔",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "circle",
+          "snippet": "有限个离散值",
+          "board_index": 0,
+          "trigger_phrase": "能表示的实数只有有限个",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": null,
+      "reward": {
+        "title": "浮点数三段布局",
+        "description": "64 位 = 1 位符号 + 11 位指数 + 52 位尾数，值 = (-1)^s × 1.f × 2^{e-1023}，只能表示有限个离散实数。"
+      },
+      "new_page_title": null
+    }
+  ],
+  "exercises": [
+    {
+      "exercise_id": "sess_2_ex1",
+      "kind": "fill_blank",
+      "stem": "在双精度浮点数的 64 位布局中，指数段占据的位数是 ____ 位。",
+      "options": [],
+      "correct_index": null,
+      "answer": "11",
+      "accepted": [
+        "十一",
+        "11位",
+        "11 位"
+      ],
+      "explanation": "指数段固定为 11 位，这是 64 位布局中 1+11+52 的关键中间项；它决定了指数 e 的取值范围，进而影响可表示数的范围。",
+      "widget": null,
+      "widget_hint": ""
+    },
+    {
+      "exercise_id": "sess_2_ex2",
+      "kind": "single_choice",
+      "stem": "一个双精度浮点数的符号位 $s=0$，指数段 $e=1024$，尾数段 $f=0$。根据公式 $(-1)^s \\times 1.f \\times 2^{e-1023}$，它的值是（ ）。",
+      "options": [
+        "1",
+        "2",
+        "0.5",
+        "4"
+      ],
+      "correct_index": 1,
+      "answer": null,
+      "accepted": [],
+      "explanation": "代入公式：$(-1)^0 \\times 1.0 \\times 2^{1024-1023} = 1 \\times 1 \\times 2^1 = 2$。",
+      "widget": null,
+      "widget_hint": ""
+    },
+    {
+      "exercise_id": "sess_2_ex3",
+      "kind": "single_choice",
+      "stem": "在双精度浮点数公式 $(-1)^s \\times 1.f \\times 2^{e-1023}$ 中，尾数部分写成 $1.f$ 而不是 $f$，原因是（ ）。",
+      "options": [
+        "尾数段最高位固定为 1，可以省略不存，从而多出一位有效精度",
+        "指数段需要减去偏移量 1023，尾数段需要加上隐含的 1 来平衡",
+        "符号位已经占用了 1 位，所以尾数段必须补一个 1 才能凑满 64 位",
+        "二进制科学计数法要求尾数必须大于 1，所以前面加 1"
+      ],
+      "correct_index": 0,
+      "answer": null,
+      "accepted": [],
+      "explanation": "规格化二进制科学计数法中，尾数总是 $1.xxx$ 形式，最高位的 1 是固定的，因此可以隐含不存，让 52 位尾数段全部用来存放小数部分，提高精度。",
+      "widget": null,
+      "widget_hint": ""
+    },
+    {
+      "exercise_id": "sess_2_ex4",
+      "kind": "interactive",
+      "stem": "通过拖动滑块调整指数段 $e$ 的值，观察浮点数 $(-1)^s \\times 1.f \\times 2^{e-1023}$ 的变化，然后回答问题。",
+      "options": [
+        "当 $e=1022$ 时，值为 0.5",
+        "当 $e=1022$ 时，值为 2",
+        "当 $e=1022$ 时，值为 1",
+        "当 $e=1022$ 时，值为 0.25"
+      ],
+      "correct_index": 0,
+      "answer": null,
+      "accepted": [],
+      "explanation": "代入公式：$(-1)^0 \\times 1.0 \\times 2^{1022-1023} = 1 \\times 1 \\times 2^{-1} = 0.5$。",
+      "widget": {
+        "kind": "explorable",
+        "title": "双精度浮点数指数滑块",
+        "task": "画一条数轴或数值显示区，固定符号位 $s=0$、尾数 $f=0$。学生拖动滑块改变指数段 $e$ 的值（范围 1020 到 1026），观察计算出的浮点数值。",
+        "html": "<!DOCTYPE html>\n<html>\n<head><script>/**\n * HandChart — zero-dependency hand-drawn chart base for explorable widgets.\n *\n * Injected into every generated 2D explorable (widget_generator.py) so the\n * model supplies data + overlays instead of hand-writing axes. The look matches\n * the handwritten page: paper panel, slightly wobbly ink axes, main red /\n * aux green, handwriting labels.\n *\n * API (all coordinates in WORLD units unless noted):\n *   const ch = HandChart.render(canvas, opts)\n *     opts = { type: \"function\"|\"points\"|\"bars\"|\"lines\",\n *              xlim:[x0,x1], ylim:[y0,y1],                  (all but bars)\n *              fn: x=>y | fns:[{fn, color?, label?}],        (function)\n *              points:[[x,y],...],                          (points)\n *              series:[{name, points, color?, dash?}],      (lines; legend drawn)\n *              bars:{labels:[...], values:[...], highlight?} (bars)\n *              xlabel, ylabel, grid:true|false, title }\n *     returns { ctx, sx, sy, box, W, H, opts }  — keep it to draw overlays\n *   HandChart.marker(ch, x, y, {color, label, r})       dot + optional label\n *   HandChart.vline(ch, x, {color, dash, label})         vertical guide\n *   HandChart.hline(ch, y, {color, dash, label})         horizontal guide\n *   HandChart.segment(ch, [x1,y1], [x2,y2], {color, width, dash, arrow})\n *   HandChart.note(ch, x, y, text, {color, align, size}) handwriting annotation\n *   HandChart.attachProbe(canvas, {xlim, ylim}, onProbe, onLeave?)\n *     pointer follow; onProbe({x, y}) in world coords — redraw + readouts there.\n *   HandChart.style = { INK, AXIS, MAIN, AUX, GRID, PAPER, MUTED }\n */\n(function () {\n  const style = {\n    INK: \"#2b2b2b\", AXIS: \"#8a8377\", MAIN: \"#c0392b\", AUX: \"#2e8b6f\",\n    GRID: \"#ece5d4\", PAPER: \"#fbfaf6\", MUTED: \"#8a8377\", PURPLE: \"#7c3aed\", BLUE: \"#2563eb\",\n  };\n  const PALETTE = [style.MAIN, style.AUX, style.BLUE, style.PURPLE, \"#d97706\"];\n  const PAD = { l: 48, r: 18, t: 18, b: 36 };\n  const HAND = \"'Patrick Hand', 'LXGW WenKai Lite', 'PingFang SC', sans-serif\";\n\n  function font(size, italic) { return (italic ? \"italic \" : \"\") + size + \"px \" + HAND; }\n\n  // deterministic wobble so the \"hand\" does not shake on every redraw\n  function wob(seed, amp) { return Math.sin(seed * 12.9898) * amp; }\n\n  function tickVals(min, max, n) {\n    const span = max - min || 1;\n    const raw = span / n;\n    const mag = Math.pow(10, Math.floor(Math.log10(raw)));\n    const step = [1, 2, 2.5, 5, 10].map((m) => m * mag).find((s) => span / s <= n) || mag * 10;\n    const out = [];\n    for (let v = Math.ceil(min / step) * step; v <= max + step * 1e-9; v += step) out.push(+v.toFixed(10));\n    return out;\n  }\n\n  function fmt(v) {\n    const a = Math.abs(v);\n    if (a === 0) return \"0\";\n    if (a >= 10000 || a < 0.01) return v.toExponential(1);\n    return String(+v.toFixed(Math.max(0, 3 - Math.floor(Math.log10(a)))));\n  }\n\n  /** a hand-drawn line: two passes with tiny deterministic wobble */\n  function inkLine(ctx, x1, y1, x2, y2, color, width, seed) {\n    ctx.save();\n    ctx.strokeStyle = color; ctx.lineWidth = width; ctx.lineCap = \"round\";\n    const n = 6, s = seed || (x1 + y2);\n    ctx.beginPath();\n    for (let i = 0; i <= n; i++) {\n      const t = i / n, x = x1 + (x2 - x1) * t, y = y1 + (y2 - y1) * t;\n      const w = i === 0 || i === n ? 0 : wob(s + i, 0.7);\n      i ? ctx.lineTo(x + w, y + w) : ctx.moveTo(x, y);\n    }\n    ctx.stroke();\n    ctx.restore();\n  }\n\n  function frame(ctx, W, H) {\n    ctx.clearRect(0, 0, W, H);\n    ctx.save();\n    ctx.fillStyle = style.PAPER;\n    ctx.fillRect(0, 0, W, H);\n    ctx.restore();\n  }\n\n  function plotBox(W, H, opts) {\n    const t = PAD.t + (opts && opts.title ? 18 : 0);\n    return { x0: PAD.l, y0: t, x1: W - PAD.r, y1: H - PAD.b };\n  }\n\n  function mapping(box, xlim, ylim) {\n    const [x0, x1] = xlim, [y0, y1] = ylim;\n    return {\n      sx: (v) => box.x0 + (v - x0) / (x1 - x0) * (box.x1 - box.x0),\n      sy: (v) => box.y1 - (v - y0) / (y1 - y0) * (box.y1 - box.y0),\n    };\n  }\n\n  function axes(ctx, box, opts) {\n    const [x0, x1] = opts.xlim, [y0, y1] = opts.ylim;\n    const { sx, sy } = mapping(box, opts.xlim, opts.ylim);\n    const xt = tickVals(x0, x1, 6).filter((v) => v >= x0 && v <= x1);\n    const yt = tickVals(y0, y1, 4).filter((v) => v >= y0 && v <= y1);\n    if (opts.grid !== false) {\n      ctx.save(); ctx.strokeStyle = style.GRID; ctx.lineWidth = 1;\n      for (const v of xt) { ctx.beginPath(); ctx.moveTo(sx(v), box.y0); ctx.lineTo(sx(v), box.y1); ctx.stroke(); }\n      for (const v of yt) { ctx.beginPath(); ctx.moveTo(box.x0, sy(v)); ctx.lineTo(box.x1, sy(v)); ctx.stroke(); }\n      ctx.restore();\n    }\n    // axes sit on zero when zero is inside the range, else on the box edge\n    const ax = y0 <= 0 && y1 >= 0 ? sy(0) : box.y1;\n    const ay = x0 <= 0 && x1 >= 0 ? sx(0) : box.x0;\n    inkLine(ctx, box.x0 - 4, ax, box.x1 + 6, ax, style.AXIS, 1.4, 1);\n    inkLine(ctx, ay, box.y1 + 4, ay, box.y0 - 6, style.AXIS, 1.4, 2);\n    // arrow heads\n    ctx.save(); ctx.fillStyle = style.AXIS;\n    ctx.beginPath(); ctx.moveTo(box.x1 + 8, ax); ctx.lineTo(box.x1 + 1, ax - 3.5); ctx.lineTo(box.x1 + 1, ax + 3.5); ctx.fill();\n    ctx.beginPath(); ctx.moveTo(ay, box.y0 - 8); ctx.lineTo(ay - 3.5, box.y0 - 1); ctx.lineTo(ay + 3.5, box.y0 - 1); ctx.fill();\n    ctx.restore();\n    ctx.save();\n    ctx.fillStyle = style.MUTED; ctx.font = font(12);\n    ctx.textAlign = \"center\";\n    for (const v of xt) {\n      if (Math.abs(sx(v) - ay) < 1 && ay !== box.x0) continue; // skip the label under the y axis\n      inkLine(ctx, sx(v), ax - 3, sx(v), ax + 3, style.AXIS, 1, v);\n      ctx.fillText(fmt(v), sx(v), ax + 16);\n    }\n    ctx.textAlign = \"right\";\n    for (const v of yt) {\n      if (Math.abs(sy(v) - ax) < 1 && ax !== box.y1) continue;\n      inkLine(ctx, ay - 3, sy(v), ay + 3, sy(v), style.AXIS, 1, v + 7);\n      ctx.fillText(fmt(v), ay - 7, sy(v) + 4);\n    }\n    ctx.font = font(14, true); ctx.fillStyle = style.INK;\n    if (opts.xlabel) { ctx.textAlign = \"right\"; ctx.fillText(opts.xlabel, box.x1 + 4, ax - 8); }\n    if (opts.ylabel) { ctx.textAlign = \"left\"; ctx.fillText(opts.ylabel, ay + 8, box.y0 + 4); }\n    ctx.restore();\n    return { sx, sy };\n  }\n\n  function stroke(ctx, pts, color, width, dash) {\n    if (!pts.length) return;\n    ctx.save();\n    ctx.strokeStyle = color; ctx.lineWidth = width || 2.2;\n    ctx.lineJoin = \"round\"; ctx.lineCap = \"round\";\n    if (dash) ctx.setLineDash(dash);\n    ctx.beginPath();\n    let pen = false;\n    for (const p of pts) {\n      if (!p) { pen = false; continue; }\n      pen ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1]);\n      pen = true;\n    }\n    ctx.stroke();\n    ctx.restore();\n  }\n\n  function fnPoints(fn, opts, m) {\n    const [x0, x1] = opts.xlim, [y0, y1] = opts.ylim;\n    const n = 400, pts = [];\n    const margin = (y1 - y0) * 0.02;\n    for (let i = 0; i <= n; i++) {\n      const x = x0 + (x1 - x0) * i / n;\n      let y;\n      try { y = fn(x); } catch (e) { y = NaN; }\n      if (!isFinite(y) || y < y0 - margin || y > y1 + margin) { pts.push(null); continue; }\n      pts.push([m.sx(x), m.sy(y)]);\n    }\n    return pts;\n  }\n\n  function legend(ctx, box, items) {\n    if (!items.length) return;\n    ctx.save();\n    ctx.font = font(13); ctx.textAlign = \"left\"; ctx.textBaseline = \"middle\";\n    let x = box.x0 + 10, y = box.y0 + 12;\n    for (const it of items) {\n      inkLine(ctx, x, y, x + 22, y, it.color, 2.4, x);\n      ctx.fillStyle = style.INK;\n      ctx.fillText(it.label, x + 28, y + 1);\n      x += 28 + ctx.measureText(it.label).width + 18;\n    }\n    ctx.restore();\n  }\n\n  function title(ctx, W, text) {\n    ctx.save();\n    ctx.font = font(15); ctx.fillStyle = style.INK; ctx.textAlign = \"center\";\n    ctx.fillText(text, W / 2, 16);\n    ctx.restore();\n  }\n\n  function render(canvas, opts) {\n    const ctx = canvas.getContext(\"2d\");\n    const rect = canvas.getBoundingClientRect();\n    const W = Math.max(60, Math.round(rect.width)), H = Math.max(60, Math.round(rect.height));\n    const dpr = window.devicePixelRatio || 1;\n    if (canvas.width !== Math.round(W * dpr) || canvas.height !== Math.round(H * dpr)) {\n      canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);\n    }\n    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);\n    frame(ctx, W, H);\n    if (opts.title) title(ctx, W, opts.title);\n    const box = plotBox(W, H, opts);\n    const type = opts.type || \"function\";\n\n    if (type === \"bars\") {\n      const labels = opts.bars.labels || [], values = opts.bars.values || [];\n      const n = Math.max(1, values.length);\n      const bw = (box.x1 - box.x0) / n;\n      const vmax = Math.max(...values.map((v) => Math.abs(v)), 0) * 1.15 || 1;\n      const base = box.y1;\n      inkLine(ctx, box.x0 - 4, base, box.x1 + 4, base, style.AXIS, 1.4, 3);\n      ctx.save();\n      values.forEach((v, i) => {\n        const h = (Math.abs(v) / vmax) * (box.y1 - box.y0);\n        const x = box.x0 + i * bw + bw * 0.2, w = bw * 0.6, y = base - h;\n        const hot = opts.bars.highlight != null && i === opts.bars.highlight;\n        ctx.fillStyle = hot ? style.MAIN : \"#e6dfcf\";\n        ctx.fillRect(x, y, w, h);\n        ctx.strokeStyle = hot ? style.MAIN : style.AXIS; ctx.lineWidth = 1.2;\n        ctx.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);\n        ctx.font = font(13); ctx.textAlign = \"center\"; ctx.fillStyle = style.INK;\n        ctx.fillText(String(labels[i] == null ? i + 1 : labels[i]), x + w / 2, base + 17);\n        ctx.fillStyle = hot ? style.MAIN : style.MUTED;\n        ctx.fillText(fmt(v), x + w / 2, y - 6);\n      });\n      ctx.restore();\n      const sx = (i) => box.x0 + (i + 0.5) * bw, sy = (v) => base - (Math.abs(v) / vmax) * (box.y1 - box.y0);\n      return { ctx, sx, sy, box, W, H, opts };\n    }\n\n    const m = axes(ctx, box, opts);\n    const items = [];\n    if (type === \"lines\") {\n      (opts.series || []).forEach((s, i) => {\n        const color = s.color || PALETTE[i % PALETTE.length];\n        stroke(ctx, (s.points || []).map((p) => [m.sx(p[0]), m.sy(p[1])]), color, 2.2, s.dash);\n        if (s.name) items.push({ label: s.name, color });\n      });\n    } else if (type === \"points\") {\n      ctx.save(); ctx.fillStyle = opts.color || style.MAIN;\n      (opts.points || []).forEach((p) => { ctx.beginPath(); ctx.arc(m.sx(p[0]), m.sy(p[1]), opts.r || 3.6, 0, Math.PI * 2); ctx.fill(); });\n      ctx.restore();\n    } else {\n      const fns = opts.fns || (typeof opts.fn === \"function\" ? [{ fn: opts.fn, color: opts.color, label: opts.label }] : []);\n      fns.forEach((f, i) => {\n        const color = f.color || PALETTE[i % PALETTE.length];\n        stroke(ctx, fnPoints(f.fn, opts, m), color, f.width || 2.4, f.dash);\n        if (f.label) items.push({ label: f.label, color });\n      });\n    }\n    legend(ctx, box, items);\n    return { ctx, sx: m.sx, sy: m.sy, box, W, H, opts };\n  }\n\n  // ---- overlays (world coordinates) ----\n  function marker(ch, x, y, o) {\n    o = o || {};\n    const px = ch.sx(x), py = ch.sy(y);\n    ch.ctx.save();\n    ch.ctx.fillStyle = o.color || style.MAIN;\n    ch.ctx.beginPath(); ch.ctx.arc(px, py, o.r || 5, 0, Math.PI * 2); ch.ctx.fill();\n    ch.ctx.strokeStyle = style.PAPER; ch.ctx.lineWidth = 1.5; ch.ctx.stroke();\n    if (o.label) {\n      ch.ctx.font = font(o.size || 13); ch.ctx.fillStyle = o.color || style.MAIN; ch.ctx.textAlign = \"left\";\n      ch.ctx.fillText(o.label, px + 8, py - 8);\n    }\n    ch.ctx.restore();\n  }\n\n  function vline(ch, x, o) {\n    o = o || {};\n    const px = ch.sx(x);\n    stroke(ch.ctx, [[px, ch.box.y0], [px, ch.box.y1]], o.color || style.MUTED, o.width || 1.2, o.dash || [4, 4]);\n    if (o.label) note(ch, x, null, o.label, { color: o.color || style.MUTED, px: px + 4, py: ch.box.y0 + 12, align: \"left\", size: o.size });\n  }\n\n  function hline(ch, y, o) {\n    o = o || {};\n    const py = ch.sy(y);\n    stroke(ch.ctx, [[ch.box.x0, py], [ch.box.x1, py]], o.color || style.MUTED, o.width || 1.2, o.dash || [4, 4]);\n    if (o.label) note(ch, null, y, o.label, { color: o.color || style.MUTED, px: ch.box.x1 - 4, py: py - 5, align: \"right\", size: o.size });\n  }\n\n  function segment(ch, a, b, o) {\n    o = o || {};\n    const x1 = ch.sx(a[0]), y1 = ch.sy(a[1]), x2 = ch.sx(b[0]), y2 = ch.sy(b[1]);\n    const color = o.color || style.AUX;\n    stroke(ch.ctx, [[x1, y1], [x2, y2]], color, o.width || 2, o.dash);\n    if (o.arrow) {\n      const ang = Math.atan2(y2 - y1, x2 - x1), L = 9;\n      ch.ctx.save(); ch.ctx.fillStyle = color; ch.ctx.beginPath();\n      ch.ctx.moveTo(x2, y2);\n      ch.ctx.lineTo(x2 - L * Math.cos(ang - 0.4), y2 - L * Math.sin(ang - 0.4));\n      ch.ctx.lineTo(x2 - L * Math.cos(ang + 0.4), y2 - L * Math.sin(ang + 0.4));\n      ch.ctx.fill(); ch.ctx.restore();\n    }\n  }\n\n  function note(ch, x, y, text, o) {\n    o = o || {};\n    const px = o.px != null ? o.px : ch.sx(x), py = o.py != null ? o.py : ch.sy(y);\n    ch.ctx.save();\n    ch.ctx.font = font(o.size || 14, o.italic);\n    ch.ctx.fillStyle = o.color || style.INK;\n    ch.ctx.textAlign = o.align || \"left\";\n    ch.ctx.fillText(text, px, py);\n    ch.ctx.restore();\n  }\n\n  /** Pointer probe in world coords; the caller redraws and updates readouts. */\n  function attachProbe(canvas, opts, onProbe, onLeave) {\n    const [x0, x1] = opts.xlim;\n    const [y0, y1] = opts.ylim;\n    const toWorld = (px, py) => {\n      const r = canvas.getBoundingClientRect();\n      const box = plotBox(r.width, r.height, opts);\n      const t = (px - r.left - box.x0) / (box.x1 - box.x0);\n      const u = 1 - (py - r.top - box.y0) / (box.y1 - box.y0);\n      return { x: x0 + t * (x1 - x0), y: y0 + u * (y1 - y0), inside: t >= 0 && t <= 1 };\n    };\n    const handler = (e) => {\n      const p = toWorld(e.clientX, e.clientY);\n      if (p.inside) onProbe(p);\n    };\n    canvas.addEventListener(\"pointermove\", handler);\n    canvas.addEventListener(\"pointerdown\", handler);\n    if (onLeave) canvas.addEventListener(\"pointerleave\", onLeave);\n    canvas.style.touchAction = \"none\";\n    return toWorld;\n  }\n\n  window.HandChart = { render, marker, vline, hline, segment, note, attachProbe, style, font: HAND };\n})();\n</script>\n  <meta charset=\"utf-8\">\n  <style>\n    html, body { margin: 0; height: 100%; background: #faf8f3; font-family: \"PingFang SC\", \"Hiragino Sans GB\", sans-serif; color: #333; overflow: hidden; }\n    #wrap { position: absolute; inset: 0; display: flex; flex-direction: column; }\n    #plot { flex: 1; min-height: 0; margin: 10px 10px 4px; border: 1px solid #d9d2c3; border-radius: 12px; background: #fbfaf6; cursor: crosshair; touch-action: none; }\n    #readout { display: flex; justify-content: center; align-items: center; gap: 28px; padding: 4px 0 8px; font-size: 12px; color: #666; }\n    #readout .k { display: block; font-size: 11px; letter-spacing: .04em; }\n    #readout .v { display: block; font-family: ui-monospace, Menlo, monospace; font-size: 14px; font-weight: 700; color: #c0392b; min-width: 64px; text-align: center; }\n    #formula { display: inline-block; padding: 3px 10px; border: 1px solid #d9d2c3; border-radius: 6px; background: #fff; font-family: Georgia, \"Times New Roman\", serif; font-style: italic; font-size: 13px; color: #333; }\n    #controls { display: flex; justify-content: center; align-items: center; gap: 16px; padding: 0 0 10px; }\n    #controls label { font-size: 12px; color: #666; }\n    #e-slider { width: 200px; accent-color: #c0392b; }\n  </style>\n</head>\n<body>\n  <div id=\"wrap\">\n    <canvas id=\"plot\"></canvas>\n    <div id=\"readout\">\n      <span><span class=\"k\">浮点数值</span><span class=\"v\" id=\"value-display\">—</span></span>\n      <span><span class=\"k\">指数 e</span><span class=\"v\" id=\"exponent-display\">—</span></span>\n      <span id=\"formula\">value = 2^(e-1023) · (1 + f/2^52)</span>\n    </div>\n    <div id=\"controls\">\n      <label for=\"e-slider\">e = <span id=\"e-label\">1023</span></label>\n      <input type=\"range\" id=\"e-slider\" min=\"1020\" max=\"1026\" step=\"1\" value=\"1023\">\n    </div>\n  </div>\n  <script>\n    // --- the thing being explored -------------------------------------\n    // 双精度浮点数：s=0, f=0, 指数 e 从 1020 到 1026\n    // value = 2^(e-1023) * (1 + f/2^52)  (f=0)\n    const F = 0; // 尾数固定为 0\n    const BIAS = 1023;\n    const E_MIN = 1020, E_MAX = 1026;\n    const X_MIN = 0, X_MAX = 128; // 数轴范围 0 到 2^7 = 128\n    const Y_MIN = -0.5, Y_MAX = 0.5; // 数轴垂直范围（用于定位）\n\n    // 当前指数\n    let currentE = 1023;\n\n    // 计算浮点数值\n    function floatValue(e) {\n      return Math.pow(2, e - BIAS) * (1 + F / Math.pow(2, 52));\n    }\n\n    // --- plumbing ------------------------------------------------------\n    const canvas = document.getElementById('plot');\n    const ctx = canvas.getContext('2d');\n    let W = 0, H = 0;\n    const PAD = { l: 40, r: 30, t: 30, b: 40 };\n\n    // 世界坐标 -> 屏幕坐标\n    const sx = (x) => PAD.l + (x - X_MIN) / (X_MAX - X_MIN) * (W - PAD.l - PAD.r);\n    const sy = (y) => PAD.t + (Y_MAX - y) / (Y_MAX - Y_MIN) * (H - PAD.t - PAD.b);\n\n    // 屏幕坐标 -> 世界坐标（用于探针，但这里主要用滑块）\n    const ux = (px) => X_MIN + (px - PAD.l) / (W - PAD.l - PAD.r) * (X_MAX - X_MIN);\n\n    function resize() {\n      const r = canvas.getBoundingClientRect();\n      W = r.width; H = r.height;\n      const dpr = window.devicePixelRatio || 1;\n      canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);\n      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);\n      draw();\n    }\n\n    // 绘制数轴\n    function drawNumberLine() {\n      const y0 = sy(0);\n      // 轴线\n      ctx.save();\n      ctx.strokeStyle = '#b9b3a6';\n      ctx.lineWidth = 1.2;\n      ctx.beginPath();\n      ctx.moveTo(sx(X_MIN), y0);\n      ctx.lineTo(sx(X_MAX), y0);\n      ctx.stroke();\n      ctx.restore();\n\n      // 刻度与标签\n      const ticks = [0, 8, 16, 32, 64, 128]; // 0, 2^3, 2^4, 2^5, 2^6, 2^7\n      const labels = ['0', '2³', '2⁴', '2⁵', '2⁶', '2⁷'];\n      ctx.save();\n      ctx.font = 'italic 11px Georgia, serif';\n      ctx.fillStyle = '#8a8377';\n      ctx.textAlign = 'center';\n      ctx.textBaseline = 'top';\n      for (let i = 0; i < ticks.length; i++) {\n        const x = ticks[i];\n        const px = sx(x);\n        // 刻度线\n        ctx.beginPath();\n        ctx.moveTo(px, y0 - 5);\n        ctx.lineTo(px, y0 + 5);\n        ctx.strokeStyle = '#b9b3a6';\n        ctx.lineWidth = 1;\n        ctx.stroke();\n        // 标签\n        ctx.fillText(labels[i], px, y0 + 10);\n      }\n      // 轴名\n      ctx.textAlign = 'right';\n      ctx.fillText('value', sx(X_MAX) + 5, y0 - 8);\n      ctx.restore();\n    }\n\n    // 绘制数值标记点\n    function drawValueMarker(value) {\n      const px = sx(value);\n      const py = sy(0);\n      // 虚线垂线\n      ctx.save();\n      ctx.strokeStyle = 'rgba(192,57,43,.45)';\n      ctx.setLineDash([4, 4]);\n      ctx.lineWidth = 1;\n      ctx.beginPath();\n      ctx.moveTo(px, py - 30);\n      ctx.lineTo(px, py + 30);\n      ctx.stroke();\n      ctx.restore();\n\n      // 圆点\n      ctx.save();\n      ctx.fillStyle = '#c0392b';\n      ctx.beginPath();\n      ctx.arc(px, py, 5, 0, Math.PI * 2);\n      ctx.fill();\n      ctx.restore();\n\n      // 数值标签\n      ctx.save();\n      ctx.font = 'italic 12px Georgia, serif';\n      ctx.fillStyle = '#c0392b';\n      ctx.textAlign = 'center';\n      ctx.textBaseline = 'bottom';\n      ctx.fillText('value = ' + value.toFixed(3), px, py - 12);\n      ctx.restore();\n    }\n\n    // 绘制公式显示区（画布内）\n    function drawFormula(e) {\n      const val = floatValue(e);\n      const text = 'value = 2^(' + e + '-1023) · (1 + 0/2^52) = ' + val.toFixed(3);\n      ctx.save();\n      ctx.font = 'italic 12px Georgia, serif';\n      ctx.fillStyle = '#2e8b6f';\n      ctx.textAlign = 'left';\n      ctx.textBaseline = 'top';\n      ctx.fillText(text, PAD.l, PAD.t + 10);\n      ctx.restore();\n    }\n\n    // 绘制指数显示（画布内）\n    function drawExponentDisplay(e) {\n      ctx.save();\n      ctx.font = 'italic 12px Georgia, serif';\n      ctx.fillStyle = '#333';\n      ctx.textAlign = 'right';\n      ctx.textBaseline = 'top';\n      ctx.fillText('e = ' + e, W - PAD.r, PAD.t + 10);\n      ctx.restore();\n    }\n\n    // 绘制滑块轨道（画布内，位于数轴下方）\n    function drawSliderTrack() {\n      const trackY = sy(0) + 55;\n      const trackLeft = sx(0);\n      const trackRight = sx(128);\n      const trackWidth = trackRight - trackLeft;\n\n      // 轨道\n      ctx.save();\n      ctx.strokeStyle = '#b9b3a6';\n      ctx.lineWidth = 2;\n      ctx.beginPath();\n      ctx.moveTo(trackLeft, trackY);\n      ctx.lineTo(trackRight, trackY);\n      ctx.stroke();\n      ctx.restore();\n\n      // 刻度标记\n      ctx.save();\n      ctx.font = 'italic 10px Georgia, serif';\n      ctx.fillStyle = '#8a8377';\n      ctx.textAlign = 'center';\n      ctx.textBaseline = 'top';\n      for (let e = E_MIN; e <= E_MAX; e++) {\n        const t = (e - E_MIN) / (E_MAX - E_MIN);\n        const px = trackLeft + t * trackWidth;\n        ctx.beginPath();\n        ctx.moveTo(px, trackY - 4);\n        ctx.lineTo(px, trackY + 4);\n        ctx.strokeStyle = '#b9b3a6';\n        ctx.lineWidth = 1;\n        ctx.stroke();\n        ctx.fillText(e, px, trackY + 8);\n      }\n      ctx.restore();\n\n      // 滑块手柄\n      const t = (currentE - E_MIN) / (E_MAX - E_MIN);\n      const thumbX = trackLeft + t * trackWidth;\n      ctx.save();\n      ctx.fillStyle = '#c0392b';\n      ctx.beginPath();\n      ctx.arc(thumbX, trackY, 7, 0, Math.PI * 2);\n      ctx.fill();\n      ctx.strokeStyle = '#fff';\n      ctx.lineWidth = 2;\n      ctx.stroke();\n      ctx.restore();\n    }\n\n    function draw() {\n      ctx.clearRect(0, 0, W, H);\n\n      // 绘制数轴\n      drawNumberLine();\n\n      // 计算当前值\n      const val = floatValue(currentE);\n\n      // 绘制数值标记点\n      drawValueMarker(val);\n\n      // 绘制公式显示\n      drawFormula(currentE);\n\n      // 绘制指数显示\n      drawExponentDisplay(currentE);\n\n      // 绘制滑块轨道\n      drawSliderTrack();\n\n      // 更新读数\n      document.getElementById('value-display').textContent = val.toFixed(3);\n      document.getElementById('exponent-display').textContent = currentE;\n      document.getElementById('e-label').textContent = currentE;\n    }\n\n    // 滑块事件\n    const slider = document.getElementById('e-slider');\n    slider.addEventListener('input', function () {\n      currentE = parseInt(this.value, 10);\n      draw();\n    });\n\n    // 指针事件（用于数轴上的探针，但这里主要用滑块，保留以符合规范）\n    function onPointer(e) {\n      // 这里不改变数值，但可以显示探针位置（可选）\n      // 为了简洁，不实现探针，因为任务主要靠滑块\n    }\n    canvas.addEventListener('pointermove', onPointer);\n    canvas.addEventListener('pointerdown', onPointer);\n\n    // 教师控制钩子\n    window.hkControl = {\n      set: function (s) {\n        if (s && s.e != null) {\n          currentE = Math.max(E_MIN, Math.min(E_MAX, Math.round(+s.e)));\n          slider.value = currentE;\n          draw();\n        }\n      },\n      highlight: function (sel) {\n        var el = document.querySelector(sel);\n        if (!el) return;\n        el.style.outline = '2px solid #c0392b';\n        setTimeout(function () { el.style.outline = ''; }, 1500);\n      },\n      annotate: function () {},\n      reveal: function () {},\n    };\n\n    window.addEventListener('resize', resize);\n\n    // 初始化\n    resize();\n    // 确保首帧完整绘制\n    draw();\n  </script>\n</body>\n</html>",
+        "html_path": null,
+        "mermaid": null,
+        "layout": "newcol",
+        "params": [],
+        "controls": []
+      },
+      "widget_hint": "拖动滑块，观察数值随 $e$ 的变化。"
+    }
+  ]
+}

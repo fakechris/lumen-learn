@@ -1,0 +1,37 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8">
+<title>条件概率与贝叶斯：证据如何更新信念 · 速查表</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<style>
+@media print { @page { size: A4; margin: 10mm; } body { -webkit-print-color-adjust: exact; } }
+body { font-family: 'LXGW WenKai Lite', 'Patrick Hand', sans-serif; color: #2b2b2b; background: #fbfaf7;
+       max-width: 210mm; margin: 0 auto; padding: 6mm; font-size: 11.5px; line-height: 1.45; }
+h1 { font-size: 17px; margin: 0 0 2mm; } h2 { font-size: 12.5px; margin: 3mm 0 1mm; border-bottom: 1.5px solid #4b4b4b; }
+.meta { color: #6b6b6b; font-size: 10px; margin-bottom: 2mm; }
+.cols { column-count: 2; column-gap: 6mm; }
+table { border-collapse: collapse; width: 100%; font-size: 10.5px; }
+td { border-bottom: 0.5px solid #d8d2c4; padding: 1mm 1.5mm 1mm 0; vertical-align: top; }
+td:first-child { white-space: nowrap; font-weight: 600; }
+ul { margin: 0.5mm 0 1.5mm 4mm; padding: 0; } li { margin-bottom: 0.6mm; }
+.rel { color: #4b4b4b; } .rel b { color: #8a4b2b; }
+.mis { background: #f7ece8; border-left: 2.5px solid #b0553a; padding: 0.8mm 2mm; margin-bottom: 1mm; }
+</style></head><body>
+<h1>条件概率与贝叶斯：证据如何更新信念 · 速查表</h1>
+<p class=meta>｜编译自课程包（概念图 / 要点 / 板书 / 误区），不含课堂之外的内容。</p>
+<h2>每节要点</h2>
+<p><b>条件概率：缩小样本空间</b></p>
+<ul><li><b>条件概率：缩小样本空间</b> — 已知 B 发生，就把参照空间换成 B：分子是 A∩B，分母是 P(B)。条件概率就是换地图重新量。</li></ul>
+<p><b>全概率公式：分情况加权求和</b></p>
+<ul><li><b>全概率公式</b> — 先找互斥完备的划分，再对每块的条件概率按该块自身的概率加权求和，而不是简单平均。</li></ul>
+<p><b>贝叶斯公式：因果换向杆</b></p>
+<ul><li><b>贝叶斯公式</b> — 条件概率方向不能随意互换；贝叶斯用先验和证据强度把 P(证据|原因) 翻成 P(原因|证据)。</li></ul>
+<p><b>基础率谬误：为什么阳性不等于患病</b></p>
+<ul><li><b>基础率决定一切</b> — 阳性不等于患病。先验概率越小，假阳性的绝对人数越容易压倒真阳性，后验概率就越低。</li></ul>
+<h2>关键板书与公式</h2>
+<ul><li>已知 B 发生，A 的概率：$P(A \mid B)$</li><li>$P(A \mid B) = \dfrac{P(A \cap B)}{P(B)}$</li><li>分子 = A∩B 的面积</li><li>分母 = <b>P(B)</b> → 新地盘的总面积</li><li>新地盘 = B → 总面积 $P(B)$</li><li>新地盘里 A 剩下的那块 = $A \cap B$</li><li>概率 = 面积占比 → $P(A \mid B) = \dfrac{P(A \cap B)}{P(B)}$</li><li>分母为什么是 $P(B)$？→ 因为参照系换成了 B</li><li>已知 B 发生 → 参照空间换成 <b>B</b></li><li>分子 = $A \cap B$（A 在新地盘里剩下的那块）</li><li>分母 = $P(B)$（新地盘的总面积）</li><li>一句话：<b>换地图，重新量</b></li><li>$B_1,\ldots,B_n$：<b>互斥</b>且<b>完备</b>（盖满样本空间）</li><li>$P(A) = \sum_i P(A \mid B_i)\, P(B_i)$</li><li>权重 $P(B_i)$ = 第 $i$ 块情况发生的概率</li><li>先分情况 → 再按权重加</li><li>$A = (A \cap B_1) \cup (A \cap B_2) \cup \cdots \cup (A \cap B_n)$</li><li>小块<b>互斥</b> → $P(A) = \sum_i P(A \cap B_i)$</li><li>乘法公式：$P(A \cap B_i) = P(A \mid B_i)\, P(B_i)$</li><li>代回 → $P(A) = \sum_i P(A \mid B_i)\, P(B_i)$</li><li>第一步：找<b>互斥且完备</b>的划分 $B_1,\ldots,B_n$</li><li>第二步：每块求 $P(A \mid B_i)$ 和权重 $P(B_i)$</li><li>第三步：加权求和 $P(A)=\sum_i P(A \mid B_i)P(B_i)$</li><li>权重不同 → <b>不是简单平均</b></li></ul>
+<h2>常见误区（对的说法）</h2>
+<ul><li>应该，样本空间又没变，分母还是原来的：这是最常见的直觉：以为样本空间是固定的背景板，不管知道什么都不会变。但一旦知道 B 发生，B 之外的结果已经不可能了。</li><li>能，分母为零时结果就是零：这是把「分母为零」当成了「结果为零」，其实除以零没有定义。</li><li>橙色区域消失，P(A|B) 等于零：以为只要 B 发生，A 总还留一点，其实不相交就一点交集都没有。</li><li>接近 99%，灵敏度那么高：灵敏度是「得病的人里查出阳性的比例」，不是「所有人里阳性的比例」，分母不一样。</li><li>接近 1%，得病的人本来就少：患病率低确实会拉低总阳性率，但误报那 2% 乘上 99% 的健康人也不小，不能只看一头。</li><li>八十五，两个数取中间：简单平均默认两组人数一样多，可这里男生只占四分之一，权重不相等。</li><li>八十二点五，往女生那边偏：只看分高的那一组等于把权重全给了男生，女生那四分之三的人被丢掉了。</li><li>因为 B1 到 Bn 概率都相等，加起来正好是一：这是把互斥和等概率搞混了：能相加靠的是不重叠，跟各块概率是否相等没关系。</li><li>是，灵敏度高，阳性就等于确诊：这是最常见的直觉：把 P(阳性|患病) 直接当成 P(患病|阳性)，方向反了。</li><li>把 P(A|B) 和 P(B|A) 直接划等号：这是典型的方向混淆：P(A|B) 和 P(B|A) 一般并不相等，贝叶斯正是用来在两者之间换算的。</li><li>至少九成吧，灵敏度都百分之九十九了：这是最顺口的直觉：把灵敏度当成患病概率，完全忽略了患病率这个先验。</li><li>有病但没查出来的人：把误报率乘在患病人数上了，方向反了：零点零五乘的是健康人群。</li></ul>
+<script>addEventListener('DOMContentLoaded', () => renderMathInElement(document.body,
+  {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]}));</script>
+</body></html>

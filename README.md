@@ -65,7 +65,7 @@ The entire system is powered by a typed wire protocol (`speak`, `tts_segment`, `
 <a name="milestones--roadmap-阶段里程碑"></a>
 ## Milestones & Roadmap / 阶段里程碑
 
-本项目严格按照分期工程推进，Stage 1 ~ 9 已全部交付并经过 64 项自动化测试与浏览器实测，Stage 10 正在火热迭代：
+本项目严格按照分期工程推进，Stage 1 ~ 11 已全部交付（78 项自动化测试全绿）；Stage 10 北极星基线与 Stage 11 零门槛上手面均已落地：
 
 | Milestone 里程碑 | Target & Scope 目标与交付范围 | Status 状态 | Verification 验证方式 |
 | :--- | :--- | :---: | :--- |
@@ -78,7 +78,8 @@ The entire system is powered by a typed wire protocol (`speak`, `tts_segment`, `
 | **Stage 7: 2D Explorables & QA** | Zero-dependency 2D Canvas explorables with pointer probes, Playwright headless render check with one feedback regeneration. | ✅ Complete | Playwright ink sampling check, authored squeeze theorem lesson |
 | **Stage 8: Textbook Ingest & Plan Tree** | PDF textbook parsing, hierarchical course planner (`ingest → plan → build`), editable plan tree, semantic fill-blank grading. | ✅ Complete | CS251 lecture PDF parsing, 18 post-session exercises, semantic grader |
 | **Stage 9: Cognitive Tools & Mastery** | `HandChart` base, teacher-driven widget hooks (`hkControl`), spotlight mask, Feynman rounds, 4-axis mastery, course concept map. | ✅ Complete | Interactive widget control at speech phrases, typed concept graph render |
-| **Stage 10: Adaptive Teaching** | Cognitive-arc beats, entry diagnostic quiz, explanation ladder (deeper / compressed), remediation loops, simulated-student north-star harness. | 🔄 In Progress | `tools/sim_student.py` harness across novice/standard/fast personas |
+| **Stage 10: Adaptive Teaching** | Cognitive-arc beats, entry diagnostic quiz, explanation ladder (deeper / compressed), remediation loops, simulated-student north-star harness; frozen evaluation contract with A/B parallel forms, leak checks and known-bad registry. | ✅ Complete | `tools/sim_student.py --eval-set` across novice/standard/fast personas; `src/content/eval_contract.py` |
+| **Stage 11: First Ten Minutes** | BYOK settings panel (live reconnect, masked keys), per-course printable cheatsheets, seed catalog grown to 10 bundled courses across NN/LLM, physics, statistics, CS and math. | ✅ Complete | 78-item pytest suite, headless Chrome print check, per-course sim gating |
 
 ---
 

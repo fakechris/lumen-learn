@@ -1,0 +1,39 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8">
+<title>简谐振动：弹簧上的物理直觉 · 速查表</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<style>
+@media print { @page { size: A4; margin: 10mm; } body { -webkit-print-color-adjust: exact; } }
+body { font-family: 'LXGW WenKai Lite', 'Patrick Hand', sans-serif; color: #2b2b2b; background: #fbfaf7;
+       max-width: 210mm; margin: 0 auto; padding: 6mm; font-size: 11.5px; line-height: 1.45; }
+h1 { font-size: 17px; margin: 0 0 2mm; } h2 { font-size: 12.5px; margin: 3mm 0 1mm; border-bottom: 1.5px solid #4b4b4b; }
+.meta { color: #6b6b6b; font-size: 10px; margin-bottom: 2mm; }
+.cols { column-count: 2; column-gap: 6mm; }
+table { border-collapse: collapse; width: 100%; font-size: 10.5px; }
+td { border-bottom: 0.5px solid #d8d2c4; padding: 1mm 1.5mm 1mm 0; vertical-align: top; }
+td:first-child { white-space: nowrap; font-weight: 600; }
+ul { margin: 0.5mm 0 1.5mm 4mm; padding: 0; } li { margin-bottom: 0.6mm; }
+.rel { color: #4b4b4b; } .rel b { color: #8a4b2b; }
+.mis { background: #f7ece8; border-left: 2.5px solid #b0553a; padding: 0.8mm 2mm; margin-bottom: 1mm; }
+</style></head><body>
+<h1>简谐振动：弹簧上的物理直觉 · 速查表</h1>
+<p class=meta>｜编译自课程包（概念图 / 要点 / 板书 / 误区），不含课堂之外的内容。</p>
+<h2>每节要点</h2>
+<p><b>从恢复力到简谐振动方程</b></p>
+<ul><li><b>力决定运动的形式</b> — 线性恢复力 F=-kx 使加速度与位移反向正比，得到 d²x/dt²=-(k/m)x，其解即简谐振动。</li></ul>
+<p><b>猜一个解：简谐振动通解</b></p>
+<ul><li><b>简谐振动通解</b> — x(t)=A cos(ωt+φ)：ω 由系统定快慢，A 与 φ 由初始条件定大小和起点。</li></ul>
+<p><b>相位：转过的角度与影子位置</b></p>
+<ul><li><b>相位即角度</b> — 相位是圆周运动转过的角度，影子位置由它决定；相位差 0 同相，π 反相。</li></ul>
+<p><b>弹簧振子的能量转换与守恒</b></p>
+<ul><li><b>能量守恒</b> — 动能与势能此消彼长，总和恒为 1/2 kA^2，理想振子不漏能。</li></ul>
+<p><b>周期由质量与刚度决定，与振幅无关</b></p>
+<ul><li><b>周期只看 m 和 k</b> — T=2π√(m/k)：质量越大越慢，弹簧越硬越快，振幅只改能量不改周期。</li></ul>
+<h2>关键板书与公式</h2>
+<ul><li>平衡位置 $O$：弹簧自然长度处</li><li>右移 $x$ → 弹簧拉长</li><li>恢复力方向：<b>指向 $O$</b></li><li>偏离朝右，受力朝左 → 方向相反</li><li>大小：$|F| = k|x|$</li><li>方向：与 $x$ 相反 → 加负号</li><li>$F = -kx$</li><li>$x&gt;0$ → $F&lt;0$</li><li>$x&lt;0$ → $F&gt;0$</li><li>牛顿第二定律：$ma = F$</li><li>代入恢复力：$ma = -kx$</li><li>两边除以 $m$ → $a = -\frac{k}{m}x$</li><li>写成微分方程：$\frac{d^2x}{dt^2} = -\frac{k}{m}x$</li><li>线性恢复力：$F = -kx$</li><li>牛顿第二定律 → $a = -\frac{k}{m}x$</li><li>微分方程：$\frac{d^2x}{dt^2} = -\frac{k}{m}x$</li><li><b>线性恢复力 → 简谐振动</b></li><li>两个解合起来 → $x(t) = A\cos(\omega t + \varphi)$</li><li>$\omega = \sqrt{k/m}$</li><li>$A$：振幅（最大偏移）</li><li>$\omega$：角频率（每秒多少弧度）</li><li>$\varphi$：初相（$t=0$ 时的起跑角度）</li><li>通解：$x(t) = A\cos(\omega t + \varphi)$</li><li>$\omega = \sqrt{k/m}$ → <b>系统定快慢</b></li></ul>
+<h2>常见误区（对的说法）</h2>
+<ul><li>弹簧一直往左拉，物块就一路加速冲过平衡位置跑掉：这是最常见的直觉：把弹簧的拉力当成方向不变的恒力，于是以为物块只会单向加速。</li><li>朝右，弹簧被拉长了当然继续往外拽：把弹簧想象成橡皮筋：以为拉长后它还想继续往外伸。其实弹簧被拉长时是往回缩的。</li><li>会，力一直拉着它，它只会越来越快：这是典型误区：以为弹簧的拉力方向不变，像恒力一样一直朝一个方向推。实际上位移一翻到另一边，力的方向也跟着翻。</li><li>指数函数，它求导还是自己，加个负号就行：指数函数求导还是自己，不会变号；要变号得是 e 的虚数次方，那其实就是正弦余弦。</li><li>够，sin 从零开始，弹簧一般就从零开始动：sin 只能描述从平衡位置出发的情况；如果一开始就把弹簧拉到最远处再松手，初始速度为零，sin 就描述不了。</li><li>波峰变高了，因为 φ 也是振幅的一部分：把 φ 和 A 混在一起，以为初相也管高度。</li><li>波动变快了，因为 φ 影响周期：把 φ 和 ω 混在一起，以为初相也管快慢。</li><li>匀速来回，跟质点转圈一样快慢不变：把影子当成独立的小球，以为它也匀速。其实影子的速度是圆周速度在 x 轴上的分量，转到两头时分量最小。</li><li>来回变快，幅度还是 A 不变：以为转得快影子就甩得更远。其实幅度由半径 A 决定，转速只改变影子来回的快慢。</li><li>一个在最右时，另一个也在最右：这是把同相和反相搞混了：相位差 π 意味着步调完全相反。</li><li>两样都很大，动能和势能一起达到最大：很多人以为端点处速度为零但动能还很大，其实动能跟速度平方挂钩，速度为零动能就是零。</li><li>先变长再变短，端点最长：有人以为越靠近端点动能越大，其实速度在减小，动能条只会越来越短。</li></ul>
+<script>addEventListener('DOMContentLoaded', () => renderMathInElement(document.body,
+  {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]}));</script>
+</body></html>

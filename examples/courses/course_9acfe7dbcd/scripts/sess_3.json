@@ -1,0 +1,307 @@
+{
+  "session_id": "sess_3",
+  "course_id": "course_9acfe7dbcd",
+  "title": "e^x 的麦克劳林展开：多项式逼近的威力",
+  "learning_goal": "能写出 e^x 的麦克劳林级数，并理解它对一切实数 x 收敛。",
+  "steps": [
+    {
+      "title": "多项式能表示指数函数吗？",
+      "beat": "hook",
+      "spoken_text": "先别急着看公式。指数函数 e 的 x 次方，它增长得那么猛，一条曲线冲上天。多项式呢？就是 1 加 x 加 x 平方这种。你觉得一条多项式曲线，有可能在很大的 x 上也贴着 e 的 x 次方走吗？还是说它只能在零附近装装样子？",
+      "boards": [
+        {
+          "title": "",
+          "markdown": "- $e^x$ 冲上天，多项式能跟上吗？\n- 只在 $x=0$ 附近像？还是**处处都像**？",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "circle",
+          "snippet": "处处都像",
+          "board_index": 0,
+          "trigger_phrase": "在很大的 x 上也贴着",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": {
+        "mode": "choice",
+        "question": "你觉得多项式能在大范围里贴合 e 的 x 次方吗？",
+        "options": [
+          "能，只要项数够多，多远都能贴住",
+          "不能，多项式只能在零附近像，远了就散架"
+        ],
+        "correct_index": 0,
+        "misconceptions": [
+          null,
+          "这是最常见的直觉：以为多项式增长不够快，远处一定崩。其实项数足够多时，多项式可以一路贴住 e 的 x 次方。"
+        ],
+        "explanation": "先记住这个悬念：项数够多时，多项式不只在零附近像，在很大的 x 上也能贴住 e 的 x 次方。"
+      },
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "从切线到完美贴合",
+      "beat": "poe",
+      "spoken_text": "看下面的教具。横轴是 x，纵轴是 y。蓝线是 e 的 x 次方，橙线是多项式 P n，从 n 等于 1 开始，就是 1 加 x，那条切线。我把滑块从 1 慢慢推到 10，你盯着橙线看：它是不是从只在零附近贴，慢慢变成在越来越宽的范围内贴住蓝线？注意看 x 等于 5 的地方，n 等于 10 时两条线已经几乎分不开了。",
+      "boards": [
+        {
+          "title": "加项 = 加贴合范围",
+          "markdown": "- $P_n(x)=\\sum_{k=0}^{n} \\frac{x^k}{k!}$\n- $n=1$：$1+x$，只在 0 附近像\n- $n$ 增大 → 贴合范围**越来越宽**\n- $x=5$ 处，$n=10$ 已几乎重合",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "highlight",
+          "snippet": "P_n(x)=\\sum_{k=0}^{n} \\frac{x^k}{k!}",
+          "board_index": 0,
+          "trigger_phrase": "橙线是多项式 P n",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": {
+        "kind": "explorable",
+        "title": "拖动 n，看多项式贴住 e^x 的范围",
+        "task": "横轴 x 从 -2 到 6，纵轴 y 从 0 到 150。画蓝色 e^x 曲线，橙色 P_n(x)=sum_{k=0}^{n} x^k/k! 曲线。滑块 n 从 1 到 10。实时显示 x=5 处两条曲线的 y 值之差。预期：n 增大时橙线在更宽范围内贴合蓝线，x=5 处误差迅速变小，n=10 时几乎重合。",
+        "html": "<!DOCTYPE html>\n<html>\n<head><script>/**\n * HandChart — zero-dependency hand-drawn chart base for explorable widgets.\n *\n * Injected into every generated 2D explorable (widget_generator.py) so the\n * model supplies data + overlays instead of hand-writing axes. The look matches\n * the handwritten page: paper panel, slightly wobbly ink axes, main red /\n * aux green, handwriting labels.\n *\n * API (all coordinates in WORLD units unless noted):\n *   const ch = HandChart.render(canvas, opts)\n *     opts = { type: \"function\"|\"points\"|\"bars\"|\"lines\",\n *              xlim:[x0,x1], ylim:[y0,y1],                  (all but bars)\n *              fn: x=>y | fns:[{fn, color?, label?}],        (function)\n *              points:[[x,y],...],                          (points)\n *              series:[{name, points, color?, dash?}],      (lines; legend drawn)\n *              bars:{labels:[...], values:[...], highlight?} (bars)\n *              xlabel, ylabel, grid:true|false, title }\n *     returns { ctx, sx, sy, box, W, H, opts }  — keep it to draw overlays\n *   HandChart.marker(ch, x, y, {color, label, r})       dot + optional label\n *   HandChart.vline(ch, x, {color, dash, label})         vertical guide\n *   HandChart.hline(ch, y, {color, dash, label})         horizontal guide\n *   HandChart.segment(ch, [x1,y1], [x2,y2], {color, width, dash, arrow})\n *   HandChart.note(ch, x, y, text, {color, align, size}) handwriting annotation\n *   HandChart.attachProbe(canvas, {xlim, ylim}, onProbe, onLeave?)\n *     pointer follow; onProbe({x, y}) in world coords — redraw + readouts there.\n *   HandChart.style = { INK, AXIS, MAIN, AUX, GRID, PAPER, MUTED }\n */\n(function () {\n  const style = {\n    INK: \"#2b2b2b\", AXIS: \"#8a8377\", MAIN: \"#c0392b\", AUX: \"#2e8b6f\",\n    GRID: \"#ece5d4\", PAPER: \"#fbfaf6\", MUTED: \"#8a8377\", PURPLE: \"#7c3aed\", BLUE: \"#2563eb\",\n  };\n  const PALETTE = [style.MAIN, style.AUX, style.BLUE, style.PURPLE, \"#d97706\"];\n  const PAD = { l: 48, r: 18, t: 18, b: 36 };\n  const HAND = \"'Patrick Hand', 'LXGW WenKai Lite', 'PingFang SC', sans-serif\";\n\n  function font(size, italic) { return (italic ? \"italic \" : \"\") + size + \"px \" + HAND; }\n\n  // deterministic wobble so the \"hand\" does not shake on every redraw\n  function wob(seed, amp) { return Math.sin(seed * 12.9898) * amp; }\n\n  function tickVals(min, max, n) {\n    const span = max - min || 1;\n    const raw = span / n;\n    const mag = Math.pow(10, Math.floor(Math.log10(raw)));\n    const step = [1, 2, 2.5, 5, 10].map((m) => m * mag).find((s) => span / s <= n) || mag * 10;\n    const out = [];\n    for (let v = Math.ceil(min / step) * step; v <= max + step * 1e-9; v += step) out.push(+v.toFixed(10));\n    return out;\n  }\n\n  function fmt(v) {\n    const a = Math.abs(v);\n    if (a === 0) return \"0\";\n    if (a >= 10000 || a < 0.01) return v.toExponential(1);\n    return String(+v.toFixed(Math.max(0, 3 - Math.floor(Math.log10(a)))));\n  }\n\n  /** a hand-drawn line: two passes with tiny deterministic wobble */\n  function inkLine(ctx, x1, y1, x2, y2, color, width, seed) {\n    ctx.save();\n    ctx.strokeStyle = color; ctx.lineWidth = width; ctx.lineCap = \"round\";\n    const n = 6, s = seed || (x1 + y2);\n    ctx.beginPath();\n    for (let i = 0; i <= n; i++) {\n      const t = i / n, x = x1 + (x2 - x1) * t, y = y1 + (y2 - y1) * t;\n      const w = i === 0 || i === n ? 0 : wob(s + i, 0.7);\n      i ? ctx.lineTo(x + w, y + w) : ctx.moveTo(x, y);\n    }\n    ctx.stroke();\n    ctx.restore();\n  }\n\n  function frame(ctx, W, H) {\n    ctx.clearRect(0, 0, W, H);\n    ctx.save();\n    ctx.fillStyle = style.PAPER;\n    ctx.fillRect(0, 0, W, H);\n    ctx.restore();\n  }\n\n  function plotBox(W, H, opts) {\n    const t = PAD.t + (opts && opts.title ? 18 : 0);\n    return { x0: PAD.l, y0: t, x1: W - PAD.r, y1: H - PAD.b };\n  }\n\n  function mapping(box, xlim, ylim) {\n    const [x0, x1] = xlim, [y0, y1] = ylim;\n    return {\n      sx: (v) => box.x0 + (v - x0) / (x1 - x0) * (box.x1 - box.x0),\n      sy: (v) => box.y1 - (v - y0) / (y1 - y0) * (box.y1 - box.y0),\n    };\n  }\n\n  function axes(ctx, box, opts) {\n    const [x0, x1] = opts.xlim, [y0, y1] = opts.ylim;\n    const { sx, sy } = mapping(box, opts.xlim, opts.ylim);\n    const xt = tickVals(x0, x1, 6).filter((v) => v >= x0 && v <= x1);\n    const yt = tickVals(y0, y1, 4).filter((v) => v >= y0 && v <= y1);\n    if (opts.grid !== false) {\n      ctx.save(); ctx.strokeStyle = style.GRID; ctx.lineWidth = 1;\n      for (const v of xt) { ctx.beginPath(); ctx.moveTo(sx(v), box.y0); ctx.lineTo(sx(v), box.y1); ctx.stroke(); }\n      for (const v of yt) { ctx.beginPath(); ctx.moveTo(box.x0, sy(v)); ctx.lineTo(box.x1, sy(v)); ctx.stroke(); }\n      ctx.restore();\n    }\n    // axes sit on zero when zero is inside the range, else on the box edge\n    const ax = y0 <= 0 && y1 >= 0 ? sy(0) : box.y1;\n    const ay = x0 <= 0 && x1 >= 0 ? sx(0) : box.x0;\n    inkLine(ctx, box.x0 - 4, ax, box.x1 + 6, ax, style.AXIS, 1.4, 1);\n    inkLine(ctx, ay, box.y1 + 4, ay, box.y0 - 6, style.AXIS, 1.4, 2);\n    // arrow heads\n    ctx.save(); ctx.fillStyle = style.AXIS;\n    ctx.beginPath(); ctx.moveTo(box.x1 + 8, ax); ctx.lineTo(box.x1 + 1, ax - 3.5); ctx.lineTo(box.x1 + 1, ax + 3.5); ctx.fill();\n    ctx.beginPath(); ctx.moveTo(ay, box.y0 - 8); ctx.lineTo(ay - 3.5, box.y0 - 1); ctx.lineTo(ay + 3.5, box.y0 - 1); ctx.fill();\n    ctx.restore();\n    ctx.save();\n    ctx.fillStyle = style.MUTED; ctx.font = font(12);\n    ctx.textAlign = \"center\";\n    for (const v of xt) {\n      if (Math.abs(sx(v) - ay) < 1 && ay !== box.x0) continue; // skip the label under the y axis\n      inkLine(ctx, sx(v), ax - 3, sx(v), ax + 3, style.AXIS, 1, v);\n      ctx.fillText(fmt(v), sx(v), ax + 16);\n    }\n    ctx.textAlign = \"right\";\n    for (const v of yt) {\n      if (Math.abs(sy(v) - ax) < 1 && ax !== box.y1) continue;\n      inkLine(ctx, ay - 3, sy(v), ay + 3, sy(v), style.AXIS, 1, v + 7);\n      ctx.fillText(fmt(v), ay - 7, sy(v) + 4);\n    }\n    ctx.font = font(14, true); ctx.fillStyle = style.INK;\n    if (opts.xlabel) { ctx.textAlign = \"right\"; ctx.fillText(opts.xlabel, box.x1 + 4, ax - 8); }\n    if (opts.ylabel) { ctx.textAlign = \"left\"; ctx.fillText(opts.ylabel, ay + 8, box.y0 + 4); }\n    ctx.restore();\n    return { sx, sy };\n  }\n\n  function stroke(ctx, pts, color, width, dash) {\n    if (!pts.length) return;\n    ctx.save();\n    ctx.strokeStyle = color; ctx.lineWidth = width || 2.2;\n    ctx.lineJoin = \"round\"; ctx.lineCap = \"round\";\n    if (dash) ctx.setLineDash(dash);\n    ctx.beginPath();\n    let pen = false;\n    for (const p of pts) {\n      if (!p) { pen = false; continue; }\n      pen ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1]);\n      pen = true;\n    }\n    ctx.stroke();\n    ctx.restore();\n  }\n\n  function fnPoints(fn, opts, m) {\n    const [x0, x1] = opts.xlim, [y0, y1] = opts.ylim;\n    const n = 400, pts = [];\n    const margin = (y1 - y0) * 0.02;\n    for (let i = 0; i <= n; i++) {\n      const x = x0 + (x1 - x0) * i / n;\n      let y;\n      try { y = fn(x); } catch (e) { y = NaN; }\n      if (!isFinite(y) || y < y0 - margin || y > y1 + margin) { pts.push(null); continue; }\n      pts.push([m.sx(x), m.sy(y)]);\n    }\n    return pts;\n  }\n\n  function legend(ctx, box, items) {\n    if (!items.length) return;\n    ctx.save();\n    ctx.font = font(13); ctx.textAlign = \"left\"; ctx.textBaseline = \"middle\";\n    let x = box.x0 + 10, y = box.y0 + 12;\n    for (const it of items) {\n      inkLine(ctx, x, y, x + 22, y, it.color, 2.4, x);\n      ctx.fillStyle = style.INK;\n      ctx.fillText(it.label, x + 28, y + 1);\n      x += 28 + ctx.measureText(it.label).width + 18;\n    }\n    ctx.restore();\n  }\n\n  function title(ctx, W, text) {\n    ctx.save();\n    ctx.font = font(15); ctx.fillStyle = style.INK; ctx.textAlign = \"center\";\n    ctx.fillText(text, W / 2, 16);\n    ctx.restore();\n  }\n\n  function render(canvas, opts) {\n    const ctx = canvas.getContext(\"2d\");\n    const rect = canvas.getBoundingClientRect();\n    const W = Math.max(60, Math.round(rect.width)), H = Math.max(60, Math.round(rect.height));\n    const dpr = window.devicePixelRatio || 1;\n    if (canvas.width !== Math.round(W * dpr) || canvas.height !== Math.round(H * dpr)) {\n      canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);\n    }\n    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);\n    frame(ctx, W, H);\n    if (opts.title) title(ctx, W, opts.title);\n    const box = plotBox(W, H, opts);\n    const type = opts.type || \"function\";\n\n    if (type === \"bars\") {\n      const labels = opts.bars.labels || [], values = opts.bars.values || [];\n      const n = Math.max(1, values.length);\n      const bw = (box.x1 - box.x0) / n;\n      const vmax = Math.max(...values.map((v) => Math.abs(v)), 0) * 1.15 || 1;\n      const base = box.y1;\n      inkLine(ctx, box.x0 - 4, base, box.x1 + 4, base, style.AXIS, 1.4, 3);\n      ctx.save();\n      values.forEach((v, i) => {\n        const h = (Math.abs(v) / vmax) * (box.y1 - box.y0);\n        const x = box.x0 + i * bw + bw * 0.2, w = bw * 0.6, y = base - h;\n        const hot = opts.bars.highlight != null && i === opts.bars.highlight;\n        ctx.fillStyle = hot ? style.MAIN : \"#e6dfcf\";\n        ctx.fillRect(x, y, w, h);\n        ctx.strokeStyle = hot ? style.MAIN : style.AXIS; ctx.lineWidth = 1.2;\n        ctx.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);\n        ctx.font = font(13); ctx.textAlign = \"center\"; ctx.fillStyle = style.INK;\n        ctx.fillText(String(labels[i] == null ? i + 1 : labels[i]), x + w / 2, base + 17);\n        ctx.fillStyle = hot ? style.MAIN : style.MUTED;\n        ctx.fillText(fmt(v), x + w / 2, y - 6);\n      });\n      ctx.restore();\n      const sx = (i) => box.x0 + (i + 0.5) * bw, sy = (v) => base - (Math.abs(v) / vmax) * (box.y1 - box.y0);\n      return { ctx, sx, sy, box, W, H, opts };\n    }\n\n    const m = axes(ctx, box, opts);\n    const items = [];\n    if (type === \"lines\") {\n      (opts.series || []).forEach((s, i) => {\n        const color = s.color || PALETTE[i % PALETTE.length];\n        stroke(ctx, (s.points || []).map((p) => [m.sx(p[0]), m.sy(p[1])]), color, 2.2, s.dash);\n        if (s.name) items.push({ label: s.name, color });\n      });\n    } else if (type === \"points\") {\n      ctx.save(); ctx.fillStyle = opts.color || style.MAIN;\n      (opts.points || []).forEach((p) => { ctx.beginPath(); ctx.arc(m.sx(p[0]), m.sy(p[1]), opts.r || 3.6, 0, Math.PI * 2); ctx.fill(); });\n      ctx.restore();\n    } else {\n      const fns = opts.fns || (typeof opts.fn === \"function\" ? [{ fn: opts.fn, color: opts.color, label: opts.label }] : []);\n      fns.forEach((f, i) => {\n        const color = f.color || PALETTE[i % PALETTE.length];\n        stroke(ctx, fnPoints(f.fn, opts, m), color, f.width || 2.4, f.dash);\n        if (f.label) items.push({ label: f.label, color });\n      });\n    }\n    legend(ctx, box, items);\n    return { ctx, sx: m.sx, sy: m.sy, box, W, H, opts };\n  }\n\n  // ---- overlays (world coordinates) ----\n  function marker(ch, x, y, o) {\n    o = o || {};\n    const px = ch.sx(x), py = ch.sy(y);\n    ch.ctx.save();\n    ch.ctx.fillStyle = o.color || style.MAIN;\n    ch.ctx.beginPath(); ch.ctx.arc(px, py, o.r || 5, 0, Math.PI * 2); ch.ctx.fill();\n    ch.ctx.strokeStyle = style.PAPER; ch.ctx.lineWidth = 1.5; ch.ctx.stroke();\n    if (o.label) {\n      ch.ctx.font = font(o.size || 13); ch.ctx.fillStyle = o.color || style.MAIN; ch.ctx.textAlign = \"left\";\n      ch.ctx.fillText(o.label, px + 8, py - 8);\n    }\n    ch.ctx.restore();\n  }\n\n  function vline(ch, x, o) {\n    o = o || {};\n    const px = ch.sx(x);\n    stroke(ch.ctx, [[px, ch.box.y0], [px, ch.box.y1]], o.color || style.MUTED, o.width || 1.2, o.dash || [4, 4]);\n    if (o.label) note(ch, x, null, o.label, { color: o.color || style.MUTED, px: px + 4, py: ch.box.y0 + 12, align: \"left\", size: o.size });\n  }\n\n  function hline(ch, y, o) {\n    o = o || {};\n    const py = ch.sy(y);\n    stroke(ch.ctx, [[ch.box.x0, py], [ch.box.x1, py]], o.color || style.MUTED, o.width || 1.2, o.dash || [4, 4]);\n    if (o.label) note(ch, null, y, o.label, { color: o.color || style.MUTED, px: ch.box.x1 - 4, py: py - 5, align: \"right\", size: o.size });\n  }\n\n  function segment(ch, a, b, o) {\n    o = o || {};\n    const x1 = ch.sx(a[0]), y1 = ch.sy(a[1]), x2 = ch.sx(b[0]), y2 = ch.sy(b[1]);\n    const color = o.color || style.AUX;\n    stroke(ch.ctx, [[x1, y1], [x2, y2]], color, o.width || 2, o.dash);\n    if (o.arrow) {\n      const ang = Math.atan2(y2 - y1, x2 - x1), L = 9;\n      ch.ctx.save(); ch.ctx.fillStyle = color; ch.ctx.beginPath();\n      ch.ctx.moveTo(x2, y2);\n      ch.ctx.lineTo(x2 - L * Math.cos(ang - 0.4), y2 - L * Math.sin(ang - 0.4));\n      ch.ctx.lineTo(x2 - L * Math.cos(ang + 0.4), y2 - L * Math.sin(ang + 0.4));\n      ch.ctx.fill(); ch.ctx.restore();\n    }\n  }\n\n  function note(ch, x, y, text, o) {\n    o = o || {};\n    const px = o.px != null ? o.px : ch.sx(x), py = o.py != null ? o.py : ch.sy(y);\n    ch.ctx.save();\n    ch.ctx.font = font(o.size || 14, o.italic);\n    ch.ctx.fillStyle = o.color || style.INK;\n    ch.ctx.textAlign = o.align || \"left\";\n    ch.ctx.fillText(text, px, py);\n    ch.ctx.restore();\n  }\n\n  /** Pointer probe in world coords; the caller redraws and updates readouts. */\n  function attachProbe(canvas, opts, onProbe, onLeave) {\n    const [x0, x1] = opts.xlim;\n    const [y0, y1] = opts.ylim;\n    const toWorld = (px, py) => {\n      const r = canvas.getBoundingClientRect();\n      const box = plotBox(r.width, r.height, opts);\n      const t = (px - r.left - box.x0) / (box.x1 - box.x0);\n      const u = 1 - (py - r.top - box.y0) / (box.y1 - box.y0);\n      return { x: x0 + t * (x1 - x0), y: y0 + u * (y1 - y0), inside: t >= 0 && t <= 1 };\n    };\n    const handler = (e) => {\n      const p = toWorld(e.clientX, e.clientY);\n      if (p.inside) onProbe(p);\n    };\n    canvas.addEventListener(\"pointermove\", handler);\n    canvas.addEventListener(\"pointerdown\", handler);\n    if (onLeave) canvas.addEventListener(\"pointerleave\", onLeave);\n    canvas.style.touchAction = \"none\";\n    return toWorld;\n  }\n\n  window.HandChart = { render, marker, vline, hline, segment, note, attachProbe, style, font: HAND };\n})();\n</script>\n  <meta charset=\"utf-8\">\n  <style>\n    html, body { margin: 0; height: 100%; background: #faf8f3; font-family: \"PingFang SC\", \"Hiragino Sans GB\", sans-serif; color: #333; overflow: hidden; }\n    #wrap { position: absolute; inset: 0; display: flex; flex-direction: column; }\n    #plot { flex: 1; min-height: 0; margin: 10px 10px 4px; border: 1px solid #d9d2c3; border-radius: 12px; background: #fbfaf6; cursor: crosshair; touch-action: none; }\n    #readout { display: flex; justify-content: center; align-items: center; gap: 22px; padding: 4px 0 8px; font-size: 12px; color: #666; flex-wrap: wrap; }\n    #readout .k { display: block; font-size: 11px; letter-spacing: .04em; }\n    #readout .v { display: block; font-family: ui-monospace, Menlo, monospace; font-size: 14px; font-weight: 700; color: #c0392b; min-width: 64px; text-align: center; }\n    #n-slider { width: 130px; accent-color: #c0392b; vertical-align: middle; }\n    #formula { display: inline-block; padding: 3px 10px; border: 1px solid #d9d2c3; border-radius: 6px; background: #fff; font-family: Georgia, \"Times New Roman\", serif; font-style: italic; font-size: 13px; color: #333; }\n  </style>\n</head>\n<body>\n  <div id=\"wrap\">\n    <canvas id=\"plot\"></canvas>\n    <div id=\"readout\">\n      <span><span class=\"k\">当前 n</span><span class=\"v\" id=\"nValue-display\">1</span></span>\n      <span><span class=\"k\">x=5 处误差</span><span class=\"v\" id=\"errorAt5-display\">—</span></span>\n      <span><input id=\"n-slider\" type=\"range\" min=\"1\" max=\"10\" step=\"1\" value=\"1\"></span>\n      <span id=\"formula\">P_n(x) = Σ x^k / k!</span>\n    </div>\n  </div>\n  <script>\n    // --- the thing being explored -------------------------------------\n    var X_MIN = -2, X_MAX = 6, Y_MIN = 0, Y_MAX = 150;\n    var expFn = function (x) { return Math.exp(x); };\n    function polyFn(x, n) {\n      var s = 0, term = 1;\n      for (var k = 0; k <= n; k++) {\n        if (k > 0) term = term * x / k;\n        s += term;\n      }\n      return s;\n    }\n    var nVal = 1;\n\n    // --- plumbing ------------------------------------------------------\n    var canvas = document.getElementById('plot');\n    var ch = null;\n\n    function draw() {\n      var series = [\n        { name: 'e^x', points: [], color: '#2f6fb0', width: 2 },\n        { name: 'P_n(x)', points: [], color: '#d9822b', width: 2 }\n      ];\n      var N = 400;\n      for (var i = 0; i <= N; i++) {\n        var x = X_MIN + (X_MAX - X_MIN) * i / N;\n        series[0].points.push([x, expFn(x)]);\n        series[1].points.push([x, polyFn(x, nVal)]);\n      }\n      ch = HandChart.render(canvas, {\n        type: 'lines',\n        xlim: [X_MIN, X_MAX],\n        ylim: [Y_MIN, Y_MAX],\n        series: series,\n        xlabel: 'x',\n        ylabel: 'y',\n        title: 'e^x 与 P_n(x)'\n      });\n\n      // error marker at x = 5\n      var x0 = 5;\n      var ye = expFn(x0), yp = polyFn(x0, nVal);\n      HandChart.vline(ch, x0, { label: 'x = 5', color: '#8a8377' });\n      HandChart.segment(ch, [x0, yp], [x0, ye], { color: '#c0392b', dash: [4, 3] });\n      HandChart.marker(ch, x0, ye, { label: 'e^5', color: '#2f6fb0' });\n      HandChart.marker(ch, x0, yp, { label: 'P_n(5)', color: '#d9822b' });\n\n      var err = Math.abs(ye - yp);\n      document.getElementById('nValue-display').textContent = String(nVal);\n      document.getElementById('errorAt5-display').textContent = err.toFixed(3);\n    }\n\n    // --- controls ------------------------------------------------------\n    var slider = document.getElementById('n-slider');\n    slider.addEventListener('input', function () {\n      nVal = Math.round(+slider.value);\n      draw();\n    });\n\n    // teacher-driven control hook\n    window.hkControl = {\n      set: function (s) {\n        if (s && s.n != null) {\n          nVal = Math.max(1, Math.min(10, Math.round(+s.n)));\n          slider.value = String(nVal);\n          draw();\n        }\n      },\n      highlight: function (sel) {\n        var el = document.querySelector(sel);\n        if (!el) return;\n        el.style.outline = '2px solid #c0392b';\n        setTimeout(function () { el.style.outline = ''; }, 1500);\n      },\n      annotate: function () {},\n      reveal: function () {}\n    };\n\n    window.addEventListener('resize', function () { draw(); });\n    draw();\n  </script>\n</body>\n</html>",
+        "html_path": null,
+        "mermaid": null,
+        "layout": "follow",
+        "params": [
+          "n"
+        ],
+        "controls": [
+          {
+            "trigger_phrase": "我把滑块从 1 慢慢推到 10",
+            "at_ms": null,
+            "op": "set",
+            "payload": {
+              "n": 10
+            }
+          }
+        ]
+      },
+      "question": {
+        "mode": "choice",
+        "question": "把 n 从 1 推到 10，橙线在 x 等于 5 的地方会怎样？",
+        "options": [
+          "还是差很远，多项式根本追不上指数",
+          "越来越近，n 等于 10 时几乎贴住"
+        ],
+        "correct_index": 1,
+        "misconceptions": [
+          "这是没动手之前的直觉：以为多项式增长太慢，远处永远追不上。拖一下滑块就会发现，项数够多时误差掉得很快。",
+          null
+        ],
+        "explanation": "每加一项，多项式在更大范围内贴合 e 的 x 次方；n 等于 10 时，x 等于 5 处已经几乎重合。"
+      },
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "e^x 的麦克劳林级数",
+      "beat": "define",
+      "spoken_text": "现在把刚才看到的东西写成严格形式。看板书第一行：e 的 x 次方等于 1 加 x 加 x 平方除以 2 的阶乘，加 x 立方除以 3 的阶乘，一直加下去。这就是在 a 等于 0 处的麦克劳林展开。我圈出来的括号里写着：对一切 x。意思是，不管 x 是 0.1 还是 100，这个级数都收敛到 e 的 x 次方，不是只在零附近有效。",
+      "boards": [
+        {
+          "title": "e^x 的麦克劳林级数",
+          "markdown": "- $e^x = 1 + x + \\frac{x^2}{2!} + \\frac{x^3}{3!} + \\cdots$\n- 在 $a=0$ 处展开（麦克劳林）\n- **对一切 $x$ 收敛**\n- 对比：$\\ln(1+x)$ 仅 $|x|<1$",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "circle",
+          "snippet": "对一切 $x$ 收敛",
+          "board_index": 0,
+          "trigger_phrase": "对一切 x",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": null,
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "算一个具体值：e^1",
+      "beat": "worked_example",
+      "spoken_text": "先别光看公式，我们真算一个数。取 x 等于 1，e 的 1 次方就是 e。板书第一行把级数代进去，第二行我一项一项写出来：1、1、0.5、0.1667、0.04167……看第三行的累加，加到第 6 项就已经是 2.71667，而真实值是 2.71828。误差只有 0.0016。注意，x 等于 1 可不算小，但收敛得还是很快。换个数，比如 x 等于 2，你会算吗？",
+      "boards": [
+        {
+          "title": "算 e^1",
+          "markdown": "- 取 $x=1$：$e^1 = \\sum_{k=0}^{\\infty} \\frac{1}{k!}$\n- 逐项：$1 + 1 + 0.5 + 0.1667 + 0.04167 + \\cdots$\n- 前 6 项和 $= 2.71667$\n- 真实 $e = 2.71828$，误差 $\\approx 0.0016$\n- → **x=1 不算小，照样很快**",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "circle",
+          "snippet": "误差 $\\approx 0.0016$",
+          "board_index": 0,
+          "trigger_phrase": "误差只有 0.0016",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": {
+        "mode": "choice",
+        "question": "x 等于 1 时，前 6 项和已经和 e 差不到千分之二。那 x 等于 2 呢？",
+        "options": [
+          "也能收敛，只是要多算几项",
+          "x 太大了，多项式根本追不上"
+        ],
+        "correct_index": 0,
+        "misconceptions": [
+          null,
+          "这是典型误区：把“x 越大需要项数越多”误当成“x 大了就不收敛”。收敛和收敛快慢是两件事。"
+        ],
+        "explanation": "e^x 的麦克劳林级数对一切实数 x 都收敛，x 越大只是需要更多项才能达到同样精度。"
+      },
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "为什么对一切 x 都成立？",
+      "beat": "contrast",
+      "spoken_text": "那为什么 e 的 x 次方这么特殊？看这张对比表。第一行是 e 的 x 次方，收敛范围写的是对一切 x；第二行 sin x，也是对一切 x；第三行 ln(1+x)，只对 x 在负 1 到 1 之间成立。差别在哪？看第三行右边那一格：ln 在 x 等于负 1 处直接炸掉，函数本身在那里就没有定义，所以级数不可能越过它。而 e 的 x 次方在整条实轴上光滑得没有一丝毛病，级数自然能一路跟到底。",
+      "boards": [
+        {
+          "title": "三个展开的收敛域",
+          "markdown": "| 函数 | 展开式开头 | 收敛范围 |\n|---|---|---|\n| $e^x$ | $1+x+\\frac{x^2}{2!}+\\cdots$ | **对一切 $x$** |\n| $\\sin x$ | $x-\\frac{x^3}{3!}+\\cdots$ | 对一切 $x$ |\n| $\\ln(1+x)$ | $x-\\frac{x^2}{2}+\\cdots$ | 仅 $|x|<1$ |\n",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "highlight",
+          "snippet": "仅 $|x|<1$",
+          "board_index": 0,
+          "trigger_phrase": "只对 x 在负 1 到 1 之间成立",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": null,
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "回顾：多项式逼近指数函数",
+      "beat": "recap",
+      "spoken_text": "最后把今天这条线收一下。第一，e 的 x 次方等于 1 加 x 加 x 平方除以 2 的阶乘，一直加到无穷，这是它在 0 处的麦克劳林级数。第二，这个级数对一切实数 x 都收敛，不是只在 0 附近管用。第三，刚才算 x 等于 1 只用了 6 项就准到千分之二。回到开头那个问题：多项式能不能追上指数函数？答案是能，而且追得又快又稳。下一站，我们用同一套办法去拆 sin x 和 ln(1+x)。",
+      "boards": [
+        {
+          "title": "带走三句话",
+          "markdown": "- $e^x = 1 + x + \\frac{x^2}{2!} + \\frac{x^3}{3!} + \\cdots$\n- 收敛范围：**对一切实数 $x$**\n- $x=1$ 用 6 项 → 误差 $\\approx 0.0016$\n- → 多项式追得上指数函数",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "spotlight",
+          "snippet": "对一切实数 $x$",
+          "board_index": 0,
+          "trigger_phrase": "对一切实数 x 都收敛",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": null,
+      "reward": {
+        "title": "e^x 的麦克劳林级数",
+        "description": "e^x = 1 + x + x²/2! + x³/3! + ⋯，对一切实数 x 收敛；x 越大只需更多项，精度照样能追上。"
+      },
+      "new_page_title": null
+    }
+  ],
+  "exercises": [
+    {
+      "exercise_id": "sess_3_ex1",
+      "kind": "fill_blank",
+      "stem": "在 $e^x$ 的展开式 $e^x = 1 + x + \\frac{x^2}{2!} + \\frac{x^3}{3!} + \\cdots$ 中，各项系数的分母是 ____。",
+      "options": [],
+      "correct_index": null,
+      "answer": "阶乘",
+      "accepted": [
+        "k的阶乘",
+        "k!",
+        "n的阶乘",
+        "n!"
+      ],
+      "explanation": "展开式中第 $k$ 项的分母是 $k!$，即 $k$ 的阶乘，这是麦克劳林级数的核心特征，决定了级数的收敛速度。",
+      "widget": null,
+      "widget_hint": ""
+    },
+    {
+      "exercise_id": "sess_3_ex2",
+      "kind": "single_choice",
+      "stem": "用 $e^x$ 的麦克劳林级数前 4 项（即 $1 + x + \\frac{x^2}{2!} + \\frac{x^3}{3!}$）近似 $e^2$，得到的近似值约为（保留三位小数）",
+      "options": [
+        "6.000",
+        "6.333",
+        "6.667",
+        "7.000"
+      ],
+      "correct_index": 1,
+      "answer": null,
+      "accepted": [],
+      "explanation": "代入 $x=2$：$1 + 2 + \\frac{4}{2} + \\frac{8}{6} = 1 + 2 + 2 + 1.333\\ldots = 6.333\\ldots$，约为 $6.333$。",
+      "widget": null,
+      "widget_hint": ""
+    },
+    {
+      "exercise_id": "sess_3_ex3",
+      "kind": "single_choice",
+      "stem": "下列关于 $e^x$ 的麦克劳林级数的说法，正确的是",
+      "options": [
+        "该级数只在 $|x|<1$ 时收敛到 $e^x$",
+        "该级数对一切实数 $x$ 都收敛到 $e^x$",
+        "该级数只在 $x=0$ 附近收敛到 $e^x$",
+        "该级数对 $x>0$ 收敛，对 $x<0$ 发散"
+      ],
+      "correct_index": 1,
+      "answer": null,
+      "accepted": [],
+      "explanation": "与 $\\ln(1+x)$ 不同，$e^x$ 在整条实轴上光滑，其麦克劳林级数对一切实数 $x$ 都收敛到 $e^x$。",
+      "widget": null,
+      "widget_hint": ""
+    },
+    {
+      "exercise_id": "sess_3_ex4",
+      "kind": "interactive",
+      "stem": "通过调整多项式 $P_n(x)=\\sum_{k=0}^{n} \\frac{x^k}{k!}$ 的阶数 $n$，观察它与 $e^x$ 的贴合范围。",
+      "options": [
+        "当 $n=1$ 时，$P_1(x)$ 在 $x=5$ 处已经与 $e^x$ 几乎重合",
+        "随着 $n$ 增大，$P_n(x)$ 与 $e^x$ 的贴合范围越来越宽",
+        "无论 $n$ 多大，$P_n(x)$ 都只在 $x=0$ 附近与 $e^x$ 贴合",
+        "当 $n=10$ 时，$P_{10}(x)$ 在 $x=5$ 处与 $e^x$ 仍有明显差距"
+      ],
+      "correct_index": 1,
+      "answer": null,
+      "accepted": [],
+      "explanation": "从教具中可以看到，随着 $n$ 增大，多项式曲线在越来越大的区间内与 $e^x$ 几乎重合，说明增大 $n$ 能扩大贴合范围。",
+      "widget": {
+        "kind": "explorable",
+        "title": "多项式逼近 $e^x$",
+        "task": "拖动滑块改变 $n$（从 1 到 10），观察橙色曲线 $P_n(x)$ 与蓝色曲线 $e^x$ 在 $x=5$ 处的贴合程度。",
+        "html": "<!DOCTYPE html>\n<html>\n<head><script>/**\n * HandChart — zero-dependency hand-drawn chart base for explorable widgets.\n *\n * Injected into every generated 2D explorable (widget_generator.py) so the\n * model supplies data + overlays instead of hand-writing axes. The look matches\n * the handwritten page: paper panel, slightly wobbly ink axes, main red /\n * aux green, handwriting labels.\n *\n * API (all coordinates in WORLD units unless noted):\n *   const ch = HandChart.render(canvas, opts)\n *     opts = { type: \"function\"|\"points\"|\"bars\"|\"lines\",\n *              xlim:[x0,x1], ylim:[y0,y1],                  (all but bars)\n *              fn: x=>y | fns:[{fn, color?, label?}],        (function)\n *              points:[[x,y],...],                          (points)\n *              series:[{name, points, color?, dash?}],      (lines; legend drawn)\n *              bars:{labels:[...], values:[...], highlight?} (bars)\n *              xlabel, ylabel, grid:true|false, title }\n *     returns { ctx, sx, sy, box, W, H, opts }  — keep it to draw overlays\n *   HandChart.marker(ch, x, y, {color, label, r})       dot + optional label\n *   HandChart.vline(ch, x, {color, dash, label})         vertical guide\n *   HandChart.hline(ch, y, {color, dash, label})         horizontal guide\n *   HandChart.segment(ch, [x1,y1], [x2,y2], {color, width, dash, arrow})\n *   HandChart.note(ch, x, y, text, {color, align, size}) handwriting annotation\n *   HandChart.attachProbe(canvas, {xlim, ylim}, onProbe, onLeave?)\n *     pointer follow; onProbe({x, y}) in world coords — redraw + readouts there.\n *   HandChart.style = { INK, AXIS, MAIN, AUX, GRID, PAPER, MUTED }\n */\n(function () {\n  const style = {\n    INK: \"#2b2b2b\", AXIS: \"#8a8377\", MAIN: \"#c0392b\", AUX: \"#2e8b6f\",\n    GRID: \"#ece5d4\", PAPER: \"#fbfaf6\", MUTED: \"#8a8377\", PURPLE: \"#7c3aed\", BLUE: \"#2563eb\",\n  };\n  const PALETTE = [style.MAIN, style.AUX, style.BLUE, style.PURPLE, \"#d97706\"];\n  const PAD = { l: 48, r: 18, t: 18, b: 36 };\n  const HAND = \"'Patrick Hand', 'LXGW WenKai Lite', 'PingFang SC', sans-serif\";\n\n  function font(size, italic) { return (italic ? \"italic \" : \"\") + size + \"px \" + HAND; }\n\n  // deterministic wobble so the \"hand\" does not shake on every redraw\n  function wob(seed, amp) { return Math.sin(seed * 12.9898) * amp; }\n\n  function tickVals(min, max, n) {\n    const span = max - min || 1;\n    const raw = span / n;\n    const mag = Math.pow(10, Math.floor(Math.log10(raw)));\n    const step = [1, 2, 2.5, 5, 10].map((m) => m * mag).find((s) => span / s <= n) || mag * 10;\n    const out = [];\n    for (let v = Math.ceil(min / step) * step; v <= max + step * 1e-9; v += step) out.push(+v.toFixed(10));\n    return out;\n  }\n\n  function fmt(v) {\n    const a = Math.abs(v);\n    if (a === 0) return \"0\";\n    if (a >= 10000 || a < 0.01) return v.toExponential(1);\n    return String(+v.toFixed(Math.max(0, 3 - Math.floor(Math.log10(a)))));\n  }\n\n  /** a hand-drawn line: two passes with tiny deterministic wobble */\n  function inkLine(ctx, x1, y1, x2, y2, color, width, seed) {\n    ctx.save();\n    ctx.strokeStyle = color; ctx.lineWidth = width; ctx.lineCap = \"round\";\n    const n = 6, s = seed || (x1 + y2);\n    ctx.beginPath();\n    for (let i = 0; i <= n; i++) {\n      const t = i / n, x = x1 + (x2 - x1) * t, y = y1 + (y2 - y1) * t;\n      const w = i === 0 || i === n ? 0 : wob(s + i, 0.7);\n      i ? ctx.lineTo(x + w, y + w) : ctx.moveTo(x, y);\n    }\n    ctx.stroke();\n    ctx.restore();\n  }\n\n  function frame(ctx, W, H) {\n    ctx.clearRect(0, 0, W, H);\n    ctx.save();\n    ctx.fillStyle = style.PAPER;\n    ctx.fillRect(0, 0, W, H);\n    ctx.restore();\n  }\n\n  function plotBox(W, H, opts) {\n    const t = PAD.t + (opts && opts.title ? 18 : 0);\n    return { x0: PAD.l, y0: t, x1: W - PAD.r, y1: H - PAD.b };\n  }\n\n  function mapping(box, xlim, ylim) {\n    const [x0, x1] = xlim, [y0, y1] = ylim;\n    return {\n      sx: (v) => box.x0 + (v - x0) / (x1 - x0) * (box.x1 - box.x0),\n      sy: (v) => box.y1 - (v - y0) / (y1 - y0) * (box.y1 - box.y0),\n    };\n  }\n\n  function axes(ctx, box, opts) {\n    const [x0, x1] = opts.xlim, [y0, y1] = opts.ylim;\n    const { sx, sy } = mapping(box, opts.xlim, opts.ylim);\n    const xt = tickVals(x0, x1, 6).filter((v) => v >= x0 && v <= x1);\n    const yt = tickVals(y0, y1, 4).filter((v) => v >= y0 && v <= y1);\n    if (opts.grid !== false) {\n      ctx.save(); ctx.strokeStyle = style.GRID; ctx.lineWidth = 1;\n      for (const v of xt) { ctx.beginPath(); ctx.moveTo(sx(v), box.y0); ctx.lineTo(sx(v), box.y1); ctx.stroke(); }\n      for (const v of yt) { ctx.beginPath(); ctx.moveTo(box.x0, sy(v)); ctx.lineTo(box.x1, sy(v)); ctx.stroke(); }\n      ctx.restore();\n    }\n    // axes sit on zero when zero is inside the range, else on the box edge\n    const ax = y0 <= 0 && y1 >= 0 ? sy(0) : box.y1;\n    const ay = x0 <= 0 && x1 >= 0 ? sx(0) : box.x0;\n    inkLine(ctx, box.x0 - 4, ax, box.x1 + 6, ax, style.AXIS, 1.4, 1);\n    inkLine(ctx, ay, box.y1 + 4, ay, box.y0 - 6, style.AXIS, 1.4, 2);\n    // arrow heads\n    ctx.save(); ctx.fillStyle = style.AXIS;\n    ctx.beginPath(); ctx.moveTo(box.x1 + 8, ax); ctx.lineTo(box.x1 + 1, ax - 3.5); ctx.lineTo(box.x1 + 1, ax + 3.5); ctx.fill();\n    ctx.beginPath(); ctx.moveTo(ay, box.y0 - 8); ctx.lineTo(ay - 3.5, box.y0 - 1); ctx.lineTo(ay + 3.5, box.y0 - 1); ctx.fill();\n    ctx.restore();\n    ctx.save();\n    ctx.fillStyle = style.MUTED; ctx.font = font(12);\n    ctx.textAlign = \"center\";\n    for (const v of xt) {\n      if (Math.abs(sx(v) - ay) < 1 && ay !== box.x0) continue; // skip the label under the y axis\n      inkLine(ctx, sx(v), ax - 3, sx(v), ax + 3, style.AXIS, 1, v);\n      ctx.fillText(fmt(v), sx(v), ax + 16);\n    }\n    ctx.textAlign = \"right\";\n    for (const v of yt) {\n      if (Math.abs(sy(v) - ax) < 1 && ax !== box.y1) continue;\n      inkLine(ctx, ay - 3, sy(v), ay + 3, sy(v), style.AXIS, 1, v + 7);\n      ctx.fillText(fmt(v), ay - 7, sy(v) + 4);\n    }\n    ctx.font = font(14, true); ctx.fillStyle = style.INK;\n    if (opts.xlabel) { ctx.textAlign = \"right\"; ctx.fillText(opts.xlabel, box.x1 + 4, ax - 8); }\n    if (opts.ylabel) { ctx.textAlign = \"left\"; ctx.fillText(opts.ylabel, ay + 8, box.y0 + 4); }\n    ctx.restore();\n    return { sx, sy };\n  }\n\n  function stroke(ctx, pts, color, width, dash) {\n    if (!pts.length) return;\n    ctx.save();\n    ctx.strokeStyle = color; ctx.lineWidth = width || 2.2;\n    ctx.lineJoin = \"round\"; ctx.lineCap = \"round\";\n    if (dash) ctx.setLineDash(dash);\n    ctx.beginPath();\n    let pen = false;\n    for (const p of pts) {\n      if (!p) { pen = false; continue; }\n      pen ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1]);\n      pen = true;\n    }\n    ctx.stroke();\n    ctx.restore();\n  }\n\n  function fnPoints(fn, opts, m) {\n    const [x0, x1] = opts.xlim, [y0, y1] = opts.ylim;\n    const n = 400, pts = [];\n    const margin = (y1 - y0) * 0.02;\n    for (let i = 0; i <= n; i++) {\n      const x = x0 + (x1 - x0) * i / n;\n      let y;\n      try { y = fn(x); } catch (e) { y = NaN; }\n      if (!isFinite(y) || y < y0 - margin || y > y1 + margin) { pts.push(null); continue; }\n      pts.push([m.sx(x), m.sy(y)]);\n    }\n    return pts;\n  }\n\n  function legend(ctx, box, items) {\n    if (!items.length) return;\n    ctx.save();\n    ctx.font = font(13); ctx.textAlign = \"left\"; ctx.textBaseline = \"middle\";\n    let x = box.x0 + 10, y = box.y0 + 12;\n    for (const it of items) {\n      inkLine(ctx, x, y, x + 22, y, it.color, 2.4, x);\n      ctx.fillStyle = style.INK;\n      ctx.fillText(it.label, x + 28, y + 1);\n      x += 28 + ctx.measureText(it.label).width + 18;\n    }\n    ctx.restore();\n  }\n\n  function title(ctx, W, text) {\n    ctx.save();\n    ctx.font = font(15); ctx.fillStyle = style.INK; ctx.textAlign = \"center\";\n    ctx.fillText(text, W / 2, 16);\n    ctx.restore();\n  }\n\n  function render(canvas, opts) {\n    const ctx = canvas.getContext(\"2d\");\n    const rect = canvas.getBoundingClientRect();\n    const W = Math.max(60, Math.round(rect.width)), H = Math.max(60, Math.round(rect.height));\n    const dpr = window.devicePixelRatio || 1;\n    if (canvas.width !== Math.round(W * dpr) || canvas.height !== Math.round(H * dpr)) {\n      canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);\n    }\n    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);\n    frame(ctx, W, H);\n    if (opts.title) title(ctx, W, opts.title);\n    const box = plotBox(W, H, opts);\n    const type = opts.type || \"function\";\n\n    if (type === \"bars\") {\n      const labels = opts.bars.labels || [], values = opts.bars.values || [];\n      const n = Math.max(1, values.length);\n      const bw = (box.x1 - box.x0) / n;\n      const vmax = Math.max(...values.map((v) => Math.abs(v)), 0) * 1.15 || 1;\n      const base = box.y1;\n      inkLine(ctx, box.x0 - 4, base, box.x1 + 4, base, style.AXIS, 1.4, 3);\n      ctx.save();\n      values.forEach((v, i) => {\n        const h = (Math.abs(v) / vmax) * (box.y1 - box.y0);\n        const x = box.x0 + i * bw + bw * 0.2, w = bw * 0.6, y = base - h;\n        const hot = opts.bars.highlight != null && i === opts.bars.highlight;\n        ctx.fillStyle = hot ? style.MAIN : \"#e6dfcf\";\n        ctx.fillRect(x, y, w, h);\n        ctx.strokeStyle = hot ? style.MAIN : style.AXIS; ctx.lineWidth = 1.2;\n        ctx.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);\n        ctx.font = font(13); ctx.textAlign = \"center\"; ctx.fillStyle = style.INK;\n        ctx.fillText(String(labels[i] == null ? i + 1 : labels[i]), x + w / 2, base + 17);\n        ctx.fillStyle = hot ? style.MAIN : style.MUTED;\n        ctx.fillText(fmt(v), x + w / 2, y - 6);\n      });\n      ctx.restore();\n      const sx = (i) => box.x0 + (i + 0.5) * bw, sy = (v) => base - (Math.abs(v) / vmax) * (box.y1 - box.y0);\n      return { ctx, sx, sy, box, W, H, opts };\n    }\n\n    const m = axes(ctx, box, opts);\n    const items = [];\n    if (type === \"lines\") {\n      (opts.series || []).forEach((s, i) => {\n        const color = s.color || PALETTE[i % PALETTE.length];\n        stroke(ctx, (s.points || []).map((p) => [m.sx(p[0]), m.sy(p[1])]), color, 2.2, s.dash);\n        if (s.name) items.push({ label: s.name, color });\n      });\n    } else if (type === \"points\") {\n      ctx.save(); ctx.fillStyle = opts.color || style.MAIN;\n      (opts.points || []).forEach((p) => { ctx.beginPath(); ctx.arc(m.sx(p[0]), m.sy(p[1]), opts.r || 3.6, 0, Math.PI * 2); ctx.fill(); });\n      ctx.restore();\n    } else {\n      const fns = opts.fns || (typeof opts.fn === \"function\" ? [{ fn: opts.fn, color: opts.color, label: opts.label }] : []);\n      fns.forEach((f, i) => {\n        const color = f.color || PALETTE[i % PALETTE.length];\n        stroke(ctx, fnPoints(f.fn, opts, m), color, f.width || 2.4, f.dash);\n        if (f.label) items.push({ label: f.label, color });\n      });\n    }\n    legend(ctx, box, items);\n    return { ctx, sx: m.sx, sy: m.sy, box, W, H, opts };\n  }\n\n  // ---- overlays (world coordinates) ----\n  function marker(ch, x, y, o) {\n    o = o || {};\n    const px = ch.sx(x), py = ch.sy(y);\n    ch.ctx.save();\n    ch.ctx.fillStyle = o.color || style.MAIN;\n    ch.ctx.beginPath(); ch.ctx.arc(px, py, o.r || 5, 0, Math.PI * 2); ch.ctx.fill();\n    ch.ctx.strokeStyle = style.PAPER; ch.ctx.lineWidth = 1.5; ch.ctx.stroke();\n    if (o.label) {\n      ch.ctx.font = font(o.size || 13); ch.ctx.fillStyle = o.color || style.MAIN; ch.ctx.textAlign = \"left\";\n      ch.ctx.fillText(o.label, px + 8, py - 8);\n    }\n    ch.ctx.restore();\n  }\n\n  function vline(ch, x, o) {\n    o = o || {};\n    const px = ch.sx(x);\n    stroke(ch.ctx, [[px, ch.box.y0], [px, ch.box.y1]], o.color || style.MUTED, o.width || 1.2, o.dash || [4, 4]);\n    if (o.label) note(ch, x, null, o.label, { color: o.color || style.MUTED, px: px + 4, py: ch.box.y0 + 12, align: \"left\", size: o.size });\n  }\n\n  function hline(ch, y, o) {\n    o = o || {};\n    const py = ch.sy(y);\n    stroke(ch.ctx, [[ch.box.x0, py], [ch.box.x1, py]], o.color || style.MUTED, o.width || 1.2, o.dash || [4, 4]);\n    if (o.label) note(ch, null, y, o.label, { color: o.color || style.MUTED, px: ch.box.x1 - 4, py: py - 5, align: \"right\", size: o.size });\n  }\n\n  function segment(ch, a, b, o) {\n    o = o || {};\n    const x1 = ch.sx(a[0]), y1 = ch.sy(a[1]), x2 = ch.sx(b[0]), y2 = ch.sy(b[1]);\n    const color = o.color || style.AUX;\n    stroke(ch.ctx, [[x1, y1], [x2, y2]], color, o.width || 2, o.dash);\n    if (o.arrow) {\n      const ang = Math.atan2(y2 - y1, x2 - x1), L = 9;\n      ch.ctx.save(); ch.ctx.fillStyle = color; ch.ctx.beginPath();\n      ch.ctx.moveTo(x2, y2);\n      ch.ctx.lineTo(x2 - L * Math.cos(ang - 0.4), y2 - L * Math.sin(ang - 0.4));\n      ch.ctx.lineTo(x2 - L * Math.cos(ang + 0.4), y2 - L * Math.sin(ang + 0.4));\n      ch.ctx.fill(); ch.ctx.restore();\n    }\n  }\n\n  function note(ch, x, y, text, o) {\n    o = o || {};\n    const px = o.px != null ? o.px : ch.sx(x), py = o.py != null ? o.py : ch.sy(y);\n    ch.ctx.save();\n    ch.ctx.font = font(o.size || 14, o.italic);\n    ch.ctx.fillStyle = o.color || style.INK;\n    ch.ctx.textAlign = o.align || \"left\";\n    ch.ctx.fillText(text, px, py);\n    ch.ctx.restore();\n  }\n\n  /** Pointer probe in world coords; the caller redraws and updates readouts. */\n  function attachProbe(canvas, opts, onProbe, onLeave) {\n    const [x0, x1] = opts.xlim;\n    const [y0, y1] = opts.ylim;\n    const toWorld = (px, py) => {\n      const r = canvas.getBoundingClientRect();\n      const box = plotBox(r.width, r.height, opts);\n      const t = (px - r.left - box.x0) / (box.x1 - box.x0);\n      const u = 1 - (py - r.top - box.y0) / (box.y1 - box.y0);\n      return { x: x0 + t * (x1 - x0), y: y0 + u * (y1 - y0), inside: t >= 0 && t <= 1 };\n    };\n    const handler = (e) => {\n      const p = toWorld(e.clientX, e.clientY);\n      if (p.inside) onProbe(p);\n    };\n    canvas.addEventListener(\"pointermove\", handler);\n    canvas.addEventListener(\"pointerdown\", handler);\n    if (onLeave) canvas.addEventListener(\"pointerleave\", onLeave);\n    canvas.style.touchAction = \"none\";\n    return toWorld;\n  }\n\n  window.HandChart = { render, marker, vline, hline, segment, note, attachProbe, style, font: HAND };\n})();\n</script>\n  <meta charset=\"utf-8\">\n  <style>\n    html, body { margin: 0; height: 100%; background: #faf8f3; font-family: \"PingFang SC\", \"Hiragino Sans GB\", sans-serif; color: #333; overflow: hidden; }\n    #wrap { position: absolute; inset: 0; display: flex; flex-direction: column; }\n    #plot { flex: 1; min-height: 0; margin: 10px 10px 4px; border: 1px solid #d9d2c3; border-radius: 12px; background: #fbfaf6; cursor: crosshair; touch-action: none; }\n    #readout { display: flex; justify-content: center; align-items: center; gap: 18px; padding: 4px 0 8px; font-size: 12px; color: #666; flex-wrap: wrap; }\n    #readout .k { display: block; font-size: 11px; letter-spacing: .04em; }\n    #readout .v { display: block; font-family: ui-monospace, Menlo, monospace; font-size: 14px; font-weight: 700; color: #c0392b; min-width: 52px; text-align: center; }\n    #formula { display: inline-block; padding: 3px 10px; border: 1px solid #d9d2c3; border-radius: 6px; background: #fff; font-family: Georgia, \"Times New Roman\", serif; font-style: italic; font-size: 13px; color: #333; }\n    #slider-row { display: flex; justify-content: center; align-items: center; gap: 12px; padding: 0 0 10px; font-size: 12px; color: #666; }\n    #n-slider { width: 220px; accent-color: #c0392b; }\n    #n-display { font-family: ui-monospace, Menlo, monospace; font-weight: 700; color: #c0392b; min-width: 24px; text-align: center; }\n  </style>\n</head>\n<body>\n  <div id=\"wrap\">\n    <canvas id=\"plot\"></canvas>\n    <div id=\"readout\">\n      <span><span class=\"k\">n</span><span class=\"v\" id=\"n-display\">1</span></span>\n      <span><span class=\"k\">P_n(5)</span><span class=\"v\" id=\"poly-display\">—</span></span>\n      <span><span class=\"k\">e^5</span><span class=\"v\" id=\"exp-display\">148.413</span></span>\n      <span><span class=\"k\">误差</span><span class=\"v\" id=\"error-display\">—</span></span>\n      <span id=\"formula\">P_n(x) = ∑ x^k / k!</span>\n    </div>\n    <div id=\"slider-row\">\n      <label for=\"n-slider\">阶数 n</label>\n      <input type=\"range\" id=\"n-slider\" min=\"1\" max=\"10\" step=\"1\" value=\"1\">\n      <span id=\"n-display\">1</span>\n    </div>\n  </div>\n  <script>\n    // --- the thing being explored -------------------------------------\n    const EXP_AT_5 = Math.exp(5); // ≈ 148.413159\n    const X_MIN = -1, X_MAX = 6, Y_MIN = -10, Y_MAX = 160;\n\n    // Taylor polynomial P_n(x) = sum_{k=0}^n x^k / k!\n    function taylorPoly(x, n) {\n      let sum = 0, term = 1;\n      for (let k = 0; k <= n; k++) {\n        if (k > 0) term *= x / k;\n        sum += term;\n      }\n      return sum;\n    }\n\n    // --- plumbing ------------------------------------------------------\n    const canvas = document.getElementById('plot');\n    const ctx = canvas.getContext('2d');\n    let W = 0, H = 0;\n    let n = 1;\n\n    const PAD = { l: 44, r: 22, t: 18, b: 30 };\n    const sx = (x) => PAD.l + (x - X_MIN) / (X_MAX - X_MIN) * (W - PAD.l - PAD.r);\n    const sy = (y) => PAD.t + (Y_MAX - y) / (Y_MAX - Y_MIN) * (H - PAD.t - PAD.b);\n\n    function resize() {\n      const r = canvas.getBoundingClientRect();\n      W = r.width; H = r.height;\n      const dpr = window.devicePixelRatio || 1;\n      canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);\n      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);\n      draw();\n    }\n\n    function curve(fn, style) {\n      ctx.save(); Object.assign(ctx, style.props || {});\n      if (style.dash) ctx.setLineDash(style.dash);\n      ctx.beginPath();\n      const nPts = 800; let started = false;\n      for (let i = 0; i <= nPts; i++) {\n        const x = X_MIN + (X_MAX - X_MIN) * i / nPts;\n        const y = fn(x);\n        if (!isFinite(y)) { started = false; continue; }\n        const px = sx(x), py = sy(Math.max(Y_MIN * 1.5, Math.min(Y_MAX * 1.5, y)));\n        started ? ctx.lineTo(px, py) : ctx.moveTo(px, py); started = true;\n      }\n      ctx.stroke(); ctx.restore();\n    }\n\n    function label(text, x, y, color, align) {\n      ctx.save(); ctx.font = 'italic 12px Georgia, serif'; ctx.fillStyle = color;\n      ctx.textAlign = align || 'left'; ctx.fillText(text, x, y); ctx.restore();\n    }\n\n    function draw() {\n      ctx.clearRect(0, 0, W, H);\n\n      // --- axes ---\n      ctx.save(); ctx.strokeStyle = '#b9b3a6'; ctx.lineWidth = 1;\n      const y0 = sy(0);\n      ctx.beginPath(); ctx.moveTo(PAD.l, y0); ctx.lineTo(W - PAD.r, y0); ctx.stroke();\n      const x0 = sx(0);\n      ctx.beginPath(); ctx.moveTo(x0, PAD.t); ctx.lineTo(x0, H - PAD.b); ctx.stroke();\n\n      // x ticks\n      ctx.fillStyle = '#8a8377'; ctx.font = 'italic 11px Georgia, serif'; ctx.textAlign = 'center';\n      for (let x = -1; x <= 6; x++) {\n        if (x === 0) continue;\n        const px = sx(x);\n        ctx.beginPath(); ctx.moveTo(px, y0 - 3); ctx.lineTo(px, y0 + 3); ctx.stroke();\n        ctx.fillText(x, px, y0 + 14);\n      }\n      // y ticks\n      ctx.textAlign = 'right';\n      for (let y = 0; y <= 160; y += 40) {\n        if (y === 0) continue;\n        const py = sy(y);\n        ctx.beginPath(); ctx.moveTo(x0 - 3, py); ctx.lineTo(x0 + 3, py); ctx.stroke();\n        ctx.fillText(y, x0 - 6, py + 4);\n      }\n      // axis labels\n      ctx.textAlign = 'right'; ctx.fillText('x', W - PAD.r - 2, y0 - 6);\n      ctx.textAlign = 'left'; ctx.fillText('y', x0 + 6, PAD.t + 8);\n      ctx.restore();\n\n      // --- e^x curve (blue) ---\n      curve(function (x) { return Math.exp(x); }, { props: { strokeStyle: '#2e6da4', lineWidth: 2 } });\n      label('y = e^x', sx(4.6), sy(Math.exp(4.6)) - 10, '#2e6da4');\n\n      // --- Taylor polynomial (orange) ---\n      curve(function (x) { return taylorPoly(x, n); }, { props: { strokeStyle: '#e67e22', lineWidth: 2 } });\n      label('P_' + n + '(x)', sx(4.6), sy(taylorPoly(4.6, n)) + 16, '#e67e22');\n\n      // --- vertical dashed line at x = 5 ---\n      const x5 = sx(5);\n      ctx.save(); ctx.strokeStyle = 'rgba(120,120,120,.5)'; ctx.setLineDash([4, 4]); ctx.lineWidth = 1;\n      ctx.beginPath(); ctx.moveTo(x5, PAD.t); ctx.lineTo(x5, H - PAD.b); ctx.stroke(); ctx.restore();\n\n      // --- points at x = 5 ---\n      const expY = Math.exp(5);\n      const polyY = taylorPoly(5, n);\n      const expPy = sy(expY);\n      const polyPy = sy(polyY);\n\n      // error segment (gray)\n      ctx.save(); ctx.strokeStyle = '#999'; ctx.lineWidth = 2;\n      ctx.beginPath(); ctx.moveTo(x5, expPy); ctx.lineTo(x5, polyPy); ctx.stroke(); ctx.restore();\n\n      // blue dot (e^5)\n      ctx.save(); ctx.fillStyle = '#2e6da4';\n      ctx.beginPath(); ctx.arc(x5, expPy, 4.5, 0, Math.PI * 2); ctx.fill(); ctx.restore();\n\n      // orange dot (P_n(5))\n      ctx.save(); ctx.fillStyle = '#e67e22';\n      ctx.beginPath(); ctx.arc(x5, polyPy, 4.5, 0, Math.PI * 2); ctx.fill(); ctx.restore();\n\n      // labels near points\n      label('e^5', x5 + 8, expPy - 6, '#2e6da4');\n      label('P_n(5)', x5 + 8, polyPy + 14, '#e67e22');\n\n      // --- update readouts ---\n      document.getElementById('n-display').textContent = n;\n      document.getElementById('poly-display').textContent = polyY.toFixed(3);\n      document.getElementById('exp-display').textContent = expY.toFixed(3);\n      document.getElementById('error-display').textContent = Math.abs(polyY - expY).toFixed(3);\n      document.getElementById('formula').textContent = 'P_' + n + '(x) = ∑_{k=0}^{' + n + '} x^k / k!';\n    }\n\n    // --- slider ---\n    const slider = document.getElementById('n-slider');\n    slider.addEventListener('input', function () {\n      n = parseInt(slider.value, 10);\n      draw();\n    });\n\n    // --- teacher-driven control hook ---\n    window.hkControl = {\n      set: function (s) {\n        if (s && s.n != null) {\n          n = Math.max(1, Math.min(10, Math.round(+s.n)));\n          slider.value = n;\n          draw();\n        }\n      },\n      highlight: function (sel) {\n        var el = document.querySelector(sel);\n        if (!el) return;\n        el.style.outline = '2px solid #c0392b';\n        setTimeout(function () { el.style.outline = ''; }, 1500);\n      },\n      annotate: function () {},\n      reveal: function () {}\n    };\n\n    window.addEventListener('resize', resize);\n    resize();\n  </script>\n</body>\n</html>",
+        "html_path": null,
+        "mermaid": null,
+        "layout": "newcol",
+        "params": [],
+        "controls": []
+      },
+      "widget_hint": "拖动滑块增加 $n$，注意橙线在 $x=5$ 处如何逐渐贴近蓝线。"
+    }
+  ]
+}

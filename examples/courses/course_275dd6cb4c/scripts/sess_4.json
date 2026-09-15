@@ -1,0 +1,299 @@
+{
+  "session_id": "sess_4",
+  "course_id": "course_275dd6cb4c",
+  "title": "基础率谬误：为什么阳性不等于患病",
+  "learning_goal": "学生能运用贝叶斯公式计算阳性预测值，并解释基础率对后验概率的影响。",
+  "steps": [
+    {
+      "title": "阳性了，患病概率多大？",
+      "beat": "hook",
+      "spoken_text": "先别算，凭直觉。看板书第一行：患病率百分之一，灵敏度百分之九十九，误报率百分之五。现在随机抓一个人，他检出阳性。你觉得他真患病的概率有多大？我猜你脑子里蹦出来的是九十以上。先把这个数字记住，我们待会儿回来对。",
+      "boards": [
+        {
+          "title": "",
+          "markdown": "- 患病率 $1\\%$\n- 灵敏度 $99\\%$，误报率 $5\\%$\n- 随机一人 → 阳性\n- 他真患病概率 = **？**（先猜）",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "circle",
+          "snippet": "他真患病概率 = **？**",
+          "board_index": 0,
+          "trigger_phrase": "他真患病的概率有多大",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": {
+        "mode": "choice",
+        "question": "一个随机的人检出阳性，他真患病的概率大概是多少？",
+        "options": [
+          "至少九成吧，灵敏度都百分之九十九了",
+          "不好说，得看这个病本身多不多见"
+        ],
+        "correct_index": 1,
+        "misconceptions": [
+          "这是最顺口的直觉：把灵敏度当成患病概率，完全忽略了患病率这个先验。",
+          null
+        ],
+        "explanation": "灵敏度是「有病检出阳性的比例」，不是「阳性里真有病的比例」，两者差着一个基础率。"
+      },
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "答案出乎意料",
+      "beat": "counterexample",
+      "spoken_text": "看第二行这个分数。分子是零点九九乘零点零一，分母多出一项零点零五乘零点九九。算出来零点零零九九除以零点零五九四，约等于百分之十六点七。也就是说，阳性了，真患病的概率还不到两成。跟你刚才猜的九十差得远吧？问题就出在分母里那一项。",
+      "boards": [
+        {
+          "title": "真算一遍",
+          "markdown": "- $P(\\text{病} \\mid +) = \\dfrac{0.99 \\times 0.01}{0.99 \\times 0.01 + 0.05 \\times 0.99}$\n- $= \\dfrac{0.0099}{0.0594} \\approx 16.7\\%$\n- 直觉猜 $\\geq 90\\%$ → **差得远**\n- 多出来的那一项：$0.05 \\times 0.99$",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "circle",
+          "snippet": "0.05 \\times 0.99",
+          "board_index": 0,
+          "trigger_phrase": "分母里那一项",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": {
+        "mode": "choice",
+        "question": "分母里多出来的零点零五乘零点九九，代表的是什么人？",
+        "options": [
+          "有病但没查出来的人",
+          "没病却被误报成阳性的人"
+        ],
+        "correct_index": 1,
+        "misconceptions": [
+          "把误报率乘在患病人数上了，方向反了：零点零五乘的是健康人群。",
+          null
+        ],
+        "explanation": "零点零五是误报率，乘上没病的比例零点九九，得到的是健康人里被误判为阳性的那部分。"
+      },
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "用一万人看穿假阳性",
+      "beat": "poe",
+      "spoken_text": "光看公式还不服气，我们数人头。看下面这张图，左边一万人被劈成两半：一百个真病人，九千九百个健康人。真病人里九十九个阳性，健康人里呢，百分之五误报，四百九十五个阳性。右边这个红框圈出来的五百九十四个阳性里，真病人只有九十九个。九十九除以五百九十四，你算算是多少？",
+      "boards": [
+        {
+          "title": "一万人里数人头",
+          "markdown": "- 病人 $100$ → 阳性 $99$，阴性 $1$\n- 健康人 $9900$ → 阳性 $495$，阴性 $9405$\n- 阳性总数 $= 99 + 495 = 594$\n- 真阳性占比 $= 99 / 594 \\approx 16.7\\%$",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "highlight",
+          "snippet": "99 / 594",
+          "board_index": 0,
+          "trigger_phrase": "九十九除以五百九十四",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": {
+        "mode": "choice",
+        "question": "数完人头，为什么阳性里真患病的人这么少？",
+        "options": [
+          "因为检验太不准了，灵敏度不够高",
+          "因为健康人基数太大，百分之五的误报也堆出几百人"
+        ],
+        "correct_index": 1,
+        "misconceptions": [
+          "把锅甩给检验质量，其实灵敏度已经百分之九十九，问题在健康人有一万个。",
+          null
+        ],
+        "explanation": "健康人数量是病人的九十九倍，哪怕误报率只有百分之五，绝对人数也远超真阳性。"
+      },
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "公式拆解",
+      "beat": "derive",
+      "spoken_text": "回看上一段的板书，那个百分之十六点七是怎么算出来的？看第一行，分子只有一项：零点九九乘零点零一，这是真阳性。第二行的分母多出一项，零点零五乘零点九九，这是健康人里的假阳性。所以阳性预测值等于真阳性除以真阳性加假阳性。现在盯着第三行，如果误报率从百分之五降到百分之一，分母会怎么变？",
+      "boards": [
+        {
+          "title": "阳性预测值怎么算",
+          "markdown": "- 分子：$0.99 \\times 0.01 = 0.0099$（真阳性）\n- 分母：$0.99 \\times 0.01 + 0.05 \\times 0.99$\n  - 第二项 $= 0.0495$（假阳性）\n- $P(\\text{病} \\mid +) = \\dfrac{0.0099}{0.0099 + 0.0495} \\approx 16.7\\%$\n- 分子只有真阳性，分母是**所有阳性**",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "circle",
+          "snippet": "0.05 \\times 0.99",
+          "board_index": 0,
+          "trigger_phrase": "零点零五乘零点九九",
+          "color": null
+        },
+        {
+          "kind": "highlight",
+          "snippet": "所有阳性",
+          "board_index": 0,
+          "trigger_phrase": null,
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": null,
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "基础率谬误",
+      "beat": "counterexample",
+      "spoken_text": "现在看这张对比图。左边是患病率百分之一，右边我把患病率改成百分之二十，检验参数一模一样。左边阳性里只有百分之十六点七是真病人，右边却跳到百分之八十三。同样的灵敏度、同样的误报率，只因为先验变了。所以忽略基础率，就是拿检验的准去替代人群的稀。你猜，如果患病率继续降到万分之一，阳性预测值会掉到多少？",
+      "boards": [
+        {
+          "title": "先验一变，结论全变",
+          "markdown": "| 患病率 | 灵敏度 | 误报率 | 阳性预测值 |\n|---|---|---|---|\n| $1\\%$ | $99\\%$ | $5\\%$ | $16.7\\%$ |\n| $20\\%$ | $99\\%$ | $5\\%$ | $83\\%$ |\n\n- 检验没变，**先验**变了\n- 忽略 $P(\\text{病})$ → 基础率谬误",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "circle",
+          "snippet": "16.7\\%",
+          "board_index": 0,
+          "trigger_phrase": "只有百分之十六点七是真病人",
+          "color": null
+        },
+        {
+          "kind": "highlight",
+          "snippet": "先验",
+          "board_index": 0,
+          "trigger_phrase": "只因为先验变了",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": null,
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "无处不在的同一道题",
+      "beat": "apply",
+      "spoken_text": "看板书最后三行。垃圾邮件过滤器说这封是垃圾，准确率百分之九十九，可正常邮件本来就占九成，那它判错的比例一样由基础率决定。分类器评估里的精确率、医学筛查里的阳性预测值，全是同一个公式。所以下次看到「检出阳性」或「模型报警」，先问一句：这件事本来有多常见？",
+      "boards": [
+        {
+          "title": "同一道题，换个马甲",
+          "markdown": "- 垃圾邮件过滤：$P(\\text{垃圾} \\mid \\text{判垃圾})$ 受垃圾邮件基础率影响\n- 分类器评估：精确率 = 真阳性 / 所有阳性\n- 医学筛查：阳性预测值 = 同一个式子\n- 口诀：先问**这件事本来有多常见**",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "spotlight",
+          "snippet": "这件事本来有多常见",
+          "board_index": 0,
+          "trigger_phrase": "先问一句",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": null,
+      "reward": {
+        "title": "基础率决定一切",
+        "description": "阳性不等于患病。先验概率越小，假阳性的绝对人数越容易压倒真阳性，后验概率就越低。"
+      },
+      "new_page_title": null
+    }
+  ],
+  "exercises": [
+    {
+      "exercise_id": "sess_4_ex1",
+      "kind": "fill_blank",
+      "stem": "在贝叶斯公式 $P(\\text{病} \\mid +) = \\dfrac{P(+ \\mid \\text{病})P(\\text{病})}{P(+ \\mid \\text{病})P(\\text{病}) + P(+ \\mid \\text{健康})P(\\text{健康})}$ 中，$P(\\text{病})$ 被称为 ____ 概率。",
+      "options": [],
+      "correct_index": null,
+      "answer": "先验",
+      "accepted": [
+        "基础率",
+        "事前",
+        "先验概率"
+      ],
+      "explanation": "先验概率（基础率）是在做检验之前，根据人群患病率得到的患病概率。它决定了分母中假阳性项的大小，是导致阳性预测值远低于直觉的关键。",
+      "widget": null,
+      "widget_hint": ""
+    },
+    {
+      "exercise_id": "sess_4_ex2",
+      "kind": "single_choice",
+      "stem": "某病患病率为 $2\\%$，灵敏度 $95\\%$，误报率 $10\\%$。随机一人检测阳性，他真患病的概率最接近下列哪个值？",
+      "options": [
+        "约 $16\\%$",
+        "约 $50\\%$",
+        "约 $84\\%$",
+        "约 $95\\%$"
+      ],
+      "correct_index": 0,
+      "answer": null,
+      "accepted": [],
+      "explanation": "真阳性概率 $= 0.95 \\times 0.02 = 0.019$；假阳性概率 $= 0.10 \\times 0.98 = 0.098$；阳性总概率 $= 0.019 + 0.098 = 0.117$；阳性预测值 $= 0.019 / 0.117 \\approx 16.2\\%$，最接近 $16\\%$。",
+      "widget": null,
+      "widget_hint": ""
+    },
+    {
+      "exercise_id": "sess_4_ex3",
+      "kind": "single_choice",
+      "stem": "垃圾邮件过滤器准确率 $99\\%$，但正常邮件占 $90\\%$。若过滤器判定一封邮件为垃圾，这封邮件真是垃圾的概率主要取决于什么？",
+      "options": [
+        "过滤器判垃圾的准确率",
+        "垃圾邮件在邮件中的基础率",
+        "正常邮件的比例",
+        "邮件总数量"
+      ],
+      "correct_index": 1,
+      "answer": null,
+      "accepted": [],
+      "explanation": "由贝叶斯公式，$P(\\text{垃圾} \\mid \\text{判垃圾}) = \\frac{P(\\text{判垃圾} \\mid \\text{垃圾})P(\\text{垃圾})}{P(\\text{判垃圾})}$，其中 $P(\\text{垃圾})$ 是垃圾邮件的基础率。基础率越低，即使准确率高，后验概率也可能很低，这正是基础率谬误的体现。",
+      "widget": null,
+      "widget_hint": ""
+    },
+    {
+      "exercise_id": "sess_4_ex4",
+      "kind": "interactive",
+      "stem": "通过调整患病率滑块，观察阳性预测值的变化，回答：当患病率从 $1\\%$ 提高到 $20\\%$（灵敏度 $99\\%$、误报率 $5\\%$ 不变），阳性预测值大约变为多少？",
+      "options": [
+        "约 $17\\%$",
+        "约 $50\\%$",
+        "约 $83\\%$",
+        "约 $99\\%$"
+      ],
+      "correct_index": 2,
+      "answer": null,
+      "accepted": [],
+      "explanation": "当患病率 $= 20\\%$ 时，真阳性概率 $= 0.99 \\times 0.20 = 0.198$，假阳性概率 $= 0.05 \\times 0.80 = 0.04$，阳性总概率 $= 0.238$，阳性预测值 $= 0.198 / 0.238 \\approx 83.2\\%$，与板书表格一致。",
+      "widget": {
+        "kind": "explorable",
+        "title": "基础率对阳性预测值的影响",
+        "task": "拖动患病率滑块（从 $0\\%$ 到 $30\\%$），观察右侧阳性预测值的变化。注意灵敏度固定为 $99\\%$，误报率固定为 $5\\%$。",
+        "html": "<!DOCTYPE html>\n<html>\n<head><script>/**\n * HandChart — zero-dependency hand-drawn chart base for explorable widgets.\n *\n * Injected into every generated 2D explorable (widget_generator.py) so the\n * model supplies data + overlays instead of hand-writing axes. The look matches\n * the handwritten page: paper panel, slightly wobbly ink axes, main red /\n * aux green, handwriting labels.\n *\n * API (all coordinates in WORLD units unless noted):\n *   const ch = HandChart.render(canvas, opts)\n *     opts = { type: \"function\"|\"points\"|\"bars\"|\"lines\",\n *              xlim:[x0,x1], ylim:[y0,y1],                  (all but bars)\n *              fn: x=>y | fns:[{fn, color?, label?}],        (function)\n *              points:[[x,y],...],                          (points)\n *              series:[{name, points, color?, dash?}],      (lines; legend drawn)\n *              bars:{labels:[...], values:[...], highlight?} (bars)\n *              xlabel, ylabel, grid:true|false, title }\n *     returns { ctx, sx, sy, box, W, H, opts }  — keep it to draw overlays\n *   HandChart.marker(ch, x, y, {color, label, r})       dot + optional label\n *   HandChart.vline(ch, x, {color, dash, label})         vertical guide\n *   HandChart.hline(ch, y, {color, dash, label})         horizontal guide\n *   HandChart.segment(ch, [x1,y1], [x2,y2], {color, width, dash, arrow})\n *   HandChart.note(ch, x, y, text, {color, align, size}) handwriting annotation\n *   HandChart.attachProbe(canvas, {xlim, ylim}, onProbe, onLeave?)\n *     pointer follow; onProbe({x, y}) in world coords — redraw + readouts there.\n *   HandChart.style = { INK, AXIS, MAIN, AUX, GRID, PAPER, MUTED }\n */\n(function () {\n  const style = {\n    INK: \"#2b2b2b\", AXIS: \"#8a8377\", MAIN: \"#c0392b\", AUX: \"#2e8b6f\",\n    GRID: \"#ece5d4\", PAPER: \"#fbfaf6\", MUTED: \"#8a8377\", PURPLE: \"#7c3aed\", BLUE: \"#2563eb\",\n  };\n  const PALETTE = [style.MAIN, style.AUX, style.BLUE, style.PURPLE, \"#d97706\"];\n  const PAD = { l: 48, r: 18, t: 18, b: 36 };\n  const HAND = \"'Patrick Hand', 'LXGW WenKai Lite', 'PingFang SC', sans-serif\";\n\n  function font(size, italic) { return (italic ? \"italic \" : \"\") + size + \"px \" + HAND; }\n\n  // deterministic wobble so the \"hand\" does not shake on every redraw\n  function wob(seed, amp) { return Math.sin(seed * 12.9898) * amp; }\n\n  function tickVals(min, max, n) {\n    const span = max - min || 1;\n    const raw = span / n;\n    const mag = Math.pow(10, Math.floor(Math.log10(raw)));\n    const step = [1, 2, 2.5, 5, 10].map((m) => m * mag).find((s) => span / s <= n) || mag * 10;\n    const out = [];\n    for (let v = Math.ceil(min / step) * step; v <= max + step * 1e-9; v += step) out.push(+v.toFixed(10));\n    return out;\n  }\n\n  function fmt(v) {\n    const a = Math.abs(v);\n    if (a === 0) return \"0\";\n    if (a >= 10000 || a < 0.01) return v.toExponential(1);\n    return String(+v.toFixed(Math.max(0, 3 - Math.floor(Math.log10(a)))));\n  }\n\n  /** a hand-drawn line: two passes with tiny deterministic wobble */\n  function inkLine(ctx, x1, y1, x2, y2, color, width, seed) {\n    ctx.save();\n    ctx.strokeStyle = color; ctx.lineWidth = width; ctx.lineCap = \"round\";\n    const n = 6, s = seed || (x1 + y2);\n    ctx.beginPath();\n    for (let i = 0; i <= n; i++) {\n      const t = i / n, x = x1 + (x2 - x1) * t, y = y1 + (y2 - y1) * t;\n      const w = i === 0 || i === n ? 0 : wob(s + i, 0.7);\n      i ? ctx.lineTo(x + w, y + w) : ctx.moveTo(x, y);\n    }\n    ctx.stroke();\n    ctx.restore();\n  }\n\n  function frame(ctx, W, H) {\n    ctx.clearRect(0, 0, W, H);\n    ctx.save();\n    ctx.fillStyle = style.PAPER;\n    ctx.fillRect(0, 0, W, H);\n    ctx.restore();\n  }\n\n  function plotBox(W, H, opts) {\n    const t = PAD.t + (opts && opts.title ? 18 : 0);\n    return { x0: PAD.l, y0: t, x1: W - PAD.r, y1: H - PAD.b };\n  }\n\n  function mapping(box, xlim, ylim) {\n    const [x0, x1] = xlim, [y0, y1] = ylim;\n    return {\n      sx: (v) => box.x0 + (v - x0) / (x1 - x0) * (box.x1 - box.x0),\n      sy: (v) => box.y1 - (v - y0) / (y1 - y0) * (box.y1 - box.y0),\n    };\n  }\n\n  function axes(ctx, box, opts) {\n    const [x0, x1] = opts.xlim, [y0, y1] = opts.ylim;\n    const { sx, sy } = mapping(box, opts.xlim, opts.ylim);\n    const xt = tickVals(x0, x1, 6).filter((v) => v >= x0 && v <= x1);\n    const yt = tickVals(y0, y1, 4).filter((v) => v >= y0 && v <= y1);\n    if (opts.grid !== false) {\n      ctx.save(); ctx.strokeStyle = style.GRID; ctx.lineWidth = 1;\n      for (const v of xt) { ctx.beginPath(); ctx.moveTo(sx(v), box.y0); ctx.lineTo(sx(v), box.y1); ctx.stroke(); }\n      for (const v of yt) { ctx.beginPath(); ctx.moveTo(box.x0, sy(v)); ctx.lineTo(box.x1, sy(v)); ctx.stroke(); }\n      ctx.restore();\n    }\n    // axes sit on zero when zero is inside the range, else on the box edge\n    const ax = y0 <= 0 && y1 >= 0 ? sy(0) : box.y1;\n    const ay = x0 <= 0 && x1 >= 0 ? sx(0) : box.x0;\n    inkLine(ctx, box.x0 - 4, ax, box.x1 + 6, ax, style.AXIS, 1.4, 1);\n    inkLine(ctx, ay, box.y1 + 4, ay, box.y0 - 6, style.AXIS, 1.4, 2);\n    // arrow heads\n    ctx.save(); ctx.fillStyle = style.AXIS;\n    ctx.beginPath(); ctx.moveTo(box.x1 + 8, ax); ctx.lineTo(box.x1 + 1, ax - 3.5); ctx.lineTo(box.x1 + 1, ax + 3.5); ctx.fill();\n    ctx.beginPath(); ctx.moveTo(ay, box.y0 - 8); ctx.lineTo(ay - 3.5, box.y0 - 1); ctx.lineTo(ay + 3.5, box.y0 - 1); ctx.fill();\n    ctx.restore();\n    ctx.save();\n    ctx.fillStyle = style.MUTED; ctx.font = font(12);\n    ctx.textAlign = \"center\";\n    for (const v of xt) {\n      if (Math.abs(sx(v) - ay) < 1 && ay !== box.x0) continue; // skip the label under the y axis\n      inkLine(ctx, sx(v), ax - 3, sx(v), ax + 3, style.AXIS, 1, v);\n      ctx.fillText(fmt(v), sx(v), ax + 16);\n    }\n    ctx.textAlign = \"right\";\n    for (const v of yt) {\n      if (Math.abs(sy(v) - ax) < 1 && ax !== box.y1) continue;\n      inkLine(ctx, ay - 3, sy(v), ay + 3, sy(v), style.AXIS, 1, v + 7);\n      ctx.fillText(fmt(v), ay - 7, sy(v) + 4);\n    }\n    ctx.font = font(14, true); ctx.fillStyle = style.INK;\n    if (opts.xlabel) { ctx.textAlign = \"right\"; ctx.fillText(opts.xlabel, box.x1 + 4, ax - 8); }\n    if (opts.ylabel) { ctx.textAlign = \"left\"; ctx.fillText(opts.ylabel, ay + 8, box.y0 + 4); }\n    ctx.restore();\n    return { sx, sy };\n  }\n\n  function stroke(ctx, pts, color, width, dash) {\n    if (!pts.length) return;\n    ctx.save();\n    ctx.strokeStyle = color; ctx.lineWidth = width || 2.2;\n    ctx.lineJoin = \"round\"; ctx.lineCap = \"round\";\n    if (dash) ctx.setLineDash(dash);\n    ctx.beginPath();\n    let pen = false;\n    for (const p of pts) {\n      if (!p) { pen = false; continue; }\n      pen ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1]);\n      pen = true;\n    }\n    ctx.stroke();\n    ctx.restore();\n  }\n\n  function fnPoints(fn, opts, m) {\n    const [x0, x1] = opts.xlim, [y0, y1] = opts.ylim;\n    const n = 400, pts = [];\n    const margin = (y1 - y0) * 0.02;\n    for (let i = 0; i <= n; i++) {\n      const x = x0 + (x1 - x0) * i / n;\n      let y;\n      try { y = fn(x); } catch (e) { y = NaN; }\n      if (!isFinite(y) || y < y0 - margin || y > y1 + margin) { pts.push(null); continue; }\n      pts.push([m.sx(x), m.sy(y)]);\n    }\n    return pts;\n  }\n\n  function legend(ctx, box, items) {\n    if (!items.length) return;\n    ctx.save();\n    ctx.font = font(13); ctx.textAlign = \"left\"; ctx.textBaseline = \"middle\";\n    let x = box.x0 + 10, y = box.y0 + 12;\n    for (const it of items) {\n      inkLine(ctx, x, y, x + 22, y, it.color, 2.4, x);\n      ctx.fillStyle = style.INK;\n      ctx.fillText(it.label, x + 28, y + 1);\n      x += 28 + ctx.measureText(it.label).width + 18;\n    }\n    ctx.restore();\n  }\n\n  function title(ctx, W, text) {\n    ctx.save();\n    ctx.font = font(15); ctx.fillStyle = style.INK; ctx.textAlign = \"center\";\n    ctx.fillText(text, W / 2, 16);\n    ctx.restore();\n  }\n\n  function render(canvas, opts) {\n    const ctx = canvas.getContext(\"2d\");\n    const rect = canvas.getBoundingClientRect();\n    const W = Math.max(60, Math.round(rect.width)), H = Math.max(60, Math.round(rect.height));\n    const dpr = window.devicePixelRatio || 1;\n    if (canvas.width !== Math.round(W * dpr) || canvas.height !== Math.round(H * dpr)) {\n      canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);\n    }\n    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);\n    frame(ctx, W, H);\n    if (opts.title) title(ctx, W, opts.title);\n    const box = plotBox(W, H, opts);\n    const type = opts.type || \"function\";\n\n    if (type === \"bars\") {\n      const labels = opts.bars.labels || [], values = opts.bars.values || [];\n      const n = Math.max(1, values.length);\n      const bw = (box.x1 - box.x0) / n;\n      const vmax = Math.max(...values.map((v) => Math.abs(v)), 0) * 1.15 || 1;\n      const base = box.y1;\n      inkLine(ctx, box.x0 - 4, base, box.x1 + 4, base, style.AXIS, 1.4, 3);\n      ctx.save();\n      values.forEach((v, i) => {\n        const h = (Math.abs(v) / vmax) * (box.y1 - box.y0);\n        const x = box.x0 + i * bw + bw * 0.2, w = bw * 0.6, y = base - h;\n        const hot = opts.bars.highlight != null && i === opts.bars.highlight;\n        ctx.fillStyle = hot ? style.MAIN : \"#e6dfcf\";\n        ctx.fillRect(x, y, w, h);\n        ctx.strokeStyle = hot ? style.MAIN : style.AXIS; ctx.lineWidth = 1.2;\n        ctx.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);\n        ctx.font = font(13); ctx.textAlign = \"center\"; ctx.fillStyle = style.INK;\n        ctx.fillText(String(labels[i] == null ? i + 1 : labels[i]), x + w / 2, base + 17);\n        ctx.fillStyle = hot ? style.MAIN : style.MUTED;\n        ctx.fillText(fmt(v), x + w / 2, y - 6);\n      });\n      ctx.restore();\n      const sx = (i) => box.x0 + (i + 0.5) * bw, sy = (v) => base - (Math.abs(v) / vmax) * (box.y1 - box.y0);\n      return { ctx, sx, sy, box, W, H, opts };\n    }\n\n    const m = axes(ctx, box, opts);\n    const items = [];\n    if (type === \"lines\") {\n      (opts.series || []).forEach((s, i) => {\n        const color = s.color || PALETTE[i % PALETTE.length];\n        stroke(ctx, (s.points || []).map((p) => [m.sx(p[0]), m.sy(p[1])]), color, 2.2, s.dash);\n        if (s.name) items.push({ label: s.name, color });\n      });\n    } else if (type === \"points\") {\n      ctx.save(); ctx.fillStyle = opts.color || style.MAIN;\n      (opts.points || []).forEach((p) => { ctx.beginPath(); ctx.arc(m.sx(p[0]), m.sy(p[1]), opts.r || 3.6, 0, Math.PI * 2); ctx.fill(); });\n      ctx.restore();\n    } else {\n      const fns = opts.fns || (typeof opts.fn === \"function\" ? [{ fn: opts.fn, color: opts.color, label: opts.label }] : []);\n      fns.forEach((f, i) => {\n        const color = f.color || PALETTE[i % PALETTE.length];\n        stroke(ctx, fnPoints(f.fn, opts, m), color, f.width || 2.4, f.dash);\n        if (f.label) items.push({ label: f.label, color });\n      });\n    }\n    legend(ctx, box, items);\n    return { ctx, sx: m.sx, sy: m.sy, box, W, H, opts };\n  }\n\n  // ---- overlays (world coordinates) ----\n  function marker(ch, x, y, o) {\n    o = o || {};\n    const px = ch.sx(x), py = ch.sy(y);\n    ch.ctx.save();\n    ch.ctx.fillStyle = o.color || style.MAIN;\n    ch.ctx.beginPath(); ch.ctx.arc(px, py, o.r || 5, 0, Math.PI * 2); ch.ctx.fill();\n    ch.ctx.strokeStyle = style.PAPER; ch.ctx.lineWidth = 1.5; ch.ctx.stroke();\n    if (o.label) {\n      ch.ctx.font = font(o.size || 13); ch.ctx.fillStyle = o.color || style.MAIN; ch.ctx.textAlign = \"left\";\n      ch.ctx.fillText(o.label, px + 8, py - 8);\n    }\n    ch.ctx.restore();\n  }\n\n  function vline(ch, x, o) {\n    o = o || {};\n    const px = ch.sx(x);\n    stroke(ch.ctx, [[px, ch.box.y0], [px, ch.box.y1]], o.color || style.MUTED, o.width || 1.2, o.dash || [4, 4]);\n    if (o.label) note(ch, x, null, o.label, { color: o.color || style.MUTED, px: px + 4, py: ch.box.y0 + 12, align: \"left\", size: o.size });\n  }\n\n  function hline(ch, y, o) {\n    o = o || {};\n    const py = ch.sy(y);\n    stroke(ch.ctx, [[ch.box.x0, py], [ch.box.x1, py]], o.color || style.MUTED, o.width || 1.2, o.dash || [4, 4]);\n    if (o.label) note(ch, null, y, o.label, { color: o.color || style.MUTED, px: ch.box.x1 - 4, py: py - 5, align: \"right\", size: o.size });\n  }\n\n  function segment(ch, a, b, o) {\n    o = o || {};\n    const x1 = ch.sx(a[0]), y1 = ch.sy(a[1]), x2 = ch.sx(b[0]), y2 = ch.sy(b[1]);\n    const color = o.color || style.AUX;\n    stroke(ch.ctx, [[x1, y1], [x2, y2]], color, o.width || 2, o.dash);\n    if (o.arrow) {\n      const ang = Math.atan2(y2 - y1, x2 - x1), L = 9;\n      ch.ctx.save(); ch.ctx.fillStyle = color; ch.ctx.beginPath();\n      ch.ctx.moveTo(x2, y2);\n      ch.ctx.lineTo(x2 - L * Math.cos(ang - 0.4), y2 - L * Math.sin(ang - 0.4));\n      ch.ctx.lineTo(x2 - L * Math.cos(ang + 0.4), y2 - L * Math.sin(ang + 0.4));\n      ch.ctx.fill(); ch.ctx.restore();\n    }\n  }\n\n  function note(ch, x, y, text, o) {\n    o = o || {};\n    const px = o.px != null ? o.px : ch.sx(x), py = o.py != null ? o.py : ch.sy(y);\n    ch.ctx.save();\n    ch.ctx.font = font(o.size || 14, o.italic);\n    ch.ctx.fillStyle = o.color || style.INK;\n    ch.ctx.textAlign = o.align || \"left\";\n    ch.ctx.fillText(text, px, py);\n    ch.ctx.restore();\n  }\n\n  /** Pointer probe in world coords; the caller redraws and updates readouts. */\n  function attachProbe(canvas, opts, onProbe, onLeave) {\n    const [x0, x1] = opts.xlim;\n    const [y0, y1] = opts.ylim;\n    const toWorld = (px, py) => {\n      const r = canvas.getBoundingClientRect();\n      const box = plotBox(r.width, r.height, opts);\n      const t = (px - r.left - box.x0) / (box.x1 - box.x0);\n      const u = 1 - (py - r.top - box.y0) / (box.y1 - box.y0);\n      return { x: x0 + t * (x1 - x0), y: y0 + u * (y1 - y0), inside: t >= 0 && t <= 1 };\n    };\n    const handler = (e) => {\n      const p = toWorld(e.clientX, e.clientY);\n      if (p.inside) onProbe(p);\n    };\n    canvas.addEventListener(\"pointermove\", handler);\n    canvas.addEventListener(\"pointerdown\", handler);\n    if (onLeave) canvas.addEventListener(\"pointerleave\", onLeave);\n    canvas.style.touchAction = \"none\";\n    return toWorld;\n  }\n\n  window.HandChart = { render, marker, vline, hline, segment, note, attachProbe, style, font: HAND };\n})();\n</script>\n  <meta charset=\"utf-8\">\n  <style>\n    html, body { margin: 0; height: 100%; background: #faf8f3; font-family: \"PingFang SC\", \"Hiragino Sans GB\", sans-serif; color: #333; overflow: hidden; }\n    #wrap { position: absolute; inset: 0; display: flex; flex-direction: column; }\n    #plot { flex: 1; min-height: 0; margin: 10px 10px 4px; border: 1px solid #d9d2c3; border-radius: 12px; background: #fbfaf6; cursor: crosshair; touch-action: none; }\n    #readout { display: flex; justify-content: center; align-items: center; gap: 28px; padding: 4px 0 8px; font-size: 12px; color: #666; }\n    #readout .k { display: block; font-size: 11px; letter-spacing: .04em; }\n    #readout .v { display: block; font-family: ui-monospace, Menlo, monospace; font-size: 14px; font-weight: 700; color: #c0392b; min-width: 64px; text-align: center; }\n    #formula { display: inline-block; padding: 3px 10px; border: 1px solid #d9d2c3; border-radius: 6px; background: #fff; font-family: Georgia, \"Times New Roman\", serif; font-style: italic; font-size: 13px; color: #333; }\n    #controls { display: flex; justify-content: center; align-items: center; gap: 18px; padding: 0 0 10px; font-size: 12px; color: #666; }\n    #controls label { display: flex; align-items: center; gap: 8px; }\n    #prevalence-slider { width: 180px; accent-color: #c0392b; }\n    #prevalence-display { font-family: ui-monospace, Menlo, monospace; font-weight: 700; color: #c0392b; min-width: 48px; text-align: right; }\n  </style>\n</head>\n<body>\n  <div id=\"wrap\">\n    <canvas id=\"plot\"></canvas>\n    <div id=\"readout\">\n      <span><span class=\"k\">患病率</span><span class=\"v\" id=\"prevalence-display\">—</span></span>\n      <span><span class=\"k\">阳性预测值</span><span class=\"v\" id=\"ppv-display\">—</span></span>\n      <span id=\"formula\">PPV = 0.99·p / (0.99·p + 0.05·(1−p))</span>\n    </div>\n    <div id=\"controls\">\n      <label>患病率 <input type=\"range\" id=\"prevalence-slider\" min=\"0\" max=\"0.3\" step=\"0.001\" value=\"0.15\"></label>\n    </div>\n  </div>\n  <script>\n    // --- the thing being explored -------------------------------------\n    const SENS = 0.99, FPR = 0.05;\n    const ppv = (p) => (SENS * p) / (SENS * p + FPR * (1 - p));\n    const X_MIN = 0, X_MAX = 0.3, Y_MIN = 0, Y_MAX = 1.0;\n\n    // --- plumbing ------------------------------------------------------\n    const canvas = document.getElementById('plot');\n    const ctx = canvas.getContext('2d');\n    let W = 0, H = 0, prevalence = 0.15;\n    const PAD = { l: 44, r: 24, t: 24, b: 34 };\n    const sx = (x) => PAD.l + (x - X_MIN) / (X_MAX - X_MIN) * (W - PAD.l - PAD.r);\n    const sy = (y) => PAD.t + (Y_MAX - y) / (Y_MAX - Y_MIN) * (H - PAD.t - PAD.b);\n    const ux = (px) => X_MIN + (px - PAD.l) / (W - PAD.l - PAD.r) * (X_MAX - X_MIN);\n\n    function resize() {\n      const r = canvas.getBoundingClientRect();\n      W = r.width; H = r.height;\n      const dpr = window.devicePixelRatio || 1;\n      canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);\n      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);\n      draw();\n    }\n\n    function curve(fn, style) {\n      ctx.save(); Object.assign(ctx, style.props || {});\n      if (style.dash) ctx.setLineDash(style.dash);\n      ctx.beginPath();\n      const n = 600; let started = false;\n      for (let i = 0; i <= n; i++) {\n        const x = X_MIN + (X_MAX - X_MIN) * i / n, y = fn(x);\n        if (!isFinite(y)) { started = false; continue; }\n        const px = sx(x), py = sy(Math.max(Y_MIN * 1.3, Math.min(Y_MAX * 1.3, y)));\n        started ? ctx.lineTo(px, py) : ctx.moveTo(px, py); started = true;\n      }\n      ctx.stroke(); ctx.restore();\n    }\n\n    function label(text, x, y, color, align = 'left') {\n      ctx.save(); ctx.font = 'italic 12px Georgia, serif'; ctx.fillStyle = color; ctx.textAlign = align; ctx.fillText(text, x, y); ctx.restore();\n    }\n\n    function drawGauge(cx, cy, radius, value) {\n      // 半圆形仪表盘，从 -PI 到 0（即上半圆）\n      const startAngle = Math.PI;\n      const endAngle = 0;\n      // 背景弧\n      ctx.save();\n      ctx.beginPath();\n      ctx.arc(cx, cy, radius, startAngle, endAngle, false);\n      ctx.strokeStyle = '#d9d2c3';\n      ctx.lineWidth = 8;\n      ctx.stroke();\n      // 彩色弧（根据值）\n      const valAngle = startAngle + (endAngle - startAngle) * value;\n      ctx.beginPath();\n      ctx.arc(cx, cy, radius, startAngle, valAngle, false);\n      ctx.strokeStyle = '#c0392b';\n      ctx.lineWidth = 8;\n      ctx.stroke();\n      // 刻度线\n      ctx.strokeStyle = '#b9b3a6';\n      ctx.lineWidth = 1;\n      for (let i = 0; i <= 10; i++) {\n        const a = startAngle + (endAngle - startAngle) * (i / 10);\n        const x1 = cx + Math.cos(a) * (radius - 6);\n        const y1 = cy + Math.sin(a) * (radius - 6);\n        const x2 = cx + Math.cos(a) * (radius + 6);\n        const y2 = cy + Math.sin(a) * (radius + 6);\n        ctx.beginPath();\n        ctx.moveTo(x1, y1);\n        ctx.lineTo(x2, y2);\n        ctx.stroke();\n      }\n      // 指针\n      const needleAngle = startAngle + (endAngle - startAngle) * value;\n      const nx = cx + Math.cos(needleAngle) * (radius - 12);\n      const ny = cy + Math.sin(needleAngle) * (radius - 12);\n      ctx.beginPath();\n      ctx.moveTo(cx, cy);\n      ctx.lineTo(nx, ny);\n      ctx.strokeStyle = '#c0392b';\n      ctx.lineWidth = 2.5;\n      ctx.stroke();\n      // 中心点\n      ctx.beginPath();\n      ctx.arc(cx, cy, 4, 0, Math.PI * 2);\n      ctx.fillStyle = '#c0392b';\n      ctx.fill();\n      // 标签\n      ctx.font = 'italic 11px Georgia, serif';\n      ctx.fillStyle = '#8a8377';\n      ctx.textAlign = 'center';\n      ctx.fillText('0%', cx - radius - 8, cy + 4);\n      ctx.fillText('100%', cx + radius + 8, cy + 4);\n      ctx.restore();\n    }\n\n    function draw() {\n      ctx.clearRect(0, 0, W, H);\n      // 坐标轴\n      ctx.save(); ctx.strokeStyle = '#b9b3a6'; ctx.lineWidth = 1;\n      ctx.beginPath(); ctx.moveTo(PAD.l, sy(0)); ctx.lineTo(W - PAD.r, sy(0)); ctx.moveTo(sx(0), PAD.t); ctx.lineTo(sx(0), H - PAD.b); ctx.stroke();\n      ctx.fillStyle = '#8a8377'; ctx.font = 'italic 11px Georgia, serif'; ctx.textAlign = 'center';\n      for (const x of [0, 0.1, 0.2, 0.3]) {\n        ctx.beginPath(); ctx.moveTo(sx(x), sy(0) - 3); ctx.lineTo(sx(x), sy(0) + 3); ctx.stroke();\n        ctx.fillText((x * 100).toFixed(0) + '%', sx(x), sy(0) + 14);\n      }\n      ctx.textAlign = 'right';\n      for (const y of [0, 0.25, 0.5, 0.75, 1.0]) {\n        ctx.beginPath(); ctx.moveTo(sx(0) - 3, sy(y)); ctx.lineTo(sx(0) + 3, sy(y)); ctx.stroke();\n        ctx.fillText((y * 100).toFixed(0) + '%', sx(0) - 6, sy(y) + 4);\n      }\n      ctx.fillText('患病率', W - PAD.r - 2, sy(0) - 6);\n      ctx.textAlign = 'left'; ctx.fillText('PPV', sx(0) + 6, PAD.t + 8);\n      ctx.restore();\n\n      // 曲线\n      curve(ppv, { props: { strokeStyle: '#2e8b6f', lineWidth: 1.5 }, dash: [5, 4] });\n      label('PPV 曲线', sx(0.22), sy(ppv(0.22)) - 10, '#2e8b6f');\n\n      // 当前点\n      const curPPV = ppv(prevalence);\n      const px = sx(prevalence), py = sy(curPPV);\n      ctx.save();\n      ctx.fillStyle = '#c0392b';\n      ctx.beginPath(); ctx.arc(px, py, 5, 0, Math.PI * 2); ctx.fill();\n      ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5; ctx.stroke();\n      ctx.restore();\n\n      // 探针虚线\n      ctx.save();\n      ctx.strokeStyle = 'rgba(192,57,43,.55)';\n      ctx.setLineDash([3, 4]);\n      ctx.lineWidth = 1;\n      ctx.beginPath(); ctx.moveTo(px, PAD.t); ctx.lineTo(px, H - PAD.b); ctx.stroke();\n      ctx.beginPath(); ctx.moveTo(PAD.l, py); ctx.lineTo(px, py); ctx.stroke();\n      ctx.restore();\n\n      // 仪表盘（放在画布右侧区域）\n      const gaugeCX = W - PAD.r - 90;\n      const gaugeCY = H - PAD.b - 40;\n      const gaugeR = 48;\n      drawGauge(gaugeCX, gaugeCY, gaugeR, curPPV);\n\n      // 固定参数说明\n      ctx.save();\n      ctx.font = 'italic 11px Georgia, serif';\n      ctx.fillStyle = '#8a8377';\n      ctx.textAlign = 'left';\n      ctx.fillText('灵敏度 99%', PAD.l + 8, PAD.t + 16);\n      ctx.fillText('误报率 5%', PAD.l + 8, PAD.t + 32);\n      ctx.restore();\n\n      // 更新读数\n      document.getElementById('prevalence-display').textContent = (prevalence * 100).toFixed(1) + '%';\n      document.getElementById('ppv-display').textContent = (curPPV * 100).toFixed(1) + '%';\n    }\n\n    function onPointer(e) {\n      const r = canvas.getBoundingClientRect();\n      const x = e.clientX - r.left;\n      if (x < PAD.l || x > W - PAD.r) return;\n      prevalence = Math.max(X_MIN, Math.min(X_MAX, ux(x)));\n      document.getElementById('prevalence-slider').value = prevalence;\n      draw();\n    }\n\n    // 滑块事件\n    const slider = document.getElementById('prevalence-slider');\n    slider.addEventListener('input', function () {\n      prevalence = parseFloat(this.value);\n      draw();\n    });\n\n    canvas.addEventListener('pointermove', onPointer);\n    canvas.addEventListener('pointerdown', onPointer);\n\n    // 教师控制钩子\n    window.hkControl = {\n      set: function (s) {\n        if (s && s.prevalence != null) {\n          prevalence = Math.max(X_MIN, Math.min(X_MAX, +s.prevalence));\n          document.getElementById('prevalence-slider').value = prevalence;\n          draw();\n        }\n      },\n      highlight: function (sel) {\n        var el = document.querySelector(sel);\n        if (!el) return;\n        el.style.outline = '2px solid #c0392b';\n        setTimeout(function () { el.style.outline = ''; }, 1500);\n      },\n      annotate: function () {},\n      reveal: function () {},\n    };\n\n    window.addEventListener('resize', resize);\n    resize();\n  </script>\n</body>\n</html>",
+        "html_path": null,
+        "mermaid": null,
+        "layout": "newcol",
+        "params": [],
+        "controls": []
+      },
+      "widget_hint": "拖动滑块改变患病率，观察阳性预测值如何随之上升。"
+    }
+  ]
+}

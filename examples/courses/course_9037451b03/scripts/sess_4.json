@@ -1,0 +1,285 @@
+{
+  "session_id": "sess_4",
+  "course_id": "course_9037451b03",
+  "title": "多头注意力：并行的小世界",
+  "learning_goal": "理解多头注意力如何并行捕捉不同关系并融合输出。",
+  "steps": [
+    {
+      "title": "一句话里有多少种关系？",
+      "beat": "hook",
+      "spoken_text": "先看这半句话：小猫追着尾巴跑，因为它太无聊了。我问你，那个它，指的是谁？你脑子里是不是同时干了好几件事：先看谁离它近，再看谁像能无聊的东西，还得看谁在动作里当主角。看板书第一行，我圈出来的就是它。一个词要同时盯住语法、指代、位置三种关系，单靠一组注意力够吗？",
+      "boards": [
+        {
+          "title": "",
+          "markdown": "- 小猫追着尾巴跑，因为**它**太无聊了\n- 「它」要同时看：\n  - 语法 → 谁是主语\n  - 指代 → 谁离得近\n  - 位置 → 谁在动作里\n- 一组注意力，能全包吗？",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "circle",
+          "snippet": "**它**",
+          "board_index": 0,
+          "trigger_phrase": "我圈出来的就是它",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": {
+        "mode": "choice",
+        "question": "一个词要同时盯住好几种关系，你觉得一组注意力够用吗？",
+        "options": [
+          "够，一组权重全都能照顾到",
+          "不够，一种关系一套权重才不打架"
+        ],
+        "correct_index": 1,
+        "misconceptions": [
+          "这是最常见的直觉：以为一组权重能同时表达所有关系。但一组权重只有一张分布，指代和语法常常想指向不同的词。",
+          null
+        ],
+        "explanation": "一组注意力只有一张权重分布，指代和语法可能想指向不同的词，所以需要多套并行。"
+      },
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "多个专家并行审阅",
+      "beat": "analogy",
+      "spoken_text": "想象一份稿子交给三个专家：语法专家只看句子结构，指代专家只追代词指向，位置专家只盯词序。看板书这张两列对照表，左边是专家，右边是他盯的东西。三个人同时看同一句话，各写各的批注，最后汇总。注意这个类比在哪失效：专家不是轮流看，而是同时看，而且每人手里的稿子还被裁小了。",
+      "boards": [
+        {
+          "title": "三个专家，三份批注",
+          "markdown": "| 专家 | 盯什么 |\n| --- | --- |\n| 语法专家 | 谁是主语、谁修饰谁 |\n| 指代专家 | 代词指向哪个词 |\n| 位置专家 | 谁在前、谁在后 |\n\n- 同时看 → 各写各的批注\n- 最后汇总成一份意见",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "highlight",
+          "snippet": "同时看",
+          "board_index": 0,
+          "trigger_phrase": "同时看",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": null,
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "多头注意力的正式定义",
+      "beat": "define",
+      "spoken_text": "把专家换成数学。看板书第一行：并行跑 h 组小维度的 Q、K、V。注意小维度三个字，我圈出来了。原来一个头用 512 维，现在 8 个头每个只用 64 维，8 乘 64 还是 512，总维度没变。每组各自算自己的注意力，得到 h 个小输出，然后拼接，再乘一个投影矩阵 W 零，融合成一份。所以多头不是把同一份注意力算八遍，而是八个小世界各看各的。",
+      "boards": [
+        {
+          "title": "多头注意力",
+          "markdown": "- 并行跑 $h$ 组**小维度**的 $(Q, K, V)$\n- 每组各自算注意力 → $h$ 个小输出\n- 拼接：$\\text{Concat}(\\text{head}_1, \\dots, \\text{head}_h)$\n- 再投影：$\\times W^O$ → 融合输出\n- 总维度不变：$h \\times d_k = d_{\\text{model}}$",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "circle",
+          "snippet": "**小维度**",
+          "board_index": 0,
+          "trigger_phrase": "我圈出来了",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": {
+        "mode": "choice",
+        "question": "8 个头，每个头 64 维，总维度变成多少了？",
+        "options": [
+          "512 乘 8，变成 4096 了",
+          "还是 512，8 乘 64 刚好补回来"
+        ],
+        "correct_index": 1,
+        "misconceptions": [
+          "这是典型误区：以为加头数就是加维度。其实每个头被裁小了，总维度保持不变。",
+          null
+        ],
+        "explanation": "每个头维度缩小到 d_model 除以 h，拼起来总维度仍是 d_model，头数增加不等于维度增加。"
+      },
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "两个头，各看各的",
+      "beat": "worked_example",
+      "spoken_text": "现在把 h 设成 2，具体走一遍。看板书这张图，左边是输入序列，小猫追着尾巴跑因为它太无聊了。上面那个头，我圈出来的，只盯语法；下面那个头只追指代。两个头各自算自己的小维度 Q、K、V，各自出一个小输出，最后拼起来，再过一层投影。你猜，如果两个头都只盯语法，最后会怎样？",
+      "boards": [
+        {
+          "title": "h = 2 走一遍",
+          "markdown": "- 输入序列 → 分给 **2 个头**\n- 头1：小维度 $(Q_1, K_1, V_1)$ → 盯**语法**\n- 头2：小维度 $(Q_2, K_2, V_2)$ → 盯**指代**\n- 两个小输出 → **拼接** → 投影 → 最终输出",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "circle",
+          "snippet": "头1：小维度 $(Q_1, K_1, V_1)$ → 盯**语法**",
+          "board_index": 0,
+          "trigger_phrase": "上面那个头，我圈出来的",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": {
+        "mode": "choice",
+        "question": "如果两个头都只盯语法，最后会怎样？",
+        "options": [
+          "还是能抓到指代，反正拼起来信息多",
+          "两个头输出几乎一样，指代关系就丢了"
+        ],
+        "correct_index": 1,
+        "misconceptions": [
+          "以为多头自动覆盖所有关系，其实每个头只学它被训练去盯的东西。",
+          null
+        ],
+        "explanation": "多头不保证分工，只有各头学到不同模式时，拼接才带来新信息。"
+      },
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "单头平均，多头聚焦",
+      "beat": "contrast",
+      "spoken_text": "回看上一段的板书，两个头各出一份小输出。现在看这张对比表，左边单头，右边多头。单头只有一个注意力分布，语法和指代的权重被平均混在一起，谁也说不清。多头是每个头一个分布，各看各的，拼起来才既有语法又有指代。注意右边那一格，我圈出来的，它说的是每个头独立算，不是把同一个注意力算两遍。",
+      "boards": [
+        {
+          "title": "单头 vs 多头",
+          "markdown": "| | 单头 | 多头 |\n| --- | --- | --- |\n| 注意力分布 | 只有 1 个 | 每个头 1 个 |\n| 关系 | 语法指代混在一起 | **各头独立聚焦** |\n| 输出 | 直接投影 | 拼接后再投影 |",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "circle",
+          "snippet": "**各头独立聚焦**",
+          "board_index": 0,
+          "trigger_phrase": "我圈出来的",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": null,
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "多头注意力，记住三件事",
+      "beat": "recap",
+      "spoken_text": "最后收一下。第一，并行跑 h 组小维度的 Q、K、V，总维度不变，不是把模型变宽。第二，每个头各自关注不同关系，语法、指代、位置，各看各的。第三，拼接后再投影，融合成最终输出。回到开头那个它，现在你知道，它不是靠一个头猜出来的，是好几个小世界一起投票的结果。",
+      "boards": [
+        {
+          "title": "多头注意力",
+          "markdown": "- 并行 $h$ 组**小维度** $(Q, K, V)$\n- 每头**各自关注**不同关系\n- **拼接** → 投影 → 最终输出\n- 总维度不变，不是变宽",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "highlight",
+          "snippet": "总维度不变，不是变宽",
+          "board_index": 0,
+          "trigger_phrase": "不是把模型变宽",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": null,
+      "reward": {
+        "title": "多头注意力",
+        "description": "并行跑 h 组小维度 Q、K、V，各头关注不同关系，拼接投影融合输出，总维度不变。"
+      },
+      "new_page_title": null
+    }
+  ],
+  "exercises": [
+    {
+      "exercise_id": "sess_4_ex1",
+      "kind": "fill_blank",
+      "stem": "多头注意力并行运行 $h$ 组小维度的 $(Q, K, V)$，每组称为一个 ____。",
+      "options": [],
+      "correct_index": null,
+      "answer": "头",
+      "accepted": [
+        "注意力头",
+        "head",
+        "注意力头（head）"
+      ],
+      "explanation": "多头注意力的基本单元是“头”，每个头独立计算注意力，关注不同关系。",
+      "widget": null,
+      "widget_hint": ""
+    },
+    {
+      "exercise_id": "sess_4_ex2",
+      "kind": "single_choice",
+      "stem": "在多头注意力中，如果模型维度 $d_{\\text{model}} = 512$，头数 $h = 8$，那么每个头的维度 $d_k$ 是多少？",
+      "options": [
+        "64",
+        "128",
+        "256",
+        "512"
+      ],
+      "correct_index": 0,
+      "answer": null,
+      "accepted": [],
+      "explanation": "总维度不变：$h \\times d_k = d_{\\text{model}}$，所以 $d_k = 512 / 8 = 64$。",
+      "widget": null,
+      "widget_hint": ""
+    },
+    {
+      "exercise_id": "sess_4_ex3",
+      "kind": "single_choice",
+      "stem": "关于多头注意力中每个头的功能，以下说法正确的是？",
+      "options": [
+        "每个头关注相同的语法关系",
+        "每个头独立计算，可以关注不同关系",
+        "所有头共享同一组 $Q, K, V$",
+        "头数越多，总维度越大"
+      ],
+      "correct_index": 1,
+      "answer": null,
+      "accepted": [],
+      "explanation": "多头注意力的每个头有自己的一组 $Q, K, V$，可以独立关注不同关系；总维度保持不变。",
+      "widget": null,
+      "widget_hint": ""
+    },
+    {
+      "exercise_id": "sess_4_ex4",
+      "kind": "interactive",
+      "stem": "通过调整两个头的关注权重，观察输出如何融合。",
+      "options": [
+        "头1权重高时，输出更侧重语法关系",
+        "头2权重高时，输出更侧重语法关系",
+        "两个头权重必须相等",
+        "输出与权重无关"
+      ],
+      "correct_index": 0,
+      "answer": null,
+      "accepted": [],
+      "explanation": "每个头独立计算注意力，其权重影响最终拼接和投影后的输出，因此头1权重高时语法关系更突出。",
+      "widget": {
+        "kind": "explorable",
+        "title": "多头注意力权重调节",
+        "task": "拖动两个滑块分别调节头1（语法）和头2（指代）的注意力权重，观察最终输出中语法和指代成分的比例变化。",
+        "html": "<!DOCTYPE html>\n<html>\n<head><script>/**\n * HandChart — zero-dependency hand-drawn chart base for explorable widgets.\n *\n * Injected into every generated 2D explorable (widget_generator.py) so the\n * model supplies data + overlays instead of hand-writing axes. The look matches\n * the handwritten page: paper panel, slightly wobbly ink axes, main red /\n * aux green, handwriting labels.\n *\n * API (all coordinates in WORLD units unless noted):\n *   const ch = HandChart.render(canvas, opts)\n *     opts = { type: \"function\"|\"points\"|\"bars\"|\"lines\",\n *              xlim:[x0,x1], ylim:[y0,y1],                  (all but bars)\n *              fn: x=>y | fns:[{fn, color?, label?}],        (function)\n *              points:[[x,y],...],                          (points)\n *              series:[{name, points, color?, dash?}],      (lines; legend drawn)\n *              bars:{labels:[...], values:[...], highlight?} (bars)\n *              xlabel, ylabel, grid:true|false, title }\n *     returns { ctx, sx, sy, box, W, H, opts }  — keep it to draw overlays\n *   HandChart.marker(ch, x, y, {color, label, r})       dot + optional label\n *   HandChart.vline(ch, x, {color, dash, label})         vertical guide\n *   HandChart.hline(ch, y, {color, dash, label})         horizontal guide\n *   HandChart.segment(ch, [x1,y1], [x2,y2], {color, width, dash, arrow})\n *   HandChart.note(ch, x, y, text, {color, align, size}) handwriting annotation\n *   HandChart.attachProbe(canvas, {xlim, ylim}, onProbe, onLeave?)\n *     pointer follow; onProbe({x, y}) in world coords — redraw + readouts there.\n *   HandChart.style = { INK, AXIS, MAIN, AUX, GRID, PAPER, MUTED }\n */\n(function () {\n  const style = {\n    INK: \"#2b2b2b\", AXIS: \"#8a8377\", MAIN: \"#c0392b\", AUX: \"#2e8b6f\",\n    GRID: \"#ece5d4\", PAPER: \"#fbfaf6\", MUTED: \"#8a8377\", PURPLE: \"#7c3aed\", BLUE: \"#2563eb\",\n  };\n  const PALETTE = [style.MAIN, style.AUX, style.BLUE, style.PURPLE, \"#d97706\"];\n  const PAD = { l: 48, r: 18, t: 18, b: 36 };\n  const HAND = \"'Patrick Hand', 'LXGW WenKai Lite', 'PingFang SC', sans-serif\";\n\n  function font(size, italic) { return (italic ? \"italic \" : \"\") + size + \"px \" + HAND; }\n\n  // deterministic wobble so the \"hand\" does not shake on every redraw\n  function wob(seed, amp) { return Math.sin(seed * 12.9898) * amp; }\n\n  function tickVals(min, max, n) {\n    const span = max - min || 1;\n    const raw = span / n;\n    const mag = Math.pow(10, Math.floor(Math.log10(raw)));\n    const step = [1, 2, 2.5, 5, 10].map((m) => m * mag).find((s) => span / s <= n) || mag * 10;\n    const out = [];\n    for (let v = Math.ceil(min / step) * step; v <= max + step * 1e-9; v += step) out.push(+v.toFixed(10));\n    return out;\n  }\n\n  function fmt(v) {\n    const a = Math.abs(v);\n    if (a === 0) return \"0\";\n    if (a >= 10000 || a < 0.01) return v.toExponential(1);\n    return String(+v.toFixed(Math.max(0, 3 - Math.floor(Math.log10(a)))));\n  }\n\n  /** a hand-drawn line: two passes with tiny deterministic wobble */\n  function inkLine(ctx, x1, y1, x2, y2, color, width, seed) {\n    ctx.save();\n    ctx.strokeStyle = color; ctx.lineWidth = width; ctx.lineCap = \"round\";\n    const n = 6, s = seed || (x1 + y2);\n    ctx.beginPath();\n    for (let i = 0; i <= n; i++) {\n      const t = i / n, x = x1 + (x2 - x1) * t, y = y1 + (y2 - y1) * t;\n      const w = i === 0 || i === n ? 0 : wob(s + i, 0.7);\n      i ? ctx.lineTo(x + w, y + w) : ctx.moveTo(x, y);\n    }\n    ctx.stroke();\n    ctx.restore();\n  }\n\n  function frame(ctx, W, H) {\n    ctx.clearRect(0, 0, W, H);\n    ctx.save();\n    ctx.fillStyle = style.PAPER;\n    ctx.fillRect(0, 0, W, H);\n    ctx.restore();\n  }\n\n  function plotBox(W, H, opts) {\n    const t = PAD.t + (opts && opts.title ? 18 : 0);\n    return { x0: PAD.l, y0: t, x1: W - PAD.r, y1: H - PAD.b };\n  }\n\n  function mapping(box, xlim, ylim) {\n    const [x0, x1] = xlim, [y0, y1] = ylim;\n    return {\n      sx: (v) => box.x0 + (v - x0) / (x1 - x0) * (box.x1 - box.x0),\n      sy: (v) => box.y1 - (v - y0) / (y1 - y0) * (box.y1 - box.y0),\n    };\n  }\n\n  function axes(ctx, box, opts) {\n    const [x0, x1] = opts.xlim, [y0, y1] = opts.ylim;\n    const { sx, sy } = mapping(box, opts.xlim, opts.ylim);\n    const xt = tickVals(x0, x1, 6).filter((v) => v >= x0 && v <= x1);\n    const yt = tickVals(y0, y1, 4).filter((v) => v >= y0 && v <= y1);\n    if (opts.grid !== false) {\n      ctx.save(); ctx.strokeStyle = style.GRID; ctx.lineWidth = 1;\n      for (const v of xt) { ctx.beginPath(); ctx.moveTo(sx(v), box.y0); ctx.lineTo(sx(v), box.y1); ctx.stroke(); }\n      for (const v of yt) { ctx.beginPath(); ctx.moveTo(box.x0, sy(v)); ctx.lineTo(box.x1, sy(v)); ctx.stroke(); }\n      ctx.restore();\n    }\n    // axes sit on zero when zero is inside the range, else on the box edge\n    const ax = y0 <= 0 && y1 >= 0 ? sy(0) : box.y1;\n    const ay = x0 <= 0 && x1 >= 0 ? sx(0) : box.x0;\n    inkLine(ctx, box.x0 - 4, ax, box.x1 + 6, ax, style.AXIS, 1.4, 1);\n    inkLine(ctx, ay, box.y1 + 4, ay, box.y0 - 6, style.AXIS, 1.4, 2);\n    // arrow heads\n    ctx.save(); ctx.fillStyle = style.AXIS;\n    ctx.beginPath(); ctx.moveTo(box.x1 + 8, ax); ctx.lineTo(box.x1 + 1, ax - 3.5); ctx.lineTo(box.x1 + 1, ax + 3.5); ctx.fill();\n    ctx.beginPath(); ctx.moveTo(ay, box.y0 - 8); ctx.lineTo(ay - 3.5, box.y0 - 1); ctx.lineTo(ay + 3.5, box.y0 - 1); ctx.fill();\n    ctx.restore();\n    ctx.save();\n    ctx.fillStyle = style.MUTED; ctx.font = font(12);\n    ctx.textAlign = \"center\";\n    for (const v of xt) {\n      if (Math.abs(sx(v) - ay) < 1 && ay !== box.x0) continue; // skip the label under the y axis\n      inkLine(ctx, sx(v), ax - 3, sx(v), ax + 3, style.AXIS, 1, v);\n      ctx.fillText(fmt(v), sx(v), ax + 16);\n    }\n    ctx.textAlign = \"right\";\n    for (const v of yt) {\n      if (Math.abs(sy(v) - ax) < 1 && ax !== box.y1) continue;\n      inkLine(ctx, ay - 3, sy(v), ay + 3, sy(v), style.AXIS, 1, v + 7);\n      ctx.fillText(fmt(v), ay - 7, sy(v) + 4);\n    }\n    ctx.font = font(14, true); ctx.fillStyle = style.INK;\n    if (opts.xlabel) { ctx.textAlign = \"right\"; ctx.fillText(opts.xlabel, box.x1 + 4, ax - 8); }\n    if (opts.ylabel) { ctx.textAlign = \"left\"; ctx.fillText(opts.ylabel, ay + 8, box.y0 + 4); }\n    ctx.restore();\n    return { sx, sy };\n  }\n\n  function stroke(ctx, pts, color, width, dash) {\n    if (!pts.length) return;\n    ctx.save();\n    ctx.strokeStyle = color; ctx.lineWidth = width || 2.2;\n    ctx.lineJoin = \"round\"; ctx.lineCap = \"round\";\n    if (dash) ctx.setLineDash(dash);\n    ctx.beginPath();\n    let pen = false;\n    for (const p of pts) {\n      if (!p) { pen = false; continue; }\n      pen ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1]);\n      pen = true;\n    }\n    ctx.stroke();\n    ctx.restore();\n  }\n\n  function fnPoints(fn, opts, m) {\n    const [x0, x1] = opts.xlim, [y0, y1] = opts.ylim;\n    const n = 400, pts = [];\n    const margin = (y1 - y0) * 0.02;\n    for (let i = 0; i <= n; i++) {\n      const x = x0 + (x1 - x0) * i / n;\n      let y;\n      try { y = fn(x); } catch (e) { y = NaN; }\n      if (!isFinite(y) || y < y0 - margin || y > y1 + margin) { pts.push(null); continue; }\n      pts.push([m.sx(x), m.sy(y)]);\n    }\n    return pts;\n  }\n\n  function legend(ctx, box, items) {\n    if (!items.length) return;\n    ctx.save();\n    ctx.font = font(13); ctx.textAlign = \"left\"; ctx.textBaseline = \"middle\";\n    let x = box.x0 + 10, y = box.y0 + 12;\n    for (const it of items) {\n      inkLine(ctx, x, y, x + 22, y, it.color, 2.4, x);\n      ctx.fillStyle = style.INK;\n      ctx.fillText(it.label, x + 28, y + 1);\n      x += 28 + ctx.measureText(it.label).width + 18;\n    }\n    ctx.restore();\n  }\n\n  function title(ctx, W, text) {\n    ctx.save();\n    ctx.font = font(15); ctx.fillStyle = style.INK; ctx.textAlign = \"center\";\n    ctx.fillText(text, W / 2, 16);\n    ctx.restore();\n  }\n\n  function render(canvas, opts) {\n    const ctx = canvas.getContext(\"2d\");\n    const rect = canvas.getBoundingClientRect();\n    const W = Math.max(60, Math.round(rect.width)), H = Math.max(60, Math.round(rect.height));\n    const dpr = window.devicePixelRatio || 1;\n    if (canvas.width !== Math.round(W * dpr) || canvas.height !== Math.round(H * dpr)) {\n      canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);\n    }\n    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);\n    frame(ctx, W, H);\n    if (opts.title) title(ctx, W, opts.title);\n    const box = plotBox(W, H, opts);\n    const type = opts.type || \"function\";\n\n    if (type === \"bars\") {\n      const labels = opts.bars.labels || [], values = opts.bars.values || [];\n      const n = Math.max(1, values.length);\n      const bw = (box.x1 - box.x0) / n;\n      const vmax = Math.max(...values.map((v) => Math.abs(v)), 0) * 1.15 || 1;\n      const base = box.y1;\n      inkLine(ctx, box.x0 - 4, base, box.x1 + 4, base, style.AXIS, 1.4, 3);\n      ctx.save();\n      values.forEach((v, i) => {\n        const h = (Math.abs(v) / vmax) * (box.y1 - box.y0);\n        const x = box.x0 + i * bw + bw * 0.2, w = bw * 0.6, y = base - h;\n        const hot = opts.bars.highlight != null && i === opts.bars.highlight;\n        ctx.fillStyle = hot ? style.MAIN : \"#e6dfcf\";\n        ctx.fillRect(x, y, w, h);\n        ctx.strokeStyle = hot ? style.MAIN : style.AXIS; ctx.lineWidth = 1.2;\n        ctx.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);\n        ctx.font = font(13); ctx.textAlign = \"center\"; ctx.fillStyle = style.INK;\n        ctx.fillText(String(labels[i] == null ? i + 1 : labels[i]), x + w / 2, base + 17);\n        ctx.fillStyle = hot ? style.MAIN : style.MUTED;\n        ctx.fillText(fmt(v), x + w / 2, y - 6);\n      });\n      ctx.restore();\n      const sx = (i) => box.x0 + (i + 0.5) * bw, sy = (v) => base - (Math.abs(v) / vmax) * (box.y1 - box.y0);\n      return { ctx, sx, sy, box, W, H, opts };\n    }\n\n    const m = axes(ctx, box, opts);\n    const items = [];\n    if (type === \"lines\") {\n      (opts.series || []).forEach((s, i) => {\n        const color = s.color || PALETTE[i % PALETTE.length];\n        stroke(ctx, (s.points || []).map((p) => [m.sx(p[0]), m.sy(p[1])]), color, 2.2, s.dash);\n        if (s.name) items.push({ label: s.name, color });\n      });\n    } else if (type === \"points\") {\n      ctx.save(); ctx.fillStyle = opts.color || style.MAIN;\n      (opts.points || []).forEach((p) => { ctx.beginPath(); ctx.arc(m.sx(p[0]), m.sy(p[1]), opts.r || 3.6, 0, Math.PI * 2); ctx.fill(); });\n      ctx.restore();\n    } else {\n      const fns = opts.fns || (typeof opts.fn === \"function\" ? [{ fn: opts.fn, color: opts.color, label: opts.label }] : []);\n      fns.forEach((f, i) => {\n        const color = f.color || PALETTE[i % PALETTE.length];\n        stroke(ctx, fnPoints(f.fn, opts, m), color, f.width || 2.4, f.dash);\n        if (f.label) items.push({ label: f.label, color });\n      });\n    }\n    legend(ctx, box, items);\n    return { ctx, sx: m.sx, sy: m.sy, box, W, H, opts };\n  }\n\n  // ---- overlays (world coordinates) ----\n  function marker(ch, x, y, o) {\n    o = o || {};\n    const px = ch.sx(x), py = ch.sy(y);\n    ch.ctx.save();\n    ch.ctx.fillStyle = o.color || style.MAIN;\n    ch.ctx.beginPath(); ch.ctx.arc(px, py, o.r || 5, 0, Math.PI * 2); ch.ctx.fill();\n    ch.ctx.strokeStyle = style.PAPER; ch.ctx.lineWidth = 1.5; ch.ctx.stroke();\n    if (o.label) {\n      ch.ctx.font = font(o.size || 13); ch.ctx.fillStyle = o.color || style.MAIN; ch.ctx.textAlign = \"left\";\n      ch.ctx.fillText(o.label, px + 8, py - 8);\n    }\n    ch.ctx.restore();\n  }\n\n  function vline(ch, x, o) {\n    o = o || {};\n    const px = ch.sx(x);\n    stroke(ch.ctx, [[px, ch.box.y0], [px, ch.box.y1]], o.color || style.MUTED, o.width || 1.2, o.dash || [4, 4]);\n    if (o.label) note(ch, x, null, o.label, { color: o.color || style.MUTED, px: px + 4, py: ch.box.y0 + 12, align: \"left\", size: o.size });\n  }\n\n  function hline(ch, y, o) {\n    o = o || {};\n    const py = ch.sy(y);\n    stroke(ch.ctx, [[ch.box.x0, py], [ch.box.x1, py]], o.color || style.MUTED, o.width || 1.2, o.dash || [4, 4]);\n    if (o.label) note(ch, null, y, o.label, { color: o.color || style.MUTED, px: ch.box.x1 - 4, py: py - 5, align: \"right\", size: o.size });\n  }\n\n  function segment(ch, a, b, o) {\n    o = o || {};\n    const x1 = ch.sx(a[0]), y1 = ch.sy(a[1]), x2 = ch.sx(b[0]), y2 = ch.sy(b[1]);\n    const color = o.color || style.AUX;\n    stroke(ch.ctx, [[x1, y1], [x2, y2]], color, o.width || 2, o.dash);\n    if (o.arrow) {\n      const ang = Math.atan2(y2 - y1, x2 - x1), L = 9;\n      ch.ctx.save(); ch.ctx.fillStyle = color; ch.ctx.beginPath();\n      ch.ctx.moveTo(x2, y2);\n      ch.ctx.lineTo(x2 - L * Math.cos(ang - 0.4), y2 - L * Math.sin(ang - 0.4));\n      ch.ctx.lineTo(x2 - L * Math.cos(ang + 0.4), y2 - L * Math.sin(ang + 0.4));\n      ch.ctx.fill(); ch.ctx.restore();\n    }\n  }\n\n  function note(ch, x, y, text, o) {\n    o = o || {};\n    const px = o.px != null ? o.px : ch.sx(x), py = o.py != null ? o.py : ch.sy(y);\n    ch.ctx.save();\n    ch.ctx.font = font(o.size || 14, o.italic);\n    ch.ctx.fillStyle = o.color || style.INK;\n    ch.ctx.textAlign = o.align || \"left\";\n    ch.ctx.fillText(text, px, py);\n    ch.ctx.restore();\n  }\n\n  /** Pointer probe in world coords; the caller redraws and updates readouts. */\n  function attachProbe(canvas, opts, onProbe, onLeave) {\n    const [x0, x1] = opts.xlim;\n    const [y0, y1] = opts.ylim;\n    const toWorld = (px, py) => {\n      const r = canvas.getBoundingClientRect();\n      const box = plotBox(r.width, r.height, opts);\n      const t = (px - r.left - box.x0) / (box.x1 - box.x0);\n      const u = 1 - (py - r.top - box.y0) / (box.y1 - box.y0);\n      return { x: x0 + t * (x1 - x0), y: y0 + u * (y1 - y0), inside: t >= 0 && t <= 1 };\n    };\n    const handler = (e) => {\n      const p = toWorld(e.clientX, e.clientY);\n      if (p.inside) onProbe(p);\n    };\n    canvas.addEventListener(\"pointermove\", handler);\n    canvas.addEventListener(\"pointerdown\", handler);\n    if (onLeave) canvas.addEventListener(\"pointerleave\", onLeave);\n    canvas.style.touchAction = \"none\";\n    return toWorld;\n  }\n\n  window.HandChart = { render, marker, vline, hline, segment, note, attachProbe, style, font: HAND };\n})();\n</script>\n  <meta charset=\"utf-8\">\n  <style>\n    html, body { margin: 0; height: 100%; background: #faf8f3; font-family: \"PingFang SC\", \"Hiragino Sans GB\", sans-serif; color: #333; overflow: hidden; }\n    #wrap { position: absolute; inset: 0; display: flex; flex-direction: column; }\n    #plot { flex: 1; min-height: 0; margin: 10px 10px 4px; border: 1px solid #d9d2c3; border-radius: 12px; background: #fbfaf6; cursor: crosshair; touch-action: none; }\n    #readout { display: flex; justify-content: center; align-items: center; gap: 28px; padding: 4px 0 8px; font-size: 12px; color: #666; }\n    #readout .k { display: block; font-size: 11px; letter-spacing: .04em; }\n    #readout .v { display: block; font-family: ui-monospace, Menlo, monospace; font-size: 14px; font-weight: 700; color: #c0392b; min-width: 64px; text-align: center; }\n    #formula { display: inline-block; padding: 3px 10px; border: 1px solid #d9d2c3; border-radius: 6px; background: #fff; font-family: Georgia, \"Times New Roman\", serif; font-style: italic; font-size: 13px; color: #333; }\n    #controls { display: flex; justify-content: center; align-items: center; gap: 36px; padding: 0 0 10px; font-size: 12px; color: #555; }\n    #controls label { display: flex; align-items: center; gap: 8px; }\n    #controls input[type=range] { width: 140px; accent-color: #c0392b; }\n    #controls .val { font-family: ui-monospace, Menlo, monospace; font-weight: 700; color: #c0392b; min-width: 34px; text-align: center; }\n  </style>\n</head>\n<body>\n  <div id=\"wrap\">\n    <canvas id=\"plot\"></canvas>\n    <div id=\"readout\">\n      <span><span class=\"k\">语法成分比例</span><span class=\"v\" id=\"syntax-display\">—</span></span>\n      <span><span class=\"k\">指代成分比例</span><span class=\"v\" id=\"coref-display\">—</span></span>\n      <span id=\"formula\">multi-head attention</span>\n    </div>\n    <div id=\"controls\">\n      <label>头1 语法权重 <input type=\"range\" id=\"weight1-slider\" min=\"0\" max=\"1\" step=\"0.01\" value=\"0.5\"><span class=\"val\" id=\"weight1-val\">0.50</span></label>\n      <label>头2 指代权重 <input type=\"range\" id=\"weight2-slider\" min=\"0\" max=\"1\" step=\"0.01\" value=\"0.5\"><span class=\"val\" id=\"weight2-val\">0.50</span></label>\n    </div>\n  </div>\n  <script>\n    // --- 数据与状态 -----------------------------------------------------\n    var tokens = ['The', 'cat', 'sat', 'on', 'mat'];\n    var weight1 = 0.5; // 头1 语法权重\n    var weight2 = 0.5; // 头2 指代权重\n\n    // 头1 语法注意力分布（语法头：关注 \"sat\" 和 \"on\" 等结构词）\n    var head1Base = [0.10, 0.15, 0.35, 0.25, 0.15];\n    // 头2 指代注意力分布（指代头：关注 \"cat\" 和 \"mat\" 等名词）\n    var head2Base = [0.08, 0.40, 0.10, 0.12, 0.30];\n\n    // 归一化函数\n    function normalize(arr) {\n      var sum = 0;\n      for (var i = 0; i < arr.length; i++) sum += arr[i];\n      if (sum === 0) return arr.map(function () { return 0.2; });\n      return arr.map(function (v) { return v / sum; });\n    }\n\n    // 计算当前注意力分布（权重缩放后归一化）\n    function getHead1Dist() {\n      var raw = head1Base.map(function (v) { return v * weight1; });\n      return normalize(raw);\n    }\n    function getHead2Dist() {\n      var raw = head2Base.map(function (v) { return v * weight2; });\n      return normalize(raw);\n    }\n\n    // 计算语法/指代比例\n    function getRatios() {\n      var total = weight1 + weight2;\n      if (total === 0) return { syntax: 0.5, coref: 0.5 };\n      return { syntax: weight1 / total, coref: weight2 / total };\n    }\n\n    // --- 画布与坐标 -----------------------------------------------------\n    var canvas = document.getElementById('plot');\n    var ctx = canvas.getContext('2d');\n    var W = 0, H = 0;\n    var PAD = { l: 30, r: 20, t: 20, b: 30 };\n\n    // 世界坐标范围（用于 HandChart 风格，但这里我们手动绘制）\n    // 我们使用 0..1 的归一化坐标来布局，方便适配\n    // 但为了与 HandChart 风格一致，我们手动绘制坐标轴和网格\n\n    function resize() {\n      var r = canvas.getBoundingClientRect();\n      W = r.width; H = r.height;\n      var dpr = window.devicePixelRatio || 1;\n      canvas.width = Math.round(W * dpr);\n      canvas.height = Math.round(H * dpr);\n      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);\n      draw();\n    }\n\n    // --- 绘制辅助函数 ---------------------------------------------------\n    function drawRoundRect(x, y, w, h, r) {\n      ctx.beginPath();\n      ctx.moveTo(x + r, y);\n      ctx.lineTo(x + w - r, y);\n      ctx.quadraticCurveTo(x + w, y, x + w, y + r);\n      ctx.lineTo(x + w, y + h - r);\n      ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);\n      ctx.lineTo(x + r, y + h);\n      ctx.quadraticCurveTo(x, y + h, x, y + h - r);\n      ctx.lineTo(x, y + r);\n      ctx.quadraticCurveTo(x, y, x + r, y);\n      ctx.closePath();\n    }\n\n    // --- 主绘制函数 -----------------------------------------------------\n    function draw() {\n      ctx.clearRect(0, 0, W, H);\n\n      // 背景网格（6x6 锚点参考，但实际绘制时用比例）\n      // 我们使用 6x6 网格来定位元素，但绘制时用比例计算\n      var gw = W / 6;\n      var gh = H / 6;\n\n      // 绘制 token 行 (B2 区域，即第2行第2列附近)\n      // 我们让 token 行位于画布上方约 1/6 处\n      var tokenY = gh * 1.2;\n      var tokenH = gh * 0.8;\n      var tokenW = gw * 0.9;\n      var tokenStartX = gw * 0.8;\n\n      // 绘制 token 方块\n      ctx.save();\n      ctx.font = 'italic 12px Georgia, serif';\n      ctx.textAlign = 'center';\n      ctx.textBaseline = 'middle';\n      for (var i = 0; i < tokens.length; i++) {\n        var tx = tokenStartX + i * (tokenW + 4);\n        // 方块背景\n        ctx.fillStyle = '#fbfaf6';\n        ctx.strokeStyle = '#b9b3a6';\n        ctx.lineWidth = 1;\n        drawRoundRect(tx, tokenY, tokenW, tokenH, 4);\n        ctx.fill();\n        ctx.stroke();\n        // 文字\n        ctx.fillStyle = '#333';\n        ctx.fillText(tokens[i], tx + tokenW / 2, tokenY + tokenH / 2);\n      }\n      ctx.restore();\n\n      // 绘制头1 条形图 (B4 区域，第4行第2列附近)\n      var bar1Y = gh * 3.2;\n      var bar1H = gh * 1.2;\n      var bar1StartX = gw * 0.8;\n      var barW = gw * 0.7;\n      var barGap = 4;\n\n      // 头1 标题\n      ctx.save();\n      ctx.font = 'italic 12px Georgia, serif';\n      ctx.fillStyle = '#c0392b';\n      ctx.textAlign = 'left';\n      ctx.fillText('头1 · 语法', bar1StartX, bar1Y - 8);\n      ctx.restore();\n\n      var dist1 = getHead1Dist();\n      var maxVal1 = Math.max.apply(null, dist1);\n      if (maxVal1 === 0) maxVal1 = 1;\n\n      for (var i = 0; i < tokens.length; i++) {\n        var bx = bar1StartX + i * (barW + barGap);\n        var bh = (dist1[i] / maxVal1) * bar1H;\n        // 条形\n        ctx.save();\n        ctx.fillStyle = '#c0392b';\n        ctx.globalAlpha = 0.85;\n        drawRoundRect(bx, bar1Y + bar1H - bh, barW, bh, 3);\n        ctx.fill();\n        ctx.restore();\n        // 数值\n        ctx.save();\n        ctx.font = 'italic 10px Georgia, serif';\n        ctx.fillStyle = '#8a8377';\n        ctx.textAlign = 'center';\n        ctx.fillText(dist1[i].toFixed(2), bx + barW / 2, bar1Y + bar1H + 12);\n        ctx.restore();\n      }\n\n      // 绘制头2 条形图 (D4 区域，第4行第4列附近)\n      var bar2Y = gh * 3.2;\n      var bar2H = gh * 1.2;\n      var bar2StartX = gw * 3.2;\n      var barW2 = gw * 0.7;\n      var barGap2 = 4;\n\n      // 头2 标题\n      ctx.save();\n      ctx.font = 'italic 12px Georgia, serif';\n      ctx.fillStyle = '#2e8b6f';\n      ctx.textAlign = 'left';\n      ctx.fillText('头2 · 指代', bar2StartX, bar2Y - 8);\n      ctx.restore();\n\n      var dist2 = getHead2Dist();\n      var maxVal2 = Math.max.apply(null, dist2);\n      if (maxVal2 === 0) maxVal2 = 1;\n\n      for (var i = 0; i < tokens.length; i++) {\n        var bx = bar2StartX + i * (barW2 + barGap2);\n        var bh = (dist2[i] / maxVal2) * bar2H;\n        ctx.save();\n        ctx.fillStyle = '#2e8b6f';\n        ctx.globalAlpha = 0.85;\n        drawRoundRect(bx, bar2Y + bar2H - bh, barW2, bh, 3);\n        ctx.fill();\n        ctx.restore();\n        ctx.save();\n        ctx.font = 'italic 10px Georgia, serif';\n        ctx.fillStyle = '#8a8377';\n        ctx.textAlign = 'center';\n        ctx.fillText(dist2[i].toFixed(2), bx + barW2 / 2, bar2Y + bar2H + 12);\n        ctx.restore();\n      }\n\n      // 绘制输出堆叠条 (C6 区域，第6行第3列附近)\n      var outY = gh * 5.0;\n      var outH = gh * 0.7;\n      var outStartX = gw * 1.8;\n      var outW = gw * 2.4;\n\n      var ratios = getRatios();\n      var syntaxW = outW * ratios.syntax;\n      var corefW = outW * ratios.coref;\n\n      // 输出标题\n      ctx.save();\n      ctx.font = 'italic 12px Georgia, serif';\n      ctx.fillStyle = '#333';\n      ctx.textAlign = 'left';\n      ctx.fillText('输出成分', outStartX, outY - 8);\n      ctx.restore();\n\n      // 语法部分（蓝色）\n      ctx.save();\n      ctx.fillStyle = '#4a7fb5';\n      ctx.globalAlpha = 0.85;\n      drawRoundRect(outStartX, outY, syntaxW, outH, 4);\n      ctx.fill();\n      ctx.restore();\n\n      // 指代部分（橙色）\n      ctx.save();\n      ctx.fillStyle = '#d4843a';\n      ctx.globalAlpha = 0.85;\n      drawRoundRect(outStartX + syntaxW, outY, corefW, outH, 4);\n      ctx.fill();\n      ctx.restore();\n\n      // 边框\n      ctx.save();\n      ctx.strokeStyle = '#b9b3a6';\n      ctx.lineWidth = 1;\n      drawRoundRect(outStartX, outY, outW, outH, 4);\n      ctx.stroke();\n      ctx.restore();\n\n      // 标注比例\n      ctx.save();\n      ctx.font = 'italic 11px Georgia, serif';\n      ctx.textAlign = 'center';\n      ctx.textBaseline = 'middle';\n      if (syntaxW > 30) {\n        ctx.fillStyle = '#fff';\n        ctx.fillText((ratios.syntax * 100).toFixed(0) + '%', outStartX + syntaxW / 2, outY + outH / 2);\n      }\n      if (corefW > 30) {\n        ctx.fillStyle = '#fff';\n        ctx.fillText((ratios.coref * 100).toFixed(0) + '%', outStartX + syntaxW + corefW / 2, outY + outH / 2);\n      }\n      ctx.restore();\n\n      // 图例\n      ctx.save();\n      ctx.font = 'italic 11px Georgia, serif';\n      ctx.textAlign = 'left';\n      ctx.textBaseline = 'middle';\n      // 语法图例\n      ctx.fillStyle = '#4a7fb5';\n      ctx.fillRect(outStartX, outY + outH + 10, 10, 10);\n      ctx.fillStyle = '#555';\n      ctx.fillText('语法', outStartX + 14, outY + outH + 15);\n      // 指代图例\n      ctx.fillStyle = '#d4843a';\n      ctx.fillRect(outStartX + 60, outY + outH + 10, 10, 10);\n      ctx.fillStyle = '#555';\n      ctx.fillText('指代', outStartX + 74, outY + outH + 15);\n      ctx.restore();\n\n      // 更新读数\n      document.getElementById('syntax-display').textContent = (ratios.syntax * 100).toFixed(1) + '%';\n      document.getElementById('coref-display').textContent = (ratios.coref * 100).toFixed(1) + '%';\n      document.getElementById('weight1-val').textContent = weight1.toFixed(2);\n      document.getElementById('weight2-val').textContent = weight2.toFixed(2);\n    }\n\n    // --- 事件绑定 -------------------------------------------------------\n    var slider1 = document.getElementById('weight1-slider');\n    var slider2 = document.getElementById('weight2-slider');\n\n    slider1.addEventListener('input', function () {\n      weight1 = parseFloat(this.value);\n      draw();\n    });\n    slider2.addEventListener('input', function () {\n      weight2 = parseFloat(this.value);\n      draw();\n    });\n\n    // 指针交互（探针效果，这里用于显示当前鼠标位置对应的 token 高亮，但非必须）\n    // 为了符合规范，我们添加一个简单的探针效果：鼠标移动时高亮最近的 token\n    var probeIndex = -1;\n    canvas.addEventListener('pointermove', function (e) {\n      var r = canvas.getBoundingClientRect();\n      var mx = e.clientX - r.left;\n      var my = e.clientY - r.top;\n      // 判断是否在 token 行附近\n      var gw = W / 6;\n      var gh = H / 6;\n      var tokenY = gh * 1.2;\n      var tokenH = gh * 0.8;\n      var tokenW = gw * 0.9;\n      var tokenStartX = gw * 0.8;\n      var found = -1;\n      for (var i = 0; i < tokens.length; i++) {\n        var tx = tokenStartX + i * (tokenW + 4);\n        if (mx >= tx && mx <= tx + tokenW && my >= tokenY && my <= tokenY + tokenH) {\n          found = i;\n          break;\n        }\n      }\n      if (found !== probeIndex) {\n        probeIndex = found;\n        draw();\n      }\n    });\n    canvas.addEventListener('pointerleave', function () {\n      if (probeIndex !== -1) {\n        probeIndex = -1;\n        draw();\n      }\n    });\n\n    // 在 draw 中增加探针高亮（需要修改 draw 函数，但为了简洁，我们在 draw 末尾添加）\n    // 由于 draw 已经定义，我们重写一个包装\n    var originalDraw = draw;\n    draw = function () {\n      originalDraw();\n      // 探针高亮\n      if (probeIndex >= 0) {\n        var gw = W / 6;\n        var gh = H / 6;\n        var tokenY = gh * 1.2;\n        var tokenH = gh * 0.8;\n        var tokenW = gw * 0.9;\n        var tokenStartX = gw * 0.8;\n        var tx = tokenStartX + probeIndex * (tokenW + 4);\n        ctx.save();\n        ctx.strokeStyle = '#c0392b';\n        ctx.lineWidth = 2;\n        drawRoundRect(tx - 2, tokenY - 2, tokenW + 4, tokenH + 4, 6);\n        ctx.stroke();\n        ctx.restore();\n      }\n    };\n\n    // --- 控制钩子 -------------------------------------------------------\n    window.hkControl = {\n      set: function (obj) {\n        if (!obj) return;\n        if (obj.weight1 != null) {\n          weight1 = Math.max(0, Math.min(1, +obj.weight1));\n          slider1.value = weight1;\n        }\n        if (obj.weight2 != null) {\n          weight2 = Math.max(0, Math.min(1, +obj.weight2));\n          slider2.value = weight2;\n        }\n        draw();\n      },\n      highlight: function (sel) {\n        var el = document.querySelector(sel);\n        if (!el) return;\n        el.style.outline = '2px solid #c0392b';\n        setTimeout(function () { el.style.outline = ''; }, 1500);\n      },\n      annotate: function () {},\n      reveal: function () {}\n    };\n\n    // --- 初始化 ---------------------------------------------------------\n    window.addEventListener('resize', resize);\n    resize();\n  </script>\n</body>\n</html>",
+        "html_path": null,
+        "mermaid": null,
+        "layout": "newcol",
+        "params": [],
+        "controls": []
+      },
+      "widget_hint": "左右拖动滑块，改变每个头的权重。"
+    }
+  ]
+}

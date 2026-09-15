@@ -1,0 +1,499 @@
+{
+  "course_id": "course_7cb6a693f5",
+  "title": "简谐振动：弹簧上的物理直觉",
+  "target_audience": "",
+  "overview": "",
+  "generation_mode": "llm",
+  "document_id": "doc_7332b430af",
+  "chapters": [
+    {
+      "chapter_id": "ch_1",
+      "title": "力决定运动的形式",
+      "description": "从弹簧恢复力与牛顿第二定律推导简谐振动方程，理解力决定运动形式。",
+      "unit": "",
+      "sessions": [
+        {
+          "session_id": "sess_1",
+          "title": "从恢复力到简谐振动方程",
+          "learning_goal": "学生能由 F=-kx 和牛顿第二定律推导出 d²x/dt²=-(k/m)x，并解释恢复力方向随位移改变如何导致往复运动。",
+          "core_concept": "线性恢复力 F=-kx 决定了加速度与位移反向成正比，从而形成简谐振动。",
+          "cognitive_hurdle": "以为弹簧的拉力是恒力或方向不变，从而预期物体会一直加速离开平衡位置。",
+          "source_sections": [
+            "s1"
+          ],
+          "estimated_duration_min": 5,
+          "tags": [
+            "Intuition",
+            "Derivation"
+          ],
+          "segments": [
+            {
+              "title": "松手后会怎样？",
+              "intent": "让学生预测弹簧上物体的运动，暴露“恒力导致加速离开”的直觉。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s1"
+              ]
+            },
+            {
+              "title": "弹簧的恢复力总指向平衡位置",
+              "intent": "学生能指出偏离方向与受力方向相反，弹簧总是把物体拉回平衡位置。",
+              "media": "illustration",
+              "media_brief": "画出弹簧-质量块系统：左端固定，右端质量块；标注平衡位置 O、向右偏离位移 x、弹簧恢复力 F 箭头向左指向 O。",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s1"
+              ]
+            },
+            {
+              "title": "恢复力公式 F=-kx",
+              "intent": "让学生理解负号表示力与位移方向相反，大小与位移成正比。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s1"
+              ]
+            },
+            {
+              "title": "从牛顿第二定律到加速度特征",
+              "intent": "学生能写出 a=-(k/m)x，并读出加速度与位移反向正比。",
+              "media": "board",
+              "media_brief": "板书 F=ma、-kx=ma、a=-(k/m)x，再写成 d²x/dt²=-(k/m)x。",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s1"
+              ]
+            },
+            {
+              "title": "恒力 vs 线性恢复力",
+              "intent": "学生能区分恒力产生匀加速，而线性恢复力方向随位移翻转，导致往复。",
+              "media": "illustration",
+              "media_brief": "并排两列：左图物块受恒力 F 方向不变；右图物块在弹簧上，位移向右时力向左、位移向左时力向右，用两个小图表示方向翻转。",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s1"
+              ]
+            },
+            {
+              "title": "力决定运动的形式",
+              "intent": "学生能概括线性恢复力对应简谐振动方程，并说明这是力决定运动形式的体现。",
+              "media": "board",
+              "media_brief": "板书本课链条：F=-kx → a=-(k/m)x → d²x/dt²=-(k/m)x；写出“线性恢复力 → 简谐振动”。",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s1"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "chapter_id": "ch_2",
+      "title": "猜一个解",
+      "description": "寻找简谐振动的通解，定义振幅、角频率和初相。",
+      "unit": "",
+      "sessions": [
+        {
+          "session_id": "sess_2",
+          "title": "猜一个解：简谐振动通解",
+          "learning_goal": "学生能写出简谐振动的通解 x(t)=A cos(ωt+φ)，并解释 A、ω、φ 的物理意义。",
+          "core_concept": "简谐振动的通解及其参数",
+          "cognitive_hurdle": "以为解只是 sin 或 cos 之一，忽略振幅 A 和初相 φ 的调节作用，或混淆角频率 ω 与频率。",
+          "source_sections": [
+            "s2"
+          ],
+          "estimated_duration_min": 5,
+          "tags": [
+            "Intuition",
+            "Definition"
+          ],
+          "segments": [
+            {
+              "title": "什么函数求两次导变回自己的负数？",
+              "intent": "引出求解微分方程的关键：找到一个函数，其二阶导数等于自身的负数。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s2"
+              ]
+            },
+            {
+              "title": "弹簧的直觉",
+              "intent": "学生认识到正弦和余弦满足这个性质，为通解铺垫。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s2"
+              ]
+            },
+            {
+              "title": "通解形式",
+              "intent": "学生理解通解 x(t)=A cos(ωt+φ) 以及 ω=√(k/m)。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s2"
+              ]
+            },
+            {
+              "title": "代入具体数值",
+              "intent": "通过具体数值代入，学生看到通解如何描述一个实际的简谐振动。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s2"
+              ]
+            },
+            {
+              "title": "三个参数怎么改变图像？",
+              "intent": "学生能直观区分 A、ω、φ 对位移-时间图像的影响。",
+              "media": "explorable",
+              "media_brief": "横轴时间 t，纵轴位移 x(t)。三个滑块：振幅 A（0.5~2.0），角频率 ω（0.5~3.0），初相 φ（0~2π）。拖动滑块观察曲线变化：A 改变峰值高度，ω 改变波动快慢（周期变化），φ 沿时间轴平移曲线。",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s2"
+              ]
+            },
+            {
+              "title": "正弦还是余弦？",
+              "intent": "澄清通解中初相 φ 的作用：使得 cos 形式可以表示正弦和余弦两种情况。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s2"
+              ]
+            },
+            {
+              "title": "回顾",
+              "intent": "巩固通解形式和三个参数的物理意义。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s2"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "chapter_id": "ch_3",
+      "title": "相位是圆周运动在直线上的影子",
+      "description": "从匀速圆周运动的横轴投影引入相位，说明相位是转过的角度，并用相位差区分同相与反相。",
+      "unit": "",
+      "sessions": [
+        {
+          "session_id": "sess_3",
+          "title": "相位：转过的角度与影子位置",
+          "learning_goal": "能用圆周运动的投影解释相位，并用相位差判断同相/反相。",
+          "core_concept": "相位是匀速圆周运动中质点转过的角度 θ=ωt+φ，对应直线投影位置 x=A cos(ωt+φ)。",
+          "cognitive_hurdle": "学生容易把相位直接当作时间，而未意识到它是圆周运动中转过的角度，导致不理解同相/反相是角度差。",
+          "source_sections": [
+            "s3"
+          ],
+          "estimated_duration_min": 6,
+          "tags": [
+            "Intuition",
+            "Definition"
+          ],
+          "segments": [
+            {
+              "title": "旋转的影子",
+              "intent": "让学生把匀速圆周运动与直线上的振动联系成同一个过程。",
+              "media": "illustration",
+              "media_brief": "画一个圆，圆心在原点，半径为 A；质点在圆上，与 x 轴夹角 θ=ωt+φ；从质点向 x 轴作垂线，垂足标为影子位置；在同一 x 轴上画出振动范围 -A 到 +A。",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s3"
+              ]
+            },
+            {
+              "title": "先猜后看：影子会怎么动？",
+              "intent": "通过预测暴露“影子匀速来回”的常见误区，引出相位角度。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s3"
+              ]
+            },
+            {
+              "title": "相位是转过的角度",
+              "intent": "定义相位 θ=ωt+φ，并说明它来自圆周运动的旋转角度。",
+              "media": "board",
+              "media_brief": "板书：θ(t)=ωt+φ；相位即角度；对应影子位置 x=A cos(ωt+φ)。",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s3"
+              ]
+            },
+            {
+              "title": "从角度到影子坐标",
+              "intent": "推导质点横坐标 x=A cosθ，说明影子位置由相位决定。",
+              "media": "board",
+              "media_brief": "板书单位圆，标出半径 A、角度 θ、邻边 x；写出 x/A=cosθ，得 x=A cos(ωt+φ)。",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s3"
+              ]
+            },
+            {
+              "title": "同相与反相：步调差",
+              "intent": "用相位差区分同相（Δφ=0）与反相（Δφ=π）的步调。",
+              "media": "illustration",
+              "media_brief": "并排画两个同半径圆，左圆质点在 0°、右圆质点在 180°；两圆下方各画投影轴，左影子在 +A，右影子在 -A；标注同相 Δφ=0 一起到最大，反相 Δφ=π 一左一右。",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s3"
+              ]
+            },
+            {
+              "title": "回顾：影子里的相位",
+              "intent": "整合旋转角度、投影与相位差，形成一句可复述的结论。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s3"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "chapter_id": "ch_4",
+      "title": "能量在两种形式间来回",
+      "description": "分析弹簧振子在一个周期内动能与弹性势能的相互转换、总能量守恒，以及周期对质量、劲度系数和振幅的依赖关系。",
+      "unit": "",
+      "sessions": [
+        {
+          "session_id": "sess_4",
+          "title": "弹簧振子的能量转换与守恒",
+          "learning_goal": "能解释弹簧振子在平衡位置与端点之间动能与弹性势能的相互转换，并说明总能量恒为 1/2 kA^2。",
+          "core_concept": "动能与弹性势能随位置交替变化，机械能守恒。",
+          "cognitive_hurdle": "以为在端点处弹性势能最大的同时动能也很大；没有意识到理想弹簧振子的总能量不会逐渐减小到零。",
+          "source_sections": [
+            "s4"
+          ],
+          "estimated_duration_min": 5,
+          "tags": [
+            "Intuition",
+            "Definition"
+          ],
+          "segments": [
+            {
+              "title": "能量去哪儿了？",
+              "intent": "让学生意识到振动中能量在不同位置以不同形式存在。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s4"
+              ]
+            },
+            {
+              "title": "速度与位置的交替",
+              "intent": "把动能最大在平衡位置、势能最大在端点与直观图像绑定。",
+              "media": "illustration",
+              "media_brief": "画出弹簧振子五个位置：-A、-A/2、0、+A/2、+A。每个位置上方用箭头长度表示速度大小（平衡位置最长，两端为零），下方用竖直能量条显示动能（蓝）和弹性势能（红）的大小。标注平衡位置和端点。",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s4"
+              ]
+            },
+            {
+              "title": "两个能量公式",
+              "intent": "给出动能和弹性势能表达式，说明它们在平衡位置和端点的取值。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s4"
+              ]
+            },
+            {
+              "title": "任意位置的总能量",
+              "intent": "通过连续变化位置看到动能+势能恒等于 1/2 kA^2。",
+              "media": "explorable",
+              "media_brief": "横轴为振子位置 x（从 -A 到 +A），纵轴为能量；蓝色曲线为动能 E_k，红色曲线为弹性势能 E_p，黑色水平线为总能量 E=1/2 kA^2。学生拖动位置滑块时，在当前位置标出对应能量点并显示数值；可以看到 E_k+E_p 恒等于黑线值。在 x=0 处蓝色峰值、红色为零；在 x=±A 处红色峰值、蓝色为零。",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s4"
+              ]
+            },
+            {
+              "title": "端点不是又有速度又有势能",
+              "intent": "纠正以为端点上动能也大的直觉，并强调总能量守恒不是逐渐耗散。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s4"
+              ]
+            },
+            {
+              "title": "能量转换图景",
+              "intent": "回顾平衡位置动能峰值、端点势能峰值、总能量恒定。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s4"
+              ]
+            }
+          ]
+        },
+        {
+          "session_id": "sess_5",
+          "title": "周期由质量与刚度决定，与振幅无关",
+          "learning_goal": "能用 T=2π√(m/k) 判断质量、劲度系数对周期的影响，并说明改变振幅不改变周期。",
+          "core_concept": "简谐振动周期公式及其对 m、k、A 的依赖关系。",
+          "cognitive_hurdle": "以为振幅越大振动一周需要的时间越长；忽略劲度系数对周期的影响方向。",
+          "source_sections": [
+            "s4"
+          ],
+          "estimated_duration_min": 5,
+          "tags": [
+            "Definition",
+            "Application"
+          ],
+          "segments": [
+            {
+              "title": "拉得更开会更慢吗？",
+              "intent": "让学生暴露“振幅影响周期”的直觉。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s4"
+              ]
+            },
+            {
+              "title": "先猜：振幅加倍",
+              "intent": "让学生预测周期变化，制造认知冲突。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s4"
+              ]
+            },
+            {
+              "title": "周期公式",
+              "intent": "给出 T=2π√(m/k)，明确周期与质量、劲度系数的定量关系。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s4"
+              ]
+            },
+            {
+              "title": "质量和刚度怎么改变周期",
+              "intent": "用公式计算 m、k 变化对 T 的影响，并看到 A 不出现。",
+              "media": "explorable",
+              "media_brief": "横轴为滑块控制的质量 m（范围例如 0.1–2 kg），纵轴为周期 T；黑色曲线为 T=2π√(m/k)，k 固定，显示周期随 m 增大而变慢；旁边有一个振幅 A 的滑块，改变 A 时周期曲线和当前 T 值不变。",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s4"
+              ]
+            },
+            {
+              "title": "振幅不变周期的反直觉",
+              "intent": "通过变化振幅的具体估值对比，打破“越宽越慢”的误解。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s4"
+              ]
+            },
+            {
+              "title": "本课回顾",
+              "intent": "总结周期由 m 和 k 决定，与 A 无关。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s4"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

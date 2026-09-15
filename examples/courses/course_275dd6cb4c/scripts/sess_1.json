@@ -1,0 +1,303 @@
+{
+  "session_id": "sess_1",
+  "course_id": "course_275dd6cb4c",
+  "title": "条件概率：缩小样本空间",
+  "learning_goal": "学生能解释条件概率的定义，并运用“缩小样本空间”的直觉理解分母为何变为 P(B)。",
+  "steps": [
+    {
+      "title": "已知 B 发生，概率还看原地图吗？",
+      "beat": "hook",
+      "spoken_text": "先别急着看公式。假设有人告诉你：事件 B 已经发生了。这时候你再去衡量 A 的概率，还应该拿原来那张完整的地图当参照吗？板书第一行我写下一个问题：已知 B 发生，A 的概率还在原样本空间里量吗？你先凭直觉猜一猜，这个参照空间会不会变？",
+      "boards": [
+        {
+          "title": "",
+          "markdown": "- 已知 **B 发生**，A 的概率还在原样本空间里量吗？\n- 参照空间变不变？→ 你先猜",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "circle",
+          "snippet": "参照空间变不变？",
+          "board_index": 0,
+          "trigger_phrase": "这个参照空间会不会变",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": {
+        "mode": "choice",
+        "question": "已知 B 已经发生，A 的概率还应该拿整个样本空间当分母吗？",
+        "options": [
+          "应该，样本空间又没变，分母还是原来的",
+          "不应该，B 已经发生，衡量范围就缩到 B 里了"
+        ],
+        "correct_index": 1,
+        "misconceptions": [
+          "这是最常见的直觉：以为样本空间是固定的背景板，不管知道什么都不会变。但一旦知道 B 发生，B 之外的结果已经不可能了。",
+          null
+        ],
+        "explanation": "已知 B 发生，意味着 B 之外的结果都被排除，衡量概率的参照空间自然缩小到 B 内部。"
+      },
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "裁剪地图：只留下 B",
+      "beat": "analogy",
+      "spoken_text": "看这张图。左边是原来的样本空间 S，里面有两个相交的圆 A 和 B，B 用浅蓝色填满。现在拿一把剪刀，沿着 B 的边界把地图裁下来，只留下 B 这一块，右边就是裁完的样子。注意 A 的轮廓我用虚线保留着，这样你能看清橙色那块 A 交 B 是从哪来的。整张地图的面积代表总概率 1，裁完之后，新的地盘只有 B 这么大。",
+      "boards": [
+        {
+          "title": "裁剪地图",
+          "markdown": "- 左：原样本空间 S，圆 A 与圆 B 相交\n- 右：沿 B 边界裁剪，只留 B\n- A 的轮廓用虚线保留 → 看清 A∩B 的来源\n- 新地盘 = B，面积代表 P(B)",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "highlight",
+          "snippet": "面积代表 P(B)",
+          "board_index": 0,
+          "trigger_phrase": "整张地图的面积代表总概率 1",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": null,
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "条件概率的定义",
+      "beat": "define",
+      "spoken_text": "裁剪完，我们就在 B 这块新地盘上重新量概率。看板书第二行：已知 B 发生，A 的概率记作 P(A 竖线 B)。分子是 A 交 B，也就是橙色那块的面积；分母是 P(B)，也就是新地盘的总面积。所以公式是 P(A 竖线 B) 等于 P(A 交 B) 除以 P(B)。分母为什么变成 P(B)？因为我们的参照空间已经缩到 B 里了。",
+      "boards": [
+        {
+          "title": "条件概率的定义",
+          "markdown": "- 已知 B 发生，A 的概率：$P(A \\mid B)$\n- $P(A \\mid B) = \\dfrac{P(A \\cap B)}{P(B)}$\n- 分子 = A∩B 的面积\n- 分母 = **P(B)** → 新地盘的总面积",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "circle",
+          "snippet": "P(B)",
+          "board_index": 0,
+          "trigger_phrase": "分母是 P(B)",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": null,
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "从直觉到公式",
+      "beat": "derive",
+      "spoken_text": "回看上一段的板书，最后一行写着分母是 P(B)。现在把它和刚才那把剪刀接上：裁剪之后，新地盘的总面积就是 P(B)，所以分母换成 P(B)；而 A 在新地盘里剩下的那块，就是 A 交 B，所以分子是 P(A 交 B)。从这一行到下一行，我们只是把「新地盘」和「剩下的那块」翻译成符号。那如果 P(B) 等于零，这条公式还能算吗？",
+      "boards": [
+        {
+          "title": "把剪刀翻译成符号",
+          "markdown": "- 新地盘 = B → 总面积 $P(B)$\n- 新地盘里 A 剩下的那块 = $A \\cap B$\n- 概率 = 面积占比 → $P(A \\mid B) = \\dfrac{P(A \\cap B)}{P(B)}$\n- 分母为什么是 $P(B)$？→ 因为参照系换成了 B",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "circle",
+          "snippet": "P(A \\mid B) = \\dfrac{P(A \\cap B)}{P(B)}",
+          "board_index": 0,
+          "trigger_phrase": "分母换成 P(B)",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": {
+        "mode": "choice",
+        "question": "如果 P(B) 等于零，这条公式还能算吗？",
+        "options": [
+          "能，分母为零时结果就是零",
+          "不能，分母为零，公式没有意义"
+        ],
+        "correct_index": 1,
+        "misconceptions": [
+          "这是把「分母为零」当成了「结果为零」，其实除以零没有定义。",
+          null
+        ],
+        "explanation": "P(B) 等于零时不能做分母，条件概率 P(A|B) 没有定义，所以公式失效。"
+      },
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "条件概率与无条件概率的对比",
+      "beat": "contrast",
+      "spoken_text": "看右边这张图，两栏并排。左栏是原来的 P(A)，分母是整个 S 的面积；右栏是 P(A 竖线 B)，分母只剩 B 的面积。注意，这里的面积就代表概率，面积占比就是概率占比。所以两栏的差别不在分子，而在分母：一个用 S，一个用 B。那如果 A 和 B 完全不相交，右栏的橙色区域会变成什么样？",
+      "boards": [
+        {
+          "title": "分母换了，分子没换",
+          "markdown": "| 量 | 左栏：$P(A)$ | 右栏：$P(A \\mid B)$ |\n| --- | --- | --- |\n| 参照空间 | 整个 $S$ | 只剩 $B$ |\n| 分子 | $A$ 的面积 | $A \\cap B$ 的面积 |\n| 分母 | $S$ 的面积 | $B$ 的面积 |",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "highlight",
+          "snippet": "只剩 $B$",
+          "board_index": 0,
+          "trigger_phrase": "分母只剩 B 的面积",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": {
+        "mode": "choice",
+        "question": "如果 A 和 B 完全不相交，右栏的橙色区域会变成什么样？",
+        "options": [
+          "橙色区域消失，P(A|B) 等于零",
+          "橙色区域还在，只是变小了"
+        ],
+        "correct_index": 0,
+        "misconceptions": [
+          "以为只要 B 发生，A 总还留一点，其实不相交就一点交集都没有。",
+          null
+        ],
+        "explanation": "A 和 B 不相交时 A∩B 为空，分子为零，所以 P(A|B) 等于零。"
+      },
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "回顾：在新地盘上重新量概率",
+      "beat": "recap",
+      "spoken_text": "最后把三件事串起来。看板书第一行：已知 B 发生，参照空间就换成 B。第二行：分子是 A 交 B，也就是 A 在新地盘里剩下的那块。第三行：分母是 P(B)，也就是新地盘的总面积。所以条件概率不是新公式，只是换了一张地图重新量。回到最开始那个问题：已知 B 发生，A 的概率还看原地图吗？现在你应该能自己回答了。",
+      "boards": [
+        {
+          "title": "三句话记住条件概率",
+          "markdown": "- 已知 B 发生 → 参照空间换成 **B**\n- 分子 = $A \\cap B$（A 在新地盘里剩下的那块）\n- 分母 = $P(B)$（新地盘的总面积）\n- 一句话：**换地图，重新量**",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "spotlight",
+          "snippet": "换地图，重新量",
+          "board_index": 0,
+          "trigger_phrase": "换了一张地图重新量",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": null,
+      "reward": {
+        "title": "条件概率：缩小样本空间",
+        "description": "已知 B 发生，就把参照空间换成 B：分子是 A∩B，分母是 P(B)。条件概率就是换地图重新量。"
+      },
+      "new_page_title": null
+    }
+  ],
+  "exercises": [
+    {
+      "exercise_id": "sess_1_ex1",
+      "kind": "fill_blank",
+      "stem": "条件概率 $P(A \\mid B)$ 的分母是 ____。",
+      "options": [],
+      "correct_index": null,
+      "answer": "P(B)",
+      "accepted": [
+        "B 的概率",
+        "事件 B 的概率",
+        "P(B)的值",
+        "B的面积"
+      ],
+      "explanation": "因为已知 B 发生后，参照空间从整个样本空间 S 缩小到了 B，所以分母变为新地盘的总面积，即 P(B)。",
+      "widget": null,
+      "widget_hint": ""
+    },
+    {
+      "exercise_id": "sess_1_ex2",
+      "kind": "fill_blank",
+      "stem": "在条件概率中，分子 $P(A \\cap B)$ 对应的是在缩小后的样本空间里，事件 A ____ 的部分。",
+      "options": [],
+      "correct_index": null,
+      "answer": "剩下",
+      "accepted": [
+        "保留",
+        "留下",
+        "存在",
+        "出现"
+      ],
+      "explanation": "裁剪地图后，A 在新地盘 B 中剩下的部分就是 A 与 B 的交集，因此分子是 P(A∩B)。",
+      "widget": null,
+      "widget_hint": ""
+    },
+    {
+      "exercise_id": "sess_1_ex3",
+      "kind": "single_choice",
+      "stem": "已知 $P(B) = 0.5$，$P(A \\cap B) = 0.2$，则 $P(A \\mid B)$ 等于多少？",
+      "options": [
+        "0.1",
+        "0.4",
+        "0.5",
+        "0.7"
+      ],
+      "correct_index": 1,
+      "answer": null,
+      "accepted": [],
+      "explanation": "根据条件概率公式 $P(A \\mid B) = \\frac{P(A \\cap B)}{P(B)} = \\frac{0.2}{0.5} = 0.4$。",
+      "widget": null,
+      "widget_hint": ""
+    },
+    {
+      "exercise_id": "sess_1_ex4",
+      "kind": "single_choice",
+      "stem": "关于条件概率 $P(A \\mid B)$ 与无条件概率 $P(A)$ 的区别，以下说法正确的是？",
+      "options": [
+        "分子不同，分母相同",
+        "分子相同，分母不同",
+        "分子和分母都不同",
+        "分子和分母都相同"
+      ],
+      "correct_index": 2,
+      "answer": null,
+      "accepted": [],
+      "explanation": "$P(A)$ 的分子是 A 的面积，分母是 S 的面积；$P(A \\mid B)$ 的分子是 A∩B 的面积，分母是 B 的面积。因此分子和分母都不同。",
+      "widget": null,
+      "widget_hint": ""
+    },
+    {
+      "exercise_id": "sess_1_ex5",
+      "kind": "interactive",
+      "stem": "通过调整 B 的大小，观察条件概率 $P(A \\mid B)$ 的变化。",
+      "options": [
+        "P(A|B) 保持不变",
+        "P(A|B) 随 P(B) 增大而增大",
+        "P(A|B) 随 P(B) 增大而减小",
+        "P(A|B) 先增大后减小"
+      ],
+      "correct_index": 2,
+      "answer": null,
+      "accepted": [],
+      "explanation": "因为 $P(A \\mid B) = \\frac{P(A \\cap B)}{P(B)}$，当分子 $P(A \\cap B)$ 固定时，分母 $P(B)$ 越大，整个分数值越小，所以 $P(A \\mid B)$ 随 $P(B)$ 增大而减小。",
+      "widget": {
+        "kind": "explorable",
+        "title": "缩小样本空间：条件概率",
+        "task": "拖动滑块改变事件 B 的概率 P(B)，同时保持 P(A∩B) 不变。观察 P(A|B) 的值如何变化。",
+        "html": "<!DOCTYPE html>\n<html>\n<head><script>/**\n * HandChart — zero-dependency hand-drawn chart base for explorable widgets.\n *\n * Injected into every generated 2D explorable (widget_generator.py) so the\n * model supplies data + overlays instead of hand-writing axes. The look matches\n * the handwritten page: paper panel, slightly wobbly ink axes, main red /\n * aux green, handwriting labels.\n *\n * API (all coordinates in WORLD units unless noted):\n *   const ch = HandChart.render(canvas, opts)\n *     opts = { type: \"function\"|\"points\"|\"bars\"|\"lines\",\n *              xlim:[x0,x1], ylim:[y0,y1],                  (all but bars)\n *              fn: x=>y | fns:[{fn, color?, label?}],        (function)\n *              points:[[x,y],...],                          (points)\n *              series:[{name, points, color?, dash?}],      (lines; legend drawn)\n *              bars:{labels:[...], values:[...], highlight?} (bars)\n *              xlabel, ylabel, grid:true|false, title }\n *     returns { ctx, sx, sy, box, W, H, opts }  — keep it to draw overlays\n *   HandChart.marker(ch, x, y, {color, label, r})       dot + optional label\n *   HandChart.vline(ch, x, {color, dash, label})         vertical guide\n *   HandChart.hline(ch, y, {color, dash, label})         horizontal guide\n *   HandChart.segment(ch, [x1,y1], [x2,y2], {color, width, dash, arrow})\n *   HandChart.note(ch, x, y, text, {color, align, size}) handwriting annotation\n *   HandChart.attachProbe(canvas, {xlim, ylim}, onProbe, onLeave?)\n *     pointer follow; onProbe({x, y}) in world coords — redraw + readouts there.\n *   HandChart.style = { INK, AXIS, MAIN, AUX, GRID, PAPER, MUTED }\n */\n(function () {\n  const style = {\n    INK: \"#2b2b2b\", AXIS: \"#8a8377\", MAIN: \"#c0392b\", AUX: \"#2e8b6f\",\n    GRID: \"#ece5d4\", PAPER: \"#fbfaf6\", MUTED: \"#8a8377\", PURPLE: \"#7c3aed\", BLUE: \"#2563eb\",\n  };\n  const PALETTE = [style.MAIN, style.AUX, style.BLUE, style.PURPLE, \"#d97706\"];\n  const PAD = { l: 48, r: 18, t: 18, b: 36 };\n  const HAND = \"'Patrick Hand', 'LXGW WenKai Lite', 'PingFang SC', sans-serif\";\n\n  function font(size, italic) { return (italic ? \"italic \" : \"\") + size + \"px \" + HAND; }\n\n  // deterministic wobble so the \"hand\" does not shake on every redraw\n  function wob(seed, amp) { return Math.sin(seed * 12.9898) * amp; }\n\n  function tickVals(min, max, n) {\n    const span = max - min || 1;\n    const raw = span / n;\n    const mag = Math.pow(10, Math.floor(Math.log10(raw)));\n    const step = [1, 2, 2.5, 5, 10].map((m) => m * mag).find((s) => span / s <= n) || mag * 10;\n    const out = [];\n    for (let v = Math.ceil(min / step) * step; v <= max + step * 1e-9; v += step) out.push(+v.toFixed(10));\n    return out;\n  }\n\n  function fmt(v) {\n    const a = Math.abs(v);\n    if (a === 0) return \"0\";\n    if (a >= 10000 || a < 0.01) return v.toExponential(1);\n    return String(+v.toFixed(Math.max(0, 3 - Math.floor(Math.log10(a)))));\n  }\n\n  /** a hand-drawn line: two passes with tiny deterministic wobble */\n  function inkLine(ctx, x1, y1, x2, y2, color, width, seed) {\n    ctx.save();\n    ctx.strokeStyle = color; ctx.lineWidth = width; ctx.lineCap = \"round\";\n    const n = 6, s = seed || (x1 + y2);\n    ctx.beginPath();\n    for (let i = 0; i <= n; i++) {\n      const t = i / n, x = x1 + (x2 - x1) * t, y = y1 + (y2 - y1) * t;\n      const w = i === 0 || i === n ? 0 : wob(s + i, 0.7);\n      i ? ctx.lineTo(x + w, y + w) : ctx.moveTo(x, y);\n    }\n    ctx.stroke();\n    ctx.restore();\n  }\n\n  function frame(ctx, W, H) {\n    ctx.clearRect(0, 0, W, H);\n    ctx.save();\n    ctx.fillStyle = style.PAPER;\n    ctx.fillRect(0, 0, W, H);\n    ctx.restore();\n  }\n\n  function plotBox(W, H, opts) {\n    const t = PAD.t + (opts && opts.title ? 18 : 0);\n    return { x0: PAD.l, y0: t, x1: W - PAD.r, y1: H - PAD.b };\n  }\n\n  function mapping(box, xlim, ylim) {\n    const [x0, x1] = xlim, [y0, y1] = ylim;\n    return {\n      sx: (v) => box.x0 + (v - x0) / (x1 - x0) * (box.x1 - box.x0),\n      sy: (v) => box.y1 - (v - y0) / (y1 - y0) * (box.y1 - box.y0),\n    };\n  }\n\n  function axes(ctx, box, opts) {\n    const [x0, x1] = opts.xlim, [y0, y1] = opts.ylim;\n    const { sx, sy } = mapping(box, opts.xlim, opts.ylim);\n    const xt = tickVals(x0, x1, 6).filter((v) => v >= x0 && v <= x1);\n    const yt = tickVals(y0, y1, 4).filter((v) => v >= y0 && v <= y1);\n    if (opts.grid !== false) {\n      ctx.save(); ctx.strokeStyle = style.GRID; ctx.lineWidth = 1;\n      for (const v of xt) { ctx.beginPath(); ctx.moveTo(sx(v), box.y0); ctx.lineTo(sx(v), box.y1); ctx.stroke(); }\n      for (const v of yt) { ctx.beginPath(); ctx.moveTo(box.x0, sy(v)); ctx.lineTo(box.x1, sy(v)); ctx.stroke(); }\n      ctx.restore();\n    }\n    // axes sit on zero when zero is inside the range, else on the box edge\n    const ax = y0 <= 0 && y1 >= 0 ? sy(0) : box.y1;\n    const ay = x0 <= 0 && x1 >= 0 ? sx(0) : box.x0;\n    inkLine(ctx, box.x0 - 4, ax, box.x1 + 6, ax, style.AXIS, 1.4, 1);\n    inkLine(ctx, ay, box.y1 + 4, ay, box.y0 - 6, style.AXIS, 1.4, 2);\n    // arrow heads\n    ctx.save(); ctx.fillStyle = style.AXIS;\n    ctx.beginPath(); ctx.moveTo(box.x1 + 8, ax); ctx.lineTo(box.x1 + 1, ax - 3.5); ctx.lineTo(box.x1 + 1, ax + 3.5); ctx.fill();\n    ctx.beginPath(); ctx.moveTo(ay, box.y0 - 8); ctx.lineTo(ay - 3.5, box.y0 - 1); ctx.lineTo(ay + 3.5, box.y0 - 1); ctx.fill();\n    ctx.restore();\n    ctx.save();\n    ctx.fillStyle = style.MUTED; ctx.font = font(12);\n    ctx.textAlign = \"center\";\n    for (const v of xt) {\n      if (Math.abs(sx(v) - ay) < 1 && ay !== box.x0) continue; // skip the label under the y axis\n      inkLine(ctx, sx(v), ax - 3, sx(v), ax + 3, style.AXIS, 1, v);\n      ctx.fillText(fmt(v), sx(v), ax + 16);\n    }\n    ctx.textAlign = \"right\";\n    for (const v of yt) {\n      if (Math.abs(sy(v) - ax) < 1 && ax !== box.y1) continue;\n      inkLine(ctx, ay - 3, sy(v), ay + 3, sy(v), style.AXIS, 1, v + 7);\n      ctx.fillText(fmt(v), ay - 7, sy(v) + 4);\n    }\n    ctx.font = font(14, true); ctx.fillStyle = style.INK;\n    if (opts.xlabel) { ctx.textAlign = \"right\"; ctx.fillText(opts.xlabel, box.x1 + 4, ax - 8); }\n    if (opts.ylabel) { ctx.textAlign = \"left\"; ctx.fillText(opts.ylabel, ay + 8, box.y0 + 4); }\n    ctx.restore();\n    return { sx, sy };\n  }\n\n  function stroke(ctx, pts, color, width, dash) {\n    if (!pts.length) return;\n    ctx.save();\n    ctx.strokeStyle = color; ctx.lineWidth = width || 2.2;\n    ctx.lineJoin = \"round\"; ctx.lineCap = \"round\";\n    if (dash) ctx.setLineDash(dash);\n    ctx.beginPath();\n    let pen = false;\n    for (const p of pts) {\n      if (!p) { pen = false; continue; }\n      pen ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1]);\n      pen = true;\n    }\n    ctx.stroke();\n    ctx.restore();\n  }\n\n  function fnPoints(fn, opts, m) {\n    const [x0, x1] = opts.xlim, [y0, y1] = opts.ylim;\n    const n = 400, pts = [];\n    const margin = (y1 - y0) * 0.02;\n    for (let i = 0; i <= n; i++) {\n      const x = x0 + (x1 - x0) * i / n;\n      let y;\n      try { y = fn(x); } catch (e) { y = NaN; }\n      if (!isFinite(y) || y < y0 - margin || y > y1 + margin) { pts.push(null); continue; }\n      pts.push([m.sx(x), m.sy(y)]);\n    }\n    return pts;\n  }\n\n  function legend(ctx, box, items) {\n    if (!items.length) return;\n    ctx.save();\n    ctx.font = font(13); ctx.textAlign = \"left\"; ctx.textBaseline = \"middle\";\n    let x = box.x0 + 10, y = box.y0 + 12;\n    for (const it of items) {\n      inkLine(ctx, x, y, x + 22, y, it.color, 2.4, x);\n      ctx.fillStyle = style.INK;\n      ctx.fillText(it.label, x + 28, y + 1);\n      x += 28 + ctx.measureText(it.label).width + 18;\n    }\n    ctx.restore();\n  }\n\n  function title(ctx, W, text) {\n    ctx.save();\n    ctx.font = font(15); ctx.fillStyle = style.INK; ctx.textAlign = \"center\";\n    ctx.fillText(text, W / 2, 16);\n    ctx.restore();\n  }\n\n  function render(canvas, opts) {\n    const ctx = canvas.getContext(\"2d\");\n    const rect = canvas.getBoundingClientRect();\n    const W = Math.max(60, Math.round(rect.width)), H = Math.max(60, Math.round(rect.height));\n    const dpr = window.devicePixelRatio || 1;\n    if (canvas.width !== Math.round(W * dpr) || canvas.height !== Math.round(H * dpr)) {\n      canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);\n    }\n    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);\n    frame(ctx, W, H);\n    if (opts.title) title(ctx, W, opts.title);\n    const box = plotBox(W, H, opts);\n    const type = opts.type || \"function\";\n\n    if (type === \"bars\") {\n      const labels = opts.bars.labels || [], values = opts.bars.values || [];\n      const n = Math.max(1, values.length);\n      const bw = (box.x1 - box.x0) / n;\n      const vmax = Math.max(...values.map((v) => Math.abs(v)), 0) * 1.15 || 1;\n      const base = box.y1;\n      inkLine(ctx, box.x0 - 4, base, box.x1 + 4, base, style.AXIS, 1.4, 3);\n      ctx.save();\n      values.forEach((v, i) => {\n        const h = (Math.abs(v) / vmax) * (box.y1 - box.y0);\n        const x = box.x0 + i * bw + bw * 0.2, w = bw * 0.6, y = base - h;\n        const hot = opts.bars.highlight != null && i === opts.bars.highlight;\n        ctx.fillStyle = hot ? style.MAIN : \"#e6dfcf\";\n        ctx.fillRect(x, y, w, h);\n        ctx.strokeStyle = hot ? style.MAIN : style.AXIS; ctx.lineWidth = 1.2;\n        ctx.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);\n        ctx.font = font(13); ctx.textAlign = \"center\"; ctx.fillStyle = style.INK;\n        ctx.fillText(String(labels[i] == null ? i + 1 : labels[i]), x + w / 2, base + 17);\n        ctx.fillStyle = hot ? style.MAIN : style.MUTED;\n        ctx.fillText(fmt(v), x + w / 2, y - 6);\n      });\n      ctx.restore();\n      const sx = (i) => box.x0 + (i + 0.5) * bw, sy = (v) => base - (Math.abs(v) / vmax) * (box.y1 - box.y0);\n      return { ctx, sx, sy, box, W, H, opts };\n    }\n\n    const m = axes(ctx, box, opts);\n    const items = [];\n    if (type === \"lines\") {\n      (opts.series || []).forEach((s, i) => {\n        const color = s.color || PALETTE[i % PALETTE.length];\n        stroke(ctx, (s.points || []).map((p) => [m.sx(p[0]), m.sy(p[1])]), color, 2.2, s.dash);\n        if (s.name) items.push({ label: s.name, color });\n      });\n    } else if (type === \"points\") {\n      ctx.save(); ctx.fillStyle = opts.color || style.MAIN;\n      (opts.points || []).forEach((p) => { ctx.beginPath(); ctx.arc(m.sx(p[0]), m.sy(p[1]), opts.r || 3.6, 0, Math.PI * 2); ctx.fill(); });\n      ctx.restore();\n    } else {\n      const fns = opts.fns || (typeof opts.fn === \"function\" ? [{ fn: opts.fn, color: opts.color, label: opts.label }] : []);\n      fns.forEach((f, i) => {\n        const color = f.color || PALETTE[i % PALETTE.length];\n        stroke(ctx, fnPoints(f.fn, opts, m), color, f.width || 2.4, f.dash);\n        if (f.label) items.push({ label: f.label, color });\n      });\n    }\n    legend(ctx, box, items);\n    return { ctx, sx: m.sx, sy: m.sy, box, W, H, opts };\n  }\n\n  // ---- overlays (world coordinates) ----\n  function marker(ch, x, y, o) {\n    o = o || {};\n    const px = ch.sx(x), py = ch.sy(y);\n    ch.ctx.save();\n    ch.ctx.fillStyle = o.color || style.MAIN;\n    ch.ctx.beginPath(); ch.ctx.arc(px, py, o.r || 5, 0, Math.PI * 2); ch.ctx.fill();\n    ch.ctx.strokeStyle = style.PAPER; ch.ctx.lineWidth = 1.5; ch.ctx.stroke();\n    if (o.label) {\n      ch.ctx.font = font(o.size || 13); ch.ctx.fillStyle = o.color || style.MAIN; ch.ctx.textAlign = \"left\";\n      ch.ctx.fillText(o.label, px + 8, py - 8);\n    }\n    ch.ctx.restore();\n  }\n\n  function vline(ch, x, o) {\n    o = o || {};\n    const px = ch.sx(x);\n    stroke(ch.ctx, [[px, ch.box.y0], [px, ch.box.y1]], o.color || style.MUTED, o.width || 1.2, o.dash || [4, 4]);\n    if (o.label) note(ch, x, null, o.label, { color: o.color || style.MUTED, px: px + 4, py: ch.box.y0 + 12, align: \"left\", size: o.size });\n  }\n\n  function hline(ch, y, o) {\n    o = o || {};\n    const py = ch.sy(y);\n    stroke(ch.ctx, [[ch.box.x0, py], [ch.box.x1, py]], o.color || style.MUTED, o.width || 1.2, o.dash || [4, 4]);\n    if (o.label) note(ch, null, y, o.label, { color: o.color || style.MUTED, px: ch.box.x1 - 4, py: py - 5, align: \"right\", size: o.size });\n  }\n\n  function segment(ch, a, b, o) {\n    o = o || {};\n    const x1 = ch.sx(a[0]), y1 = ch.sy(a[1]), x2 = ch.sx(b[0]), y2 = ch.sy(b[1]);\n    const color = o.color || style.AUX;\n    stroke(ch.ctx, [[x1, y1], [x2, y2]], color, o.width || 2, o.dash);\n    if (o.arrow) {\n      const ang = Math.atan2(y2 - y1, x2 - x1), L = 9;\n      ch.ctx.save(); ch.ctx.fillStyle = color; ch.ctx.beginPath();\n      ch.ctx.moveTo(x2, y2);\n      ch.ctx.lineTo(x2 - L * Math.cos(ang - 0.4), y2 - L * Math.sin(ang - 0.4));\n      ch.ctx.lineTo(x2 - L * Math.cos(ang + 0.4), y2 - L * Math.sin(ang + 0.4));\n      ch.ctx.fill(); ch.ctx.restore();\n    }\n  }\n\n  function note(ch, x, y, text, o) {\n    o = o || {};\n    const px = o.px != null ? o.px : ch.sx(x), py = o.py != null ? o.py : ch.sy(y);\n    ch.ctx.save();\n    ch.ctx.font = font(o.size || 14, o.italic);\n    ch.ctx.fillStyle = o.color || style.INK;\n    ch.ctx.textAlign = o.align || \"left\";\n    ch.ctx.fillText(text, px, py);\n    ch.ctx.restore();\n  }\n\n  /** Pointer probe in world coords; the caller redraws and updates readouts. */\n  function attachProbe(canvas, opts, onProbe, onLeave) {\n    const [x0, x1] = opts.xlim;\n    const [y0, y1] = opts.ylim;\n    const toWorld = (px, py) => {\n      const r = canvas.getBoundingClientRect();\n      const box = plotBox(r.width, r.height, opts);\n      const t = (px - r.left - box.x0) / (box.x1 - box.x0);\n      const u = 1 - (py - r.top - box.y0) / (box.y1 - box.y0);\n      return { x: x0 + t * (x1 - x0), y: y0 + u * (y1 - y0), inside: t >= 0 && t <= 1 };\n    };\n    const handler = (e) => {\n      const p = toWorld(e.clientX, e.clientY);\n      if (p.inside) onProbe(p);\n    };\n    canvas.addEventListener(\"pointermove\", handler);\n    canvas.addEventListener(\"pointerdown\", handler);\n    if (onLeave) canvas.addEventListener(\"pointerleave\", onLeave);\n    canvas.style.touchAction = \"none\";\n    return toWorld;\n  }\n\n  window.HandChart = { render, marker, vline, hline, segment, note, attachProbe, style, font: HAND };\n})();\n</script>\n  <meta charset=\"utf-8\">\n  <style>\n    html, body { margin: 0; height: 100%; background: #faf8f3; font-family: \"PingFang SC\", \"Hiragino Sans GB\", sans-serif; color: #333; overflow: hidden; }\n    #wrap { position: absolute; inset: 0; display: flex; flex-direction: column; }\n    #plot { flex: 1; min-height: 0; margin: 10px 10px 4px; border: 1px solid #d9d2c3; border-radius: 12px; background: #fbfaf6; cursor: crosshair; touch-action: none; }\n    #readout { display: flex; justify-content: center; align-items: center; gap: 24px; padding: 4px 0 8px; font-size: 12px; color: #666; flex-wrap: wrap; }\n    #readout .k { display: block; font-size: 11px; letter-spacing: .04em; }\n    #readout .v { display: block; font-family: ui-monospace, Menlo, monospace; font-size: 14px; font-weight: 700; color: #c0392b; min-width: 56px; text-align: center; }\n    #formula { display: inline-block; padding: 3px 10px; border: 1px solid #d9d2c3; border-radius: 6px; background: #fff; font-family: Georgia, \"Times New Roman\", serif; font-style: italic; font-size: 13px; color: #333; }\n    #slider-row { display: flex; align-items: center; gap: 10px; padding: 0 0 8px; justify-content: center; }\n    #slider-row label { font-size: 12px; color: #555; }\n    input[type=range] { width: 180px; accent-color: #c0392b; }\n  </style>\n</head>\n<body>\n  <div id=\"wrap\">\n    <canvas id=\"plot\"></canvas>\n    <div id=\"readout\">\n      <span><span class=\"k\">P(B)</span><span class=\"v\" id=\"pB-display\">—</span></span>\n      <span><span class=\"k\">P(A∩B)</span><span class=\"v\" id=\"pAandB-display\">0.200</span></span>\n      <span><span class=\"k\">P(A|B)</span><span class=\"v\" id=\"pAgivenB-display\">—</span></span>\n      <span id=\"formula\">P(A|B) = P(A∩B) / P(B)</span>\n    </div>\n    <div id=\"slider-row\">\n      <label for=\"pB-slider\">P(B)</label>\n      <input type=\"range\" id=\"pB-slider\" min=\"0.2\" max=\"0.8\" step=\"0.01\" value=\"0.5\">\n    </div>\n  </div>\n  <script>\n    // --- 固定常数与状态 ------------------------------------------------\n    const P_AandB = 0.2;          // 固定交集概率\n    let pB = 0.5;                 // 当前 P(B)\n    let probeX = null;            // 探针（保留接口，本教具不强制使用）\n\n    // --- 画布与坐标 ----------------------------------------------------\n    const canvas = document.getElementById('plot');\n    const ctx = canvas.getContext('2d');\n    let W = 0, H = 0;\n    const PAD = { l: 30, r: 30, t: 20, b: 20 };\n\n    // 世界坐标范围：样本空间 Ω 用 [0,1]×[0,1] 表示\n    const X_MIN = 0, X_MAX = 1, Y_MIN = 0, Y_MAX = 1;\n\n    const sx = (x) => PAD.l + (x - X_MIN) / (X_MAX - X_MIN) * (W - PAD.l - PAD.r);\n    const sy = (y) => PAD.t + (Y_MAX - y) / (Y_MAX - Y_MIN) * (H - PAD.t - PAD.b);\n\n    // --- 事件几何参数（固定，不随滑块变化）-----------------------------\n    // 事件 A：圆心 (0.45, 0.55)，半径 0.28\n    const A_CX = 0.45, A_CY = 0.55, A_R = 0.28;\n    // 事件 B：圆心 (0.62, 0.48)，半径随 P(B) 变化\n    const B_CX = 0.62, B_CY = 0.48;\n    // 半径映射：P(B) 从 0.2 到 0.8 对应半径 0.18 到 0.42\n    const B_R_MIN = 0.18, B_R_MAX = 0.42;\n    const bRadius = (p) => B_R_MIN + (p - 0.2) / (0.8 - 0.2) * (B_R_MAX - B_R_MIN);\n\n    // --- 辅助函数 ------------------------------------------------------\n    function drawGrid() {\n      ctx.save();\n      ctx.strokeStyle = '#e8e2d6';\n      ctx.lineWidth = 0.5;\n      const n = 10;\n      for (let i = 0; i <= n; i++) {\n        const x = X_MIN + (X_MAX - X_MIN) * i / n;\n        const y = Y_MIN + (Y_MAX - Y_MIN) * i / n;\n        ctx.beginPath();\n        ctx.moveTo(sx(x), sy(Y_MIN));\n        ctx.lineTo(sx(x), sy(Y_MAX));\n        ctx.stroke();\n        ctx.beginPath();\n        ctx.moveTo(sx(X_MIN), sy(y));\n        ctx.lineTo(sx(X_MAX), sy(y));\n        ctx.stroke();\n      }\n      ctx.restore();\n    }\n\n    function drawSampleSpace() {\n      ctx.save();\n      ctx.strokeStyle = '#b9b3a6';\n      ctx.lineWidth = 1.5;\n      ctx.strokeRect(sx(0), sy(1), sx(1) - sx(0), sy(0) - sy(1));\n      ctx.fillStyle = '#8a8377';\n      ctx.font = 'italic 12px Georgia, serif';\n      ctx.textAlign = 'left';\n      ctx.fillText('Ω', sx(0.02), sy(0.96));\n      ctx.restore();\n    }\n\n    function drawCircle(cx, cy, r, fillStyle, strokeStyle, lineWidth, dash) {\n      ctx.save();\n      if (dash) ctx.setLineDash(dash);\n      ctx.beginPath();\n      ctx.arc(sx(cx), sy(cy), r * (sx(1) - sx(0)), 0, Math.PI * 2);\n      if (fillStyle) { ctx.fillStyle = fillStyle; ctx.fill(); }\n      if (strokeStyle) { ctx.strokeStyle = strokeStyle; ctx.lineWidth = lineWidth || 1.5; ctx.stroke(); }\n      ctx.restore();\n    }\n\n    // 绘制交集区域（两个圆的交集）——用裁剪实现\n    function drawIntersection(cx1, cy1, r1, cx2, cy2, r2, fillStyle) {\n      ctx.save();\n      ctx.beginPath();\n      ctx.arc(sx(cx1), sy(cy1), r1 * (sx(1) - sx(0)), 0, Math.PI * 2);\n      ctx.clip();\n      ctx.beginPath();\n      ctx.arc(sx(cx2), sy(cy2), r2 * (sx(1) - sx(0)), 0, Math.PI * 2);\n      ctx.clip();\n      // 填充整个画布，但被裁剪到交集区域\n      ctx.fillStyle = fillStyle;\n      ctx.fillRect(0, 0, W, H);\n      ctx.restore();\n    }\n\n    // 绘制条件区域（B 中属于 A 的部分）——斜线阴影\n    function drawConditionalHatch(cx1, cy1, r1, cx2, cy2, r2) {\n      ctx.save();\n      // 裁剪到 B 圆\n      ctx.beginPath();\n      ctx.arc(sx(cx2), sy(cy2), r2 * (sx(1) - sx(0)), 0, Math.PI * 2);\n      ctx.clip();\n      // 再裁剪到 A 圆（交集）\n      ctx.beginPath();\n      ctx.arc(sx(cx1), sy(cy1), r1 * (sx(1) - sx(0)), 0, Math.PI * 2);\n      ctx.clip();\n      // 画斜线\n      ctx.strokeStyle = 'rgba(192,57,43,0.35)';\n      ctx.lineWidth = 1.2;\n      const step = 8;\n      for (let i = -H; i < W + H; i += step) {\n        ctx.beginPath();\n        ctx.moveTo(i, 0);\n        ctx.lineTo(i + H, H);\n        ctx.stroke();\n      }\n      ctx.restore();\n    }\n\n    // --- 主绘制函数 ----------------------------------------------------\n    function draw() {\n      ctx.clearRect(0, 0, W, H);\n\n      // 样本空间背景\n      drawGrid();\n      drawSampleSpace();\n\n      const rB = bRadius(pB);\n\n      // 事件 A（主色，半透明填充）\n      drawCircle(A_CX, A_CY, A_R, 'rgba(192,57,43,0.08)', '#c0392b', 2);\n\n      // 事件 B（辅助色，半透明填充）\n      drawCircle(B_CX, B_CY, rB, 'rgba(46,139,111,0.08)', '#2e8b6f', 2, [5, 4]);\n\n      // 交集区域（深色高亮）\n      drawIntersection(A_CX, A_CY, A_R, B_CX, B_CY, rB, 'rgba(60,60,60,0.18)');\n\n      // 条件区域斜线阴影（B 中属于 A 的部分）\n      drawConditionalHatch(A_CX, A_CY, A_R, B_CX, B_CY, rB);\n\n      // 标签\n      ctx.save();\n      ctx.font = 'italic 12px Georgia, serif';\n      ctx.fillStyle = '#c0392b';\n      ctx.textAlign = 'center';\n      ctx.fillText('A', sx(A_CX), sy(A_CY + A_R) - 6);\n      ctx.fillStyle = '#2e8b6f';\n      ctx.fillText('B', sx(B_CX), sy(B_CY + rB) - 6);\n      ctx.fillStyle = '#333';\n      ctx.font = 'italic 11px Georgia, serif';\n      ctx.fillText('A∩B', sx((A_CX + B_CX) / 2), sy((A_CY + B_CY) / 2) + 4);\n      ctx.restore();\n\n      // 公式标签（画布内右上角）\n      ctx.save();\n      ctx.font = 'italic 12px Georgia, serif';\n      ctx.fillStyle = '#333';\n      ctx.textAlign = 'right';\n      const pAgivenB = P_AandB / pB;\n      ctx.fillText('P(A|B) = ' + pAgivenB.toFixed(3), sx(0.98), sy(0.95));\n      ctx.restore();\n\n      // 更新读数\n      document.getElementById('pB-display').textContent = pB.toFixed(3);\n      document.getElementById('pAandB-display').textContent = P_AandB.toFixed(3);\n      document.getElementById('pAgivenB-display').textContent = (P_AandB / pB).toFixed(3);\n    }\n\n    // --- 尺寸调整 ------------------------------------------------------\n    function resize() {\n      const r = canvas.getBoundingClientRect();\n      W = r.width; H = r.height;\n      const dpr = window.devicePixelRatio || 1;\n      canvas.width = Math.round(W * dpr);\n      canvas.height = Math.round(H * dpr);\n      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);\n      draw();\n    }\n\n    // --- 滑块事件 ------------------------------------------------------\n    const slider = document.getElementById('pB-slider');\n    slider.addEventListener('input', function () {\n      pB = parseFloat(this.value);\n      draw();\n    });\n\n    // --- 指针探针（保留接口，本教具不强制使用，但为了规范保留）---------\n    function onPointer(e) {\n      // 本教具不需要探针，但保留空实现以符合规范\n    }\n    canvas.addEventListener('pointermove', onPointer);\n    canvas.addEventListener('pointerdown', onPointer);\n\n    // --- 教师控制钩子 --------------------------------------------------\n    window.hkControl = {\n      set: function (s) {\n        if (s && s.pB != null) {\n          pB = Math.max(0.2, Math.min(0.8, +s.pB));\n          slider.value = pB;\n          draw();\n        }\n      },\n      highlight: function (sel) {\n        var el = document.querySelector(sel);\n        if (!el) return;\n        el.style.outline = '2px solid #c0392b';\n        setTimeout(function () { el.style.outline = ''; }, 1500);\n      },\n      annotate: function () {},\n      reveal: function () {},\n    };\n\n    // --- 初始化 --------------------------------------------------------\n    window.addEventListener('resize', resize);\n    resize();\n  </script>\n</body>\n</html>",
+        "html_path": null,
+        "mermaid": null,
+        "layout": "newcol",
+        "params": [],
+        "controls": []
+      },
+      "widget_hint": "拖动滑块调整 B 的大小，注意分母的变化。"
+    }
+  ]
+}

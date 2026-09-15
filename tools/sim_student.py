@@ -145,6 +145,18 @@ async def run_session(store: CourseStore, llm, course_id: str, session_id: str, 
     await rt.handle(StartSession(course_id=course_id, session_id=session_id, level=level))
     seen = 0
     gates: List[dict] = []
+    gate_beats = {}
+    try:
+        compiled = store.get_session(course_id, session_id)
+        beat_by_speak = {k.step_id: k.beat for k in (compiled.keypoints or [])}
+        current = None
+        for act in compiled.actions:  # a gate belongs to the speak step it follows (compiler emits speak…→ask)
+            if act.type in ("speak", "tts_segment"):
+                current = beat_by_speak.get(act.step_id)
+            elif act.type == "ask":
+                gate_beats[act.step_id] = current
+    except Exception:  # noqa: BLE001 — beat tags are diagnostic sugar, never load-bearing
+        pass
     interrupted = 0
     audio_ms = 0
     for _ in range(20000):
@@ -164,7 +176,8 @@ async def run_session(store: CourseStore, llm, course_id: str, session_id: str, 
                 else:
                     a = await student.answer_choice(transport.sent, m)
                     correct = m.get("correct_index") is not None and a["choice"] == m["correct_index"]
-                    gates.append({"step": m["step_id"], "choice": a["choice"], "correct": correct, "confused": a["confused"]})
+                    gates.append({"step": m["step_id"], "choice": a["choice"], "correct": correct, "confused": a["confused"],
+                                  "beat": gate_beats.get(m["step_id"])})
                     if allow_interrupt and a["confused"] and a["question"] and interrupted < 1:
                         interrupted += 1
                         await rt.handle(InterjectStart(step_id=m["step_id"]))
@@ -241,12 +254,14 @@ async def auto_diagnose(store: CourseStore, llm, student: "Student", course_id: 
 def find_suspicious_gates(rows: List[Dict[str, Any]], n_personas: int) -> List[tuple]:
     """Gates every persona fails on the first try are content defects (ambiguous
     question or wrong key), not learner problems — candidates for a rewrite.
-    Variant detour gates (step >= 100000) and open questions are excluded."""
+    Variant detour gates (step >= 100000), open questions, and hook/poe-beat
+    gates are excluded: those are predictions asked *before* the reveal, so
+    everyone missing them first is the design working, not a broken question."""
     first_fail: Dict[tuple, set] = {}
     for r in rows:
         seen_steps = set()
         for g in r["gates"]:
-            if g.get("open") or g["step"] >= 100000 or g["step"] in seen_steps:
+            if g.get("open") or g.get("beat") in ("hook", "poe") or g["step"] >= 100000 or g["step"] in seen_steps:
                 continue
             seen_steps.add(g["step"])
             if not g["correct"]:

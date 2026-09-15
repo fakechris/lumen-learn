@@ -1,0 +1,302 @@
+{
+  "session_id": "sess_7",
+  "course_id": "course_9acfe7dbcd",
+  "title": "为什么 ln(1+x) 的级数只在 |x|<1 收敛",
+  "learning_goal": "理解不同函数的泰勒级数收敛范围不同，余项是否趋于零决定收敛半径。",
+  "steps": [
+    {
+      "title": "所有函数都完美逼近吗？",
+      "beat": "hook",
+      "spoken_text": "前面我们看了泰勒展开，把函数写成多项式，好像什么都能逼近。但先别急着下结论：是不是所有函数的泰勒级数，都在整个实数轴上收敛到它自己？板书上我写了一个问号。你心里先猜一下，等会儿我们拿 ln(1+x) 来验一验。",
+      "boards": [
+        {
+          "title": "",
+          "markdown": "- 泰勒展开：用多项式逼近函数\n- 问题：**所有函数**都这样吗？\n- 整个实数轴都收敛到原函数？→ **？**",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "circle",
+          "snippet": "整个实数轴都收敛到原函数？→ **？**",
+          "board_index": 0,
+          "trigger_phrase": "整个实数轴上收敛到它自己",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": {
+        "mode": "choice",
+        "question": "你觉得，是不是所有函数的泰勒级数都能在整个实数轴上收敛到原函数？",
+        "options": [
+          "应该是吧，多项式那么灵活，总能逼近",
+          "不一定，有些函数可能只在某个范围内才行"
+        ],
+        "correct_index": 1,
+        "misconceptions": [
+          "这是最常见的直觉：以为多项式万能。但余项不一定衰减到零，后面 ln(1+x) 就是反例。",
+          null
+        ],
+        "explanation": "泰勒级数是否收敛到原函数，取决于余项是否趋于零，不是所有函数都在整个实数轴成立。"
+      },
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "猜一猜 ln(1+x) 在 x=2 的行为",
+      "beat": "poe",
+      "spoken_text": "现在具体看 ln(1+x)。它在 x=0 附近的泰勒级数是 x 减 x 平方的一半加 x 立方三分之一，一直下去。我把 x 等于 2 代进去，右边变成 2 减 2 加三分之八减 4 加…… 左边是 ln 3，大约 1.0986。你觉得右边这串数会老老实实收敛到 ln 3 吗？先猜，别算。",
+      "boards": [
+        {
+          "title": "ln(1+x) 在 x=2",
+          "markdown": "- 级数：$x - \\frac{x^2}{2} + \\frac{x^3}{3} - \\cdots$\n- 代入 $x=2$：$2 - 2 + \\frac{8}{3} - 4 + \\cdots$\n- 左边 $\\ln 3 \\approx 1.0986$\n- 右边会收敛到它吗？→ **你先猜**",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "highlight",
+          "snippet": "2 - 2 + \\frac{8}{3} - 4 + \\cdots",
+          "board_index": 0,
+          "trigger_phrase": "右边变成 2 减 2 加三分之八减 4 加",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": {
+        "mode": "choice",
+        "question": "把 x=2 代进 ln(1+x) 的级数，右边这串数会收敛到 ln 3 吗？",
+        "options": [
+          "会吧，项越来越小，总能加到 ln 3",
+          "不会，项的大小在变大，根本收不住"
+        ],
+        "correct_index": 1,
+        "misconceptions": [
+          "这是最常见的直觉：以为项数多了就收敛。但 x=2 时通项的绝对值是 2 的 n 次方除以 n，越来越大，不趋于零。",
+          null
+        ],
+        "explanation": "x=2 时通项不趋于零，级数发散，右边根本加不到 ln 3。"
+      },
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "收敛半径的直观",
+      "beat": "define",
+      "spoken_text": "所以问题出在 x 的大小上。看这张图：横轴是 x，中间绿色这一段是从负 1 到 1，ln(1+x) 的级数只在这里收敛；两边红色，出了这个范围就发散。而 e 的 x 次方和 sin x 的级数，整条数轴都是绿的。这个绿色范围的边界，就叫收敛半径。",
+      "boards": [
+        {
+          "title": "收敛半径",
+          "markdown": "- 绿色区间：级数收敛到原函数\n- 红色区间：发散\n- $\\ln(1+x)$：绿色只在 $-1 < x < 1$\n- $e^x$、$\\sin x$：整条数轴都绿\n- 绿色范围的边界 → **收敛半径**",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "circle",
+          "snippet": "绿色范围的边界 → **收敛半径**",
+          "board_index": 0,
+          "trigger_phrase": "这个绿色范围的边界",
+          "color": null
+        }
+      ],
+      "illustration": {
+        "kind": "svg",
+        "caption": "ln(1+x) 只在 (-1,1) 收敛，e^x 和 sin x 在全轴收敛。",
+        "brief": "一条水平数轴，标出 -1、0、1 三个刻度。数轴上 -1 到 1 之间涂绿色，两侧涂红色。数轴上方标 ln(1+x) 的收敛区间为绿色段，并用括号标注 (-1,1)。下方另画两条平行数轴：一条全绿标 e^x，一条全绿标 sin x。图例说明绿色=收敛，红色=发散。",
+        "figure_id": null,
+        "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 800 520\">\n  <defs>\n    <style>\n      text { font-family: 'LXGW WenKai Lite', sans-serif; }\n    </style>\n  </defs>\n\n  <!-- ===== 标题 ===== -->\n  <text x=\"400\" y=\"40\" text-anchor=\"middle\" font-size=\"24\" fill=\"#333\">收敛区间对比</text>\n\n  <!-- ===== 上方数轴：ln(1+x) ===== -->\n  <!-- 数轴主线 -->\n  <line x1=\"100\" y1=\"140\" x2=\"700\" y2=\"140\" stroke=\"#4b4b4b\" stroke-width=\"2\" stroke-linecap=\"round\"/>\n\n  <!-- 红色段：(-∞, -1) -->\n  <line x1=\"100\" y1=\"140\" x2=\"300\" y2=\"140\" stroke=\"#e05656\" stroke-width=\"6\" stroke-linecap=\"round\" opacity=\"0.7\"/>\n  <!-- 绿色段：(-1, 1) -->\n  <line x1=\"300\" y1=\"140\" x2=\"500\" y2=\"140\" stroke=\"#b8dcc6\" stroke-width=\"6\" stroke-linecap=\"round\"/>\n  <!-- 红色段：(1, +∞) -->\n  <line x1=\"500\" y1=\"140\" x2=\"700\" y2=\"140\" stroke=\"#e05656\" stroke-width=\"6\" stroke-linecap=\"round\" opacity=\"0.7\"/>\n\n  <!-- 刻度 -1 -->\n  <line x1=\"300\" y1=\"132\" x2=\"300\" y2=\"148\" stroke=\"#4b4b4b\" stroke-width=\"2\" stroke-linecap=\"round\"/>\n  <text x=\"300\" y=\"168\" text-anchor=\"middle\" font-size=\"18\" fill=\"#333\">-1</text>\n\n  <!-- 刻度 0 -->\n  <line x1=\"400\" y1=\"132\" x2=\"400\" y2=\"148\" stroke=\"#4b4b4b\" stroke-width=\"2\" stroke-linecap=\"round\"/>\n  <text x=\"400\" y=\"168\" text-anchor=\"middle\" font-size=\"18\" fill=\"#333\">0</text>\n\n  <!-- 刻度 1 -->\n  <line x1=\"500\" y1=\"132\" x2=\"500\" y2=\"148\" stroke=\"#4b4b4b\" stroke-width=\"2\" stroke-linecap=\"round\"/>\n  <text x=\"500\" y=\"168\" text-anchor=\"middle\" font-size=\"18\" fill=\"#333\">1</text>\n\n  <!-- 括号标注 (-1, 1) -->\n  <path d=\"M 295 120 Q 290 110 295 100\" stroke=\"#4b4b4b\" stroke-width=\"2\" fill=\"none\" stroke-linecap=\"round\"/>\n  <path d=\"M 505 120 Q 510 110 505 100\" stroke=\"#4b4b4b\" stroke-width=\"2\" fill=\"none\" stroke-linecap=\"round\"/>\n  <text x=\"400\" y=\"100\" text-anchor=\"middle\" font-size=\"20\" fill=\"#333\">(-1, 1)</text>\n\n  <!-- 引线标注 ln(1+x) -->\n  <line x1=\"400\" y1=\"100\" x2=\"400\" y2=\"80\" stroke=\"#4b4b4b\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-dasharray=\"4,3\"/>\n  <text x=\"400\" y=\"72\" text-anchor=\"middle\" font-size=\"22\" fill=\"#333\">ln(1+x)</text>\n\n  <!-- 引线标注 发散 -->\n  <line x1=\"200\" y1=\"140\" x2=\"200\" y2=\"110\" stroke=\"#4b4b4b\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-dasharray=\"4,3\"/>\n  <text x=\"200\" y=\"102\" text-anchor=\"middle\" font-size=\"18\" fill=\"#e05656\">发散</text>\n\n  <line x1=\"600\" y1=\"140\" x2=\"600\" y2=\"110\" stroke=\"#4b4b4b\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-dasharray=\"4,3\"/>\n  <text x=\"600\" y=\"102\" text-anchor=\"middle\" font-size=\"18\" fill=\"#e05656\">发散</text>\n\n  <!-- ===== 下方数轴 1：e^x ===== -->\n  <line x1=\"100\" y1=\"280\" x2=\"700\" y2=\"280\" stroke=\"#4b4b4b\" stroke-width=\"2\" stroke-linecap=\"round\"/>\n  <!-- 全绿 -->\n  <line x1=\"100\" y1=\"280\" x2=\"700\" y2=\"280\" stroke=\"#b8dcc6\" stroke-width=\"6\" stroke-linecap=\"round\"/>\n\n  <!-- 刻度 0 -->\n  <line x1=\"400\" y1=\"272\" x2=\"400\" y2=\"288\" stroke=\"#4b4b4b\" stroke-width=\"2\" stroke-linecap=\"round\"/>\n  <text x=\"400\" y=\"308\" text-anchor=\"middle\" font-size=\"18\" fill=\"#333\">0</text>\n\n  <!-- 引线标注 e^x -->\n  <line x1=\"400\" y1=\"280\" x2=\"400\" y2=\"250\" stroke=\"#4b4b4b\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-dasharray=\"4,3\"/>\n  <text x=\"400\" y=\"242\" text-anchor=\"middle\" font-size=\"22\" fill=\"#333\">e^x</text>\n\n  <!-- 全轴收敛标注 -->\n  <text x=\"400\" y=\"330\" text-anchor=\"middle\" font-size=\"18\" fill=\"#333\">全轴收敛</text>\n\n  <!-- ===== 下方数轴 2：sin x ===== -->\n  <line x1=\"100\" y1=\"400\" x2=\"700\" y2=\"400\" stroke=\"#4b4b4b\" stroke-width=\"2\" stroke-linecap=\"round\"/>\n  <!-- 全绿 -->\n  <line x1=\"100\" y1=\"400\" x2=\"700\" y2=\"400\" stroke=\"#b8dcc6\" stroke-width=\"6\" stroke-linecap=\"round\"/>\n\n  <!-- 刻度 0 -->\n  <line x1=\"400\" y1=\"392\" x2=\"400\" y2=\"408\" stroke=\"#4b4b4b\" stroke-width=\"2\" stroke-linecap=\"round\"/>\n  <text x=\"400\" y=\"428\" text-anchor=\"middle\" font-size=\"18\" fill=\"#333\">0</text>\n\n  <!-- 引线标注 sin x -->\n  <line x1=\"400\" y1=\"400\" x2=\"400\" y2=\"370\" stroke=\"#4b4b4b\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-dasharray=\"4,3\"/>\n  <text x=\"400\" y=\"362\" text-anchor=\"middle\" font-size=\"22\" fill=\"#333\">sin x</text>\n\n  <!-- 全轴收敛标注 -->\n  <text x=\"400\" y=\"450\" text-anchor=\"middle\" font-size=\"18\" fill=\"#333\">全轴收敛</text>\n\n  <!-- ===== 图例 ===== -->\n  <!-- 绿色图例 -->\n  <line x1=\"120\" y1=\"490\" x2=\"160\" y2=\"490\" stroke=\"#b8dcc6\" stroke-width=\"6\" stroke-linecap=\"round\"/>\n  <text x=\"170\" y=\"496\" font-size=\"18\" fill=\"#333\">收敛</text>\n\n  <!-- 红色图例 -->\n  <line x1=\"260\" y1=\"490\" x2=\"300\" y2=\"490\" stroke=\"#e05656\" stroke-width=\"6\" stroke-linecap=\"round\" opacity=\"0.7\"/>\n  <text x=\"310\" y=\"496\" font-size=\"18\" fill=\"#333\">发散</text>\n\n</svg>",
+        "svg_path": null,
+        "image_path": null,
+        "image_url": null,
+        "layout": "follow"
+      },
+      "widget": null,
+      "question": null,
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "同样的余项公式，不同的命运",
+      "beat": "contrast",
+      "spoken_text": "回看前面几段的板书，我们已经知道 ln(1+x) 只在负 1 到 1 之间收敛。现在把两个函数摆在一起看。看这张表第一行：x 等于 2 的时候，e 的 x 次方的余项是 2 的 n 加 1 次方除以 n 加 1 的阶乘，分母的阶乘涨得比分子快得多，所以尾巴越来越小，趋于零。再看第二行，ln(1+x) 在 x 等于 2 时，余项里带着 2 的 n 加 1 次方除以 n 加 1，分母只是线性增长，压不住分子，尾巴根本不肯缩。同一个余项公式，一个趋于零，一个不趋于零。那你猜，收敛半径到底是谁说了算？",
+      "boards": [
+        {
+          "title": "x=2 时两个余项",
+          "markdown": "| 函数 | 余项里的关键因子 | n 增大时 |\n|---|---|---|\n| $e^x$ | $\\frac{2^{n+1}}{(n+1)!}$ | 阶乘压住 → **趋于 0** |\n| $\\ln(1+x)$ | $\\frac{2^{n+1}}{n+1}$ | 分母太弱 → **不趋于 0** |\n\n- 同一个拉格朗日余项：$R_n = \\frac{f^{(n+1)}(\\xi)}{(n+1)!}(x-a)^{n+1}$\n- 差别不在公式，在 **$f^{(n+1)}(\\xi)$ 和分母谁长得快**",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "circle",
+          "snippet": "趋于 0",
+          "board_index": 0,
+          "trigger_phrase": "尾巴越来越小，趋于零",
+          "color": null
+        },
+        {
+          "kind": "highlight",
+          "snippet": "不趋于 0",
+          "board_index": 0,
+          "trigger_phrase": "尾巴根本不肯缩",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": null,
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "把 x 换个数试试",
+      "beat": "apply",
+      "spoken_text": "别光看 x 等于 2。我把 x 换成 0.5，再换成 1.5，你判断一下余项会怎样。看板书第一行：x 等于 0.5 时，余项里的因子是 0.5 的 n 加 1 次方除以 n 加 1，分子是指数衰减，分母只是线性，分子赢，尾巴趋于零，级数收敛。再看第二行：x 等于 1.5 时，因子变成 1.5 的 n 加 1 次方除以 n 加 1，分子指数增长，分母线性，分母输，尾巴不趋于零，级数发散。看出来了吗，分界线就在 x 的绝对值等于 1。那 x 等于负 1.5 呢？",
+      "boards": [
+        {
+          "title": "换个数判断",
+          "markdown": "- $x = 0.5$：$\\frac{0.5^{n+1}}{n+1}$ → 指数衰减赢 → **余项趋于 0**\n- $x = 1.5$：$\\frac{1.5^{n+1}}{n+1}$ → 指数增长赢 → **余项不趋于 0**\n- 分界线：$|x| = 1$\n- $|x| < 1$ 收敛，$|x| > 1$ 发散",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "circle",
+          "snippet": "|x| = 1",
+          "board_index": 0,
+          "trigger_phrase": "分界线就在 x 的绝对值等于 1",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": {
+        "mode": "choice",
+        "question": "x 等于负 1.5 的时候，ln(1+x) 的余项会趋于零吗？",
+        "options": [
+          "会，负号不影响大小，只要绝对值一样就一样",
+          "不会，绝对值超过 1 了，余项照样不趋于零"
+        ],
+        "correct_index": 1,
+        "misconceptions": [
+          "这是常见直觉：以为负号能改变收敛行为。但余项里是 x 的 n 加 1 次方，取绝对值后就是 1.5 的 n 加 1 次方，照样爆炸。",
+          null
+        ],
+        "explanation": "余项的大小由 x 的绝对值决定，负 1.5 的绝对值是 1.5，超过 1，余项不趋于零，级数发散。"
+      },
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "余项才是裁判",
+      "beat": "recap",
+      "spoken_text": "好，把这一路串起来。回看第一段板书，我们问的是所有函数是不是都在整个实数轴收敛，答案是：不是。第二段和第三段让我们看到，ln(1+x) 的级数只在负 1 到 1 之间收敛。而这一段的对比告诉我们，真正的裁判是余项：拉格朗日余项趋于零，级数就收敛到原函数；余项不趋于零，级数就发散。e 的 x 次方和 sin x 的余项永远趋于零，所以整条数轴都收敛；ln(1+x) 的余项只在 x 的绝对值小于 1 时才趋于零，所以收敛半径是 1。记住一句话：收敛半径不是函数决定的，是余项衰减决定的。",
+      "boards": [
+        {
+          "title": "一句话总结",
+          "markdown": "- 拉格朗日余项 $R_n \\to 0$ → 级数收敛到原函数\n- $R_n \\not\\to 0$ → 级数发散\n- $e^x$、$\\sin x$：$R_n \\to 0$ 对**所有 x** → 半径无穷\n- $\\ln(1+x)$：$R_n \\to 0$ 只在 $|x| < 1$ → **半径 1**\n- 收敛半径 = 余项衰减的范围",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "spotlight",
+          "snippet": "收敛半径 = 余项衰减的范围",
+          "board_index": 0,
+          "trigger_phrase": "收敛半径不是函数决定的，是余项衰减决定的",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": null,
+      "reward": {
+        "title": "余项裁判",
+        "description": "泰勒级数收不收敛，不看函数长什么样，看拉格朗日余项是否趋于零。余项趋于零的范围，就是收敛半径。"
+      },
+      "new_page_title": null
+    }
+  ],
+  "exercises": [
+    {
+      "exercise_id": "sess_7_ex1",
+      "kind": "fill_blank",
+      "stem": "在泰勒级数中，级数收敛到原函数的 $x$ 的范围的边界称为 ____。",
+      "options": [],
+      "correct_index": null,
+      "answer": "收敛半径",
+      "accepted": [
+        "收敛区间",
+        "收敛范围",
+        "半径"
+      ],
+      "explanation": "收敛半径是刻画级数有效范围的核心概念，它由余项是否趋于零决定，而不是由函数本身直接决定。",
+      "widget": null,
+      "widget_hint": ""
+    },
+    {
+      "exercise_id": "sess_7_ex2",
+      "kind": "single_choice",
+      "stem": "对于 $\\ln(1+x)$ 的泰勒级数，当 $x = -0.5$ 时，拉格朗日余项中的关键因子是 $\\frac{(-0.5)^{n+1}}{n+1}$。当 $n \\to \\infty$ 时，该余项的行为是？",
+      "options": [
+        "余项趋于 0，级数收敛",
+        "余项趋于无穷，级数发散",
+        "余项趋于一个非零常数，级数发散",
+        "余项振荡不收敛，级数发散"
+      ],
+      "correct_index": 0,
+      "answer": null,
+      "accepted": [],
+      "explanation": "因为 $|-0.5| < 1$，指数衰减 $0.5^{n+1}$ 的速度快于分母的线性增长 $n+1$，所以余项趋于 0，级数收敛。",
+      "widget": null,
+      "widget_hint": ""
+    },
+    {
+      "exercise_id": "sess_7_ex3",
+      "kind": "single_choice",
+      "stem": "对于 $\\ln(1+x)$ 的泰勒级数，当 $x = 1.5$ 时，拉格朗日余项中的关键因子是 $\\frac{1.5^{n+1}}{n+1}$。当 $n \\to \\infty$ 时，该余项的行为是？",
+      "options": [
+        "余项趋于 0，级数收敛",
+        "余项趋于无穷，级数发散",
+        "余项趋于一个非零常数，级数发散",
+        "余项振荡不收敛，级数发散"
+      ],
+      "correct_index": 1,
+      "answer": null,
+      "accepted": [],
+      "explanation": "因为 $|1.5| > 1$，指数增长 $1.5^{n+1}$ 的速度快于分母的线性增长 $n+1$，所以余项发散到无穷，级数发散。",
+      "widget": null,
+      "widget_hint": ""
+    },
+    {
+      "exercise_id": "sess_7_ex4",
+      "kind": "interactive",
+      "stem": "通过调整上下边界来夹住振荡，确定极限。",
+      "options": [
+        "收敛半径为 1",
+        "收敛半径为 0",
+        "收敛半径为无穷大",
+        "收敛半径不存在"
+      ],
+      "correct_index": 0,
+      "answer": null,
+      "accepted": [],
+      "explanation": "通过观察余项因子，当 $|x| < 1$ 时余项趋于 0，级数收敛；当 $|x| > 1$ 时余项不趋于 0，级数发散。因此收敛半径是 1。",
+      "widget": {
+        "kind": "explorable",
+        "title": "余项衰减与收敛半径",
+        "task": "拖动滑块改变 $x$ 的值，观察余项因子 $\\frac{|x|^{n+1}}{n+1}$ 随 $n$ 增大的变化。当 $|x| < 1$ 时，因子趋于 0；当 $|x| > 1$ 时，因子不趋于 0。",
+        "html": "<!DOCTYPE html>\n<html>\n<head><script>/**\n * HandChart — zero-dependency hand-drawn chart base for explorable widgets.\n *\n * Injected into every generated 2D explorable (widget_generator.py) so the\n * model supplies data + overlays instead of hand-writing axes. The look matches\n * the handwritten page: paper panel, slightly wobbly ink axes, main red /\n * aux green, handwriting labels.\n *\n * API (all coordinates in WORLD units unless noted):\n *   const ch = HandChart.render(canvas, opts)\n *     opts = { type: \"function\"|\"points\"|\"bars\"|\"lines\",\n *              xlim:[x0,x1], ylim:[y0,y1],                  (all but bars)\n *              fn: x=>y | fns:[{fn, color?, label?}],        (function)\n *              points:[[x,y],...],                          (points)\n *              series:[{name, points, color?, dash?}],      (lines; legend drawn)\n *              bars:{labels:[...], values:[...], highlight?} (bars)\n *              xlabel, ylabel, grid:true|false, title }\n *     returns { ctx, sx, sy, box, W, H, opts }  — keep it to draw overlays\n *   HandChart.marker(ch, x, y, {color, label, r})       dot + optional label\n *   HandChart.vline(ch, x, {color, dash, label})         vertical guide\n *   HandChart.hline(ch, y, {color, dash, label})         horizontal guide\n *   HandChart.segment(ch, [x1,y1], [x2,y2], {color, width, dash, arrow})\n *   HandChart.note(ch, x, y, text, {color, align, size}) handwriting annotation\n *   HandChart.attachProbe(canvas, {xlim, ylim}, onProbe, onLeave?)\n *     pointer follow; onProbe({x, y}) in world coords — redraw + readouts there.\n *   HandChart.style = { INK, AXIS, MAIN, AUX, GRID, PAPER, MUTED }\n */\n(function () {\n  const style = {\n    INK: \"#2b2b2b\", AXIS: \"#8a8377\", MAIN: \"#c0392b\", AUX: \"#2e8b6f\",\n    GRID: \"#ece5d4\", PAPER: \"#fbfaf6\", MUTED: \"#8a8377\", PURPLE: \"#7c3aed\", BLUE: \"#2563eb\",\n  };\n  const PALETTE = [style.MAIN, style.AUX, style.BLUE, style.PURPLE, \"#d97706\"];\n  const PAD = { l: 48, r: 18, t: 18, b: 36 };\n  const HAND = \"'Patrick Hand', 'LXGW WenKai Lite', 'PingFang SC', sans-serif\";\n\n  function font(size, italic) { return (italic ? \"italic \" : \"\") + size + \"px \" + HAND; }\n\n  // deterministic wobble so the \"hand\" does not shake on every redraw\n  function wob(seed, amp) { return Math.sin(seed * 12.9898) * amp; }\n\n  function tickVals(min, max, n) {\n    const span = max - min || 1;\n    const raw = span / n;\n    const mag = Math.pow(10, Math.floor(Math.log10(raw)));\n    const step = [1, 2, 2.5, 5, 10].map((m) => m * mag).find((s) => span / s <= n) || mag * 10;\n    const out = [];\n    for (let v = Math.ceil(min / step) * step; v <= max + step * 1e-9; v += step) out.push(+v.toFixed(10));\n    return out;\n  }\n\n  function fmt(v) {\n    const a = Math.abs(v);\n    if (a === 0) return \"0\";\n    if (a >= 10000 || a < 0.01) return v.toExponential(1);\n    return String(+v.toFixed(Math.max(0, 3 - Math.floor(Math.log10(a)))));\n  }\n\n  /** a hand-drawn line: two passes with tiny deterministic wobble */\n  function inkLine(ctx, x1, y1, x2, y2, color, width, seed) {\n    ctx.save();\n    ctx.strokeStyle = color; ctx.lineWidth = width; ctx.lineCap = \"round\";\n    const n = 6, s = seed || (x1 + y2);\n    ctx.beginPath();\n    for (let i = 0; i <= n; i++) {\n      const t = i / n, x = x1 + (x2 - x1) * t, y = y1 + (y2 - y1) * t;\n      const w = i === 0 || i === n ? 0 : wob(s + i, 0.7);\n      i ? ctx.lineTo(x + w, y + w) : ctx.moveTo(x, y);\n    }\n    ctx.stroke();\n    ctx.restore();\n  }\n\n  function frame(ctx, W, H) {\n    ctx.clearRect(0, 0, W, H);\n    ctx.save();\n    ctx.fillStyle = style.PAPER;\n    ctx.fillRect(0, 0, W, H);\n    ctx.restore();\n  }\n\n  function plotBox(W, H, opts) {\n    const t = PAD.t + (opts && opts.title ? 18 : 0);\n    return { x0: PAD.l, y0: t, x1: W - PAD.r, y1: H - PAD.b };\n  }\n\n  function mapping(box, xlim, ylim) {\n    const [x0, x1] = xlim, [y0, y1] = ylim;\n    return {\n      sx: (v) => box.x0 + (v - x0) / (x1 - x0) * (box.x1 - box.x0),\n      sy: (v) => box.y1 - (v - y0) / (y1 - y0) * (box.y1 - box.y0),\n    };\n  }\n\n  function axes(ctx, box, opts) {\n    const [x0, x1] = opts.xlim, [y0, y1] = opts.ylim;\n    const { sx, sy } = mapping(box, opts.xlim, opts.ylim);\n    const xt = tickVals(x0, x1, 6).filter((v) => v >= x0 && v <= x1);\n    const yt = tickVals(y0, y1, 4).filter((v) => v >= y0 && v <= y1);\n    if (opts.grid !== false) {\n      ctx.save(); ctx.strokeStyle = style.GRID; ctx.lineWidth = 1;\n      for (const v of xt) { ctx.beginPath(); ctx.moveTo(sx(v), box.y0); ctx.lineTo(sx(v), box.y1); ctx.stroke(); }\n      for (const v of yt) { ctx.beginPath(); ctx.moveTo(box.x0, sy(v)); ctx.lineTo(box.x1, sy(v)); ctx.stroke(); }\n      ctx.restore();\n    }\n    // axes sit on zero when zero is inside the range, else on the box edge\n    const ax = y0 <= 0 && y1 >= 0 ? sy(0) : box.y1;\n    const ay = x0 <= 0 && x1 >= 0 ? sx(0) : box.x0;\n    inkLine(ctx, box.x0 - 4, ax, box.x1 + 6, ax, style.AXIS, 1.4, 1);\n    inkLine(ctx, ay, box.y1 + 4, ay, box.y0 - 6, style.AXIS, 1.4, 2);\n    // arrow heads\n    ctx.save(); ctx.fillStyle = style.AXIS;\n    ctx.beginPath(); ctx.moveTo(box.x1 + 8, ax); ctx.lineTo(box.x1 + 1, ax - 3.5); ctx.lineTo(box.x1 + 1, ax + 3.5); ctx.fill();\n    ctx.beginPath(); ctx.moveTo(ay, box.y0 - 8); ctx.lineTo(ay - 3.5, box.y0 - 1); ctx.lineTo(ay + 3.5, box.y0 - 1); ctx.fill();\n    ctx.restore();\n    ctx.save();\n    ctx.fillStyle = style.MUTED; ctx.font = font(12);\n    ctx.textAlign = \"center\";\n    for (const v of xt) {\n      if (Math.abs(sx(v) - ay) < 1 && ay !== box.x0) continue; // skip the label under the y axis\n      inkLine(ctx, sx(v), ax - 3, sx(v), ax + 3, style.AXIS, 1, v);\n      ctx.fillText(fmt(v), sx(v), ax + 16);\n    }\n    ctx.textAlign = \"right\";\n    for (const v of yt) {\n      if (Math.abs(sy(v) - ax) < 1 && ax !== box.y1) continue;\n      inkLine(ctx, ay - 3, sy(v), ay + 3, sy(v), style.AXIS, 1, v + 7);\n      ctx.fillText(fmt(v), ay - 7, sy(v) + 4);\n    }\n    ctx.font = font(14, true); ctx.fillStyle = style.INK;\n    if (opts.xlabel) { ctx.textAlign = \"right\"; ctx.fillText(opts.xlabel, box.x1 + 4, ax - 8); }\n    if (opts.ylabel) { ctx.textAlign = \"left\"; ctx.fillText(opts.ylabel, ay + 8, box.y0 + 4); }\n    ctx.restore();\n    return { sx, sy };\n  }\n\n  function stroke(ctx, pts, color, width, dash) {\n    if (!pts.length) return;\n    ctx.save();\n    ctx.strokeStyle = color; ctx.lineWidth = width || 2.2;\n    ctx.lineJoin = \"round\"; ctx.lineCap = \"round\";\n    if (dash) ctx.setLineDash(dash);\n    ctx.beginPath();\n    let pen = false;\n    for (const p of pts) {\n      if (!p) { pen = false; continue; }\n      pen ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1]);\n      pen = true;\n    }\n    ctx.stroke();\n    ctx.restore();\n  }\n\n  function fnPoints(fn, opts, m) {\n    const [x0, x1] = opts.xlim, [y0, y1] = opts.ylim;\n    const n = 400, pts = [];\n    const margin = (y1 - y0) * 0.02;\n    for (let i = 0; i <= n; i++) {\n      const x = x0 + (x1 - x0) * i / n;\n      let y;\n      try { y = fn(x); } catch (e) { y = NaN; }\n      if (!isFinite(y) || y < y0 - margin || y > y1 + margin) { pts.push(null); continue; }\n      pts.push([m.sx(x), m.sy(y)]);\n    }\n    return pts;\n  }\n\n  function legend(ctx, box, items) {\n    if (!items.length) return;\n    ctx.save();\n    ctx.font = font(13); ctx.textAlign = \"left\"; ctx.textBaseline = \"middle\";\n    let x = box.x0 + 10, y = box.y0 + 12;\n    for (const it of items) {\n      inkLine(ctx, x, y, x + 22, y, it.color, 2.4, x);\n      ctx.fillStyle = style.INK;\n      ctx.fillText(it.label, x + 28, y + 1);\n      x += 28 + ctx.measureText(it.label).width + 18;\n    }\n    ctx.restore();\n  }\n\n  function title(ctx, W, text) {\n    ctx.save();\n    ctx.font = font(15); ctx.fillStyle = style.INK; ctx.textAlign = \"center\";\n    ctx.fillText(text, W / 2, 16);\n    ctx.restore();\n  }\n\n  function render(canvas, opts) {\n    const ctx = canvas.getContext(\"2d\");\n    const rect = canvas.getBoundingClientRect();\n    const W = Math.max(60, Math.round(rect.width)), H = Math.max(60, Math.round(rect.height));\n    const dpr = window.devicePixelRatio || 1;\n    if (canvas.width !== Math.round(W * dpr) || canvas.height !== Math.round(H * dpr)) {\n      canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);\n    }\n    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);\n    frame(ctx, W, H);\n    if (opts.title) title(ctx, W, opts.title);\n    const box = plotBox(W, H, opts);\n    const type = opts.type || \"function\";\n\n    if (type === \"bars\") {\n      const labels = opts.bars.labels || [], values = opts.bars.values || [];\n      const n = Math.max(1, values.length);\n      const bw = (box.x1 - box.x0) / n;\n      const vmax = Math.max(...values.map((v) => Math.abs(v)), 0) * 1.15 || 1;\n      const base = box.y1;\n      inkLine(ctx, box.x0 - 4, base, box.x1 + 4, base, style.AXIS, 1.4, 3);\n      ctx.save();\n      values.forEach((v, i) => {\n        const h = (Math.abs(v) / vmax) * (box.y1 - box.y0);\n        const x = box.x0 + i * bw + bw * 0.2, w = bw * 0.6, y = base - h;\n        const hot = opts.bars.highlight != null && i === opts.bars.highlight;\n        ctx.fillStyle = hot ? style.MAIN : \"#e6dfcf\";\n        ctx.fillRect(x, y, w, h);\n        ctx.strokeStyle = hot ? style.MAIN : style.AXIS; ctx.lineWidth = 1.2;\n        ctx.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);\n        ctx.font = font(13); ctx.textAlign = \"center\"; ctx.fillStyle = style.INK;\n        ctx.fillText(String(labels[i] == null ? i + 1 : labels[i]), x + w / 2, base + 17);\n        ctx.fillStyle = hot ? style.MAIN : style.MUTED;\n        ctx.fillText(fmt(v), x + w / 2, y - 6);\n      });\n      ctx.restore();\n      const sx = (i) => box.x0 + (i + 0.5) * bw, sy = (v) => base - (Math.abs(v) / vmax) * (box.y1 - box.y0);\n      return { ctx, sx, sy, box, W, H, opts };\n    }\n\n    const m = axes(ctx, box, opts);\n    const items = [];\n    if (type === \"lines\") {\n      (opts.series || []).forEach((s, i) => {\n        const color = s.color || PALETTE[i % PALETTE.length];\n        stroke(ctx, (s.points || []).map((p) => [m.sx(p[0]), m.sy(p[1])]), color, 2.2, s.dash);\n        if (s.name) items.push({ label: s.name, color });\n      });\n    } else if (type === \"points\") {\n      ctx.save(); ctx.fillStyle = opts.color || style.MAIN;\n      (opts.points || []).forEach((p) => { ctx.beginPath(); ctx.arc(m.sx(p[0]), m.sy(p[1]), opts.r || 3.6, 0, Math.PI * 2); ctx.fill(); });\n      ctx.restore();\n    } else {\n      const fns = opts.fns || (typeof opts.fn === \"function\" ? [{ fn: opts.fn, color: opts.color, label: opts.label }] : []);\n      fns.forEach((f, i) => {\n        const color = f.color || PALETTE[i % PALETTE.length];\n        stroke(ctx, fnPoints(f.fn, opts, m), color, f.width || 2.4, f.dash);\n        if (f.label) items.push({ label: f.label, color });\n      });\n    }\n    legend(ctx, box, items);\n    return { ctx, sx: m.sx, sy: m.sy, box, W, H, opts };\n  }\n\n  // ---- overlays (world coordinates) ----\n  function marker(ch, x, y, o) {\n    o = o || {};\n    const px = ch.sx(x), py = ch.sy(y);\n    ch.ctx.save();\n    ch.ctx.fillStyle = o.color || style.MAIN;\n    ch.ctx.beginPath(); ch.ctx.arc(px, py, o.r || 5, 0, Math.PI * 2); ch.ctx.fill();\n    ch.ctx.strokeStyle = style.PAPER; ch.ctx.lineWidth = 1.5; ch.ctx.stroke();\n    if (o.label) {\n      ch.ctx.font = font(o.size || 13); ch.ctx.fillStyle = o.color || style.MAIN; ch.ctx.textAlign = \"left\";\n      ch.ctx.fillText(o.label, px + 8, py - 8);\n    }\n    ch.ctx.restore();\n  }\n\n  function vline(ch, x, o) {\n    o = o || {};\n    const px = ch.sx(x);\n    stroke(ch.ctx, [[px, ch.box.y0], [px, ch.box.y1]], o.color || style.MUTED, o.width || 1.2, o.dash || [4, 4]);\n    if (o.label) note(ch, x, null, o.label, { color: o.color || style.MUTED, px: px + 4, py: ch.box.y0 + 12, align: \"left\", size: o.size });\n  }\n\n  function hline(ch, y, o) {\n    o = o || {};\n    const py = ch.sy(y);\n    stroke(ch.ctx, [[ch.box.x0, py], [ch.box.x1, py]], o.color || style.MUTED, o.width || 1.2, o.dash || [4, 4]);\n    if (o.label) note(ch, null, y, o.label, { color: o.color || style.MUTED, px: ch.box.x1 - 4, py: py - 5, align: \"right\", size: o.size });\n  }\n\n  function segment(ch, a, b, o) {\n    o = o || {};\n    const x1 = ch.sx(a[0]), y1 = ch.sy(a[1]), x2 = ch.sx(b[0]), y2 = ch.sy(b[1]);\n    const color = o.color || style.AUX;\n    stroke(ch.ctx, [[x1, y1], [x2, y2]], color, o.width || 2, o.dash);\n    if (o.arrow) {\n      const ang = Math.atan2(y2 - y1, x2 - x1), L = 9;\n      ch.ctx.save(); ch.ctx.fillStyle = color; ch.ctx.beginPath();\n      ch.ctx.moveTo(x2, y2);\n      ch.ctx.lineTo(x2 - L * Math.cos(ang - 0.4), y2 - L * Math.sin(ang - 0.4));\n      ch.ctx.lineTo(x2 - L * Math.cos(ang + 0.4), y2 - L * Math.sin(ang + 0.4));\n      ch.ctx.fill(); ch.ctx.restore();\n    }\n  }\n\n  function note(ch, x, y, text, o) {\n    o = o || {};\n    const px = o.px != null ? o.px : ch.sx(x), py = o.py != null ? o.py : ch.sy(y);\n    ch.ctx.save();\n    ch.ctx.font = font(o.size || 14, o.italic);\n    ch.ctx.fillStyle = o.color || style.INK;\n    ch.ctx.textAlign = o.align || \"left\";\n    ch.ctx.fillText(text, px, py);\n    ch.ctx.restore();\n  }\n\n  /** Pointer probe in world coords; the caller redraws and updates readouts. */\n  function attachProbe(canvas, opts, onProbe, onLeave) {\n    const [x0, x1] = opts.xlim;\n    const [y0, y1] = opts.ylim;\n    const toWorld = (px, py) => {\n      const r = canvas.getBoundingClientRect();\n      const box = plotBox(r.width, r.height, opts);\n      const t = (px - r.left - box.x0) / (box.x1 - box.x0);\n      const u = 1 - (py - r.top - box.y0) / (box.y1 - box.y0);\n      return { x: x0 + t * (x1 - x0), y: y0 + u * (y1 - y0), inside: t >= 0 && t <= 1 };\n    };\n    const handler = (e) => {\n      const p = toWorld(e.clientX, e.clientY);\n      if (p.inside) onProbe(p);\n    };\n    canvas.addEventListener(\"pointermove\", handler);\n    canvas.addEventListener(\"pointerdown\", handler);\n    if (onLeave) canvas.addEventListener(\"pointerleave\", onLeave);\n    canvas.style.touchAction = \"none\";\n    return toWorld;\n  }\n\n  window.HandChart = { render, marker, vline, hline, segment, note, attachProbe, style, font: HAND };\n})();\n</script>\n  <meta charset=\"utf-8\">\n  <style>\n    html, body { margin: 0; height: 100%; background: #faf8f3; font-family: \"PingFang SC\", \"Hiragino Sans GB\", sans-serif; color: #333; overflow: hidden; }\n    #wrap { position: absolute; inset: 0; display: flex; flex-direction: column; }\n    #plot { flex: 1; min-height: 0; margin: 10px 10px 4px; border: 1px solid #d9d2c3; border-radius: 12px; background: #fbfaf6; cursor: crosshair; touch-action: none; }\n    #readout { display: flex; justify-content: center; align-items: center; gap: 28px; padding: 4px 0 8px; font-size: 12px; color: #666; flex-wrap: wrap; }\n    #readout .k { display: block; font-size: 11px; letter-spacing: .04em; }\n    #readout .v { display: block; font-family: ui-monospace, Menlo, monospace; font-size: 14px; font-weight: 700; color: #c0392b; min-width: 64px; text-align: center; }\n    #formula { display: inline-block; padding: 3px 10px; border: 1px solid #d9d2c3; border-radius: 6px; background: #fff; font-family: Georgia, \"Times New Roman\", serif; font-style: italic; font-size: 13px; color: #333; }\n    #slider-row { display: flex; align-items: center; gap: 12px; padding: 0 0 10px; justify-content: center; }\n    #slider-row label { font-size: 12px; color: #666; }\n    #x-slider { width: 180px; accent-color: #c0392b; }\n  </style>\n</head>\n<body>\n  <div id=\"wrap\">\n    <canvas id=\"plot\"></canvas>\n    <div id=\"readout\">\n      <span><span class=\"k\">x 值</span><span class=\"v\" id=\"x-display\">—</span></span>\n      <span><span class=\"k\">n=20 时因子值</span><span class=\"v\" id=\"lastTerm-display\">—</span></span>\n      <span id=\"formula\">|x|^{n+1} / (n+1)</span>\n    </div>\n    <div id=\"slider-row\">\n      <label for=\"x-slider\">x =</label>\n      <input type=\"range\" id=\"x-slider\" min=\"0\" max=\"2\" step=\"0.01\" value=\"0.5\">\n    </div>\n  </div>\n  <script>\n    // --- 被探索的对象：余项因子 |x|^{n+1}/(n+1) -------------------------\n    const N_MAX = 20;\n    const X_MIN = 0, X_MAX = 2;          // 滑块范围\n    const Y_MIN = 0, Y_MAX = 2;          // 纵轴范围\n\n    // 计算因子值\n    function factor(n, x) {\n      return Math.pow(Math.abs(x), n + 1) / (n + 1);\n    }\n\n    // --- 画布与坐标映射 ------------------------------------------------\n    const canvas = document.getElementById('plot');\n    const ctx = canvas.getContext('2d');\n    let W = 0, H = 0;\n    let currentX = 0.5;                  // 当前滑块值\n\n    const PAD = { l: 44, r: 24, t: 24, b: 34 };\n    // 世界坐标 -> 屏幕坐标\n    const sx = (n) => PAD.l + (n - 0) / N_MAX * (W - PAD.l - PAD.r);\n    const sy = (y) => PAD.t + (Y_MAX - y) / (Y_MAX - Y_MIN) * (H - PAD.t - PAD.b);\n\n    // --- 绘图辅助 ------------------------------------------------------\n    function drawAxes() {\n      ctx.save();\n      ctx.strokeStyle = '#b9b3a6';\n      ctx.lineWidth = 1;\n      // 横轴\n      ctx.beginPath();\n      ctx.moveTo(PAD.l, sy(0));\n      ctx.lineTo(W - PAD.r, sy(0));\n      ctx.stroke();\n      // 纵轴\n      ctx.beginPath();\n      ctx.moveTo(sx(0), PAD.t);\n      ctx.lineTo(sx(0), H - PAD.b);\n      ctx.stroke();\n\n      // 刻度与标签\n      ctx.fillStyle = '#8a8377';\n      ctx.font = 'italic 11px Georgia, serif';\n      ctx.textAlign = 'center';\n      // 横轴刻度 n = 0,5,10,15,20\n      [0, 5, 10, 15, 20].forEach(n => {\n        const px = sx(n);\n        ctx.beginPath();\n        ctx.moveTo(px, sy(0) - 3);\n        ctx.lineTo(px, sy(0) + 3);\n        ctx.stroke();\n        ctx.fillText(n, px, sy(0) + 16);\n      });\n      // 纵轴刻度 0, 0.5, 1, 1.5, 2\n      ctx.textAlign = 'right';\n      [0, 0.5, 1, 1.5, 2].forEach(y => {\n        const py = sy(y);\n        ctx.beginPath();\n        ctx.moveTo(sx(0) - 3, py);\n        ctx.lineTo(sx(0) + 3, py);\n        ctx.stroke();\n        ctx.fillText(y.toFixed(1), sx(0) - 6, py + 4);\n      });\n      // 轴名\n      ctx.textAlign = 'center';\n      ctx.fillText('n', W - PAD.r - 4, sy(0) - 8);\n      ctx.textAlign = 'left';\n      ctx.fillText('因子值', sx(0) + 6, PAD.t + 12);\n      ctx.restore();\n    }\n\n    // 绘制折线图\n    function drawCurve(xVal) {\n      ctx.save();\n      ctx.strokeStyle = '#c0392b';\n      ctx.lineWidth = 2;\n      ctx.beginPath();\n      for (let n = 0; n <= N_MAX; n++) {\n        const y = factor(n, xVal);\n        const px = sx(n);\n        const py = sy(Math.min(y, Y_MAX * 1.05)); // 防止超出画布\n        if (n === 0) ctx.moveTo(px, py);\n        else ctx.lineTo(px, py);\n      }\n      ctx.stroke();\n      ctx.restore();\n    }\n\n    // 绘制 x 标记与水平虚线\n    function drawXMarker(xVal) {\n      const yVal = Math.min(Math.abs(xVal), Y_MAX * 1.05);\n      const py = sy(yVal);\n      ctx.save();\n      ctx.strokeStyle = '#2e8b6f';\n      ctx.lineWidth = 1.2;\n      ctx.setLineDash([5, 4]);\n      ctx.beginPath();\n      ctx.moveTo(sx(0), py);\n      ctx.lineTo(W - PAD.r, py);\n      ctx.stroke();\n      ctx.restore();\n\n      // 文字标注\n      ctx.save();\n      ctx.font = 'italic 12px Georgia, serif';\n      ctx.fillStyle = '#2e8b6f';\n      ctx.textAlign = 'left';\n      ctx.fillText('|x| = ' + xVal.toFixed(2), sx(0) + 8, py - 6);\n      ctx.restore();\n    }\n\n    // 绘制收敛提示\n    function drawHint(xVal) {\n      const text = Math.abs(xVal) < 1 ? '因子趋于 0' : '因子不趋于 0';\n      ctx.save();\n      ctx.font = 'italic 12px Georgia, serif';\n      ctx.fillStyle = '#8a8377';\n      ctx.textAlign = 'right';\n      ctx.fillText(text, W - PAD.r - 8, PAD.t + 16);\n      ctx.restore();\n    }\n\n    // 主绘制函数\n    function draw() {\n      ctx.clearRect(0, 0, W, H);\n      drawAxes();\n      drawCurve(currentX);\n      drawXMarker(currentX);\n      drawHint(currentX);\n\n      // 更新读数\n      document.getElementById('x-display').textContent = currentX.toFixed(2);\n      const lastVal = factor(N_MAX, currentX);\n      document.getElementById('lastTerm-display').textContent = lastVal.toFixed(4);\n    }\n\n    // --- 尺寸调整 ------------------------------------------------------\n    function resize() {\n      const rect = canvas.getBoundingClientRect();\n      W = rect.width;\n      H = rect.height;\n      const dpr = window.devicePixelRatio || 1;\n      canvas.width = Math.round(W * dpr);\n      canvas.height = Math.round(H * dpr);\n      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);\n      draw();\n    }\n\n    // --- 交互：滑块 ----------------------------------------------------\n    const slider = document.getElementById('x-slider');\n    slider.addEventListener('input', function () {\n      currentX = parseFloat(this.value);\n      draw();\n    });\n\n    // --- 控制钩子 ------------------------------------------------------\n    window.hkControl = {\n      set: function (obj) {\n        if (obj && obj.xValue != null) {\n          currentX = Math.max(X_MIN, Math.min(X_MAX, +obj.xValue));\n          slider.value = currentX;\n          draw();\n        }\n      },\n      highlight: function (sel) {\n        var el = document.querySelector(sel);\n        if (!el) return;\n        el.style.outline = '2px solid #c0392b';\n        setTimeout(function () { el.style.outline = ''; }, 1500);\n      },\n      annotate: function () {},\n      reveal: function () {}\n    };\n\n    // --- 初始化 --------------------------------------------------------\n    window.addEventListener('resize', resize);\n    // 无条件调用一次完整绘制\n    resize();\n  </script>\n</body>\n</html>",
+        "html_path": null,
+        "mermaid": null,
+        "layout": "newcol",
+        "params": [],
+        "controls": []
+      },
+      "widget_hint": "拖动滑块改变 $x$，观察曲线是否趋于 0。"
+    }
+  ]
+}
