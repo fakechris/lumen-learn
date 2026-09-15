@@ -110,4 +110,8 @@ for fast learners (sess_3 fast: hook skipped, derive replaced by 要点, gate ke
 media-quota pass in the planner; widget technical plan (grid anchors) before code; SVG grid layout rule.
 Open: the LLM student still knows too much for most items (gain is only visible where a misconception is planted) —
 real-learner data or misconception-targeted items are the honest ruler; 111-session variant precompute not run yet
-(cost ≈ $0.5, ~40 min of `say`); suspicious gate sess_3 step 8 should be rewritten (`--only sess_3 --force`).
+(cost ≈ $0.5, ~40 min of `say`). Suspicious gate sess_3 step 8 rewritten (INV-258, 2026-09-15): the "why nin×nout"
+stem had two defensible options (dimension legality vs column semantics) — split into a definitional column-semantics
+gate (rewritten step 8) plus a new dimension-legality step 12 with its own board/narration/gate; scripts+sessions
+rewritten in place, variants renumbered 9→13, suspicious-gate detection extracted to
+`find_suspicious_gates()` with a fixture test reproducing the original report (see output/_evidence/inv-258/).

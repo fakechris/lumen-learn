@@ -556,3 +556,54 @@ def test_media_quota_gap_detection_and_widget_plan_text():
                       timeline=["加载：画曲线", "拖动：切线跟着走"], expected="斜率随 x 线性变化")
     text = plan_text(plan)
     assert "curve@B3" in text and "斜率随 x 线性变化" in text
+
+
+# ---- INV-258: suspicious-gate detection (see tools/sim_student.py) ----
+
+# the original sess_3 step 8 gate verbatim, before the rewrite: a "why" stem where
+# TWO options are defensible (dimension legality and column semantics are both
+# true reasons) — every persona first-picked option 1, the key said 2
+ORIGINAL_SESS3_STEP8 = {
+    "question": "为什么批处理时要把 W 写成 nin×nout？",
+    "options": [
+        "为了和数学公式保持一致",
+        "为了直接做矩阵乘法 XW",
+        "为了让每一列对应一个神经元",
+    ],
+    "correct_index": 2,
+}
+
+
+def _find_suspicious_gates(rows, n_personas=3):
+    import sys
+    sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "tools"))
+    import sim_student
+    return sim_student.find_suspicious_gates(rows, n_personas)
+
+
+def test_suspicious_gate_detection_reproduces_sess3_step8_report():
+    rows = [
+        {"session_id": "sess_3", "persona": p, "mode": m,
+         "gates": [{"step": 4, "choice": 1, "correct": True, "confused": False},
+                   {"step": 8, "choice": 1, "correct": False, "confused": False}]}
+        for p in ("novice", "standard", "fast") for m in ("baseline", "adaptive")
+    ]
+    flagged = _find_suspicious_gates(rows)
+    assert [(sid, step) for (sid, step), _ in flagged] == [("sess_3", 8)]
+    assert flagged[0][1] == {"novice", "standard", "fast"}
+
+
+def test_suspicious_gate_detection_ignores_split_open_and_variant_gates():
+    rows = [
+        # only the novice fails first try — a learner problem, not a content defect
+        {"session_id": "sess_3", "persona": "novice", "mode": "adaptive",
+         "gates": [{"step": 8, "choice": 1, "correct": False, "confused": False},
+                   # variant detour gate (step >= 100000) and open gates never count
+                   {"step": 100004, "choice": 0, "correct": False, "confused": False},
+                   {"step": 10, "open": True, "answer": "样本排成行"}]},
+        {"session_id": "sess_3", "persona": "standard", "mode": "adaptive",
+         "gates": [{"step": 8, "choice": 2, "correct": True, "confused": False}]},
+        {"session_id": "sess_3", "persona": "fast", "mode": "adaptive",
+         "gates": [{"step": 8, "choice": 2, "correct": True, "confused": False}]},
+    ]
+    assert _find_suspicious_gates(rows) == []
