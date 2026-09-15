@@ -1,0 +1,39 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8">
+<title>基与维数：从平面直觉到严格定义 · 速查表</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<style>
+@media print { @page { size: A4; margin: 10mm; } body { -webkit-print-color-adjust: exact; } }
+body { font-family: 'LXGW WenKai Lite', 'Patrick Hand', sans-serif; color: #2b2b2b; background: #fbfaf7;
+       max-width: 210mm; margin: 0 auto; padding: 6mm; font-size: 11.5px; line-height: 1.45; }
+h1 { font-size: 17px; margin: 0 0 2mm; } h2 { font-size: 12.5px; margin: 3mm 0 1mm; border-bottom: 1.5px solid #4b4b4b; }
+.meta { color: #6b6b6b; font-size: 10px; margin-bottom: 2mm; }
+.cols { column-count: 2; column-gap: 6mm; }
+table { border-collapse: collapse; width: 100%; font-size: 10.5px; }
+td { border-bottom: 0.5px solid #d8d2c4; padding: 1mm 1.5mm 1mm 0; vertical-align: top; }
+td:first-child { white-space: nowrap; font-weight: 600; }
+ul { margin: 0.5mm 0 1.5mm 4mm; padding: 0; } li { margin-bottom: 0.6mm; }
+.rel { color: #4b4b4b; } .rel b { color: #8a4b2b; }
+.mis { background: #f7ece8; border-left: 2.5px solid #b0553a; padding: 0.8mm 2mm; margin-bottom: 1mm; }
+</style></head><body>
+<h1>基与维数：从平面直觉到严格定义 · 速查表</h1>
+<p class=meta>通过三维空间的直观例子，理解生成、线性相关与基的概念，最终掌握维数的严格定义。｜编译自课程包（概念图 / 要点 / 板书 / 误区），不含课堂之外的内容。</p>
+<h2>概念速览</h2>
+<table><tr><td>概念</td><td>一句话</td><tr><td>生成子空间</td><td>一组向量所有线性组合构成的集合，是包含这些向量的最小子空间。</td><tr><td>线性组合</td><td>向量乘以标量后相加的结果，是生成和线性相关的基础运算。</td><tr><td>线性无关</td><td>一组向量中没有任何一个能表示为其余向量的线性组合，即无冗余。</td><tr><td>线性相关</td><td>一组向量中存在某个向量是其余向量的线性组合，即存在冗余。</td><tr><td>基</td><td>既能生成整个空间又线性无关的向量组，是空间的最小生成集。</td><tr><td>维数</td><td>向量空间中基的向量个数，是空间大小的度量。</td><tr><td>子空间</td><td>对加法和标量乘法封闭的向量集合，生成集总是子空间。</td><tr><td>生成集</td><td>一组向量，其生成子空间等于整个空间，即能覆盖所有向量。</td><tr><td>三维空间中的平面</td><td>两个不共线向量生成的二维子空间，是三维空间中的平面。</td><tr><td>冗余向量</td><td>线性相关组中多余的向量，不增加生成空间。</td><tr><td>极小生成集</td><td>去掉任何向量都会缩小生成空间的生成集，是基的等价描述。</td><tr><td>极大无关组</td><td>添加任何向量都会变得线性相关的无关组，也是基的等价描述。</td></table>
+<h2>每节要点</h2>
+<p><b>两个向量能铺满三维空间吗？</b></p>
+<ul><li><b>生成子空间</b> — 两个向量的所有线性组合构成一个过原点的平面，它是包含这两个向量的最小子空间。</li></ul>
+<p><b>第三个向量是多余的吗？</b></p>
+<ul><li><b>线性相关</b> — 若向量组中某个向量是其余向量的线性组合，则称线性相关；它不增加生成空间，信息冗余。</li></ul>
+<p><b>什么是基？——两个黄金法则</b></p>
+<ul><li><b>基与维数</b> — 基是能张成整个空间且线性无关的向量组；所有基的向量个数相同，这个数就是维数。</li></ul>
+<h2>概念关系</h2>
+<ul><li><b>线性组合</b> —组成→ 生成子空间（构成生成集）</li><li><b>生成子空间</b> —是一种→ 子空间（是子空间）</li><li><b>生成子空间</b> —导致→ 生成集（生成集是生成整个空间的向量组）</li><li><b>生成集</b> —导致→ 三维空间中的平面（两个向量生成平面）</li><li><b>线性组合</b> —导致→ 线性相关（线性组合导致相关）</li><li><b>线性相关</b> —导致→ 冗余向量（相关产生冗余）</li><li><b>线性相关</b> —对比→ 线性无关（与无关相对）</li><li><b>线性无关</b> —组成→ 基（基需无关）</li><li><b>生成集</b> —组成→ 基（基需生成）</li><li><b>基</b> —是一种→ 极小生成集（基是极小生成集）</li><li><b>基</b> —是一种→ 极大无关组（基是极大无关组）</li><li><b>基</b> —导致→ 维数（基的大小决定维数）</li><li><b>冗余向量</b> —导致→ 基（基无冗余）</li></ul>
+<h2>关键板书与公式</h2>
+<ul><li>定义：$\text{span}(\vec{v}_1, \vec{v}_2) = \{c_1 \vec{v}_1 + c_2 \vec{v}_2\}$</li><li>它是<b>过原点的平面</b></li><li>包含 $\vec{v}_1, \vec{v}_2$ 的<b>最小</b>子空间</li><li>新向量是已有向量的线性组合 → 不增加 span</li><li>这样的向量组 → <b>线性相关</b></li><li>线性相关 = 存在冗余</li><li>判断方法：是否有向量能由其余向量线性表出</li><li>生成性：$\text{span}(S) = V$</li><li>无关性：$S$ 线性无关</li><li>基不唯一，但个数相同</li><li>维数 = 基的个数</li><li>例：三维空间中三个共面向量？</li></ul>
+<h2>常见误区（对的说法）</h2>
+<ul><li>一条直线：只有一个向量时才是直线，两个不平行向量可以铺开成面。</li><li>整个三维空间：这是常见误区：以为两个参数可以到达任意三维点，但方向被限制在平面内。</li><li>能，c1 c2 随便调，总有一组行：这是最常见的直觉：以为两个参数可以自由到任何地方。但两个参数只能在一张纸上滑动，红球在纸的上方。</li><li>能，多一个向量总能扩大空间：这是常见误区：以为增加向量总能扩大生成空间，忽略了线性组合带来的冗余。</li><li>会变，因为 v3 方向不同：误以为倍数会改变方向，实际上 v3 与 v1 共线，生成空间仍是同一条直线。</li><li>一定，平面里总有冗余：误以为平面内任意三个向量都线性相关，实际上需要存在一个能由其他表示。</li><li>极大生成性防止向量太多，极小无关性防止向量太少：正好说反了：生成性要求能张成整个空间，所以少了不行；无关性要求没有冗余，所以多了不行。</li><li>1个：一个向量的 span 只是一条直线，无法覆盖平面上的其他点。</li><li>会变小，少了一个向量嘛：直觉上以为向量少了空间就小了，但冗余向量没有贡献新的方向。</li><li>还是基，两个向量总能张成平面：误以为两个向量一定张成平面，但共线时它们只张成一条线。</li><li>可能不同，比如一个基有2个向量，另一个有3个：误以为基的个数可以变化，但所有基的个数都相等，这是维数良定义的基础。</li><li>1：零空间只有一个零向量，但零向量不能作为基，所以基是空集，个数为0。</li></ul>
+<script>addEventListener('DOMContentLoaded', () => renderMathInElement(document.body,
+  {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]}));</script>
+</body></html>
