@@ -1,0 +1,272 @@
+{
+  "session_id": "sess_2",
+  "course_id": "course_9037451b03",
+  "title": "查询、键、值：注意力的三种角色",
+  "learning_goal": "理解注意力中每个词的向量被投影为查询、键、值三个角色，并会用点积计算查询和键的相关度。",
+  "steps": [
+    {
+      "title": "词该看谁",
+      "beat": "hook",
+      "spoken_text": "先想一个很日常的麻烦：一句话里每个词，到底该从别的词那里拿多少信息？比如“银行”这个词，它旁边站着“河”，也站着“存款”，它该多看谁一眼？板书第一行就是这个问题。注意，每个词都得自己决定，不是我们替它决定。你觉得它凭什么决定？",
+      "boards": [
+        {
+          "title": "",
+          "markdown": "- 每个词都要问：**我该看谁？**\n- “银行”旁边站着“河”，也站着“存款”\n- 看谁多一点 → 信息就多拿一点\n- 凭什么决定？→ 你先猜",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "circle",
+          "snippet": "我该看谁？",
+          "board_index": 0,
+          "trigger_phrase": "到底该从别的词那里拿多少信息",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": {
+        "mode": "choice",
+        "question": "“银行”这个词，凭什么决定自己该多看“河”还是多看“存款”？",
+        "options": [
+          "看哪个词离得近，就近原则",
+          "它得先发出一个“我在找什么”的信号，再跟别人对一对"
+        ],
+        "correct_index": 1,
+        "misconceptions": [
+          "距离只是位置，不是内容。真正决定的是它要找什么、别人能提供什么。",
+          null
+        ],
+        "explanation": "词要先表达“我在找什么”，再去和别的词“能提供什么”比对，这就是查询和键的雏形。"
+      },
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "像去图书馆找书",
+      "beat": "analogy",
+      "spoken_text": "把这件事想成去图书馆。你手里拿着一张纸条，写着“我想找关于银行在河边的信息”，这张纸条就是查询 q。书架前有一排索引卡片，每张写着“河-地点”“存款-金融”，这些卡片就是键 k。你拿纸条去对卡片，对上了，才去书架上把那本书取下来，那本书就是值 v。看这张图：左边是 q，中间一排是 k，右边书架上是 v，箭头先匹配再取书。注意，纸条不是书本身，卡片也不是书本身。",
+      "boards": [
+        {
+          "title": "图书馆三角",
+          "markdown": "- 我手里的纸条 → **查询 q**：我在找什么\n- 索引卡片 → **键 k**：我能提供什么\n- 书架上的书 → **值 v**：我实际交出去的内容\n- 顺序：先对卡片，再取书",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "highlight",
+          "snippet": "先对卡片，再取书",
+          "board_index": 0,
+          "trigger_phrase": "对上了，才去书架上把那本书取下来",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": null,
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "三个投影角色",
+      "beat": "define",
+      "spoken_text": "现在把类比收成定义。每个词原本只有一个向量，注意力不让它直接拿去算，而是先投影成三个角色：查询 q、键 k、值 v。看板书第二行，q 是我在找什么，k 是我能提供什么，v 是我实际交出去的内容。相关度怎么量？看最后一行，用点积：q_i 点乘 k_j，分数越高，词 i 从词 j 拿走的信息越多。注意，是投影后的 q 和 k 在算，不是原始词向量。",
+      "boards": [
+        {
+          "title": "QKV 定义",
+          "markdown": "- 每个词先投影成三个角色：$q, k, v$\n- $q$：我在找什么信息\n- $k$：我能提供什么信息\n- $v$：我实际交出去的内容\n- 相关度：$\\text{score}(q_i, k_j) = q_i \\cdot k_j$\n- 分数越高 → 词 $i$ 从词 $j$ 拿走越多信息",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "circle",
+          "snippet": "q_i \\cdot k_j",
+          "board_index": 0,
+          "trigger_phrase": "q_i 点乘 k_j",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": null,
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "计算相关度：点积",
+      "beat": "worked_example",
+      "spoken_text": "现在看怎么算。每个词都投影出查询 q 和键 k，相关度就是 q 和 k 的点积。看板书第一行，score 等于 q 点乘 k。我举个具体数：假设 q 是 [1, 0]，k 是 [0.8, 0.6]，点积就是 1 乘 0.8 加 0 乘 0.6，等于 0.8。如果换成 k 是 [0, 1]，点积就是 0。分数越高，说明这个键和查询越匹配。那如果 q 和 k 方向完全相反，点积会是什么？",
+      "boards": [
+        {
+          "title": "点积算相关度",
+          "markdown": "- 相关度：$\\text{score}(q_i, k_j) = q_i \\cdot k_j$\n- 例：$q = [1, 0]$\n  - $k = [0.8, 0.6]$ → $1 \\times 0.8 + 0 \\times 0.6 = 0.8$\n  - $k = [0, 1]$ → $1 \\times 0 + 0 \\times 1 = 0$\n- 分数越高 → 词 $i$ 从词 $j$ 拿的信息越多",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "circle",
+          "snippet": "q_i \\cdot k_j",
+          "board_index": 0,
+          "trigger_phrase": null,
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": {
+        "mode": "choice",
+        "question": "如果 q 和 k 方向完全相反，点积会是什么？",
+        "options": [
+          "还是正的，因为长度都是正的",
+          "负的，方向相反点积就变负"
+        ],
+        "correct_index": 1,
+        "misconceptions": [
+          "长度确实都是正的，但点积看的是方向对齐程度，方向相反时乘积为负。",
+          null
+        ],
+        "explanation": "点积衡量方向对齐：方向相同为正，垂直为零，方向相反为负。"
+      },
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "为什么需要投影？",
+      "beat": "contrast",
+      "spoken_text": "有同学会问：为什么不直接用原始词向量算点积，非要投影成 q 和 k？看这张对比表。左边一列是直接用原始向量，右边一列是投影后再算。关键差别在中间那格：原始向量只有一套坐标，它既表示词的意思，又被迫表示匹配方式，两个任务挤在一起。投影之后，模型可以学出两套不同的变换，一套专门用来提问，一套专门用来被提问。所以投影不是为了好看，是为了让匹配方式可以被学习。",
+      "boards": [
+        {
+          "title": "直接算 vs 投影后算",
+          "markdown": "| | 直接用原始向量 | 投影成 q, k 后 |\n|---|---|---|\n| 匹配方式 | 固定，只有一套 | **可学习**，两套变换 |\n| 角色 | 一个向量兼两职 | q 提问，k 应答 |\n| 灵活性 | 低 | 高 |",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "highlight",
+          "snippet": "**可学习**，两套变换",
+          "board_index": 0,
+          "trigger_phrase": "投影之后，模型可以学出两套不同的变换",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": null,
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "回顾：QKV与点积",
+      "beat": "recap",
+      "spoken_text": "最后把今天这条线收一下。回看第一段板书，每个词先投影成三个角色：查询 q、键 k、值 v。查询和键的点积算出相关度分数，分数越高，这个词从那个词那里拿的信息越多。注意，是投影后的 q 和 k 在算点积，不是原始词向量。下次你看到注意力公式，先找 q、k、v 这三个角色，再找点积在哪里。",
+      "boards": [
+        {
+          "title": "本课要点",
+          "markdown": "- 每个词投影成三个角色：$q, k, v$\n- 相关度：$\\text{score}(q_i, k_j) = q_i \\cdot k_j$\n- 分数越高 → 拿的信息越多\n- 关键：用**投影后**的 q, k 算，不是原始向量",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "circle",
+          "snippet": "q_i \\cdot k_j",
+          "board_index": 0,
+          "trigger_phrase": "查询和键的点积算出相关度分数",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": null,
+      "reward": {
+        "title": "QKV 投影",
+        "description": "每个词投影成查询、键、值三个角色；查询与键的点积决定注意力权重。"
+      },
+      "new_page_title": null
+    }
+  ],
+  "exercises": [
+    {
+      "exercise_id": "sess_2_ex1",
+      "kind": "fill_blank",
+      "stem": "在注意力机制中，每个词的向量会被投影成查询、键和值三个角色，其中用来计算相关度的是查询与____的点积。",
+      "options": [],
+      "correct_index": null,
+      "answer": "键",
+      "accepted": [
+        "key",
+        "k",
+        "键向量"
+      ],
+      "explanation": "相关度分数由查询和键的点积得到，即 $\\text{score}(q_i, k_j) = q_i \\cdot k_j$，因此键是核心术语。",
+      "widget": null,
+      "widget_hint": ""
+    },
+    {
+      "exercise_id": "sess_2_ex2",
+      "kind": "single_choice",
+      "stem": "已知查询向量 $q = [2, 1]$，键向量 $k_1 = [1, 2]$，$k_2 = [3, 0]$，$k_3 = [-1, 1]$。哪个键与查询的相关度最高？",
+      "options": [
+        "$k_1$",
+        "$k_2$",
+        "$k_3$",
+        "无法确定"
+      ],
+      "correct_index": 1,
+      "answer": null,
+      "accepted": [],
+      "explanation": "计算点积：$q \\cdot k_1 = 2\\times1 + 1\\times2 = 4$，$q \\cdot k_2 = 2\\times3 + 1\\times0 = 6$，$q \\cdot k_3 = 2\\times(-1) + 1\\times1 = -1$。分数最高的是 $k_2$，对应选项 B。",
+      "widget": null,
+      "widget_hint": ""
+    },
+    {
+      "exercise_id": "sess_2_ex3",
+      "kind": "single_choice",
+      "stem": "在注意力机制中，将每个词的原始向量投影成查询、键和值三个角色，主要目的是什么？",
+      "options": [
+        "让匹配方式可以学习，提高灵活性",
+        "减少计算量，加快训练速度",
+        "使词向量维度保持一致",
+        "避免使用点积计算相关度"
+      ],
+      "correct_index": 0,
+      "answer": null,
+      "accepted": [],
+      "explanation": "投影后，模型可以学习两套不同的变换，分别用于提问（查询）和应答（键），从而使匹配方式可学习，提高灵活性。其他选项不是主要目的。",
+      "widget": null,
+      "widget_hint": ""
+    },
+    {
+      "exercise_id": "sess_2_ex4",
+      "kind": "interactive",
+      "stem": "通过调整查询向量和键向量的方向，观察点积的变化，然后回答问题。",
+      "options": [
+        "正数",
+        "零",
+        "负数",
+        "无法确定"
+      ],
+      "correct_index": 2,
+      "answer": null,
+      "accepted": [],
+      "explanation": "当两个向量方向完全相反时，夹角为 $180^\\circ$，点积为 $|q||k|\\cos180^\\circ = -|q||k|$，是负数。",
+      "widget": {
+        "kind": "explorable",
+        "title": "点积与相关度",
+        "task": "在坐标系中，拖动蓝色箭头改变查询向量 $q$ 的方向，拖动红色箭头改变键向量 $k$ 的方向。观察点积 $q \\cdot k$ 的数值变化。当两个向量方向完全相反时，点积的值是什么？",
+        "html": "<!DOCTYPE html>\n<html>\n<head><script>/**\n * HandChart — zero-dependency hand-drawn chart base for explorable widgets.\n *\n * Injected into every generated 2D explorable (widget_generator.py) so the\n * model supplies data + overlays instead of hand-writing axes. The look matches\n * the handwritten page: paper panel, slightly wobbly ink axes, main red /\n * aux green, handwriting labels.\n *\n * API (all coordinates in WORLD units unless noted):\n *   const ch = HandChart.render(canvas, opts)\n *     opts = { type: \"function\"|\"points\"|\"bars\"|\"lines\",\n *              xlim:[x0,x1], ylim:[y0,y1],                  (all but bars)\n *              fn: x=>y | fns:[{fn, color?, label?}],        (function)\n *              points:[[x,y],...],                          (points)\n *              series:[{name, points, color?, dash?}],      (lines; legend drawn)\n *              bars:{labels:[...], values:[...], highlight?} (bars)\n *              xlabel, ylabel, grid:true|false, title }\n *     returns { ctx, sx, sy, box, W, H, opts }  — keep it to draw overlays\n *   HandChart.marker(ch, x, y, {color, label, r})       dot + optional label\n *   HandChart.vline(ch, x, {color, dash, label})         vertical guide\n *   HandChart.hline(ch, y, {color, dash, label})         horizontal guide\n *   HandChart.segment(ch, [x1,y1], [x2,y2], {color, width, dash, arrow})\n *   HandChart.note(ch, x, y, text, {color, align, size}) handwriting annotation\n *   HandChart.attachProbe(canvas, {xlim, ylim}, onProbe, onLeave?)\n *     pointer follow; onProbe({x, y}) in world coords — redraw + readouts there.\n *   HandChart.style = { INK, AXIS, MAIN, AUX, GRID, PAPER, MUTED }\n */\n(function () {\n  const style = {\n    INK: \"#2b2b2b\", AXIS: \"#8a8377\", MAIN: \"#c0392b\", AUX: \"#2e8b6f\",\n    GRID: \"#ece5d4\", PAPER: \"#fbfaf6\", MUTED: \"#8a8377\", PURPLE: \"#7c3aed\", BLUE: \"#2563eb\",\n  };\n  const PALETTE = [style.MAIN, style.AUX, style.BLUE, style.PURPLE, \"#d97706\"];\n  const PAD = { l: 48, r: 18, t: 18, b: 36 };\n  const HAND = \"'Patrick Hand', 'LXGW WenKai Lite', 'PingFang SC', sans-serif\";\n\n  function font(size, italic) { return (italic ? \"italic \" : \"\") + size + \"px \" + HAND; }\n\n  // deterministic wobble so the \"hand\" does not shake on every redraw\n  function wob(seed, amp) { return Math.sin(seed * 12.9898) * amp; }\n\n  function tickVals(min, max, n) {\n    const span = max - min || 1;\n    const raw = span / n;\n    const mag = Math.pow(10, Math.floor(Math.log10(raw)));\n    const step = [1, 2, 2.5, 5, 10].map((m) => m * mag).find((s) => span / s <= n) || mag * 10;\n    const out = [];\n    for (let v = Math.ceil(min / step) * step; v <= max + step * 1e-9; v += step) out.push(+v.toFixed(10));\n    return out;\n  }\n\n  function fmt(v) {\n    const a = Math.abs(v);\n    if (a === 0) return \"0\";\n    if (a >= 10000 || a < 0.01) return v.toExponential(1);\n    return String(+v.toFixed(Math.max(0, 3 - Math.floor(Math.log10(a)))));\n  }\n\n  /** a hand-drawn line: two passes with tiny deterministic wobble */\n  function inkLine(ctx, x1, y1, x2, y2, color, width, seed) {\n    ctx.save();\n    ctx.strokeStyle = color; ctx.lineWidth = width; ctx.lineCap = \"round\";\n    const n = 6, s = seed || (x1 + y2);\n    ctx.beginPath();\n    for (let i = 0; i <= n; i++) {\n      const t = i / n, x = x1 + (x2 - x1) * t, y = y1 + (y2 - y1) * t;\n      const w = i === 0 || i === n ? 0 : wob(s + i, 0.7);\n      i ? ctx.lineTo(x + w, y + w) : ctx.moveTo(x, y);\n    }\n    ctx.stroke();\n    ctx.restore();\n  }\n\n  function frame(ctx, W, H) {\n    ctx.clearRect(0, 0, W, H);\n    ctx.save();\n    ctx.fillStyle = style.PAPER;\n    ctx.fillRect(0, 0, W, H);\n    ctx.restore();\n  }\n\n  function plotBox(W, H, opts) {\n    const t = PAD.t + (opts && opts.title ? 18 : 0);\n    return { x0: PAD.l, y0: t, x1: W - PAD.r, y1: H - PAD.b };\n  }\n\n  function mapping(box, xlim, ylim) {\n    const [x0, x1] = xlim, [y0, y1] = ylim;\n    return {\n      sx: (v) => box.x0 + (v - x0) / (x1 - x0) * (box.x1 - box.x0),\n      sy: (v) => box.y1 - (v - y0) / (y1 - y0) * (box.y1 - box.y0),\n    };\n  }\n\n  function axes(ctx, box, opts) {\n    const [x0, x1] = opts.xlim, [y0, y1] = opts.ylim;\n    const { sx, sy } = mapping(box, opts.xlim, opts.ylim);\n    const xt = tickVals(x0, x1, 6).filter((v) => v >= x0 && v <= x1);\n    const yt = tickVals(y0, y1, 4).filter((v) => v >= y0 && v <= y1);\n    if (opts.grid !== false) {\n      ctx.save(); ctx.strokeStyle = style.GRID; ctx.lineWidth = 1;\n      for (const v of xt) { ctx.beginPath(); ctx.moveTo(sx(v), box.y0); ctx.lineTo(sx(v), box.y1); ctx.stroke(); }\n      for (const v of yt) { ctx.beginPath(); ctx.moveTo(box.x0, sy(v)); ctx.lineTo(box.x1, sy(v)); ctx.stroke(); }\n      ctx.restore();\n    }\n    // axes sit on zero when zero is inside the range, else on the box edge\n    const ax = y0 <= 0 && y1 >= 0 ? sy(0) : box.y1;\n    const ay = x0 <= 0 && x1 >= 0 ? sx(0) : box.x0;\n    inkLine(ctx, box.x0 - 4, ax, box.x1 + 6, ax, style.AXIS, 1.4, 1);\n    inkLine(ctx, ay, box.y1 + 4, ay, box.y0 - 6, style.AXIS, 1.4, 2);\n    // arrow heads\n    ctx.save(); ctx.fillStyle = style.AXIS;\n    ctx.beginPath(); ctx.moveTo(box.x1 + 8, ax); ctx.lineTo(box.x1 + 1, ax - 3.5); ctx.lineTo(box.x1 + 1, ax + 3.5); ctx.fill();\n    ctx.beginPath(); ctx.moveTo(ay, box.y0 - 8); ctx.lineTo(ay - 3.5, box.y0 - 1); ctx.lineTo(ay + 3.5, box.y0 - 1); ctx.fill();\n    ctx.restore();\n    ctx.save();\n    ctx.fillStyle = style.MUTED; ctx.font = font(12);\n    ctx.textAlign = \"center\";\n    for (const v of xt) {\n      if (Math.abs(sx(v) - ay) < 1 && ay !== box.x0) continue; // skip the label under the y axis\n      inkLine(ctx, sx(v), ax - 3, sx(v), ax + 3, style.AXIS, 1, v);\n      ctx.fillText(fmt(v), sx(v), ax + 16);\n    }\n    ctx.textAlign = \"right\";\n    for (const v of yt) {\n      if (Math.abs(sy(v) - ax) < 1 && ax !== box.y1) continue;\n      inkLine(ctx, ay - 3, sy(v), ay + 3, sy(v), style.AXIS, 1, v + 7);\n      ctx.fillText(fmt(v), ay - 7, sy(v) + 4);\n    }\n    ctx.font = font(14, true); ctx.fillStyle = style.INK;\n    if (opts.xlabel) { ctx.textAlign = \"right\"; ctx.fillText(opts.xlabel, box.x1 + 4, ax - 8); }\n    if (opts.ylabel) { ctx.textAlign = \"left\"; ctx.fillText(opts.ylabel, ay + 8, box.y0 + 4); }\n    ctx.restore();\n    return { sx, sy };\n  }\n\n  function stroke(ctx, pts, color, width, dash) {\n    if (!pts.length) return;\n    ctx.save();\n    ctx.strokeStyle = color; ctx.lineWidth = width || 2.2;\n    ctx.lineJoin = \"round\"; ctx.lineCap = \"round\";\n    if (dash) ctx.setLineDash(dash);\n    ctx.beginPath();\n    let pen = false;\n    for (const p of pts) {\n      if (!p) { pen = false; continue; }\n      pen ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1]);\n      pen = true;\n    }\n    ctx.stroke();\n    ctx.restore();\n  }\n\n  function fnPoints(fn, opts, m) {\n    const [x0, x1] = opts.xlim, [y0, y1] = opts.ylim;\n    const n = 400, pts = [];\n    const margin = (y1 - y0) * 0.02;\n    for (let i = 0; i <= n; i++) {\n      const x = x0 + (x1 - x0) * i / n;\n      let y;\n      try { y = fn(x); } catch (e) { y = NaN; }\n      if (!isFinite(y) || y < y0 - margin || y > y1 + margin) { pts.push(null); continue; }\n      pts.push([m.sx(x), m.sy(y)]);\n    }\n    return pts;\n  }\n\n  function legend(ctx, box, items) {\n    if (!items.length) return;\n    ctx.save();\n    ctx.font = font(13); ctx.textAlign = \"left\"; ctx.textBaseline = \"middle\";\n    let x = box.x0 + 10, y = box.y0 + 12;\n    for (const it of items) {\n      inkLine(ctx, x, y, x + 22, y, it.color, 2.4, x);\n      ctx.fillStyle = style.INK;\n      ctx.fillText(it.label, x + 28, y + 1);\n      x += 28 + ctx.measureText(it.label).width + 18;\n    }\n    ctx.restore();\n  }\n\n  function title(ctx, W, text) {\n    ctx.save();\n    ctx.font = font(15); ctx.fillStyle = style.INK; ctx.textAlign = \"center\";\n    ctx.fillText(text, W / 2, 16);\n    ctx.restore();\n  }\n\n  function render(canvas, opts) {\n    const ctx = canvas.getContext(\"2d\");\n    const rect = canvas.getBoundingClientRect();\n    const W = Math.max(60, Math.round(rect.width)), H = Math.max(60, Math.round(rect.height));\n    const dpr = window.devicePixelRatio || 1;\n    if (canvas.width !== Math.round(W * dpr) || canvas.height !== Math.round(H * dpr)) {\n      canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);\n    }\n    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);\n    frame(ctx, W, H);\n    if (opts.title) title(ctx, W, opts.title);\n    const box = plotBox(W, H, opts);\n    const type = opts.type || \"function\";\n\n    if (type === \"bars\") {\n      const labels = opts.bars.labels || [], values = opts.bars.values || [];\n      const n = Math.max(1, values.length);\n      const bw = (box.x1 - box.x0) / n;\n      const vmax = Math.max(...values.map((v) => Math.abs(v)), 0) * 1.15 || 1;\n      const base = box.y1;\n      inkLine(ctx, box.x0 - 4, base, box.x1 + 4, base, style.AXIS, 1.4, 3);\n      ctx.save();\n      values.forEach((v, i) => {\n        const h = (Math.abs(v) / vmax) * (box.y1 - box.y0);\n        const x = box.x0 + i * bw + bw * 0.2, w = bw * 0.6, y = base - h;\n        const hot = opts.bars.highlight != null && i === opts.bars.highlight;\n        ctx.fillStyle = hot ? style.MAIN : \"#e6dfcf\";\n        ctx.fillRect(x, y, w, h);\n        ctx.strokeStyle = hot ? style.MAIN : style.AXIS; ctx.lineWidth = 1.2;\n        ctx.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);\n        ctx.font = font(13); ctx.textAlign = \"center\"; ctx.fillStyle = style.INK;\n        ctx.fillText(String(labels[i] == null ? i + 1 : labels[i]), x + w / 2, base + 17);\n        ctx.fillStyle = hot ? style.MAIN : style.MUTED;\n        ctx.fillText(fmt(v), x + w / 2, y - 6);\n      });\n      ctx.restore();\n      const sx = (i) => box.x0 + (i + 0.5) * bw, sy = (v) => base - (Math.abs(v) / vmax) * (box.y1 - box.y0);\n      return { ctx, sx, sy, box, W, H, opts };\n    }\n\n    const m = axes(ctx, box, opts);\n    const items = [];\n    if (type === \"lines\") {\n      (opts.series || []).forEach((s, i) => {\n        const color = s.color || PALETTE[i % PALETTE.length];\n        stroke(ctx, (s.points || []).map((p) => [m.sx(p[0]), m.sy(p[1])]), color, 2.2, s.dash);\n        if (s.name) items.push({ label: s.name, color });\n      });\n    } else if (type === \"points\") {\n      ctx.save(); ctx.fillStyle = opts.color || style.MAIN;\n      (opts.points || []).forEach((p) => { ctx.beginPath(); ctx.arc(m.sx(p[0]), m.sy(p[1]), opts.r || 3.6, 0, Math.PI * 2); ctx.fill(); });\n      ctx.restore();\n    } else {\n      const fns = opts.fns || (typeof opts.fn === \"function\" ? [{ fn: opts.fn, color: opts.color, label: opts.label }] : []);\n      fns.forEach((f, i) => {\n        const color = f.color || PALETTE[i % PALETTE.length];\n        stroke(ctx, fnPoints(f.fn, opts, m), color, f.width || 2.4, f.dash);\n        if (f.label) items.push({ label: f.label, color });\n      });\n    }\n    legend(ctx, box, items);\n    return { ctx, sx: m.sx, sy: m.sy, box, W, H, opts };\n  }\n\n  // ---- overlays (world coordinates) ----\n  function marker(ch, x, y, o) {\n    o = o || {};\n    const px = ch.sx(x), py = ch.sy(y);\n    ch.ctx.save();\n    ch.ctx.fillStyle = o.color || style.MAIN;\n    ch.ctx.beginPath(); ch.ctx.arc(px, py, o.r || 5, 0, Math.PI * 2); ch.ctx.fill();\n    ch.ctx.strokeStyle = style.PAPER; ch.ctx.lineWidth = 1.5; ch.ctx.stroke();\n    if (o.label) {\n      ch.ctx.font = font(o.size || 13); ch.ctx.fillStyle = o.color || style.MAIN; ch.ctx.textAlign = \"left\";\n      ch.ctx.fillText(o.label, px + 8, py - 8);\n    }\n    ch.ctx.restore();\n  }\n\n  function vline(ch, x, o) {\n    o = o || {};\n    const px = ch.sx(x);\n    stroke(ch.ctx, [[px, ch.box.y0], [px, ch.box.y1]], o.color || style.MUTED, o.width || 1.2, o.dash || [4, 4]);\n    if (o.label) note(ch, x, null, o.label, { color: o.color || style.MUTED, px: px + 4, py: ch.box.y0 + 12, align: \"left\", size: o.size });\n  }\n\n  function hline(ch, y, o) {\n    o = o || {};\n    const py = ch.sy(y);\n    stroke(ch.ctx, [[ch.box.x0, py], [ch.box.x1, py]], o.color || style.MUTED, o.width || 1.2, o.dash || [4, 4]);\n    if (o.label) note(ch, null, y, o.label, { color: o.color || style.MUTED, px: ch.box.x1 - 4, py: py - 5, align: \"right\", size: o.size });\n  }\n\n  function segment(ch, a, b, o) {\n    o = o || {};\n    const x1 = ch.sx(a[0]), y1 = ch.sy(a[1]), x2 = ch.sx(b[0]), y2 = ch.sy(b[1]);\n    const color = o.color || style.AUX;\n    stroke(ch.ctx, [[x1, y1], [x2, y2]], color, o.width || 2, o.dash);\n    if (o.arrow) {\n      const ang = Math.atan2(y2 - y1, x2 - x1), L = 9;\n      ch.ctx.save(); ch.ctx.fillStyle = color; ch.ctx.beginPath();\n      ch.ctx.moveTo(x2, y2);\n      ch.ctx.lineTo(x2 - L * Math.cos(ang - 0.4), y2 - L * Math.sin(ang - 0.4));\n      ch.ctx.lineTo(x2 - L * Math.cos(ang + 0.4), y2 - L * Math.sin(ang + 0.4));\n      ch.ctx.fill(); ch.ctx.restore();\n    }\n  }\n\n  function note(ch, x, y, text, o) {\n    o = o || {};\n    const px = o.px != null ? o.px : ch.sx(x), py = o.py != null ? o.py : ch.sy(y);\n    ch.ctx.save();\n    ch.ctx.font = font(o.size || 14, o.italic);\n    ch.ctx.fillStyle = o.color || style.INK;\n    ch.ctx.textAlign = o.align || \"left\";\n    ch.ctx.fillText(text, px, py);\n    ch.ctx.restore();\n  }\n\n  /** Pointer probe in world coords; the caller redraws and updates readouts. */\n  function attachProbe(canvas, opts, onProbe, onLeave) {\n    const [x0, x1] = opts.xlim;\n    const [y0, y1] = opts.ylim;\n    const toWorld = (px, py) => {\n      const r = canvas.getBoundingClientRect();\n      const box = plotBox(r.width, r.height, opts);\n      const t = (px - r.left - box.x0) / (box.x1 - box.x0);\n      const u = 1 - (py - r.top - box.y0) / (box.y1 - box.y0);\n      return { x: x0 + t * (x1 - x0), y: y0 + u * (y1 - y0), inside: t >= 0 && t <= 1 };\n    };\n    const handler = (e) => {\n      const p = toWorld(e.clientX, e.clientY);\n      if (p.inside) onProbe(p);\n    };\n    canvas.addEventListener(\"pointermove\", handler);\n    canvas.addEventListener(\"pointerdown\", handler);\n    if (onLeave) canvas.addEventListener(\"pointerleave\", onLeave);\n    canvas.style.touchAction = \"none\";\n    return toWorld;\n  }\n\n  window.HandChart = { render, marker, vline, hline, segment, note, attachProbe, style, font: HAND };\n})();\n</script>\n  <meta charset=\"utf-8\">\n  <style>\n    html, body { margin: 0; height: 100%; background: #faf8f3; font-family: \"PingFang SC\", \"Hiragino Sans GB\", sans-serif; color: #333; overflow: hidden; }\n    #wrap { position: absolute; inset: 0; display: flex; flex-direction: column; }\n    #plot { flex: 1; min-height: 0; margin: 10px 10px 4px; border: 1px solid #d9d2c3; border-radius: 12px; background: #fbfaf6; cursor: crosshair; touch-action: none; }\n    #readout { display: flex; justify-content: center; align-items: center; gap: 28px; padding: 4px 0 8px; font-size: 12px; color: #666; flex-wrap: wrap; }\n    #readout .k { display: block; font-size: 11px; letter-spacing: .04em; }\n    #readout .v { display: block; font-family: ui-monospace, Menlo, monospace; font-size: 14px; font-weight: 700; color: #c0392b; min-width: 64px; text-align: center; }\n    #formula { display: inline-block; padding: 3px 10px; border: 1px solid #d9d2c3; border-radius: 6px; background: #fff; font-family: Georgia, \"Times New Roman\", serif; font-style: italic; font-size: 13px; color: #333; }\n    .slider-row { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #666; }\n    .slider-row input[type=range] { width: 120px; accent-color: #c0392b; }\n  </style>\n</head>\n<body>\n  <div id=\"wrap\">\n    <canvas id=\"plot\"></canvas>\n    <div id=\"readout\">\n      <span><span class=\"k\">点积 q·k</span><span class=\"v\" id=\"dot-display\">—</span></span>\n      <span><span class=\"k\">夹角 θ</span><span class=\"v\" id=\"angle-display\">—</span></span>\n      <span><span class=\"k\">cosθ</span><span class=\"v\" id=\"cos-display\">—</span></span>\n      <span class=\"slider-row\"><label for=\"qAngle-slider\">q 角度</label><input type=\"range\" id=\"qAngle-slider\" min=\"0\" max=\"360\" value=\"45\" step=\"1\"></span>\n      <span class=\"slider-row\"><label for=\"kAngle-slider\">k 角度</label><input type=\"range\" id=\"kAngle-slider\" min=\"0\" max=\"360\" value=\"135\" step=\"1\"></span>\n      <span id=\"formula\">q · k = |q||k| cosθ</span>\n    </div>\n  </div>\n  <script>\n    // --- 向量与点积核心 ------------------------------------------------\n    const Q_LEN = 1.0;   // 固定长度\n    const K_LEN = 1.0;\n    let qAngleDeg = 45;   // 度\n    let kAngleDeg = 135;\n\n    // 世界坐标范围：以原点为中心，6x6 网格\n    const X_MIN = -3, X_MAX = 3, Y_MIN = -3, Y_MAX = 3;\n\n    // 画布与坐标变换\n    const canvas = document.getElementById('plot');\n    const ctx = canvas.getContext('2d');\n    let W = 0, H = 0;\n    const PAD = { l: 34, r: 18, t: 18, b: 26 };\n\n    const sx = (x) => PAD.l + (x - X_MIN) / (X_MAX - X_MIN) * (W - PAD.l - PAD.r);\n    const sy = (y) => PAD.t + (Y_MAX - y) / (Y_MAX - Y_MIN) * (H - PAD.t - PAD.b);\n    const ux = (px) => X_MIN + (px - PAD.l) / (W - PAD.l - PAD.r) * (X_MAX - X_MIN);\n    const uy = (py) => Y_MAX - (py - PAD.t) / (H - PAD.t - PAD.b) * (Y_MAX - Y_MIN);\n\n    // 角度转弧度\n    const rad = (deg) => deg * Math.PI / 180;\n\n    // 获取向量端点（世界坐标）\n    function qVec() {\n      const a = rad(qAngleDeg);\n      return { x: Q_LEN * Math.cos(a), y: Q_LEN * Math.sin(a) };\n    }\n    function kVec() {\n      const a = rad(kAngleDeg);\n      return { x: K_LEN * Math.cos(a), y: K_LEN * Math.sin(a) };\n    }\n\n    // 计算点积、夹角、cos\n    function computeStats() {\n      const q = qVec(), k = kVec();\n      const dot = q.x * k.x + q.y * k.y;\n      const lenQ = Math.hypot(q.x, q.y);\n      const lenK = Math.hypot(k.x, k.y);\n      const cosTheta = dot / (lenQ * lenK);\n      // 夹角（0~180度）\n      let angleRad = Math.acos(Math.max(-1, Math.min(1, cosTheta)));\n      let angleDeg = angleRad * 180 / Math.PI;\n      return { dot, angleDeg, cosTheta, q, k };\n    }\n\n    // --- 绘制辅助 ------------------------------------------------------\n    function drawGrid() {\n      ctx.save();\n      ctx.strokeStyle = '#e8e2d6';\n      ctx.lineWidth = 0.8;\n      // 竖线\n      for (let x = Math.ceil(X_MIN); x <= Math.floor(X_MAX); x++) {\n        ctx.beginPath();\n        ctx.moveTo(sx(x), sy(Y_MIN));\n        ctx.lineTo(sx(x), sy(Y_MAX));\n        ctx.stroke();\n      }\n      // 横线\n      for (let y = Math.ceil(Y_MIN); y <= Math.floor(Y_MAX); y++) {\n        ctx.beginPath();\n        ctx.moveTo(sx(X_MIN), sy(y));\n        ctx.lineTo(sx(X_MAX), sy(y));\n        ctx.stroke();\n      }\n      // 坐标轴\n      ctx.strokeStyle = '#b9b3a6';\n      ctx.lineWidth = 1.2;\n      ctx.beginPath();\n      ctx.moveTo(sx(X_MIN), sy(0));\n      ctx.lineTo(sx(X_MAX), sy(0));\n      ctx.moveTo(sx(0), sy(Y_MIN));\n      ctx.lineTo(sx(0), sy(Y_MAX));\n      ctx.stroke();\n      // 刻度与标签\n      ctx.fillStyle = '#8a8377';\n      ctx.font = 'italic 11px Georgia, serif';\n      ctx.textAlign = 'center';\n      for (let x = Math.ceil(X_MIN); x <= Math.floor(X_MAX); x++) {\n        if (x === 0) continue;\n        ctx.beginPath();\n        ctx.moveTo(sx(x), sy(0) - 3);\n        ctx.lineTo(sx(x), sy(0) + 3);\n        ctx.stroke();\n        ctx.fillText(x, sx(x), sy(0) + 14);\n      }\n      ctx.textAlign = 'right';\n      for (let y = Math.ceil(Y_MIN); y <= Math.floor(Y_MAX); y++) {\n        if (y === 0) continue;\n        ctx.beginPath();\n        ctx.moveTo(sx(0) - 3, sy(y));\n        ctx.lineTo(sx(0) + 3, sy(y));\n        ctx.stroke();\n        ctx.fillText(y, sx(0) - 6, sy(y) + 4);\n      }\n      // 轴名\n      ctx.textAlign = 'right';\n      ctx.fillText('x', sx(X_MAX) - 2, sy(0) - 6);\n      ctx.textAlign = 'left';\n      ctx.fillText('y', sx(0) + 6, sy(Y_MAX) + 8);\n      ctx.restore();\n    }\n\n    // 画箭头（世界坐标）\n    function drawArrow(from, to, color, width, label, labelOffset) {\n      const x1 = sx(from.x), y1 = sy(from.y);\n      const x2 = sx(to.x), y2 = sy(to.y);\n      const dx = x2 - x1, dy = y2 - y1;\n      const len = Math.hypot(dx, dy);\n      if (len < 1) return;\n      const ux_ = dx / len, uy_ = dy / len;\n      const headLen = 10;\n      const headW = 6;\n      ctx.save();\n      ctx.strokeStyle = color;\n      ctx.fillStyle = color;\n      ctx.lineWidth = width;\n      ctx.beginPath();\n      ctx.moveTo(x1, y1);\n      ctx.lineTo(x2 - ux_ * headLen * 0.6, y2 - uy_ * headLen * 0.6);\n      ctx.stroke();\n      // 箭头头部\n      ctx.beginPath();\n      ctx.moveTo(x2, y2);\n      ctx.lineTo(x2 - ux_ * headLen - uy_ * headW, y2 - uy_ * headLen + ux_ * headW);\n      ctx.lineTo(x2 - ux_ * headLen + uy_ * headW, y2 - uy_ * headLen - ux_ * headW);\n      ctx.closePath();\n      ctx.fill();\n      // 标签\n      if (label) {\n        ctx.font = 'italic 13px Georgia, serif';\n        ctx.fillStyle = color;\n        ctx.textAlign = 'center';\n        ctx.textBaseline = 'middle';\n        const lx = x2 + (labelOffset ? labelOffset.x : 0);\n        const ly = y2 + (labelOffset ? labelOffset.y : 0);\n        ctx.fillText(label, lx, ly);\n      }\n      ctx.restore();\n    }\n\n    // 画夹角弧线\n    function drawAngleArc(q, k) {\n      const a1 = Math.atan2(q.y, q.x);\n      const a2 = Math.atan2(k.y, k.x);\n      // 取较小的夹角方向\n      let diff = a2 - a1;\n      while (diff > Math.PI) diff -= 2 * Math.PI;\n      while (diff < -Math.PI) diff += 2 * Math.PI;\n      const start = a1;\n      const end = a1 + diff;\n      const r = 0.55; // 世界坐标半径\n      ctx.save();\n      ctx.strokeStyle = '#2e8b6f';\n      ctx.lineWidth = 1.5;\n      ctx.setLineDash([4, 3]);\n      ctx.beginPath();\n      // 用世界坐标画弧，需要转换到屏幕坐标\n      const steps = 40;\n      for (let i = 0; i <= steps; i++) {\n        const t = start + (end - start) * i / steps;\n        const wx = r * Math.cos(t);\n        const wy = r * Math.sin(t);\n        const px = sx(wx), py = sy(wy);\n        if (i === 0) ctx.moveTo(px, py);\n        else ctx.lineTo(px, py);\n      }\n      ctx.stroke();\n      ctx.restore();\n      // θ 标签\n      const midA = start + (end - start) / 2;\n      const labelR = r + 0.25;\n      const lx = sx(labelR * Math.cos(midA));\n      const ly = sy(labelR * Math.sin(midA));\n      ctx.save();\n      ctx.font = 'italic 13px Georgia, serif';\n      ctx.fillStyle = '#2e8b6f';\n      ctx.textAlign = 'center';\n      ctx.textBaseline = 'middle';\n      ctx.fillText('θ', lx, ly);\n      ctx.restore();\n    }\n\n    // 画投影（从 k 末端向 q 所在直线作垂线）\n    function drawProjection(q, k) {\n      // q 方向单位向量\n      const qLen = Math.hypot(q.x, q.y);\n      if (qLen < 1e-6) return;\n      const ux_ = q.x / qLen, uy_ = q.y / qLen;\n      // 投影点 = (k·u) * u\n      const dot = k.x * ux_ + k.y * uy_;\n      const projX = dot * ux_;\n      const projY = dot * uy_;\n      // 从 k 末端到投影点的虚线\n      ctx.save();\n      ctx.strokeStyle = '#b9b3a6';\n      ctx.lineWidth = 1.2;\n      ctx.setLineDash([4, 4]);\n      ctx.beginPath();\n      ctx.moveTo(sx(k.x), sy(k.y));\n      ctx.lineTo(sx(projX), sy(projY));\n      ctx.stroke();\n      ctx.restore();\n      // 投影点标记\n      ctx.save();\n      ctx.fillStyle = '#b9b3a6';\n      ctx.beginPath();\n      ctx.arc(sx(projX), sy(projY), 3, 0, Math.PI * 2);\n      ctx.fill();\n      ctx.restore();\n      // 投影长度标签\n      const midX = (k.x + projX) / 2;\n      const midY = (k.y + projY) / 2;\n      ctx.save();\n      ctx.font = 'italic 11px Georgia, serif';\n      ctx.fillStyle = '#8a8377';\n      ctx.textAlign = 'center';\n      ctx.textBaseline = 'middle';\n      ctx.fillText('投影', sx(midX) + 12, sy(midY) - 8);\n      ctx.restore();\n    }\n\n    // 画右上角点积数值\n    function drawDotLabel(stats) {\n      const { dot } = stats;\n      const sign = dot > 0.001 ? '+' : (dot < -0.001 ? '−' : '');\n      const absVal = Math.abs(dot).toFixed(3);\n      const text = 'q·k = ' + sign + absVal;\n      ctx.save();\n      ctx.font = 'italic 14px Georgia, serif';\n      ctx.fillStyle = '#c0392b';\n      ctx.textAlign = 'right';\n      ctx.textBaseline = 'top';\n      ctx.fillText(text, W - PAD.r - 8, PAD.t + 8);\n      ctx.restore();\n    }\n\n    // --- 主绘制函数 ----------------------------------------------------\n    function draw() {\n      ctx.clearRect(0, 0, W, H);\n      drawGrid();\n\n      const stats = computeStats();\n      const q = stats.q, k = stats.k;\n\n      // 投影（先画，在箭头下方）\n      drawProjection(q, k);\n\n      // 夹角弧线\n      drawAngleArc(q, k);\n\n      // 箭头：q 蓝色，k 红色\n      drawArrow({ x: 0, y: 0 }, q, '#2e6da4', 2.5, 'q', { x: 14, y: -10 });\n      drawArrow({ x: 0, y: 0 }, k, '#c0392b', 2.5, 'k', { x: 14, y: -10 });\n\n      // 右上角点积数值\n      drawDotLabel(stats);\n\n      // 更新读数\n      document.getElementById('dot-display').textContent = stats.dot.toFixed(3);\n      document.getElementById('angle-display').textContent = stats.angleDeg.toFixed(1) + '°';\n      document.getElementById('cos-display').textContent = stats.cosTheta.toFixed(3);\n\n      // 同步滑块位置（避免循环触发）\n      const qSlider = document.getElementById('qAngle-slider');\n      const kSlider = document.getElementById('kAngle-slider');\n      if (qSlider && Math.abs(+qSlider.value - qAngleDeg) > 0.5) qSlider.value = qAngleDeg;\n      if (kSlider && Math.abs(+kSlider.value - kAngleDeg) > 0.5) kSlider.value = kAngleDeg;\n    }\n\n    // --- 交互：拖动箭头改变方向 ----------------------------------------\n    let dragging = null; // 'q' or 'k'\n\n    function onPointerDown(e) {\n      const r = canvas.getBoundingClientRect();\n      const mx = e.clientX - r.left;\n      const my = e.clientY - r.top;\n      const wx = ux(mx), wy = uy(my);\n      // 判断点击位置离哪个箭头更近\n      const q = qVec(), k = kVec();\n      const dq = Math.hypot(wx - q.x, wy - q.y);\n      const dk = Math.hypot(wx - k.x, wy - k.y);\n      if (dq < dk && dq < 0.8) dragging = 'q';\n      else if (dk < dq && dk < 0.8) dragging = 'k';\n      else {\n        // 如果点击在原点附近，根据距离判断\n        const dqOrigin = Math.hypot(wx, wy);\n        if (dqOrigin < 0.5) {\n          // 点击原点附近，选择更近的箭头\n          dragging = dq < dk ? 'q' : 'k';\n        } else {\n          // 点击空白处，选择更近的箭头\n          dragging = dq < dk ? 'q' : 'k';\n        }\n      }\n      if (dragging) {\n        canvas.setPointerCapture(e.pointerId);\n        onPointerMove(e);\n      }\n    }\n\n    function onPointerMove(e) {\n      if (!dragging) return;\n      const r = canvas.getBoundingClientRect();\n      const mx = e.clientX - r.left;\n      const my = e.clientY - r.top;\n      const wx = ux(mx), wy = uy(my);\n      let angle = Math.atan2(wy, wx) * 180 / Math.PI;\n      if (angle < 0) angle += 360;\n      if (dragging === 'q') {\n        qAngleDeg = angle;\n      } else {\n        kAngleDeg = angle;\n      }\n      draw();\n    }\n\n    function onPointerUp(e) {\n      if (dragging) {\n        dragging = null;\n        if (canvas.hasPointerCapture(e.pointerId)) {\n          canvas.releasePointerCapture(e.pointerId);\n        }\n      }\n    }\n\n    // --- 滑块事件 ------------------------------------------------------\n    document.getElementById('qAngle-slider').addEventListener('input', function () {\n      qAngleDeg = +this.value;\n      draw();\n    });\n    document.getElementById('kAngle-slider').addEventListener('input', function () {\n      kAngleDeg = +this.value;\n      draw();\n    });\n\n    // --- 窗口大小调整 --------------------------------------------------\n    function resize() {\n      const r = canvas.getBoundingClientRect();\n      W = r.width; H = r.height;\n      const dpr = window.devicePixelRatio || 1;\n      canvas.width = Math.round(W * dpr);\n      canvas.height = Math.round(H * dpr);\n      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);\n      draw();\n    }\n\n    // --- 控制钩子 ------------------------------------------------------\n    window.hkControl = {\n      set: function (s) {\n        if (!s) return;\n        if (s.qAngle != null) qAngleDeg = Math.max(0, Math.min(360, +s.qAngle));\n        if (s.kAngle != null) kAngleDeg = Math.max(0, Math.min(360, +s.kAngle));\n        draw();\n      },\n      highlight: function (sel) {\n        var el = document.querySelector(sel);\n        if (!el) return;\n        el.style.outline = '2px solid #c0392b';\n        setTimeout(function () { el.style.outline = ''; }, 1500);\n      },\n      annotate: function () {},\n      reveal: function () {},\n    };\n\n    // --- 事件绑定 ------------------------------------------------------\n    canvas.addEventListener('pointerdown', onPointerDown);\n    canvas.addEventListener('pointermove', onPointerMove);\n    canvas.addEventListener('pointerup', onPointerUp);\n    canvas.addEventListener('pointercancel', onPointerUp);\n    window.addEventListener('resize', resize);\n\n    // --- 启动 ----------------------------------------------------------\n    resize();\n  </script>\n</body>\n</html>",
+        "html_path": null,
+        "mermaid": null,
+        "layout": "newcol",
+        "params": [],
+        "controls": []
+      },
+      "widget_hint": "拖动箭头旋转，注意点积的数值变化。"
+    }
+  ]
+}

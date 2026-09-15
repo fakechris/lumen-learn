@@ -1,0 +1,397 @@
+{
+  "course_id": "course_44e5aadf01",
+  "title": "中心极限定理：为什么正态分布到处都是",
+  "target_audience": "",
+  "overview": "",
+  "generation_mode": "llm",
+  "document_id": "doc_f05d7f1ca4",
+  "chapters": [
+    {
+      "chapter_id": "ch_1",
+      "title": "现象",
+      "description": "通过骰子实验看到平均值的钟形现象。",
+      "unit": "",
+      "sessions": [
+        {
+          "session_id": "sess_1",
+          "title": "从均匀骰子到钟形曲线",
+          "learning_goal": "能说明：大量重复取平均后，平均值分布会趋向钟形，即使原始分布是均匀的。",
+          "core_concept": "样本均值的分布不受原始均匀形状限制，会趋向钟形。",
+          "cognitive_hurdle": "以为原始分布是均匀的，平均数分布也会保持均匀；或以为必须原始数据呈钟形，平均后才会呈钟形。",
+          "source_sections": [
+            "s1"
+          ],
+          "estimated_duration_min": 5,
+          "tags": [
+            "Intuition"
+          ],
+          "segments": [
+            {
+              "title": "单颗骰子毫无钟形",
+              "intent": "让学生确认单颗骰子点数的均匀分布，没有中间高两边低的形状。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s1"
+              ]
+            },
+            {
+              "title": "先猜：平均值的形状",
+              "intent": "让学生做出明确预测，暴露“均匀的均值还是均匀”这一误区。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s1"
+              ]
+            },
+            {
+              "title": "看：n 从 1 拖到 100",
+              "intent": "让学生通过交互看到，随着每次平均的骰子数增加，直方图从均匀变为钟形。",
+              "media": "explorable",
+              "media_brief": "横轴为样本均值（1~6），纵轴为出现频率；滑块控制每次实验掷骰子数 n（1 到 100）。学生拖动 n 时，直方图从 1 颗骰子的 6 根等高柱逐步变为中间高、两边低的钟形；中心约在 3.5 附近。",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s1"
+              ]
+            },
+            {
+              "title": "规律：平均之后趋向钟形",
+              "intent": "让学生用一句话概括现象：大量重复取平均后，平均值分布趋向钟形，不依赖原始分布是否为钟形。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s1"
+              ]
+            },
+            {
+              "title": "对比：原始分布与均值分布",
+              "intent": "让学生明确区分：原始点数是均匀的，平均值才是钟形；不要因为平均后钟形就误以为原始数据也钟形。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s1"
+              ]
+            },
+            {
+              "title": "回顾：正态分布从平均中来",
+              "intent": "让学生记住核心观察：均匀的原始分布经过多次平均后产生钟形曲线，这是后续理解中心极限定理的起点。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s1"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "chapter_id": "ch_2",
+      "title": "定理内容",
+      "description": "中心极限定理的陈述与关键细节",
+      "unit": "",
+      "sessions": [
+        {
+          "session_id": "sess_2",
+          "title": "从任意分布到正态：中心极限定理",
+          "learning_goal": "陈述中心极限定理的条件与结论，并能区分样本均值的方差（σ²/n）与标准误差（σ/√n）。",
+          "core_concept": "独立同分布且方差有限的随机变量，其样本均值标准化后依分布收敛于标准正态分布。",
+          "cognitive_hurdle": "误以为原始分布必须接近正态，或混淆方差σ²/n与标准误差σ/√n。",
+          "source_sections": [
+            "s2"
+          ],
+          "estimated_duration_min": 5,
+          "tags": [
+            "Intuition",
+            "Definition"
+          ],
+          "segments": [
+            {
+              "title": "为什么身高呈正态？",
+              "intent": "让学生意识到正态分布的普遍性可能与取平均有关，而非个体本身。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s2"
+              ]
+            },
+            {
+              "title": "先猜：均匀分布的平均值分布",
+              "intent": "让学生预测非正态总体的样本均值分布，制造认知冲突。",
+              "media": "explorable",
+              "media_brief": "横轴：样本均值的取值；纵轴：频率；滑块：样本量 n（1 到 100）；选择原始分布（均匀/偏态）。预期现象：n 增大，样本均值的直方图从原始形状变为钟形。",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s2"
+              ]
+            },
+            {
+              "title": "中心极限定理的正式陈述",
+              "intent": "让学生准确掌握 CLT 的条件和结论公式。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s2"
+              ]
+            },
+            {
+              "title": "方差还是标准误差？",
+              "intent": "让学生理解样本均值方差为σ²/n，标准误差为σ/√n，避免混淆。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s2"
+              ]
+            },
+            {
+              "title": "原始分布 vs 均值分布",
+              "intent": "让学生明白改变的是均值的分布，而非原始数据的分布。",
+              "media": "illustration",
+              "media_brief": "左图：偏态或均匀的原始分布（标注任意形状）；右图：钟形正态分布（标注样本均值近似分布）；中间箭头：取 n 个样本计算平均，重复多次。",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s2"
+              ]
+            },
+            {
+              "title": "回顾与常见错误",
+              "intent": "总结 CLT 条件、结论，并重申两个常见误区。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s2"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "chapter_id": "ch_3",
+      "title": "为什么它无处不在",
+      "description": "探讨正态分布普遍存在的根本原因：许多独立小因素的和趋近正态分布，以及这是统计推断的基础。",
+      "unit": "",
+      "sessions": [
+        {
+          "session_id": "sess_3",
+          "title": "为什么正态分布无处不在？",
+          "learning_goal": "理解中心极限定理的直觉：许多独立小因素相加导致总和近似正态分布，并能识别该结构在现实中的体现。",
+          "core_concept": "中心极限定理：当许多独立小贡献相加时，总和的波动近似正态分布。",
+          "cognitive_hurdle": "误以为正态分布出现是因为单个因素本身是正态的，或以为只要数据量大就自动正态，而忽略了“许多独立贡献相加”这一结构。",
+          "source_sections": [
+            "s3"
+          ],
+          "estimated_duration_min": 5,
+          "tags": [
+            "Intuition",
+            "Application"
+          ],
+          "segments": [
+            {
+              "title": "身高为什么是钟形？",
+              "intent": "引发对正态分布普遍存在原因的好奇。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s3"
+              ]
+            },
+            {
+              "title": "掷多个骰子的实验",
+              "intent": "通过模拟直观感受多个独立贡献相加后分布趋向钟形。",
+              "media": "explorable",
+              "media_brief": "横轴：骰子总和值；纵轴：频率/概率。滑块控制相加的骰子数量（1到10），初始为1个骰子（均匀分布），增加骰子数观察分布逐渐变成钟形。",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s3"
+              ]
+            },
+            {
+              "title": "中心极限定理的非正式表述",
+              "intent": "明确定理的前提和结论。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s3"
+              ]
+            },
+            {
+              "title": "身高是许多因素的和",
+              "intent": "将定理应用于实际例子，识别身高中的独立小因素结构。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s3"
+              ]
+            },
+            {
+              "title": "统计推断中的应用",
+              "intent": "理解该定理如何支撑统计推断（样本量n≥30时用正态近似）。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s3"
+              ]
+            },
+            {
+              "title": "回顾：为什么正态分布到处都是",
+              "intent": "总结核心概念，巩固理解。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s3"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "chapter_id": "ch_4",
+      "title": "常见误区",
+      "description": "讨论中心极限定理的常见误解，包括样本本身、有限方差和方差收缩。",
+      "unit": "",
+      "sessions": [
+        {
+          "session_id": "sess_4",
+          "title": "样本均值分布还是样本本身？",
+          "learning_goal": "学生能准确区分样本数据的分布与样本均值的抽样分布，并理解有限方差前提和标准误收缩。",
+          "core_concept": "中心极限定理描述的是样本均值的分布收敛于正态分布，而非样本数据本身。",
+          "cognitive_hurdle": "误以为只要数据量足够大，样本数据本身就会变成正态分布，或任何大数据都自动符合正态分布。",
+          "source_sections": [
+            "s4"
+          ],
+          "estimated_duration_min": 5,
+          "tags": [
+            "Intuition",
+            "Definition"
+          ],
+          "segments": [
+            {
+              "title": "大数据一定正态？",
+              "intent": "激发学生反思“大数据会自动变成正态”的直觉。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s4"
+              ]
+            },
+            {
+              "title": "先猜：样本多了会怎样？",
+              "intent": "让学生预测从偏态总体抽样时，大样本数据本身的分布形态。",
+              "media": "illustration",
+              "media_brief": "左图：一个右偏的总体分布；右图：n=1000 的样本直方图，形状仍大致右偏。标注：'样本数据'。",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s4"
+              ]
+            },
+            {
+              "title": "定理到底说了什么？",
+              "intent": "明确中心极限定理的对象是样本均值的分布，不是样本本身。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s4"
+              ]
+            },
+            {
+              "title": "为什么 n 越大越窄？",
+              "intent": "推导标准误 σ/√n，说明样本均值分布随 n 增大而变窄。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s4"
+              ]
+            },
+            {
+              "title": "柯西分布：定理的反例",
+              "intent": "用重尾分布说明有限方差是 CLT 的必要前提。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s4"
+              ]
+            },
+            {
+              "title": "回顾三个常见误区",
+              "intent": "总结样本本身、有限方差、方差收缩三个关键点。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s4"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

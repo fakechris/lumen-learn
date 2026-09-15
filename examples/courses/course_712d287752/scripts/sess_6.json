@@ -1,0 +1,299 @@
+{
+  "session_id": "sess_6",
+  "course_id": "course_712d287752",
+  "title": "相等判断",
+  "learning_goal": "理解浮点数不能用 == 直接比较，掌握误差容限比较法并知道 ε 应随量级缩放",
+  "steps": [
+    {
+      "title": "== 的陷阱",
+      "beat": "hook",
+      "spoken_text": "先看一行最普通的代码。左边是 0.1 加 0.2，右边是 0.3，中间用两个等号连起来。你心里肯定觉得它该返回真。可实际跑一下，它返回的是假。我第一次看到这个结果时也愣了一下。那问题出在哪？是 Python 算错了，还是我们对这两个等号的期待本身就有问题？",
+      "boards": [
+        {
+          "title": "",
+          "markdown": "- `0.1 + 0.2 == 0.3` → **False**\n- 直觉：应该 True\n- 谁错了？→ 你先猜",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "circle",
+          "snippet": "False",
+          "board_index": 0,
+          "trigger_phrase": "它返回的是假",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": {
+        "mode": "choice",
+        "question": "0.1 加 0.2 用两个等号去比 0.3，返回假。你觉得问题出在哪？",
+        "options": [
+          "Python 算错了，0.1 加 0.2 本来就该等于 0.3",
+          "两个等号太严格了，它要求两边一个比特都不差"
+        ],
+        "correct_index": 1,
+        "misconceptions": [
+          "这是最常见的直觉：以为计算器算错了。其实计算机算得没错，是 == 这个操作要求太苛刻。",
+          null
+        ],
+        "explanation": "== 要求两边二进制表示完全一致，而浮点运算的舍入让两边差了一个极小的量。"
+      },
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "为什么不能直接比较",
+      "beat": "define",
+      "spoken_text": "看第二行。浮点数在计算机里是二进制小数，很多十进制小数根本存不下，只能存一个最接近的近似值。0.1 是这样，0.2 是这样，0.3 也是这样。每次运算还会再舍入一次。所以两个理论上相等的数，实际存下来可能差一个极小量。这个差小到你看不见，但两个等号看得见。",
+      "boards": [
+        {
+          "title": "误差从哪来",
+          "markdown": "- 十进制小数 → 二进制：多数**存不下**，只能存近似\n- 每次运算再舍入一次\n- 结果：$a$ 和 $b$ 数学上相等，实际可能差一个极小量\n- `==` 要求**一个比特都不差** → 太苛刻",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "highlight",
+          "snippet": "一个比特都不差",
+          "board_index": 0,
+          "trigger_phrase": "两个等号看得见",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": null,
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "容差比较",
+      "beat": "apply",
+      "spoken_text": "既然差的只是一个极小量，那就别要求完全相等。看第三行：把两数相减取绝对值，只要这个差小于一个很小的数 epsilon，我们就认为它们相等。这里取 1e-12。跑一下，返回真。注意，这个 epsilon 不是随便写的，它得跟数的量级匹配。那如果比较的是十亿和十亿零一，1e-12 还合适吗？",
+      "boards": [
+        {
+          "title": "换个比法",
+          "markdown": "- 不比相等，比**差有多小**\n- `abs(0.1 + 0.2 - 0.3) < 1e-12` → **True**\n- $|a - b| < \\varepsilon$\n- $\\varepsilon$ 要跟**量级**匹配，不能写死",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "circle",
+          "snippet": "True",
+          "board_index": 0,
+          "trigger_phrase": "返回真",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": {
+        "mode": "choice",
+        "question": "如果比较的是十亿和十亿零一，用 1e-12 当容差合适吗？",
+        "options": [
+          "合适，1e-12 已经够小了，什么数都能用",
+          "不合适，十亿量级下 1e-12 太小了，得按比例放大"
+        ],
+        "correct_index": 1,
+        "misconceptions": [
+          "很多人以为容差越小越安全。但十亿量级的浮点误差本身就有 1e-7 左右，1e-12 根本容不下。",
+          null
+        ],
+        "explanation": "容差应该随数的量级缩放，用相对误差而不是写死的绝对常数。"
+      },
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "固定 ε 的局限",
+      "beat": "counterexample",
+      "spoken_text": "回看上一段的板书，我们用了 1e-12 这个固定的小数。现在看下方这张探针图：横轴是数值的量级，从很小到很大，纵轴是绝对误差。那条水平红线就是写死的 epsilon。我把探针推到 1e6 附近，你猜读数会怎样？",
+      "boards": [
+        {
+          "title": "固定 ε 的局限",
+          "markdown": "- 固定 $\\varepsilon$：一条**水平线**\n- 量级 $\\gg 1$ → 误差超线 → 误判**不等**\n- 量级 $\\ll 1$ → 误差远低于线 → 误判**相等**\n- 结论：$\\varepsilon$ 不能写死",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "circle",
+          "snippet": "固定 $\\varepsilon$：一条**水平线**",
+          "board_index": 0,
+          "trigger_phrase": "那条水平红线就是写死的 epsilon",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": {
+        "kind": "explorable",
+        "title": "试试看：固定 ε 在两端都失效",
+        "task": "横轴为数值量级（log10 尺度，从 1e-6 到 1e6），纵轴为绝对误差 |a-b|（log 尺度）。固定 ε 显示为一条水平线（如 1e-9）。探针/滑块控制两个数的量级，并显示 |a-b| 随量级的变化曲线。预期现象：当量级远大于 1 时，|a-b| 超过固定 ε，导致误判为不等；当量级远小于 1 时，|a-b| 远小于 ε，导致误判为相等。",
+        "html": "<!DOCTYPE html>\n<html>\n<head><script>/**\n * HandChart — zero-dependency hand-drawn chart base for explorable widgets.\n *\n * Injected into every generated 2D explorable (widget_generator.py) so the\n * model supplies data + overlays instead of hand-writing axes. The look matches\n * the handwritten page: paper panel, slightly wobbly ink axes, main red /\n * aux green, handwriting labels.\n *\n * API (all coordinates in WORLD units unless noted):\n *   const ch = HandChart.render(canvas, opts)\n *     opts = { type: \"function\"|\"points\"|\"bars\"|\"lines\",\n *              xlim:[x0,x1], ylim:[y0,y1],                  (all but bars)\n *              fn: x=>y | fns:[{fn, color?, label?}],        (function)\n *              points:[[x,y],...],                          (points)\n *              series:[{name, points, color?, dash?}],      (lines; legend drawn)\n *              bars:{labels:[...], values:[...], highlight?} (bars)\n *              xlabel, ylabel, grid:true|false, title }\n *     returns { ctx, sx, sy, box, W, H, opts }  — keep it to draw overlays\n *   HandChart.marker(ch, x, y, {color, label, r})       dot + optional label\n *   HandChart.vline(ch, x, {color, dash, label})         vertical guide\n *   HandChart.hline(ch, y, {color, dash, label})         horizontal guide\n *   HandChart.segment(ch, [x1,y1], [x2,y2], {color, width, dash, arrow})\n *   HandChart.note(ch, x, y, text, {color, align, size}) handwriting annotation\n *   HandChart.attachProbe(canvas, {xlim, ylim}, onProbe, onLeave?)\n *     pointer follow; onProbe({x, y}) in world coords — redraw + readouts there.\n *   HandChart.style = { INK, AXIS, MAIN, AUX, GRID, PAPER, MUTED }\n */\n(function () {\n  const style = {\n    INK: \"#2b2b2b\", AXIS: \"#8a8377\", MAIN: \"#c0392b\", AUX: \"#2e8b6f\",\n    GRID: \"#ece5d4\", PAPER: \"#fbfaf6\", MUTED: \"#8a8377\", PURPLE: \"#7c3aed\", BLUE: \"#2563eb\",\n  };\n  const PALETTE = [style.MAIN, style.AUX, style.BLUE, style.PURPLE, \"#d97706\"];\n  const PAD = { l: 48, r: 18, t: 18, b: 36 };\n  const HAND = \"'Patrick Hand', 'LXGW WenKai Lite', 'PingFang SC', sans-serif\";\n\n  function font(size, italic) { return (italic ? \"italic \" : \"\") + size + \"px \" + HAND; }\n\n  // deterministic wobble so the \"hand\" does not shake on every redraw\n  function wob(seed, amp) { return Math.sin(seed * 12.9898) * amp; }\n\n  function tickVals(min, max, n) {\n    const span = max - min || 1;\n    const raw = span / n;\n    const mag = Math.pow(10, Math.floor(Math.log10(raw)));\n    const step = [1, 2, 2.5, 5, 10].map((m) => m * mag).find((s) => span / s <= n) || mag * 10;\n    const out = [];\n    for (let v = Math.ceil(min / step) * step; v <= max + step * 1e-9; v += step) out.push(+v.toFixed(10));\n    return out;\n  }\n\n  function fmt(v) {\n    const a = Math.abs(v);\n    if (a === 0) return \"0\";\n    if (a >= 10000 || a < 0.01) return v.toExponential(1);\n    return String(+v.toFixed(Math.max(0, 3 - Math.floor(Math.log10(a)))));\n  }\n\n  /** a hand-drawn line: two passes with tiny deterministic wobble */\n  function inkLine(ctx, x1, y1, x2, y2, color, width, seed) {\n    ctx.save();\n    ctx.strokeStyle = color; ctx.lineWidth = width; ctx.lineCap = \"round\";\n    const n = 6, s = seed || (x1 + y2);\n    ctx.beginPath();\n    for (let i = 0; i <= n; i++) {\n      const t = i / n, x = x1 + (x2 - x1) * t, y = y1 + (y2 - y1) * t;\n      const w = i === 0 || i === n ? 0 : wob(s + i, 0.7);\n      i ? ctx.lineTo(x + w, y + w) : ctx.moveTo(x, y);\n    }\n    ctx.stroke();\n    ctx.restore();\n  }\n\n  function frame(ctx, W, H) {\n    ctx.clearRect(0, 0, W, H);\n    ctx.save();\n    ctx.fillStyle = style.PAPER;\n    ctx.fillRect(0, 0, W, H);\n    ctx.restore();\n  }\n\n  function plotBox(W, H, opts) {\n    const t = PAD.t + (opts && opts.title ? 18 : 0);\n    return { x0: PAD.l, y0: t, x1: W - PAD.r, y1: H - PAD.b };\n  }\n\n  function mapping(box, xlim, ylim) {\n    const [x0, x1] = xlim, [y0, y1] = ylim;\n    return {\n      sx: (v) => box.x0 + (v - x0) / (x1 - x0) * (box.x1 - box.x0),\n      sy: (v) => box.y1 - (v - y0) / (y1 - y0) * (box.y1 - box.y0),\n    };\n  }\n\n  function axes(ctx, box, opts) {\n    const [x0, x1] = opts.xlim, [y0, y1] = opts.ylim;\n    const { sx, sy } = mapping(box, opts.xlim, opts.ylim);\n    const xt = tickVals(x0, x1, 6).filter((v) => v >= x0 && v <= x1);\n    const yt = tickVals(y0, y1, 4).filter((v) => v >= y0 && v <= y1);\n    if (opts.grid !== false) {\n      ctx.save(); ctx.strokeStyle = style.GRID; ctx.lineWidth = 1;\n      for (const v of xt) { ctx.beginPath(); ctx.moveTo(sx(v), box.y0); ctx.lineTo(sx(v), box.y1); ctx.stroke(); }\n      for (const v of yt) { ctx.beginPath(); ctx.moveTo(box.x0, sy(v)); ctx.lineTo(box.x1, sy(v)); ctx.stroke(); }\n      ctx.restore();\n    }\n    // axes sit on zero when zero is inside the range, else on the box edge\n    const ax = y0 <= 0 && y1 >= 0 ? sy(0) : box.y1;\n    const ay = x0 <= 0 && x1 >= 0 ? sx(0) : box.x0;\n    inkLine(ctx, box.x0 - 4, ax, box.x1 + 6, ax, style.AXIS, 1.4, 1);\n    inkLine(ctx, ay, box.y1 + 4, ay, box.y0 - 6, style.AXIS, 1.4, 2);\n    // arrow heads\n    ctx.save(); ctx.fillStyle = style.AXIS;\n    ctx.beginPath(); ctx.moveTo(box.x1 + 8, ax); ctx.lineTo(box.x1 + 1, ax - 3.5); ctx.lineTo(box.x1 + 1, ax + 3.5); ctx.fill();\n    ctx.beginPath(); ctx.moveTo(ay, box.y0 - 8); ctx.lineTo(ay - 3.5, box.y0 - 1); ctx.lineTo(ay + 3.5, box.y0 - 1); ctx.fill();\n    ctx.restore();\n    ctx.save();\n    ctx.fillStyle = style.MUTED; ctx.font = font(12);\n    ctx.textAlign = \"center\";\n    for (const v of xt) {\n      if (Math.abs(sx(v) - ay) < 1 && ay !== box.x0) continue; // skip the label under the y axis\n      inkLine(ctx, sx(v), ax - 3, sx(v), ax + 3, style.AXIS, 1, v);\n      ctx.fillText(fmt(v), sx(v), ax + 16);\n    }\n    ctx.textAlign = \"right\";\n    for (const v of yt) {\n      if (Math.abs(sy(v) - ax) < 1 && ax !== box.y1) continue;\n      inkLine(ctx, ay - 3, sy(v), ay + 3, sy(v), style.AXIS, 1, v + 7);\n      ctx.fillText(fmt(v), ay - 7, sy(v) + 4);\n    }\n    ctx.font = font(14, true); ctx.fillStyle = style.INK;\n    if (opts.xlabel) { ctx.textAlign = \"right\"; ctx.fillText(opts.xlabel, box.x1 + 4, ax - 8); }\n    if (opts.ylabel) { ctx.textAlign = \"left\"; ctx.fillText(opts.ylabel, ay + 8, box.y0 + 4); }\n    ctx.restore();\n    return { sx, sy };\n  }\n\n  function stroke(ctx, pts, color, width, dash) {\n    if (!pts.length) return;\n    ctx.save();\n    ctx.strokeStyle = color; ctx.lineWidth = width || 2.2;\n    ctx.lineJoin = \"round\"; ctx.lineCap = \"round\";\n    if (dash) ctx.setLineDash(dash);\n    ctx.beginPath();\n    let pen = false;\n    for (const p of pts) {\n      if (!p) { pen = false; continue; }\n      pen ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1]);\n      pen = true;\n    }\n    ctx.stroke();\n    ctx.restore();\n  }\n\n  function fnPoints(fn, opts, m) {\n    const [x0, x1] = opts.xlim, [y0, y1] = opts.ylim;\n    const n = 400, pts = [];\n    const margin = (y1 - y0) * 0.02;\n    for (let i = 0; i <= n; i++) {\n      const x = x0 + (x1 - x0) * i / n;\n      let y;\n      try { y = fn(x); } catch (e) { y = NaN; }\n      if (!isFinite(y) || y < y0 - margin || y > y1 + margin) { pts.push(null); continue; }\n      pts.push([m.sx(x), m.sy(y)]);\n    }\n    return pts;\n  }\n\n  function legend(ctx, box, items) {\n    if (!items.length) return;\n    ctx.save();\n    ctx.font = font(13); ctx.textAlign = \"left\"; ctx.textBaseline = \"middle\";\n    let x = box.x0 + 10, y = box.y0 + 12;\n    for (const it of items) {\n      inkLine(ctx, x, y, x + 22, y, it.color, 2.4, x);\n      ctx.fillStyle = style.INK;\n      ctx.fillText(it.label, x + 28, y + 1);\n      x += 28 + ctx.measureText(it.label).width + 18;\n    }\n    ctx.restore();\n  }\n\n  function title(ctx, W, text) {\n    ctx.save();\n    ctx.font = font(15); ctx.fillStyle = style.INK; ctx.textAlign = \"center\";\n    ctx.fillText(text, W / 2, 16);\n    ctx.restore();\n  }\n\n  function render(canvas, opts) {\n    const ctx = canvas.getContext(\"2d\");\n    const rect = canvas.getBoundingClientRect();\n    const W = Math.max(60, Math.round(rect.width)), H = Math.max(60, Math.round(rect.height));\n    const dpr = window.devicePixelRatio || 1;\n    if (canvas.width !== Math.round(W * dpr) || canvas.height !== Math.round(H * dpr)) {\n      canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);\n    }\n    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);\n    frame(ctx, W, H);\n    if (opts.title) title(ctx, W, opts.title);\n    const box = plotBox(W, H, opts);\n    const type = opts.type || \"function\";\n\n    if (type === \"bars\") {\n      const labels = opts.bars.labels || [], values = opts.bars.values || [];\n      const n = Math.max(1, values.length);\n      const bw = (box.x1 - box.x0) / n;\n      const vmax = Math.max(...values.map((v) => Math.abs(v)), 0) * 1.15 || 1;\n      const base = box.y1;\n      inkLine(ctx, box.x0 - 4, base, box.x1 + 4, base, style.AXIS, 1.4, 3);\n      ctx.save();\n      values.forEach((v, i) => {\n        const h = (Math.abs(v) / vmax) * (box.y1 - box.y0);\n        const x = box.x0 + i * bw + bw * 0.2, w = bw * 0.6, y = base - h;\n        const hot = opts.bars.highlight != null && i === opts.bars.highlight;\n        ctx.fillStyle = hot ? style.MAIN : \"#e6dfcf\";\n        ctx.fillRect(x, y, w, h);\n        ctx.strokeStyle = hot ? style.MAIN : style.AXIS; ctx.lineWidth = 1.2;\n        ctx.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);\n        ctx.font = font(13); ctx.textAlign = \"center\"; ctx.fillStyle = style.INK;\n        ctx.fillText(String(labels[i] == null ? i + 1 : labels[i]), x + w / 2, base + 17);\n        ctx.fillStyle = hot ? style.MAIN : style.MUTED;\n        ctx.fillText(fmt(v), x + w / 2, y - 6);\n      });\n      ctx.restore();\n      const sx = (i) => box.x0 + (i + 0.5) * bw, sy = (v) => base - (Math.abs(v) / vmax) * (box.y1 - box.y0);\n      return { ctx, sx, sy, box, W, H, opts };\n    }\n\n    const m = axes(ctx, box, opts);\n    const items = [];\n    if (type === \"lines\") {\n      (opts.series || []).forEach((s, i) => {\n        const color = s.color || PALETTE[i % PALETTE.length];\n        stroke(ctx, (s.points || []).map((p) => [m.sx(p[0]), m.sy(p[1])]), color, 2.2, s.dash);\n        if (s.name) items.push({ label: s.name, color });\n      });\n    } else if (type === \"points\") {\n      ctx.save(); ctx.fillStyle = opts.color || style.MAIN;\n      (opts.points || []).forEach((p) => { ctx.beginPath(); ctx.arc(m.sx(p[0]), m.sy(p[1]), opts.r || 3.6, 0, Math.PI * 2); ctx.fill(); });\n      ctx.restore();\n    } else {\n      const fns = opts.fns || (typeof opts.fn === \"function\" ? [{ fn: opts.fn, color: opts.color, label: opts.label }] : []);\n      fns.forEach((f, i) => {\n        const color = f.color || PALETTE[i % PALETTE.length];\n        stroke(ctx, fnPoints(f.fn, opts, m), color, f.width || 2.4, f.dash);\n        if (f.label) items.push({ label: f.label, color });\n      });\n    }\n    legend(ctx, box, items);\n    return { ctx, sx: m.sx, sy: m.sy, box, W, H, opts };\n  }\n\n  // ---- overlays (world coordinates) ----\n  function marker(ch, x, y, o) {\n    o = o || {};\n    const px = ch.sx(x), py = ch.sy(y);\n    ch.ctx.save();\n    ch.ctx.fillStyle = o.color || style.MAIN;\n    ch.ctx.beginPath(); ch.ctx.arc(px, py, o.r || 5, 0, Math.PI * 2); ch.ctx.fill();\n    ch.ctx.strokeStyle = style.PAPER; ch.ctx.lineWidth = 1.5; ch.ctx.stroke();\n    if (o.label) {\n      ch.ctx.font = font(o.size || 13); ch.ctx.fillStyle = o.color || style.MAIN; ch.ctx.textAlign = \"left\";\n      ch.ctx.fillText(o.label, px + 8, py - 8);\n    }\n    ch.ctx.restore();\n  }\n\n  function vline(ch, x, o) {\n    o = o || {};\n    const px = ch.sx(x);\n    stroke(ch.ctx, [[px, ch.box.y0], [px, ch.box.y1]], o.color || style.MUTED, o.width || 1.2, o.dash || [4, 4]);\n    if (o.label) note(ch, x, null, o.label, { color: o.color || style.MUTED, px: px + 4, py: ch.box.y0 + 12, align: \"left\", size: o.size });\n  }\n\n  function hline(ch, y, o) {\n    o = o || {};\n    const py = ch.sy(y);\n    stroke(ch.ctx, [[ch.box.x0, py], [ch.box.x1, py]], o.color || style.MUTED, o.width || 1.2, o.dash || [4, 4]);\n    if (o.label) note(ch, null, y, o.label, { color: o.color || style.MUTED, px: ch.box.x1 - 4, py: py - 5, align: \"right\", size: o.size });\n  }\n\n  function segment(ch, a, b, o) {\n    o = o || {};\n    const x1 = ch.sx(a[0]), y1 = ch.sy(a[1]), x2 = ch.sx(b[0]), y2 = ch.sy(b[1]);\n    const color = o.color || style.AUX;\n    stroke(ch.ctx, [[x1, y1], [x2, y2]], color, o.width || 2, o.dash);\n    if (o.arrow) {\n      const ang = Math.atan2(y2 - y1, x2 - x1), L = 9;\n      ch.ctx.save(); ch.ctx.fillStyle = color; ch.ctx.beginPath();\n      ch.ctx.moveTo(x2, y2);\n      ch.ctx.lineTo(x2 - L * Math.cos(ang - 0.4), y2 - L * Math.sin(ang - 0.4));\n      ch.ctx.lineTo(x2 - L * Math.cos(ang + 0.4), y2 - L * Math.sin(ang + 0.4));\n      ch.ctx.fill(); ch.ctx.restore();\n    }\n  }\n\n  function note(ch, x, y, text, o) {\n    o = o || {};\n    const px = o.px != null ? o.px : ch.sx(x), py = o.py != null ? o.py : ch.sy(y);\n    ch.ctx.save();\n    ch.ctx.font = font(o.size || 14, o.italic);\n    ch.ctx.fillStyle = o.color || style.INK;\n    ch.ctx.textAlign = o.align || \"left\";\n    ch.ctx.fillText(text, px, py);\n    ch.ctx.restore();\n  }\n\n  /** Pointer probe in world coords; the caller redraws and updates readouts. */\n  function attachProbe(canvas, opts, onProbe, onLeave) {\n    const [x0, x1] = opts.xlim;\n    const [y0, y1] = opts.ylim;\n    const toWorld = (px, py) => {\n      const r = canvas.getBoundingClientRect();\n      const box = plotBox(r.width, r.height, opts);\n      const t = (px - r.left - box.x0) / (box.x1 - box.x0);\n      const u = 1 - (py - r.top - box.y0) / (box.y1 - box.y0);\n      return { x: x0 + t * (x1 - x0), y: y0 + u * (y1 - y0), inside: t >= 0 && t <= 1 };\n    };\n    const handler = (e) => {\n      const p = toWorld(e.clientX, e.clientY);\n      if (p.inside) onProbe(p);\n    };\n    canvas.addEventListener(\"pointermove\", handler);\n    canvas.addEventListener(\"pointerdown\", handler);\n    if (onLeave) canvas.addEventListener(\"pointerleave\", onLeave);\n    canvas.style.touchAction = \"none\";\n    return toWorld;\n  }\n\n  window.HandChart = { render, marker, vline, hline, segment, note, attachProbe, style, font: HAND };\n})();\n</script>\n  <meta charset=\"utf-8\">\n  <style>\n    html, body { margin: 0; height: 100%; background: #faf8f3; font-family: \"PingFang SC\", \"Hiragino Sans GB\", sans-serif; color: #333; overflow: hidden; }\n    #wrap { position: absolute; inset: 0; display: flex; flex-direction: column; }\n    #plot { flex: 1; min-height: 0; margin: 10px 10px 4px; border: 1px solid #d9d2c3; border-radius: 12px; background: #fbfaf6; cursor: crosshair; touch-action: none; }\n    #readout { display: flex; justify-content: center; align-items: center; gap: 28px; padding: 4px 0 8px; font-size: 12px; color: #666; flex-wrap: wrap; }\n    #readout .k { display: block; font-size: 11px; letter-spacing: .04em; }\n    #readout .v { display: block; font-family: ui-monospace, Menlo, monospace; font-size: 14px; font-weight: 700; color: #c0392b; min-width: 64px; text-align: center; }\n    #formula { display: inline-block; padding: 3px 10px; border: 1px solid #d9d2c3; border-radius: 6px; background: #fff; font-family: Georgia, \"Times New Roman\", serif; font-style: italic; font-size: 13px; color: #333; }\n    #slider-row { display: flex; align-items: center; gap: 12px; padding: 0 0 8px; justify-content: center; }\n    #slider-row label { font-size: 12px; color: #666; }\n    #probeX-slider { width: 200px; accent-color: #c0392b; }\n  </style>\n</head>\n<body>\n  <div id=\"wrap\">\n    <canvas id=\"plot\"></canvas>\n    <div id=\"readout\">\n      <span><span class=\"k\">当前量级</span><span class=\"v\" id=\"magnitude-display\">—</span></span>\n      <span><span class=\"k\">绝对误差 |a-b|</span><span class=\"v\" id=\"absError-display\">—</span></span>\n      <span><span class=\"k\">比较结果</span><span class=\"v\" id=\"comparison-display\" style=\"min-width: 90px;\">—</span></span>\n      <span id=\"formula\">|a-b| = 1e-6 · 量级</span>\n    </div>\n    <div id=\"slider-row\">\n      <label for=\"probeX-slider\">量级位置</label>\n      <input type=\"range\" id=\"probeX-slider\" min=\"0\" max=\"1\" step=\"0.001\" value=\"0.5\">\n    </div>\n  </div>\n  <script>\n    // --- 被探索的对象：固定 ε 在两端都失效 ---------------------------------\n    // 横轴：log10(量级)，范围 [-6, 6]\n    // 纵轴：log10(|a-b|)，范围 [-12, 6]\n    // 曲线：log10(|a-b|) = log10(量级) + log10(1e-6) = log10(量级) - 6\n    // 即 |a-b| = 1e-6 * 量级\n    // ε = 1e-9，log10(ε) = -9\n\n    const EPS = 1e-9;\n    const LOG_EPS = Math.log10(EPS); // -9\n    const REL_DIFF = 1e-6;\n    const LOG_REL = Math.log10(REL_DIFF); // -6\n\n    // 世界坐标范围\n    const X_MIN = -6, X_MAX = 6;\n    const Y_MIN = -12, Y_MAX = 6;\n\n    // 曲线函数：给定 log10(量级)，返回 log10(|a-b|)\n    function logAbsError(logMag) {\n      return logMag + LOG_REL;\n    }\n\n    // --- 绘图基础设施 ------------------------------------------------------\n    const canvas = document.getElementById('plot');\n    const ctx = canvas.getContext('2d');\n    let W = 0, H = 0;\n    let probeX = 0.5; // 滑块值 [0,1] 映射到 log10 量级 [-6,6]\n\n    // 将滑块值映射到 log10 量级\n    function sliderToLogMag(v) {\n      return X_MIN + v * (X_MAX - X_MIN);\n    }\n\n    // 将 log10 量级映射到滑块值\n    function logMagToSlider(lm) {\n      return (lm - X_MIN) / (X_MAX - X_MIN);\n    }\n\n    // 当前探针的 log10 量级\n    function currentLogMag() {\n      return sliderToLogMag(probeX);\n    }\n\n    // 当前探针的 log10(|a-b|)\n    function currentLogError() {\n      return logAbsError(currentLogMag());\n    }\n\n    // 当前 |a-b|\n    function currentAbsError() {\n      return Math.pow(10, currentLogError());\n    }\n\n    // 当前量级\n    function currentMagnitude() {\n      return Math.pow(10, currentLogMag());\n    }\n\n    // 比较结果\n    function comparisonResult() {\n      return currentAbsError() < EPS ? '误判为相等' : '误判为不等';\n    }\n\n    // 坐标变换\n    const PAD = { l: 50, r: 30, t: 24, b: 36 };\n    function sx(x) {\n      return PAD.l + (x - X_MIN) / (X_MAX - X_MIN) * (W - PAD.l - PAD.r);\n    }\n    function sy(y) {\n      return PAD.t + (Y_MAX - y) / (Y_MAX - Y_MIN) * (H - PAD.t - PAD.b);\n    }\n    function ux(px) {\n      return X_MIN + (px - PAD.l) / (W - PAD.l - PAD.r) * (X_MAX - X_MIN);\n    }\n\n    // --- 绘制函数 ----------------------------------------------------------\n    function draw() {\n      ctx.clearRect(0, 0, W, H);\n\n      // 背景网格（浅色）\n      ctx.save();\n      ctx.strokeStyle = '#e8e2d6';\n      ctx.lineWidth = 0.5;\n      for (let x = X_MIN; x <= X_MAX; x += 2) {\n        ctx.beginPath();\n        ctx.moveTo(sx(x), PAD.t);\n        ctx.lineTo(sx(x), H - PAD.b);\n        ctx.stroke();\n      }\n      for (let y = Y_MIN; y <= Y_MAX; y += 3) {\n        ctx.beginPath();\n        ctx.moveTo(PAD.l, sy(y));\n        ctx.lineTo(W - PAD.r, sy(y));\n        ctx.stroke();\n      }\n      ctx.restore();\n\n      // 坐标轴\n      ctx.save();\n      ctx.strokeStyle = '#b9b3a6';\n      ctx.lineWidth = 1;\n      // x 轴（y=0 对应 log10(|a-b|)=0，即 |a-b|=1）\n      ctx.beginPath();\n      ctx.moveTo(PAD.l, sy(0));\n      ctx.lineTo(W - PAD.r, sy(0));\n      ctx.stroke();\n      // y 轴（x=0 对应 log10(量级)=0，即量级=1）\n      ctx.beginPath();\n      ctx.moveTo(sx(0), PAD.t);\n      ctx.lineTo(sx(0), H - PAD.b);\n      ctx.stroke();\n      ctx.restore();\n\n      // 刻度与标签\n      ctx.save();\n      ctx.fillStyle = '#8a8377';\n      ctx.font = 'italic 11px Georgia, serif';\n      ctx.textAlign = 'center';\n      // x 轴刻度\n      for (let x = X_MIN; x <= X_MAX; x += 2) {\n        ctx.beginPath();\n        ctx.moveTo(sx(x), sy(0) - 3);\n        ctx.lineTo(sx(x), sy(0) + 3);\n        ctx.strokeStyle = '#b9b3a6';\n        ctx.stroke();\n        ctx.fillText('1e' + x, sx(x), sy(0) + 16);\n      }\n      // y 轴刻度\n      ctx.textAlign = 'right';\n      for (let y = Y_MIN; y <= Y_MAX; y += 3) {\n        ctx.beginPath();\n        ctx.moveTo(sx(0) - 3, sy(y));\n        ctx.lineTo(sx(0) + 3, sy(y));\n        ctx.strokeStyle = '#b9b3a6';\n        ctx.stroke();\n        ctx.fillText('1e' + y, sx(0) - 6, sy(y) + 4);\n      }\n      // 轴名\n      ctx.textAlign = 'center';\n      ctx.fillStyle = '#8a8377';\n      ctx.font = 'italic 12px Georgia, serif';\n      ctx.fillText('量级 (log10)', W - PAD.r - 40, sy(0) - 8);\n      ctx.save();\n      ctx.translate(sx(0) - 30, PAD.t + 50);\n      ctx.rotate(-Math.PI / 2);\n      ctx.fillText('|a-b| (log10)', 0, 0);\n      ctx.restore();\n      ctx.restore();\n\n      // 固定 ε 水平线（虚线，绿色）\n      ctx.save();\n      ctx.strokeStyle = '#2e8b6f';\n      ctx.lineWidth = 1.5;\n      ctx.setLineDash([5, 4]);\n      ctx.beginPath();\n      ctx.moveTo(PAD.l, sy(LOG_EPS));\n      ctx.lineTo(W - PAD.r, sy(LOG_EPS));\n      ctx.stroke();\n      ctx.restore();\n      // ε 标注\n      ctx.save();\n      ctx.font = 'italic 12px Georgia, serif';\n      ctx.fillStyle = '#2e8b6f';\n      ctx.textAlign = 'left';\n      ctx.fillText('ε = 1e-9', PAD.l + 8, sy(LOG_EPS) - 6);\n      ctx.restore();\n\n      // 误差曲线（红色主曲线）\n      ctx.save();\n      ctx.strokeStyle = '#c0392b';\n      ctx.lineWidth = 2;\n      ctx.beginPath();\n      let started = false;\n      for (let i = 0; i <= 600; i++) {\n        const lm = X_MIN + (X_MAX - X_MIN) * i / 600;\n        const le = logAbsError(lm);\n        if (le < Y_MIN - 1 || le > Y_MAX + 1) { started = false; continue; }\n        const px = sx(lm), py = sy(le);\n        if (!started) { ctx.moveTo(px, py); started = true; }\n        else ctx.lineTo(px, py);\n      }\n      ctx.stroke();\n      ctx.restore();\n\n      // 曲线标注\n      ctx.save();\n      ctx.font = 'italic 12px Georgia, serif';\n      ctx.fillStyle = '#c0392b';\n      ctx.textAlign = 'left';\n      ctx.fillText('|a-b| = 1e-6 · 量级', sx(2.5), sy(logAbsError(2.5)) - 10);\n      ctx.restore();\n\n      // 区域标注\n      ctx.save();\n      ctx.font = 'italic 11px Georgia, serif';\n      ctx.fillStyle = '#8a8377';\n      ctx.textAlign = 'center';\n      // 左侧标注\n      ctx.fillText('量级 << 1：|a-b| < ε', sx(-4), sy(-10));\n      ctx.fillText('误判为相等', sx(-4), sy(-10) + 16);\n      // 右侧标注\n      ctx.fillText('量级 >> 1：|a-b| > ε', sx(4), sy(2));\n      ctx.fillText('误判为不等', sx(4), sy(2) + 16);\n      ctx.restore();\n\n      // 探针点与虚线\n      const lm = currentLogMag();\n      const le = currentLogError();\n      const px = sx(lm), py = sy(le);\n\n      // 垂直虚线\n      ctx.save();\n      ctx.strokeStyle = 'rgba(192,57,43,.45)';\n      ctx.setLineDash([3, 4]);\n      ctx.lineWidth = 1;\n      ctx.beginPath();\n      ctx.moveTo(px, PAD.t);\n      ctx.lineTo(px, H - PAD.b);\n      ctx.stroke();\n      ctx.restore();\n\n      // 水平虚线（到 y 轴）\n      ctx.save();\n      ctx.strokeStyle = 'rgba(192,57,43,.3)';\n      ctx.setLineDash([3, 4]);\n      ctx.lineWidth = 1;\n      ctx.beginPath();\n      ctx.moveTo(PAD.l, py);\n      ctx.lineTo(px, py);\n      ctx.stroke();\n      ctx.restore();\n\n      // 探针点\n      ctx.save();\n      ctx.fillStyle = '#c0392b';\n      ctx.beginPath();\n      ctx.arc(px, py, 5, 0, Math.PI * 2);\n      ctx.fill();\n      ctx.strokeStyle = '#fff';\n      ctx.lineWidth = 1.5;\n      ctx.stroke();\n      ctx.restore();\n\n      // 探针标签\n      ctx.save();\n      ctx.font = 'italic 12px Georgia, serif';\n      ctx.fillStyle = '#c0392b';\n      ctx.textAlign = 'left';\n      const magStr = currentMagnitude().toExponential(2);\n      const errStr = currentAbsError().toExponential(2);\n      ctx.fillText('量级 = ' + magStr, px + 10, py - 8);\n      ctx.fillText('|a-b| = ' + errStr, px + 10, py + 10);\n      ctx.restore();\n\n      // 更新读数\n      document.getElementById('magnitude-display').textContent = currentMagnitude().toExponential(2);\n      document.getElementById('absError-display').textContent = currentAbsError().toExponential(2);\n      document.getElementById('comparison-display').textContent = comparisonResult();\n    }\n\n    // --- 尺寸与重绘 --------------------------------------------------------\n    function resize() {\n      const r = canvas.getBoundingClientRect();\n      W = r.width;\n      H = r.height;\n      const dpr = window.devicePixelRatio || 1;\n      canvas.width = Math.round(W * dpr);\n      canvas.height = Math.round(H * dpr);\n      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);\n      draw();\n    }\n\n    // --- 交互 --------------------------------------------------------------\n    function onPointer(e) {\n      const r = canvas.getBoundingClientRect();\n      const px = e.clientX - r.left;\n      const lm = ux(px);\n      const clamped = Math.max(X_MIN, Math.min(X_MAX, lm));\n      probeX = logMagToSlider(clamped);\n      document.getElementById('probeX-slider').value = probeX;\n      draw();\n    }\n\n    canvas.addEventListener('pointermove', onPointer);\n    canvas.addEventListener('pointerdown', onPointer);\n\n    // 滑块事件\n    document.getElementById('probeX-slider').addEventListener('input', function () {\n      probeX = parseFloat(this.value);\n      draw();\n    });\n\n    // --- 教师控制钩子 ------------------------------------------------------\n    window.hkControl = {\n      set: function (s) {\n        if (s && s.probeX != null) {\n          // probeX 是滑块值 [0,1]\n          probeX = Math.max(0, Math.min(1, +s.probeX));\n          document.getElementById('probeX-slider').value = probeX;\n          draw();\n        }\n      },\n      highlight: function (sel) {\n        var el = document.querySelector(sel);\n        if (!el) return;\n        el.style.outline = '2px solid #c0392b';\n        setTimeout(function () { el.style.outline = ''; }, 1500);\n      },\n      annotate: function () {},\n      reveal: function () {},\n    };\n\n    // --- 启动 --------------------------------------------------------------\n    window.addEventListener('resize', resize);\n    resize();\n  </script>\n</body>\n</html>",
+        "html_path": null,
+        "mermaid": null,
+        "layout": "follow",
+        "params": [
+          "probeX"
+        ],
+        "controls": [
+          {
+            "trigger_phrase": "我把探针推到 1e6 附近",
+            "at_ms": null,
+            "op": "set",
+            "payload": {
+              "probeX": 1000000.0
+            }
+          }
+        ]
+      },
+      "question": {
+        "mode": "choice",
+        "question": "把探针推到 1e6 附近，|a-b| 和固定 ε 比，谁大？",
+        "options": [
+          "|a-b| 比 ε 大，会误判成不等",
+          "|a-b| 比 ε 小，还是判相等"
+        ],
+        "correct_index": 0,
+        "misconceptions": [
+          null,
+          "固定 ε 在大量级下太小，误差会超过它，导致误判不等。"
+        ],
+        "explanation": "量级远大于 1 时，绝对误差随量级增长，轻易超过写死的 1e-9，于是被误判为不等。"
+      },
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "相对误差实践",
+      "beat": "define",
+      "spoken_text": "既然固定不行，就让 epsilon 跟着量级走。看板书：|a-b| 小于 epsilon 乘以 max(|a|,|b|)。这样量级大时容差自动放大，量级小时自动收紧。比如取 epsilon 等于 1e-12，就是允许千亿分之一的相对差异。",
+      "boards": [
+        {
+          "title": "相对误差",
+          "markdown": "- 判据：$|a - b| < \\varepsilon \\cdot \\max(|a|, |b|)$\n- $\\varepsilon$ 取相对值，如 $10^{-12}$\n- 量级大 → 容差自动放大\n- 量级小 → 容差自动收紧",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "highlight",
+          "snippet": "$|a - b| < \\varepsilon \\cdot \\max(|a|, |b|)$",
+          "board_index": 0,
+          "trigger_phrase": "|a-b| 小于 epsilon 乘以 max(|a|,|b|)",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": null,
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "回顾",
+      "beat": "recap",
+      "spoken_text": "最后收个尾。第一，浮点数别用两个等号直接比。第二，用差值的绝对值小于容差来判。第三，容差要跟着量级缩放，别写死一个全局常数。记住这三条，你就能避开相等判断的坑。",
+      "boards": [
+        {
+          "title": "回顾",
+          "markdown": "- 不用 `==`\n- 用 $|a-b| < \\varepsilon \\cdot \\max(|a|,|b|)$\n- $\\varepsilon$ 随量级缩放，不写死",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [],
+      "illustration": null,
+      "widget": null,
+      "question": null,
+      "reward": {
+        "title": "浮点相等判断",
+        "description": "用相对误差容限比较，ε 随量级缩放，避免固定常数和直接 ==。"
+      },
+      "new_page_title": null
+    }
+  ],
+  "exercises": [
+    {
+      "exercise_id": "sess_6_ex1",
+      "kind": "fill_blank",
+      "stem": "在浮点数相等判断中，我们不再要求两个数完全相等，而是判断它们的差值是否小于一个允许的误差上限，这个上限称为 ____。",
+      "options": [],
+      "correct_index": null,
+      "answer": "容差",
+      "accepted": [
+        "误差容限",
+        "epsilon",
+        "ε",
+        "阈值"
+      ],
+      "explanation": "容差（epsilon）是允许的误差上限，它把“完全相等”放宽为“足够接近”，是浮点数比较的核心参数。",
+      "widget": null,
+      "widget_hint": ""
+    },
+    {
+      "exercise_id": "sess_6_ex2",
+      "kind": "single_choice",
+      "stem": "已知 $a = 0.1 + 0.2$，$b = 0.3$。下列哪个判断会返回 True？",
+      "options": [
+        "$a == b$",
+        "$|a - b| < 1e-12$",
+        "$|a - b| > 1e-12$",
+        "$a != b$"
+      ],
+      "correct_index": 1,
+      "answer": null,
+      "accepted": [],
+      "explanation": "由于浮点数的二进制表示误差，$0.1+0.2$ 与 $0.3$ 并不完全相等，所以 $a == b$ 为 False。但它们的差值极小，小于 $10^{-12}$，因此 $|a - b| < 1e-12$ 为 True。",
+      "widget": null,
+      "widget_hint": ""
+    },
+    {
+      "exercise_id": "sess_6_ex3",
+      "kind": "single_choice",
+      "stem": "比较两个浮点数 $a$ 和 $b$ 是否相等时，采用判据 $|a - b| < \\varepsilon \\cdot \\max(|a|, |b|)$ 而不是 $|a - b| < \\varepsilon$。这样做的关键理由是？",
+      "options": [
+        "相对误差判据让容差随数值量级自动缩放，避免量级很大时误判不等",
+        "相对误差判据计算速度更快，适合实时系统",
+        "相对误差判据可以完全消除浮点数的舍入误差",
+        "相对误差判据在 $a$ 和 $b$ 都接近零时比绝对误差判据更严格"
+      ],
+      "correct_index": 0,
+      "answer": null,
+      "accepted": [],
+      "explanation": "固定 $\\varepsilon$ 在数值量级很大时容差相对太小，导致本应相等的数被误判为不等；乘以 $\\max(|a|, |b|)$ 后容差随量级缩放，更符合浮点误差的实际分布。",
+      "widget": null,
+      "widget_hint": ""
+    },
+    {
+      "exercise_id": "sess_6_ex4",
+      "kind": "interactive",
+      "stem": "通过拖动探针，观察不同量级下绝对误差与固定容差线的关系，然后回答问题。",
+      "options": [
+        "固定容差在所有量级下都适用",
+        "固定容差在量级远大于 1 时容易误判不等",
+        "固定容差在量级远小于 1 时容易误判不等",
+        "固定容差在量级远大于 1 时容易误判相等"
+      ],
+      "correct_index": 1,
+      "answer": null,
+      "accepted": [],
+      "explanation": "固定容差是一条水平线，当数值量级远大于 1 时，实际绝对误差可能超过这条线，导致本应相等的数被误判为不等。",
+      "widget": {
+        "kind": "explorable",
+        "title": "固定容差 vs 量级",
+        "task": "画一条水平红线表示固定容差 $\\varepsilon = 10^{-12}$，再画一条随量级变化的曲线表示实际绝对误差。拖动探针沿横轴移动，观察误差曲线与红线的交点。",
+        "html": "<!DOCTYPE html>\n<html>\n<head><script>/**\n * HandChart — zero-dependency hand-drawn chart base for explorable widgets.\n *\n * Injected into every generated 2D explorable (widget_generator.py) so the\n * model supplies data + overlays instead of hand-writing axes. The look matches\n * the handwritten page: paper panel, slightly wobbly ink axes, main red /\n * aux green, handwriting labels.\n *\n * API (all coordinates in WORLD units unless noted):\n *   const ch = HandChart.render(canvas, opts)\n *     opts = { type: \"function\"|\"points\"|\"bars\"|\"lines\",\n *              xlim:[x0,x1], ylim:[y0,y1],                  (all but bars)\n *              fn: x=>y | fns:[{fn, color?, label?}],        (function)\n *              points:[[x,y],...],                          (points)\n *              series:[{name, points, color?, dash?}],      (lines; legend drawn)\n *              bars:{labels:[...], values:[...], highlight?} (bars)\n *              xlabel, ylabel, grid:true|false, title }\n *     returns { ctx, sx, sy, box, W, H, opts }  — keep it to draw overlays\n *   HandChart.marker(ch, x, y, {color, label, r})       dot + optional label\n *   HandChart.vline(ch, x, {color, dash, label})         vertical guide\n *   HandChart.hline(ch, y, {color, dash, label})         horizontal guide\n *   HandChart.segment(ch, [x1,y1], [x2,y2], {color, width, dash, arrow})\n *   HandChart.note(ch, x, y, text, {color, align, size}) handwriting annotation\n *   HandChart.attachProbe(canvas, {xlim, ylim}, onProbe, onLeave?)\n *     pointer follow; onProbe({x, y}) in world coords — redraw + readouts there.\n *   HandChart.style = { INK, AXIS, MAIN, AUX, GRID, PAPER, MUTED }\n */\n(function () {\n  const style = {\n    INK: \"#2b2b2b\", AXIS: \"#8a8377\", MAIN: \"#c0392b\", AUX: \"#2e8b6f\",\n    GRID: \"#ece5d4\", PAPER: \"#fbfaf6\", MUTED: \"#8a8377\", PURPLE: \"#7c3aed\", BLUE: \"#2563eb\",\n  };\n  const PALETTE = [style.MAIN, style.AUX, style.BLUE, style.PURPLE, \"#d97706\"];\n  const PAD = { l: 48, r: 18, t: 18, b: 36 };\n  const HAND = \"'Patrick Hand', 'LXGW WenKai Lite', 'PingFang SC', sans-serif\";\n\n  function font(size, italic) { return (italic ? \"italic \" : \"\") + size + \"px \" + HAND; }\n\n  // deterministic wobble so the \"hand\" does not shake on every redraw\n  function wob(seed, amp) { return Math.sin(seed * 12.9898) * amp; }\n\n  function tickVals(min, max, n) {\n    const span = max - min || 1;\n    const raw = span / n;\n    const mag = Math.pow(10, Math.floor(Math.log10(raw)));\n    const step = [1, 2, 2.5, 5, 10].map((m) => m * mag).find((s) => span / s <= n) || mag * 10;\n    const out = [];\n    for (let v = Math.ceil(min / step) * step; v <= max + step * 1e-9; v += step) out.push(+v.toFixed(10));\n    return out;\n  }\n\n  function fmt(v) {\n    const a = Math.abs(v);\n    if (a === 0) return \"0\";\n    if (a >= 10000 || a < 0.01) return v.toExponential(1);\n    return String(+v.toFixed(Math.max(0, 3 - Math.floor(Math.log10(a)))));\n  }\n\n  /** a hand-drawn line: two passes with tiny deterministic wobble */\n  function inkLine(ctx, x1, y1, x2, y2, color, width, seed) {\n    ctx.save();\n    ctx.strokeStyle = color; ctx.lineWidth = width; ctx.lineCap = \"round\";\n    const n = 6, s = seed || (x1 + y2);\n    ctx.beginPath();\n    for (let i = 0; i <= n; i++) {\n      const t = i / n, x = x1 + (x2 - x1) * t, y = y1 + (y2 - y1) * t;\n      const w = i === 0 || i === n ? 0 : wob(s + i, 0.7);\n      i ? ctx.lineTo(x + w, y + w) : ctx.moveTo(x, y);\n    }\n    ctx.stroke();\n    ctx.restore();\n  }\n\n  function frame(ctx, W, H) {\n    ctx.clearRect(0, 0, W, H);\n    ctx.save();\n    ctx.fillStyle = style.PAPER;\n    ctx.fillRect(0, 0, W, H);\n    ctx.restore();\n  }\n\n  function plotBox(W, H, opts) {\n    const t = PAD.t + (opts && opts.title ? 18 : 0);\n    return { x0: PAD.l, y0: t, x1: W - PAD.r, y1: H - PAD.b };\n  }\n\n  function mapping(box, xlim, ylim) {\n    const [x0, x1] = xlim, [y0, y1] = ylim;\n    return {\n      sx: (v) => box.x0 + (v - x0) / (x1 - x0) * (box.x1 - box.x0),\n      sy: (v) => box.y1 - (v - y0) / (y1 - y0) * (box.y1 - box.y0),\n    };\n  }\n\n  function axes(ctx, box, opts) {\n    const [x0, x1] = opts.xlim, [y0, y1] = opts.ylim;\n    const { sx, sy } = mapping(box, opts.xlim, opts.ylim);\n    const xt = tickVals(x0, x1, 6).filter((v) => v >= x0 && v <= x1);\n    const yt = tickVals(y0, y1, 4).filter((v) => v >= y0 && v <= y1);\n    if (opts.grid !== false) {\n      ctx.save(); ctx.strokeStyle = style.GRID; ctx.lineWidth = 1;\n      for (const v of xt) { ctx.beginPath(); ctx.moveTo(sx(v), box.y0); ctx.lineTo(sx(v), box.y1); ctx.stroke(); }\n      for (const v of yt) { ctx.beginPath(); ctx.moveTo(box.x0, sy(v)); ctx.lineTo(box.x1, sy(v)); ctx.stroke(); }\n      ctx.restore();\n    }\n    // axes sit on zero when zero is inside the range, else on the box edge\n    const ax = y0 <= 0 && y1 >= 0 ? sy(0) : box.y1;\n    const ay = x0 <= 0 && x1 >= 0 ? sx(0) : box.x0;\n    inkLine(ctx, box.x0 - 4, ax, box.x1 + 6, ax, style.AXIS, 1.4, 1);\n    inkLine(ctx, ay, box.y1 + 4, ay, box.y0 - 6, style.AXIS, 1.4, 2);\n    // arrow heads\n    ctx.save(); ctx.fillStyle = style.AXIS;\n    ctx.beginPath(); ctx.moveTo(box.x1 + 8, ax); ctx.lineTo(box.x1 + 1, ax - 3.5); ctx.lineTo(box.x1 + 1, ax + 3.5); ctx.fill();\n    ctx.beginPath(); ctx.moveTo(ay, box.y0 - 8); ctx.lineTo(ay - 3.5, box.y0 - 1); ctx.lineTo(ay + 3.5, box.y0 - 1); ctx.fill();\n    ctx.restore();\n    ctx.save();\n    ctx.fillStyle = style.MUTED; ctx.font = font(12);\n    ctx.textAlign = \"center\";\n    for (const v of xt) {\n      if (Math.abs(sx(v) - ay) < 1 && ay !== box.x0) continue; // skip the label under the y axis\n      inkLine(ctx, sx(v), ax - 3, sx(v), ax + 3, style.AXIS, 1, v);\n      ctx.fillText(fmt(v), sx(v), ax + 16);\n    }\n    ctx.textAlign = \"right\";\n    for (const v of yt) {\n      if (Math.abs(sy(v) - ax) < 1 && ax !== box.y1) continue;\n      inkLine(ctx, ay - 3, sy(v), ay + 3, sy(v), style.AXIS, 1, v + 7);\n      ctx.fillText(fmt(v), ay - 7, sy(v) + 4);\n    }\n    ctx.font = font(14, true); ctx.fillStyle = style.INK;\n    if (opts.xlabel) { ctx.textAlign = \"right\"; ctx.fillText(opts.xlabel, box.x1 + 4, ax - 8); }\n    if (opts.ylabel) { ctx.textAlign = \"left\"; ctx.fillText(opts.ylabel, ay + 8, box.y0 + 4); }\n    ctx.restore();\n    return { sx, sy };\n  }\n\n  function stroke(ctx, pts, color, width, dash) {\n    if (!pts.length) return;\n    ctx.save();\n    ctx.strokeStyle = color; ctx.lineWidth = width || 2.2;\n    ctx.lineJoin = \"round\"; ctx.lineCap = \"round\";\n    if (dash) ctx.setLineDash(dash);\n    ctx.beginPath();\n    let pen = false;\n    for (const p of pts) {\n      if (!p) { pen = false; continue; }\n      pen ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1]);\n      pen = true;\n    }\n    ctx.stroke();\n    ctx.restore();\n  }\n\n  function fnPoints(fn, opts, m) {\n    const [x0, x1] = opts.xlim, [y0, y1] = opts.ylim;\n    const n = 400, pts = [];\n    const margin = (y1 - y0) * 0.02;\n    for (let i = 0; i <= n; i++) {\n      const x = x0 + (x1 - x0) * i / n;\n      let y;\n      try { y = fn(x); } catch (e) { y = NaN; }\n      if (!isFinite(y) || y < y0 - margin || y > y1 + margin) { pts.push(null); continue; }\n      pts.push([m.sx(x), m.sy(y)]);\n    }\n    return pts;\n  }\n\n  function legend(ctx, box, items) {\n    if (!items.length) return;\n    ctx.save();\n    ctx.font = font(13); ctx.textAlign = \"left\"; ctx.textBaseline = \"middle\";\n    let x = box.x0 + 10, y = box.y0 + 12;\n    for (const it of items) {\n      inkLine(ctx, x, y, x + 22, y, it.color, 2.4, x);\n      ctx.fillStyle = style.INK;\n      ctx.fillText(it.label, x + 28, y + 1);\n      x += 28 + ctx.measureText(it.label).width + 18;\n    }\n    ctx.restore();\n  }\n\n  function title(ctx, W, text) {\n    ctx.save();\n    ctx.font = font(15); ctx.fillStyle = style.INK; ctx.textAlign = \"center\";\n    ctx.fillText(text, W / 2, 16);\n    ctx.restore();\n  }\n\n  function render(canvas, opts) {\n    const ctx = canvas.getContext(\"2d\");\n    const rect = canvas.getBoundingClientRect();\n    const W = Math.max(60, Math.round(rect.width)), H = Math.max(60, Math.round(rect.height));\n    const dpr = window.devicePixelRatio || 1;\n    if (canvas.width !== Math.round(W * dpr) || canvas.height !== Math.round(H * dpr)) {\n      canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);\n    }\n    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);\n    frame(ctx, W, H);\n    if (opts.title) title(ctx, W, opts.title);\n    const box = plotBox(W, H, opts);\n    const type = opts.type || \"function\";\n\n    if (type === \"bars\") {\n      const labels = opts.bars.labels || [], values = opts.bars.values || [];\n      const n = Math.max(1, values.length);\n      const bw = (box.x1 - box.x0) / n;\n      const vmax = Math.max(...values.map((v) => Math.abs(v)), 0) * 1.15 || 1;\n      const base = box.y1;\n      inkLine(ctx, box.x0 - 4, base, box.x1 + 4, base, style.AXIS, 1.4, 3);\n      ctx.save();\n      values.forEach((v, i) => {\n        const h = (Math.abs(v) / vmax) * (box.y1 - box.y0);\n        const x = box.x0 + i * bw + bw * 0.2, w = bw * 0.6, y = base - h;\n        const hot = opts.bars.highlight != null && i === opts.bars.highlight;\n        ctx.fillStyle = hot ? style.MAIN : \"#e6dfcf\";\n        ctx.fillRect(x, y, w, h);\n        ctx.strokeStyle = hot ? style.MAIN : style.AXIS; ctx.lineWidth = 1.2;\n        ctx.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);\n        ctx.font = font(13); ctx.textAlign = \"center\"; ctx.fillStyle = style.INK;\n        ctx.fillText(String(labels[i] == null ? i + 1 : labels[i]), x + w / 2, base + 17);\n        ctx.fillStyle = hot ? style.MAIN : style.MUTED;\n        ctx.fillText(fmt(v), x + w / 2, y - 6);\n      });\n      ctx.restore();\n      const sx = (i) => box.x0 + (i + 0.5) * bw, sy = (v) => base - (Math.abs(v) / vmax) * (box.y1 - box.y0);\n      return { ctx, sx, sy, box, W, H, opts };\n    }\n\n    const m = axes(ctx, box, opts);\n    const items = [];\n    if (type === \"lines\") {\n      (opts.series || []).forEach((s, i) => {\n        const color = s.color || PALETTE[i % PALETTE.length];\n        stroke(ctx, (s.points || []).map((p) => [m.sx(p[0]), m.sy(p[1])]), color, 2.2, s.dash);\n        if (s.name) items.push({ label: s.name, color });\n      });\n    } else if (type === \"points\") {\n      ctx.save(); ctx.fillStyle = opts.color || style.MAIN;\n      (opts.points || []).forEach((p) => { ctx.beginPath(); ctx.arc(m.sx(p[0]), m.sy(p[1]), opts.r || 3.6, 0, Math.PI * 2); ctx.fill(); });\n      ctx.restore();\n    } else {\n      const fns = opts.fns || (typeof opts.fn === \"function\" ? [{ fn: opts.fn, color: opts.color, label: opts.label }] : []);\n      fns.forEach((f, i) => {\n        const color = f.color || PALETTE[i % PALETTE.length];\n        stroke(ctx, fnPoints(f.fn, opts, m), color, f.width || 2.4, f.dash);\n        if (f.label) items.push({ label: f.label, color });\n      });\n    }\n    legend(ctx, box, items);\n    return { ctx, sx: m.sx, sy: m.sy, box, W, H, opts };\n  }\n\n  // ---- overlays (world coordinates) ----\n  function marker(ch, x, y, o) {\n    o = o || {};\n    const px = ch.sx(x), py = ch.sy(y);\n    ch.ctx.save();\n    ch.ctx.fillStyle = o.color || style.MAIN;\n    ch.ctx.beginPath(); ch.ctx.arc(px, py, o.r || 5, 0, Math.PI * 2); ch.ctx.fill();\n    ch.ctx.strokeStyle = style.PAPER; ch.ctx.lineWidth = 1.5; ch.ctx.stroke();\n    if (o.label) {\n      ch.ctx.font = font(o.size || 13); ch.ctx.fillStyle = o.color || style.MAIN; ch.ctx.textAlign = \"left\";\n      ch.ctx.fillText(o.label, px + 8, py - 8);\n    }\n    ch.ctx.restore();\n  }\n\n  function vline(ch, x, o) {\n    o = o || {};\n    const px = ch.sx(x);\n    stroke(ch.ctx, [[px, ch.box.y0], [px, ch.box.y1]], o.color || style.MUTED, o.width || 1.2, o.dash || [4, 4]);\n    if (o.label) note(ch, x, null, o.label, { color: o.color || style.MUTED, px: px + 4, py: ch.box.y0 + 12, align: \"left\", size: o.size });\n  }\n\n  function hline(ch, y, o) {\n    o = o || {};\n    const py = ch.sy(y);\n    stroke(ch.ctx, [[ch.box.x0, py], [ch.box.x1, py]], o.color || style.MUTED, o.width || 1.2, o.dash || [4, 4]);\n    if (o.label) note(ch, null, y, o.label, { color: o.color || style.MUTED, px: ch.box.x1 - 4, py: py - 5, align: \"right\", size: o.size });\n  }\n\n  function segment(ch, a, b, o) {\n    o = o || {};\n    const x1 = ch.sx(a[0]), y1 = ch.sy(a[1]), x2 = ch.sx(b[0]), y2 = ch.sy(b[1]);\n    const color = o.color || style.AUX;\n    stroke(ch.ctx, [[x1, y1], [x2, y2]], color, o.width || 2, o.dash);\n    if (o.arrow) {\n      const ang = Math.atan2(y2 - y1, x2 - x1), L = 9;\n      ch.ctx.save(); ch.ctx.fillStyle = color; ch.ctx.beginPath();\n      ch.ctx.moveTo(x2, y2);\n      ch.ctx.lineTo(x2 - L * Math.cos(ang - 0.4), y2 - L * Math.sin(ang - 0.4));\n      ch.ctx.lineTo(x2 - L * Math.cos(ang + 0.4), y2 - L * Math.sin(ang + 0.4));\n      ch.ctx.fill(); ch.ctx.restore();\n    }\n  }\n\n  function note(ch, x, y, text, o) {\n    o = o || {};\n    const px = o.px != null ? o.px : ch.sx(x), py = o.py != null ? o.py : ch.sy(y);\n    ch.ctx.save();\n    ch.ctx.font = font(o.size || 14, o.italic);\n    ch.ctx.fillStyle = o.color || style.INK;\n    ch.ctx.textAlign = o.align || \"left\";\n    ch.ctx.fillText(text, px, py);\n    ch.ctx.restore();\n  }\n\n  /** Pointer probe in world coords; the caller redraws and updates readouts. */\n  function attachProbe(canvas, opts, onProbe, onLeave) {\n    const [x0, x1] = opts.xlim;\n    const [y0, y1] = opts.ylim;\n    const toWorld = (px, py) => {\n      const r = canvas.getBoundingClientRect();\n      const box = plotBox(r.width, r.height, opts);\n      const t = (px - r.left - box.x0) / (box.x1 - box.x0);\n      const u = 1 - (py - r.top - box.y0) / (box.y1 - box.y0);\n      return { x: x0 + t * (x1 - x0), y: y0 + u * (y1 - y0), inside: t >= 0 && t <= 1 };\n    };\n    const handler = (e) => {\n      const p = toWorld(e.clientX, e.clientY);\n      if (p.inside) onProbe(p);\n    };\n    canvas.addEventListener(\"pointermove\", handler);\n    canvas.addEventListener(\"pointerdown\", handler);\n    if (onLeave) canvas.addEventListener(\"pointerleave\", onLeave);\n    canvas.style.touchAction = \"none\";\n    return toWorld;\n  }\n\n  window.HandChart = { render, marker, vline, hline, segment, note, attachProbe, style, font: HAND };\n})();\n</script>\n  <meta charset=\"utf-8\">\n  <style>\n    html, body { margin: 0; height: 100%; background: #faf8f3; font-family: \"PingFang SC\", \"Hiragino Sans GB\", sans-serif; color: #333; overflow: hidden; }\n    #wrap { position: absolute; inset: 0; display: flex; flex-direction: column; }\n    #plot { flex: 1; min-height: 0; margin: 10px 10px 4px; border: 1px solid #d9d2c3; border-radius: 12px; background: #fbfaf6; cursor: crosshair; touch-action: none; }\n    #readout { display: flex; justify-content: center; align-items: center; gap: 28px; padding: 4px 0 8px; font-size: 12px; color: #666; }\n    #readout .k { display: block; font-size: 11px; letter-spacing: .04em; }\n    #readout .v { display: block; font-family: ui-monospace, Menlo, monospace; font-size: 14px; font-weight: 700; color: #c0392b; min-width: 64px; text-align: center; }\n    #formula { display: inline-block; padding: 3px 10px; border: 1px solid #d9d2c3; border-radius: 6px; background: #fff; font-family: Georgia, \"Times New Roman\", serif; font-style: italic; font-size: 13px; color: #333; }\n    #status { font-weight: 700; }\n  </style>\n</head>\n<body>\n  <div id=\"wrap\">\n    <canvas id=\"plot\"></canvas>\n    <div id=\"readout\">\n      <span><span class=\"k\">当前量级 x</span><span class=\"v\" id=\"rx\">—</span></span>\n      <span><span class=\"k\">当前绝对误差</span><span class=\"v\" id=\"ry\">—</span></span>\n      <span><span class=\"k\">是否在容差内</span><span class=\"v\" id=\"status\">—</span></span>\n      <span id=\"formula\">ε = 1e-12</span>\n    </div>\n  </div>\n  <script>\n    // --- the thing being explored -------------------------------------\n    // 固定容差 ε = 1e-12\n    const EPS = 1e-12;\n    // 误差曲线: 误差 = 1e-16 * 10^{|x|}\n    const errorAt = (x) => 1e-16 * Math.pow(10, Math.abs(x));\n    // 横轴范围: 量级 x 从 -16 到 16\n    const X_MIN = -16, X_MAX = 16;\n    // 纵轴范围: 对数刻度 1e-18 到 1e-6\n    const Y_MIN_LOG = -18, Y_MAX_LOG = -6;\n    // 交点: 解 1e-16 * 10^{|x|} = 1e-12  =>  10^{|x|} = 1e4  =>  |x| = 4\n    const X_INTERSECT = 4;\n\n    // --- plumbing ------------------------------------------------------\n    const canvas = document.getElementById(\"plot\");\n    const ctx = canvas.getContext(\"2d\");\n    let W = 0, H = 0, probeX = 0;\n    const PAD = { l: 44, r: 24, t: 22, b: 30 };\n\n    // 世界坐标 -> 屏幕坐标\n    const sx = (x) => PAD.l + (x - X_MIN) / (X_MAX - X_MIN) * (W - PAD.l - PAD.r);\n    // 纵轴对数映射: y_log 从 Y_MIN_LOG 到 Y_MAX_LOG\n    const syLog = (logY) => PAD.t + (Y_MAX_LOG - logY) / (Y_MAX_LOG - Y_MIN_LOG) * (H - PAD.t - PAD.b);\n    // 屏幕坐标 -> 世界坐标 x\n    const ux = (px) => X_MIN + (px - PAD.l) / (W - PAD.l - PAD.r) * (X_MAX - X_MIN);\n\n    function resize() {\n      const r = canvas.getBoundingClientRect();\n      W = r.width; H = r.height;\n      const dpr = window.devicePixelRatio || 1;\n      canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);\n      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);\n      draw();\n    }\n\n    // 绘制误差曲线（对数纵轴）\n    function drawErrorCurve() {\n      ctx.save();\n      ctx.strokeStyle = \"#2e8b6f\";\n      ctx.lineWidth = 2;\n      ctx.beginPath();\n      const n = 800;\n      let started = false;\n      for (let i = 0; i <= n; i++) {\n        const x = X_MIN + (X_MAX - X_MIN) * i / n;\n        const err = errorAt(x);\n        const logErr = Math.log10(err);\n        // 限制在绘图区内\n        if (logErr < Y_MIN_LOG - 0.5 || logErr > Y_MAX_LOG + 0.5) {\n          started = false;\n          continue;\n        }\n        const px = sx(x);\n        const py = syLog(Math.max(Y_MIN_LOG, Math.min(Y_MAX_LOG, logErr)));\n        if (!started) { ctx.moveTo(px, py); started = true; }\n        else { ctx.lineTo(px, py); }\n      }\n      ctx.stroke();\n      ctx.restore();\n    }\n\n    // 绘制固定容差水平红线\n    function drawToleranceLine() {\n      const logEps = Math.log10(EPS); // -12\n      const py = syLog(logEps);\n      ctx.save();\n      ctx.strokeStyle = \"#c0392b\";\n      ctx.lineWidth = 2;\n      ctx.setLineDash([]);\n      ctx.beginPath();\n      ctx.moveTo(PAD.l, py);\n      ctx.lineTo(W - PAD.r, py);\n      ctx.stroke();\n      ctx.restore();\n      // 标签\n      ctx.save();\n      ctx.font = \"italic 12px Georgia, serif\";\n      ctx.fillStyle = \"#c0392b\";\n      ctx.textAlign = \"left\";\n      ctx.fillText(\"ε = 1e-12\", W - PAD.r - 70, py - 6);\n      ctx.restore();\n    }\n\n    // 绘制交点标记（空心圆点）\n    function drawIntersections() {\n      const logEps = Math.log10(EPS);\n      const py = syLog(logEps);\n      const xs = [-X_INTERSECT, X_INTERSECT];\n      ctx.save();\n      ctx.strokeStyle = \"#8a8377\";\n      ctx.lineWidth = 1.5;\n      ctx.fillStyle = \"#fbfaf6\";\n      for (const x of xs) {\n        const px = sx(x);\n        ctx.beginPath();\n        ctx.arc(px, py, 4, 0, Math.PI * 2);\n        ctx.fill();\n        ctx.stroke();\n      }\n      ctx.restore();\n    }\n\n    // 绘制坐标轴和刻度（对数纵轴）\n    function drawAxes() {\n      ctx.save();\n      ctx.strokeStyle = \"#b9b3a6\";\n      ctx.lineWidth = 1;\n      // 横轴 (y = 1e-18 底部)\n      const yBottom = syLog(Y_MIN_LOG);\n      ctx.beginPath();\n      ctx.moveTo(PAD.l, yBottom);\n      ctx.lineTo(W - PAD.r, yBottom);\n      ctx.stroke();\n      // 纵轴 (x = 0)\n      const xZero = sx(0);\n      ctx.beginPath();\n      ctx.moveTo(xZero, PAD.t);\n      ctx.lineTo(xZero, yBottom);\n      ctx.stroke();\n\n      // 横轴刻度\n      ctx.fillStyle = \"#8a8377\";\n      ctx.font = \"italic 11px Georgia, serif\";\n      ctx.textAlign = \"center\";\n      const xTicks = [-16, -12, -8, -4, 0, 4, 8, 12, 16];\n      for (const x of xTicks) {\n        const px = sx(x);\n        ctx.beginPath();\n        ctx.moveTo(px, yBottom - 3);\n        ctx.lineTo(px, yBottom + 3);\n        ctx.stroke();\n        ctx.fillText(x, px, yBottom + 14);\n      }\n      // 横轴标签\n      ctx.textAlign = \"right\";\n      ctx.fillText(\"量级 x\", W - PAD.r - 2, yBottom - 6);\n\n      // 纵轴刻度 (对数)\n      ctx.textAlign = \"right\";\n      const yTicks = [-18, -16, -14, -12, -10, -8, -6];\n      for (const logY of yTicks) {\n        const py = syLog(logY);\n        ctx.beginPath();\n        ctx.moveTo(xZero - 3, py);\n        ctx.lineTo(xZero + 3, py);\n        ctx.stroke();\n        // 显示 10^logY\n        const label = \"1e\" + logY;\n        ctx.fillText(label, xZero - 6, py + 4);\n      }\n      // 纵轴标签\n      ctx.textAlign = \"left\";\n      ctx.fillText(\"绝对误差\", xZero + 6, PAD.t + 10);\n      ctx.restore();\n    }\n\n    // 绘制探针\n    function drawProbe() {\n      const px = sx(probeX);\n      const err = errorAt(probeX);\n      const logErr = Math.log10(err);\n      const py = syLog(Math.max(Y_MIN_LOG, Math.min(Y_MAX_LOG, logErr)));\n\n      // 竖直虚线\n      ctx.save();\n      ctx.strokeStyle = \"rgba(192,57,43,.55)\";\n      ctx.setLineDash([3, 4]);\n      ctx.lineWidth = 1;\n      ctx.beginPath();\n      ctx.moveTo(px, PAD.t);\n      ctx.lineTo(px, syLog(Y_MIN_LOG));\n      ctx.stroke();\n      ctx.restore();\n\n      // 探针点\n      ctx.save();\n      ctx.fillStyle = \"#c0392b\";\n      ctx.beginPath();\n      ctx.arc(px, py, 4, 0, Math.PI * 2);\n      ctx.fill();\n      ctx.restore();\n\n      // 探针标签\n      ctx.save();\n      ctx.font = \"italic 12px Georgia, serif\";\n      ctx.fillStyle = \"#333\";\n      ctx.textAlign = \"left\";\n      const labelX = px + 8;\n      const labelY = py - 10;\n      ctx.fillText(\"x = \" + probeX.toFixed(2), labelX, labelY);\n      ctx.fillText(\"err = \" + err.toExponential(2), labelX, labelY + 14);\n      ctx.restore();\n\n      // 更新读数\n      document.getElementById(\"rx\").textContent = probeX.toFixed(2);\n      document.getElementById(\"ry\").textContent = err.toExponential(2);\n      const inTol = err <= EPS;\n      const statusEl = document.getElementById(\"status\");\n      statusEl.textContent = inTol ? \"是\" : \"否\";\n      statusEl.style.color = inTol ? \"#2e8b6f\" : \"#c0392b\";\n    }\n\n    function draw() {\n      ctx.clearRect(0, 0, W, H);\n      drawAxes();\n      drawToleranceLine();\n      drawErrorCurve();\n      drawIntersections();\n      drawProbe();\n    }\n\n    function onPointer(e) {\n      const r = canvas.getBoundingClientRect();\n      probeX = Math.max(X_MIN, Math.min(X_MAX, ux(e.clientX - r.left)));\n      draw();\n    }\n    canvas.addEventListener(\"pointermove\", onPointer);\n    canvas.addEventListener(\"pointerdown\", onPointer);\n\n    // teacher-driven control hook\n    window.hkControl = {\n      set: function (s) {\n        if (s && s.probeX != null) {\n          probeX = Math.max(X_MIN, Math.min(X_MAX, +s.probeX));\n          draw();\n        }\n      },\n      highlight: function (sel) {\n        var el = document.querySelector(sel);\n        if (!el) return;\n        el.style.outline = \"2px solid #c0392b\";\n        setTimeout(function () { el.style.outline = \"\"; }, 1500);\n      },\n      annotate: function () {},\n      reveal: function () {},\n    };\n\n    window.addEventListener(\"resize\", resize);\n    resize();\n  </script>\n</body>\n</html>",
+        "html_path": null,
+        "mermaid": null,
+        "layout": "newcol",
+        "params": [],
+        "controls": []
+      },
+      "widget_hint": "沿横轴拖动探针，观察误差曲线与红线的交点位置。"
+    }
+  ]
+}

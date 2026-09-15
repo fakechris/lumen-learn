@@ -1,0 +1,499 @@
+{
+  "course_id": "course_9037451b03",
+  "title": "注意力机制入门：每个词该看谁",
+  "target_audience": "",
+  "overview": "",
+  "generation_mode": "llm",
+  "document_id": "doc_115b45fbb1",
+  "chapters": [
+    {
+      "chapter_id": "ch_1",
+      "title": "固定表示不够用",
+      "description": "本章指出固定词向量无法区分一词多义，需要上下文相关的表示机制。",
+      "unit": "",
+      "sessions": [
+        {
+          "session_id": "sess_1",
+          "title": "一词多义的挑战",
+          "learning_goal": "理解固定词向量无法区分语境中的一词多义，需要上下文相关的表示机制。",
+          "core_concept": "上下文相关表示（动态词向量）",
+          "cognitive_hurdle": "认为一个词只需一个固定向量就能表示所有含义，忽略了语境对词义的影响。",
+          "source_sections": [
+            "s1"
+          ],
+          "estimated_duration_min": 5,
+          "tags": [
+            "Intuition",
+            "Definition"
+          ],
+          "segments": [
+            {
+              "title": "同一个词，两个意思",
+              "intent": "让学生意识到同一个词在不同句子中意思不同。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s1"
+              ]
+            },
+            {
+              "title": "变色龙的启示",
+              "intent": "让学生把词义随语境变化类比为变色龙随环境变色。",
+              "media": "illustration",
+              "media_brief": "画一只变色龙，左边背景是科技公司标志，右边背景是水果，变色龙颜色随背景变化；旁边标注“苹果”一词在不同句子中含义变化。",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s1"
+              ]
+            },
+            {
+              "title": "固定词向量的定义",
+              "intent": "让学生明确固定表示是什么，以及它为何无法区分一词多义。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s1"
+              ]
+            },
+            {
+              "title": "固定向量的困境",
+              "intent": "让学生通过具体例子看到固定向量导致语义冲突。",
+              "media": "illustration",
+              "media_brief": "画一个二维向量空间，有水果类词向量聚类（香蕉、橙子等）和科技公司类聚类（华为、三星等），中间一个点标为“苹果”（固定向量），它距离两个聚类都远；两个句子“苹果发布了新手机”和“苹果很甜”分别用箭头指向这个点，表示两个“苹果”都映射到同一个向量。",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s1"
+              ]
+            },
+            {
+              "title": "按上下文重新组装",
+              "intent": "让学生理解需要动态机制，每个词根据上下文调整表示。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s1"
+              ]
+            },
+            {
+              "title": "回顾",
+              "intent": "总结固定表示不够用，需要上下文相关机制。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s1"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "chapter_id": "ch_2",
+      "title": "查询、键、值",
+      "description": "介绍注意力机制中每个词的向量被投影为查询、键、值三个角色，并用点积衡量相关度。",
+      "unit": "",
+      "sessions": [
+        {
+          "session_id": "sess_2",
+          "title": "查询、键、值：注意力的三种角色",
+          "learning_goal": "理解注意力中每个词的向量被投影为查询、键、值三个角色，并会用点积计算查询和键的相关度。",
+          "core_concept": "查询、键、值（QKV）投影",
+          "cognitive_hurdle": "学生可能以为注意力直接使用原始词向量计算相关度，而忽略了每个词需要先投影成查询、键、值三个不同的角色。",
+          "source_sections": [
+            "s2"
+          ],
+          "estimated_duration_min": 5,
+          "tags": [
+            "Intuition",
+            "Definition"
+          ],
+          "segments": [
+            {
+              "title": "词该看谁？",
+              "intent": "引入注意力中每个词需要决定从其他词获取多少信息的问题，激发对查询、键、值角色的需求。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s2"
+              ]
+            },
+            {
+              "title": "图书馆检索的类比",
+              "intent": "用图书馆检索类比查询、键、值的角色，让学生建立直觉。",
+              "media": "illustration",
+              "media_brief": "一张图展示三个角色对应：左边一个人拿着问题“我想找关于‘银行’在‘河’边的信息？”标记为查询q；中间一排索引卡片，每张卡片上有关键词如“河-地点”，标记为键k；右边书架上的一本书，标记为值v。用箭头表示q与k匹配，然后取v。",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s2"
+              ]
+            },
+            {
+              "title": "定义：三个投影角色",
+              "intent": "给出查询、键、值的严格定义：每个词的向量分别投影成q,k,v，并解释各自含义。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s2"
+              ]
+            },
+            {
+              "title": "计算相关度：点积",
+              "intent": "展示如何用查询和键的点积计算相关度分数，并通过一个数值例子让学生看到分数如何反映匹配程度。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s2"
+              ]
+            },
+            {
+              "title": "为什么需要投影？",
+              "intent": "通过对比直接使用原始词向量与使用投影后的查询和键，说明投影允许模型学习不同的匹配方式。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s2"
+              ]
+            },
+            {
+              "title": "回顾：QKV与点积",
+              "intent": "总结本课：每个词投影为查询、键、值，查询与键的点积决定注意力权重。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s2"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "chapter_id": "ch_3",
+      "title": "softmax 归一化与缩放",
+      "description": "本章介绍注意力机制中 softmax 归一化与缩放因子 sqrt(d_k) 的作用。",
+      "unit": "",
+      "sessions": [
+        {
+          "session_id": "sess_3",
+          "title": "softmax 归一化与缩放因子",
+          "learning_goal": "理解为什么注意力分数需要除以 sqrt(d_k)，以及 softmax 如何将分数转化为权重用于加权求和。",
+          "core_concept": "softmax 将点积分数转化为注意力权重，缩放因子 sqrt(d_k) 防止梯度消失。",
+          "cognitive_hurdle": "以为 softmax 可以直接作用于任意大小的点积分数，缩放只是数值稳定性技巧，未意识到维度大时点积方差增大导致 softmax 进入饱和区、梯度消失的问题。",
+          "source_sections": [
+            "s3"
+          ],
+          "estimated_duration_min": 5,
+          "tags": [
+            "Intuition",
+            "Derivation"
+          ],
+          "segments": [
+            {
+              "title": "注意力加权为什么需要归一化",
+              "intent": "让学生意识到注意力加权需要 softmax 归一化，但直接使用有隐患。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s3"
+              ]
+            },
+            {
+              "title": "softmax 的饱和与梯度消失",
+              "intent": "建立直觉：softmax 在输入很大时会趋向极端，梯度变小。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s3"
+              ]
+            },
+            {
+              "title": "缩放 softmax 的定义",
+              "intent": "给出严谨的 softmax 缩放定义。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s3"
+              ]
+            },
+            {
+              "title": "为什么除以 sqrt(d_k)",
+              "intent": "推导缩放因子 sqrt(d_k) 的来源，解释点积方差随维度增大导致饱和。",
+              "media": "explorable",
+              "media_brief": "横轴：点积值（q·k）；纵轴：softmax 输出概率（或梯度）；滑块：d_k 维度从 1 到 128 变化，显示点积分布变宽，softmax 曲线进入饱和区，梯度接近零。",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s3"
+              ]
+            },
+            {
+              "title": "矩阵形式与加权和",
+              "intent": "展示矩阵形式 Attention 公式，理解输出是值的加权和。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s3"
+              ]
+            },
+            {
+              "title": "回顾与总结",
+              "intent": "回顾缩放原因与加权和，强化核心概念。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s3"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "chapter_id": "ch_4",
+      "title": "多头与因果掩码",
+      "description": "讲解多头注意力的并行结构与因果掩码的原理。",
+      "unit": "",
+      "sessions": [
+        {
+          "session_id": "sess_4",
+          "title": "多头注意力：并行的小世界",
+          "learning_goal": "理解多头注意力如何并行捕捉不同关系并融合输出。",
+          "core_concept": "多头注意力",
+          "cognitive_hurdle": "以为多头就是重复计算相同的注意力，导致冗余；或以为增加头数就是增加模型维度。",
+          "source_sections": [
+            "s4"
+          ],
+          "estimated_duration_min": 5,
+          "tags": [
+            "Intuition",
+            "Definition"
+          ],
+          "segments": [
+            {
+              "title": "一句话里有多少种关系？",
+              "intent": "让学生意识到一个词需要同时关注多种不同关系。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s4"
+              ]
+            },
+            {
+              "title": "多个专家并行审阅",
+              "intent": "用多个专家并行工作的类比建立多头并行的直觉。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s4"
+              ]
+            },
+            {
+              "title": "多头注意力的正式定义",
+              "intent": "给出多头注意力的严谨定义：并行跑 h 组小维度 Q,K,V，拼接后投影。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s4"
+              ]
+            },
+            {
+              "title": "两个头各司其职",
+              "intent": "通过 h=2 的具体例子展示两个头分别关注不同关系并合并。",
+              "media": "illustration",
+              "media_brief": "图中展示输入序列，分成两个头：头1的小维度 Q,K,V 计算注意力，标注关注语法；头2的小维度 Q,K,V 计算注意力，标注关注指代；两个头的输出拼接后经过一个投影层得到最终输出。",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s4"
+              ]
+            },
+            {
+              "title": "单头与多头的对比",
+              "intent": "让学生明白单头只能平均混合关系，多头能各自聚焦。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s4"
+              ]
+            },
+            {
+              "title": "回顾多头注意力",
+              "intent": "总结多头注意力的核心：并行小维度、各自关注、拼接投影。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s4"
+              ]
+            }
+          ]
+        },
+        {
+          "session_id": "sess_5",
+          "title": "因果掩码：别偷看未来",
+          "learning_goal": "理解因果掩码如何防止未来信息泄露。",
+          "core_concept": "因果掩码",
+          "cognitive_hurdle": "以为在 softmax 之后把未来词权重设为零也行，或以为掩码是直接把注意力权重置零。",
+          "source_sections": [
+            "s4"
+          ],
+          "estimated_duration_min": 5,
+          "tags": [
+            "Definition",
+            "Application"
+          ],
+          "segments": [
+            {
+              "title": "生成时能偷看下一个词吗？",
+              "intent": "让学生意识到生成文本时模型不能看到未来词。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s4"
+              ]
+            },
+            {
+              "title": "先 softmax 还是先掩码？",
+              "intent": "制造认知冲突：未来词权重置零应该在 softmax 之前还是之后？",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s4"
+              ]
+            },
+            {
+              "title": "因果掩码的定义",
+              "intent": "给出因果掩码的严谨定义：把 QK^T 上三角填 -∞ 再 softmax。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s4"
+              ]
+            },
+            {
+              "title": "三词句的掩码实例",
+              "intent": "通过 3 个词的例子展示上三角填 -∞ 后 softmax 如何使未来权重为零。",
+              "media": "illustration",
+              "media_brief": "左侧展示 3x3 的注意力分数矩阵，上三角位置标为 -∞；右侧展示 softmax 后的权重矩阵，未来位置权重为 0，下三角保留非零权重。",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s4"
+              ]
+            },
+            {
+              "title": "softmax 前掩码 vs 后掩码",
+              "intent": "对比两种做法，说明只有在 softmax 前填 -∞ 才能保证归一化且未来权重为零。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s4"
+              ]
+            },
+            {
+              "title": "掩码在生成中的应用",
+              "intent": "说明自回归生成时每一步都使用因果掩码以保持顺序。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s4"
+              ]
+            },
+            {
+              "title": "回顾因果掩码",
+              "intent": "总结因果掩码核心：上三角 -∞、softmax 后未来权重为零。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s4"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

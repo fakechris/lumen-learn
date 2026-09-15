@@ -1,0 +1,290 @@
+{
+  "session_id": "sess_3",
+  "course_id": "course_275dd6cb4c",
+  "title": "贝叶斯公式：因果换向杆",
+  "learning_goal": "学生能够写出贝叶斯公式，解释公式中各部分的意义，并说明它如何将 P(证据|原因) 转换为 P(原因|证据)。",
+  "steps": [
+    {
+      "title": "医生的两难",
+      "beat": "hook",
+      "spoken_text": "设想你是一位医生，手里有一份检验报告：阳性。你真正想告诉病人的是——他到底有没有病。可你手头最熟的数是什么？是检验的灵敏度：真病了的人里，有多少会测出阳性。注意方向：这是从「病」指向「阳性」。而病人要的答案，是从「阳性」倒推回「病」。这两个方向，是一回事吗？",
+      "boards": [
+        {
+          "title": "",
+          "markdown": "- 你手里最熟的数：$P(\\text{阳性} \\mid \\text{患病})$\n  - 读作：**真病了的人里，测出阳性的比例**\n  - 方向：病 → 阳性\n- 病人真正要的答案：$P(\\text{患病} \\mid \\text{阳性})$\n  - 方向：阳性 → 病\n- 这两个方向，是一回事吗？",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "circle",
+          "snippet": "P(\\text{阳性} \\mid \\text{患病})",
+          "board_index": 0,
+          "trigger_phrase": "检验的灵敏度",
+          "color": null
+        },
+        {
+          "kind": "highlight",
+          "snippet": "P(\\text{患病} \\mid \\text{阳性})",
+          "board_index": 0,
+          "trigger_phrase": "从「阳性」倒推回「病」",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": {
+        "mode": "choice",
+        "question": "检验灵敏度很高，测出阳性，是不是就说明大概率病了？",
+        "options": [
+          "是，灵敏度高，阳性就等于确诊",
+          "不一定，还得看这病本身有多常见"
+        ],
+        "correct_index": 1,
+        "misconceptions": [
+          "这是最常见的直觉：把 P(阳性|患病) 直接当成 P(患病|阳性)，方向反了。",
+          null
+        ],
+        "explanation": "灵敏度说的是病→阳性的方向；要倒过来，还必须知道这个病在人群里本来有多常见。"
+      },
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "换向杆",
+      "beat": "analogy",
+      "spoken_text": "想象铁轨上有一根换向杆。火车从「原因」这一头开过来，扳一下杆，它就拐到「证据」那一头去。贝叶斯公式就是这根杆。左边是你想要的 P(原因|证据)，右边是你能查到的 P(证据|原因)，中间靠两个东西把方向扳过来：原因本身有多常见，以及证据本身有多常见。注意这个比喻在哪儿失效：杆不是免费的，你得先知道原因的先验概率，扳过去才准。",
+      "boards": [
+        {
+          "title": "换向杆",
+          "markdown": "| 铁轨 | 概率世界 |\n| --- | --- |\n| 火车从「原因」出发 | 你已知 $P(\\text{证据} \\mid \\text{原因})$ |\n| 扳杆 | 贝叶斯公式 |\n| 火车拐到「证据」 | 你要求 $P(\\text{原因} \\mid \\text{证据})$ |\n| 扳杆的代价 | 得先知道**原因的先验** $P(\\text{原因})$ |",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "circle",
+          "snippet": "贝叶斯公式",
+          "board_index": 0,
+          "trigger_phrase": "贝叶斯公式就是这根杆",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": null,
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "贝叶斯公式",
+      "beat": "define",
+      "spoken_text": "把换向杆写成式子。看板书第一行：左边是 P(B 竖线 A)，也就是「看到 A 之后，B 的概率」——这是你要的果因方向。右边分母是 P(A)，证据本身出现的总概率。分子有两块：P(A 竖线 B) 是你手里那个因果方向的数，再乘上 P(B)，原因的先验。一句话：后验等于似然乘先验，再除以证据。现在盯住分子里那个乘号——如果先验 P(B) 很小很小，后验会被拉成什么样？",
+      "boards": [
+        {
+          "title": "贝叶斯公式",
+          "markdown": "- $P(B \\mid A) = \\dfrac{P(A \\mid B)\\, P(B)}{P(A)}$\n- 左边 $P(B \\mid A)$：**后验**，看到证据 A 后 B 的概率\n- 分子 $P(A \\mid B)$：**似然**，你手里因果方向的数\n- 分子 $P(B)$：**先验**，B 本来有多常见\n- 分母 $P(A)$：**证据**，A 出现的总概率\n- 一句话：$\\text{后验} = \\dfrac{\\text{似然} \\times \\text{先验}}{\\text{证据}}$",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "spotlight",
+          "snippet": "P(A \\mid B)\\, P(B)",
+          "board_index": 0,
+          "trigger_phrase": "盯住分子里那个乘号",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": null,
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "公式不是魔法",
+      "beat": "derive",
+      "spoken_text": "回看上一段的板书，公式已经摆在那儿了。现在我把它的来路走一遍。看第一行：条件概率的定义，A 在 B 下的概率，等于 A 交 B 除以 B。第二行是同一件事反过来写。第三行我圈出来的地方，两式里都有 A 交 B，一个等于 P(A|B) 乘 P(B)，另一个等于 P(B|A) 乘 P(A)。既然都等于同一个东西，就能把它消掉，解出 P(A|B)。所以贝叶斯不是天上掉的，只是把定义转了个身。",
+      "boards": [
+        {
+          "title": "三步推出换向公式",
+          "markdown": "- 定义：$P(A \\mid B) = \\dfrac{P(A \\cap B)}{P(B)}$\n- 反过来：$P(B \\mid A) = \\dfrac{P(A \\cap B)}{P(A)}$\n- 两式共享 $P(A \\cap B)$：\n  - $P(A \\cap B) = P(A \\mid B)\\,P(B)$\n  - $P(A \\cap B) = P(B \\mid A)\\,P(A)$\n- 消去 → $P(A \\mid B) = \\dfrac{P(B \\mid A)\\,P(A)}{P(B)}$",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "circle",
+          "snippet": "P(A \\cap B)",
+          "board_index": 0,
+          "trigger_phrase": "两式里都有 A 交 B",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": {
+        "kind": "mermaid",
+        "title": "推导流程",
+        "task": "",
+        "html": null,
+        "html_path": null,
+        "mermaid": "flowchart TD\n  A[\"条件概率定义\nP(A|B) = P(A∩B) / P(B)\"] --> B[\"同理写出反向\nP(B|A) = P(A∩B) / P(A)\"]\n  B --> C[\"两式都含 P(A∩B)\nP(A∩B) = P(A|B)·P(B) = P(B|A)·P(A)\"]\n  C --> D[\"消去 P(A∩B)，解出 P(A|B)\nP(A|B) = P(B|A)·P(A) / P(B)\"]\n  D --> E[\"贝叶斯公式\nP(原因|证据) = P(证据|原因)·P(原因) / P(证据)\"]",
+        "layout": "follow",
+        "params": [],
+        "controls": []
+      },
+      "question": {
+        "mode": "choice",
+        "question": "推导里最关键的一步是什么？",
+        "options": [
+          "把 P(A|B) 和 P(B|A) 直接划等号",
+          "发现两式都含 P(A∩B)，可以消去"
+        ],
+        "correct_index": 1,
+        "misconceptions": [
+          "这是典型的方向混淆：P(A|B) 和 P(B|A) 一般并不相等，贝叶斯正是用来在两者之间换算的。",
+          null
+        ],
+        "explanation": "两个条件概率共享同一个 P(A∩B)，消去它才解出换向公式。"
+      },
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "回到医生：把数代进去",
+      "beat": "worked_example",
+      "spoken_text": "现在拿医生的例子算一遍。假设患病率是千分之一，检验灵敏度百分之九十九，假阳性率百分之五。看板书：先算分母 P(阳性)，等于真病人里测出阳性的部分，加上没病却测出阳性的部分，大约是零点零五零九九。分子是零点九九乘零点零零一，等于零点零零零九九。两者一除，约等于百分之一点九四。也就是说，阳性结果只把患病概率从千分之一抬到约百分之二。换个数你会算吗？",
+      "boards": [
+        {
+          "title": "一个具体数字",
+          "markdown": "- 先验 $P(患病) = 0.001$\n- 灵敏度 $P(阳性 \\mid 患病) = 0.99$\n- 假阳性 $P(阳性 \\mid 健康) = 0.05$\n- 分母 $P(阳性) = 0.99 \\times 0.001 + 0.05 \\times 0.999 \\approx 0.05099$\n- 分子 $= 0.99 \\times 0.001 = 0.00099$\n- 后验 $P(患病 \\mid 阳性) = 0.00099 / 0.05099 \\approx 0.0194$",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "highlight",
+          "snippet": "0.00099 / 0.05099",
+          "board_index": 0,
+          "trigger_phrase": "两者一除",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": null,
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "小结：换向杆",
+      "beat": "recap",
+      "spoken_text": "最后把这一节收成三句话。第一，条件概率有方向，P(患病|阳性) 和 P(阳性|患病) 不是一回事。第二，贝叶斯公式就是那根换向杆，把已知的因果方向翻过来。第三，翻过来之后，先验和证据强度一起决定后验。所以下次拿到阳性报告，别急着下结论，先问一句：这个病的先验有多低？",
+      "boards": [
+        {
+          "title": "三句话带走",
+          "markdown": "- 条件概率有方向：$P(患病 \\mid 阳性) \\neq P(阳性 \\mid 患病)$\n- 贝叶斯 = **换向杆**：$P(原因 \\mid 证据) = \\dfrac{P(证据 \\mid 原因)\\,P(原因)}{P(证据)}$\n- 后验由**先验**和**证据强度**共同决定",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "circle",
+          "snippet": "P(患病 \\mid 阳性) \\neq P(阳性 \\mid 患病)",
+          "board_index": 0,
+          "trigger_phrase": "不是一回事",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": null,
+      "reward": {
+        "title": "贝叶斯公式",
+        "description": "条件概率方向不能随意互换；贝叶斯用先验和证据强度把 P(证据|原因) 翻成 P(原因|证据)。"
+      },
+      "new_page_title": null
+    }
+  ],
+  "exercises": [
+    {
+      "exercise_id": "sess_3_ex1",
+      "kind": "fill_blank",
+      "stem": "在贝叶斯公式 $P(B \\mid A) = \\dfrac{P(A \\mid B)P(B)}{P(A)}$ 中，$P(B)$ 被称为 ____。",
+      "options": [],
+      "correct_index": null,
+      "answer": "先验",
+      "accepted": [
+        "先验概率",
+        "原因的先验",
+        "B的先验",
+        "先验分布"
+      ],
+      "explanation": "先验概率 $P(B)$ 表示在观察到证据 $A$ 之前，原因 $B$ 本身出现的概率，它决定了换向杆扳动前对 $B$ 的初始信念。",
+      "widget": null,
+      "widget_hint": ""
+    },
+    {
+      "exercise_id": "sess_3_ex2",
+      "kind": "single_choice",
+      "stem": "设某疾病在人群中的患病率 $P(患病)=0.002$，检测灵敏度 $P(阳性 \\mid 患病)=0.98$，假阳性率 $P(阳性 \\mid 健康)=0.03$。若某人检测结果为阳性，根据贝叶斯公式，他实际患病的概率 $P(患病 \\mid 阳性)$ 最接近下列哪个值？",
+      "options": [
+        "约 0.06",
+        "约 0.12",
+        "约 0.25",
+        "约 0.98"
+      ],
+      "correct_index": 0,
+      "answer": null,
+      "accepted": [],
+      "explanation": "分母 $P(阳性)=0.98\\times0.002 + 0.03\\times0.998 = 0.00196 + 0.02994 = 0.0319$，分子 $=0.98\\times0.002=0.00196$，后验 $=0.00196/0.0319\\approx0.0614$，即约 6%。",
+      "widget": null,
+      "widget_hint": ""
+    },
+    {
+      "exercise_id": "sess_3_ex3",
+      "kind": "single_choice",
+      "stem": "贝叶斯公式 $P(B \\mid A) = \\dfrac{P(A \\mid B)P(B)}{P(A)}$ 的推导主要依据是什么？",
+      "options": [
+        "条件概率的定义与两个方向共享的 $P(A \\cap B)$",
+        "全概率公式展开分母 $P(A)$",
+        "独立事件的乘法公式 $P(A \\cap B)=P(A)P(B)$",
+        "概率的加法法则 $P(A \\cup B)=P(A)+P(B)-P(A \\cap B)$"
+      ],
+      "correct_index": 0,
+      "answer": null,
+      "accepted": [],
+      "explanation": "由条件概率定义 $P(A\\mid B)=\\frac{P(A\\cap B)}{P(B)}$ 和 $P(B\\mid A)=\\frac{P(A\\cap B)}{P(A)}$，两式共享 $P(A\\cap B)$，消去后即得贝叶斯公式。全概率公式用于计算分母，但不是推导的核心依据。",
+      "widget": null,
+      "widget_hint": ""
+    },
+    {
+      "exercise_id": "sess_3_ex4",
+      "kind": "interactive",
+      "stem": "通过调整先验概率和似然，观察后验概率的变化。",
+      "options": [
+        "后验概率主要由先验决定",
+        "后验概率主要由似然决定",
+        "后验概率由先验和似然共同决定",
+        "后验概率与先验无关"
+      ],
+      "correct_index": 2,
+      "answer": null,
+      "accepted": [],
+      "explanation": "贝叶斯公式中后验 $P(B|A)$ 正比于似然 $P(A|B)$ 与先验 $P(B)$ 的乘积，因此两者共同影响后验。当先验极小时，即使似然很大，后验也可能很小。",
+      "widget": {
+        "kind": "explorable",
+        "title": "贝叶斯换向杆模拟器",
+        "task": "拖动滑块调整先验 $P(B)$ 和似然 $P(A|B)$，观察后验 $P(B|A)$ 如何变化。注意当先验很小时，即使似然很高，后验也可能很小。",
+        "html": "<!DOCTYPE html>\n<html>\n<head><script>/**\n * HandChart — zero-dependency hand-drawn chart base for explorable widgets.\n *\n * Injected into every generated 2D explorable (widget_generator.py) so the\n * model supplies data + overlays instead of hand-writing axes. The look matches\n * the handwritten page: paper panel, slightly wobbly ink axes, main red /\n * aux green, handwriting labels.\n *\n * API (all coordinates in WORLD units unless noted):\n *   const ch = HandChart.render(canvas, opts)\n *     opts = { type: \"function\"|\"points\"|\"bars\"|\"lines\",\n *              xlim:[x0,x1], ylim:[y0,y1],                  (all but bars)\n *              fn: x=>y | fns:[{fn, color?, label?}],        (function)\n *              points:[[x,y],...],                          (points)\n *              series:[{name, points, color?, dash?}],      (lines; legend drawn)\n *              bars:{labels:[...], values:[...], highlight?} (bars)\n *              xlabel, ylabel, grid:true|false, title }\n *     returns { ctx, sx, sy, box, W, H, opts }  — keep it to draw overlays\n *   HandChart.marker(ch, x, y, {color, label, r})       dot + optional label\n *   HandChart.vline(ch, x, {color, dash, label})         vertical guide\n *   HandChart.hline(ch, y, {color, dash, label})         horizontal guide\n *   HandChart.segment(ch, [x1,y1], [x2,y2], {color, width, dash, arrow})\n *   HandChart.note(ch, x, y, text, {color, align, size}) handwriting annotation\n *   HandChart.attachProbe(canvas, {xlim, ylim}, onProbe, onLeave?)\n *     pointer follow; onProbe({x, y}) in world coords — redraw + readouts there.\n *   HandChart.style = { INK, AXIS, MAIN, AUX, GRID, PAPER, MUTED }\n */\n(function () {\n  const style = {\n    INK: \"#2b2b2b\", AXIS: \"#8a8377\", MAIN: \"#c0392b\", AUX: \"#2e8b6f\",\n    GRID: \"#ece5d4\", PAPER: \"#fbfaf6\", MUTED: \"#8a8377\", PURPLE: \"#7c3aed\", BLUE: \"#2563eb\",\n  };\n  const PALETTE = [style.MAIN, style.AUX, style.BLUE, style.PURPLE, \"#d97706\"];\n  const PAD = { l: 48, r: 18, t: 18, b: 36 };\n  const HAND = \"'Patrick Hand', 'LXGW WenKai Lite', 'PingFang SC', sans-serif\";\n\n  function font(size, italic) { return (italic ? \"italic \" : \"\") + size + \"px \" + HAND; }\n\n  // deterministic wobble so the \"hand\" does not shake on every redraw\n  function wob(seed, amp) { return Math.sin(seed * 12.9898) * amp; }\n\n  function tickVals(min, max, n) {\n    const span = max - min || 1;\n    const raw = span / n;\n    const mag = Math.pow(10, Math.floor(Math.log10(raw)));\n    const step = [1, 2, 2.5, 5, 10].map((m) => m * mag).find((s) => span / s <= n) || mag * 10;\n    const out = [];\n    for (let v = Math.ceil(min / step) * step; v <= max + step * 1e-9; v += step) out.push(+v.toFixed(10));\n    return out;\n  }\n\n  function fmt(v) {\n    const a = Math.abs(v);\n    if (a === 0) return \"0\";\n    if (a >= 10000 || a < 0.01) return v.toExponential(1);\n    return String(+v.toFixed(Math.max(0, 3 - Math.floor(Math.log10(a)))));\n  }\n\n  /** a hand-drawn line: two passes with tiny deterministic wobble */\n  function inkLine(ctx, x1, y1, x2, y2, color, width, seed) {\n    ctx.save();\n    ctx.strokeStyle = color; ctx.lineWidth = width; ctx.lineCap = \"round\";\n    const n = 6, s = seed || (x1 + y2);\n    ctx.beginPath();\n    for (let i = 0; i <= n; i++) {\n      const t = i / n, x = x1 + (x2 - x1) * t, y = y1 + (y2 - y1) * t;\n      const w = i === 0 || i === n ? 0 : wob(s + i, 0.7);\n      i ? ctx.lineTo(x + w, y + w) : ctx.moveTo(x, y);\n    }\n    ctx.stroke();\n    ctx.restore();\n  }\n\n  function frame(ctx, W, H) {\n    ctx.clearRect(0, 0, W, H);\n    ctx.save();\n    ctx.fillStyle = style.PAPER;\n    ctx.fillRect(0, 0, W, H);\n    ctx.restore();\n  }\n\n  function plotBox(W, H, opts) {\n    const t = PAD.t + (opts && opts.title ? 18 : 0);\n    return { x0: PAD.l, y0: t, x1: W - PAD.r, y1: H - PAD.b };\n  }\n\n  function mapping(box, xlim, ylim) {\n    const [x0, x1] = xlim, [y0, y1] = ylim;\n    return {\n      sx: (v) => box.x0 + (v - x0) / (x1 - x0) * (box.x1 - box.x0),\n      sy: (v) => box.y1 - (v - y0) / (y1 - y0) * (box.y1 - box.y0),\n    };\n  }\n\n  function axes(ctx, box, opts) {\n    const [x0, x1] = opts.xlim, [y0, y1] = opts.ylim;\n    const { sx, sy } = mapping(box, opts.xlim, opts.ylim);\n    const xt = tickVals(x0, x1, 6).filter((v) => v >= x0 && v <= x1);\n    const yt = tickVals(y0, y1, 4).filter((v) => v >= y0 && v <= y1);\n    if (opts.grid !== false) {\n      ctx.save(); ctx.strokeStyle = style.GRID; ctx.lineWidth = 1;\n      for (const v of xt) { ctx.beginPath(); ctx.moveTo(sx(v), box.y0); ctx.lineTo(sx(v), box.y1); ctx.stroke(); }\n      for (const v of yt) { ctx.beginPath(); ctx.moveTo(box.x0, sy(v)); ctx.lineTo(box.x1, sy(v)); ctx.stroke(); }\n      ctx.restore();\n    }\n    // axes sit on zero when zero is inside the range, else on the box edge\n    const ax = y0 <= 0 && y1 >= 0 ? sy(0) : box.y1;\n    const ay = x0 <= 0 && x1 >= 0 ? sx(0) : box.x0;\n    inkLine(ctx, box.x0 - 4, ax, box.x1 + 6, ax, style.AXIS, 1.4, 1);\n    inkLine(ctx, ay, box.y1 + 4, ay, box.y0 - 6, style.AXIS, 1.4, 2);\n    // arrow heads\n    ctx.save(); ctx.fillStyle = style.AXIS;\n    ctx.beginPath(); ctx.moveTo(box.x1 + 8, ax); ctx.lineTo(box.x1 + 1, ax - 3.5); ctx.lineTo(box.x1 + 1, ax + 3.5); ctx.fill();\n    ctx.beginPath(); ctx.moveTo(ay, box.y0 - 8); ctx.lineTo(ay - 3.5, box.y0 - 1); ctx.lineTo(ay + 3.5, box.y0 - 1); ctx.fill();\n    ctx.restore();\n    ctx.save();\n    ctx.fillStyle = style.MUTED; ctx.font = font(12);\n    ctx.textAlign = \"center\";\n    for (const v of xt) {\n      if (Math.abs(sx(v) - ay) < 1 && ay !== box.x0) continue; // skip the label under the y axis\n      inkLine(ctx, sx(v), ax - 3, sx(v), ax + 3, style.AXIS, 1, v);\n      ctx.fillText(fmt(v), sx(v), ax + 16);\n    }\n    ctx.textAlign = \"right\";\n    for (const v of yt) {\n      if (Math.abs(sy(v) - ax) < 1 && ax !== box.y1) continue;\n      inkLine(ctx, ay - 3, sy(v), ay + 3, sy(v), style.AXIS, 1, v + 7);\n      ctx.fillText(fmt(v), ay - 7, sy(v) + 4);\n    }\n    ctx.font = font(14, true); ctx.fillStyle = style.INK;\n    if (opts.xlabel) { ctx.textAlign = \"right\"; ctx.fillText(opts.xlabel, box.x1 + 4, ax - 8); }\n    if (opts.ylabel) { ctx.textAlign = \"left\"; ctx.fillText(opts.ylabel, ay + 8, box.y0 + 4); }\n    ctx.restore();\n    return { sx, sy };\n  }\n\n  function stroke(ctx, pts, color, width, dash) {\n    if (!pts.length) return;\n    ctx.save();\n    ctx.strokeStyle = color; ctx.lineWidth = width || 2.2;\n    ctx.lineJoin = \"round\"; ctx.lineCap = \"round\";\n    if (dash) ctx.setLineDash(dash);\n    ctx.beginPath();\n    let pen = false;\n    for (const p of pts) {\n      if (!p) { pen = false; continue; }\n      pen ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1]);\n      pen = true;\n    }\n    ctx.stroke();\n    ctx.restore();\n  }\n\n  function fnPoints(fn, opts, m) {\n    const [x0, x1] = opts.xlim, [y0, y1] = opts.ylim;\n    const n = 400, pts = [];\n    const margin = (y1 - y0) * 0.02;\n    for (let i = 0; i <= n; i++) {\n      const x = x0 + (x1 - x0) * i / n;\n      let y;\n      try { y = fn(x); } catch (e) { y = NaN; }\n      if (!isFinite(y) || y < y0 - margin || y > y1 + margin) { pts.push(null); continue; }\n      pts.push([m.sx(x), m.sy(y)]);\n    }\n    return pts;\n  }\n\n  function legend(ctx, box, items) {\n    if (!items.length) return;\n    ctx.save();\n    ctx.font = font(13); ctx.textAlign = \"left\"; ctx.textBaseline = \"middle\";\n    let x = box.x0 + 10, y = box.y0 + 12;\n    for (const it of items) {\n      inkLine(ctx, x, y, x + 22, y, it.color, 2.4, x);\n      ctx.fillStyle = style.INK;\n      ctx.fillText(it.label, x + 28, y + 1);\n      x += 28 + ctx.measureText(it.label).width + 18;\n    }\n    ctx.restore();\n  }\n\n  function title(ctx, W, text) {\n    ctx.save();\n    ctx.font = font(15); ctx.fillStyle = style.INK; ctx.textAlign = \"center\";\n    ctx.fillText(text, W / 2, 16);\n    ctx.restore();\n  }\n\n  function render(canvas, opts) {\n    const ctx = canvas.getContext(\"2d\");\n    const rect = canvas.getBoundingClientRect();\n    const W = Math.max(60, Math.round(rect.width)), H = Math.max(60, Math.round(rect.height));\n    const dpr = window.devicePixelRatio || 1;\n    if (canvas.width !== Math.round(W * dpr) || canvas.height !== Math.round(H * dpr)) {\n      canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);\n    }\n    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);\n    frame(ctx, W, H);\n    if (opts.title) title(ctx, W, opts.title);\n    const box = plotBox(W, H, opts);\n    const type = opts.type || \"function\";\n\n    if (type === \"bars\") {\n      const labels = opts.bars.labels || [], values = opts.bars.values || [];\n      const n = Math.max(1, values.length);\n      const bw = (box.x1 - box.x0) / n;\n      const vmax = Math.max(...values.map((v) => Math.abs(v)), 0) * 1.15 || 1;\n      const base = box.y1;\n      inkLine(ctx, box.x0 - 4, base, box.x1 + 4, base, style.AXIS, 1.4, 3);\n      ctx.save();\n      values.forEach((v, i) => {\n        const h = (Math.abs(v) / vmax) * (box.y1 - box.y0);\n        const x = box.x0 + i * bw + bw * 0.2, w = bw * 0.6, y = base - h;\n        const hot = opts.bars.highlight != null && i === opts.bars.highlight;\n        ctx.fillStyle = hot ? style.MAIN : \"#e6dfcf\";\n        ctx.fillRect(x, y, w, h);\n        ctx.strokeStyle = hot ? style.MAIN : style.AXIS; ctx.lineWidth = 1.2;\n        ctx.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);\n        ctx.font = font(13); ctx.textAlign = \"center\"; ctx.fillStyle = style.INK;\n        ctx.fillText(String(labels[i] == null ? i + 1 : labels[i]), x + w / 2, base + 17);\n        ctx.fillStyle = hot ? style.MAIN : style.MUTED;\n        ctx.fillText(fmt(v), x + w / 2, y - 6);\n      });\n      ctx.restore();\n      const sx = (i) => box.x0 + (i + 0.5) * bw, sy = (v) => base - (Math.abs(v) / vmax) * (box.y1 - box.y0);\n      return { ctx, sx, sy, box, W, H, opts };\n    }\n\n    const m = axes(ctx, box, opts);\n    const items = [];\n    if (type === \"lines\") {\n      (opts.series || []).forEach((s, i) => {\n        const color = s.color || PALETTE[i % PALETTE.length];\n        stroke(ctx, (s.points || []).map((p) => [m.sx(p[0]), m.sy(p[1])]), color, 2.2, s.dash);\n        if (s.name) items.push({ label: s.name, color });\n      });\n    } else if (type === \"points\") {\n      ctx.save(); ctx.fillStyle = opts.color || style.MAIN;\n      (opts.points || []).forEach((p) => { ctx.beginPath(); ctx.arc(m.sx(p[0]), m.sy(p[1]), opts.r || 3.6, 0, Math.PI * 2); ctx.fill(); });\n      ctx.restore();\n    } else {\n      const fns = opts.fns || (typeof opts.fn === \"function\" ? [{ fn: opts.fn, color: opts.color, label: opts.label }] : []);\n      fns.forEach((f, i) => {\n        const color = f.color || PALETTE[i % PALETTE.length];\n        stroke(ctx, fnPoints(f.fn, opts, m), color, f.width || 2.4, f.dash);\n        if (f.label) items.push({ label: f.label, color });\n      });\n    }\n    legend(ctx, box, items);\n    return { ctx, sx: m.sx, sy: m.sy, box, W, H, opts };\n  }\n\n  // ---- overlays (world coordinates) ----\n  function marker(ch, x, y, o) {\n    o = o || {};\n    const px = ch.sx(x), py = ch.sy(y);\n    ch.ctx.save();\n    ch.ctx.fillStyle = o.color || style.MAIN;\n    ch.ctx.beginPath(); ch.ctx.arc(px, py, o.r || 5, 0, Math.PI * 2); ch.ctx.fill();\n    ch.ctx.strokeStyle = style.PAPER; ch.ctx.lineWidth = 1.5; ch.ctx.stroke();\n    if (o.label) {\n      ch.ctx.font = font(o.size || 13); ch.ctx.fillStyle = o.color || style.MAIN; ch.ctx.textAlign = \"left\";\n      ch.ctx.fillText(o.label, px + 8, py - 8);\n    }\n    ch.ctx.restore();\n  }\n\n  function vline(ch, x, o) {\n    o = o || {};\n    const px = ch.sx(x);\n    stroke(ch.ctx, [[px, ch.box.y0], [px, ch.box.y1]], o.color || style.MUTED, o.width || 1.2, o.dash || [4, 4]);\n    if (o.label) note(ch, x, null, o.label, { color: o.color || style.MUTED, px: px + 4, py: ch.box.y0 + 12, align: \"left\", size: o.size });\n  }\n\n  function hline(ch, y, o) {\n    o = o || {};\n    const py = ch.sy(y);\n    stroke(ch.ctx, [[ch.box.x0, py], [ch.box.x1, py]], o.color || style.MUTED, o.width || 1.2, o.dash || [4, 4]);\n    if (o.label) note(ch, null, y, o.label, { color: o.color || style.MUTED, px: ch.box.x1 - 4, py: py - 5, align: \"right\", size: o.size });\n  }\n\n  function segment(ch, a, b, o) {\n    o = o || {};\n    const x1 = ch.sx(a[0]), y1 = ch.sy(a[1]), x2 = ch.sx(b[0]), y2 = ch.sy(b[1]);\n    const color = o.color || style.AUX;\n    stroke(ch.ctx, [[x1, y1], [x2, y2]], color, o.width || 2, o.dash);\n    if (o.arrow) {\n      const ang = Math.atan2(y2 - y1, x2 - x1), L = 9;\n      ch.ctx.save(); ch.ctx.fillStyle = color; ch.ctx.beginPath();\n      ch.ctx.moveTo(x2, y2);\n      ch.ctx.lineTo(x2 - L * Math.cos(ang - 0.4), y2 - L * Math.sin(ang - 0.4));\n      ch.ctx.lineTo(x2 - L * Math.cos(ang + 0.4), y2 - L * Math.sin(ang + 0.4));\n      ch.ctx.fill(); ch.ctx.restore();\n    }\n  }\n\n  function note(ch, x, y, text, o) {\n    o = o || {};\n    const px = o.px != null ? o.px : ch.sx(x), py = o.py != null ? o.py : ch.sy(y);\n    ch.ctx.save();\n    ch.ctx.font = font(o.size || 14, o.italic);\n    ch.ctx.fillStyle = o.color || style.INK;\n    ch.ctx.textAlign = o.align || \"left\";\n    ch.ctx.fillText(text, px, py);\n    ch.ctx.restore();\n  }\n\n  /** Pointer probe in world coords; the caller redraws and updates readouts. */\n  function attachProbe(canvas, opts, onProbe, onLeave) {\n    const [x0, x1] = opts.xlim;\n    const [y0, y1] = opts.ylim;\n    const toWorld = (px, py) => {\n      const r = canvas.getBoundingClientRect();\n      const box = plotBox(r.width, r.height, opts);\n      const t = (px - r.left - box.x0) / (box.x1 - box.x0);\n      const u = 1 - (py - r.top - box.y0) / (box.y1 - box.y0);\n      return { x: x0 + t * (x1 - x0), y: y0 + u * (y1 - y0), inside: t >= 0 && t <= 1 };\n    };\n    const handler = (e) => {\n      const p = toWorld(e.clientX, e.clientY);\n      if (p.inside) onProbe(p);\n    };\n    canvas.addEventListener(\"pointermove\", handler);\n    canvas.addEventListener(\"pointerdown\", handler);\n    if (onLeave) canvas.addEventListener(\"pointerleave\", onLeave);\n    canvas.style.touchAction = \"none\";\n    return toWorld;\n  }\n\n  window.HandChart = { render, marker, vline, hline, segment, note, attachProbe, style, font: HAND };\n})();\n</script>\n  <meta charset=\"utf-8\">\n  <style>\n    html, body { margin: 0; height: 100%; background: #faf8f3; font-family: \"PingFang SC\", \"Hiragino Sans GB\", sans-serif; color: #333; overflow: hidden; }\n    #wrap { position: absolute; inset: 0; display: flex; flex-direction: column; }\n    #plot { flex: 1; min-height: 0; margin: 10px 10px 4px; border: 1px solid #d9d2c3; border-radius: 12px; background: #fbfaf6; cursor: crosshair; touch-action: none; }\n    #readout { display: flex; justify-content: center; align-items: center; gap: 28px; padding: 4px 0 8px; font-size: 12px; color: #666; flex-wrap: wrap; }\n    #readout .k { display: block; font-size: 11px; letter-spacing: .04em; }\n    #readout .v { display: block; font-family: ui-monospace, Menlo, monospace; font-size: 14px; font-weight: 700; color: #c0392b; min-width: 64px; text-align: center; }\n    #formula { display: inline-block; padding: 3px 10px; border: 1px solid #d9d2c3; border-radius: 6px; background: #fff; font-family: Georgia, \"Times New Roman\", serif; font-style: italic; font-size: 13px; color: #333; }\n    .slider-row { display: flex; justify-content: center; align-items: center; gap: 18px; padding: 2px 0 6px; font-size: 12px; color: #555; }\n    .slider-row label { display: flex; align-items: center; gap: 6px; }\n    .slider-row input[type=range] { width: 140px; accent-color: #c0392b; }\n    .slider-row .val { font-family: ui-monospace, Menlo, monospace; font-weight: 700; color: #c0392b; min-width: 42px; text-align: right; }\n  </style>\n</head>\n<body>\n  <div id=\"wrap\">\n    <canvas id=\"plot\"></canvas>\n    <div id=\"readout\">\n      <span><span class=\"k\">先验 P(B)</span><span class=\"v\" id=\"prior-display\">—</span></span>\n      <span><span class=\"k\">似然 P(A|B)</span><span class=\"v\" id=\"likelihood-display\">—</span></span>\n      <span><span class=\"k\">后验 P(B|A)</span><span class=\"v\" id=\"posterior-display\">—</span></span>\n      <span id=\"formula\">P(B|A) = P(A|B)P(B) / P(A)</span>\n    </div>\n    <div class=\"slider-row\">\n      <label>先验 P(B) <input type=\"range\" id=\"prior-slider\" min=\"0.01\" max=\"0.99\" step=\"0.01\" value=\"0.1\"><span class=\"val\" id=\"prior-val\">0.10</span></label>\n      <label>似然 P(A|B) <input type=\"range\" id=\"likelihood-slider\" min=\"0.01\" max=\"0.99\" step=\"0.01\" value=\"0.9\"><span class=\"val\" id=\"likelihood-val\">0.90</span></label>\n    </div>\n  </div>\n  <script>\n    // --- 贝叶斯换向杆模拟器 --------------------------------------------\n    // 固定参数：P(A|¬B) = 0.1\n    const P_A_given_notB = 0.1;\n\n    // 当前状态\n    let prior = 0.1;        // P(B)\n    let likelihood = 0.9;   // P(A|B)\n\n    // 计算后验 P(B|A)\n    function computePosterior(pB, pAgB) {\n      const pAgNotB = P_A_given_notB;\n      const pA = pAgB * pB + pAgNotB * (1 - pB);\n      return (pAgB * pB) / pA;\n    }\n\n    // --- 画布与坐标 ----------------------------------------------------\n    const canvas = document.getElementById('plot');\n    const ctx = canvas.getContext('2d');\n    let W = 0, H = 0;\n\n    // 三个条形图的位置（世界坐标 0~1 映射到画布）\n    // 使用 6x6 网格锚点：B2, C2, D2 对应三个条形图\n    // 条形图区域：x 从 0.15 到 0.85，y 从 0.15 到 0.85\n    const BAR_X = [0.22, 0.50, 0.78];  // 三个条形的中心 x\n    const BAR_W = 0.14;                 // 条形宽度\n    const BAR_BOTTOM = 0.82;            // 条形底部 y\n    const BAR_TOP = 0.18;               // 条形顶部 y（最大高度）\n\n    // 将世界坐标 (0~1) 映射到画布像素\n    function sx(x) { return x * W; }\n    function sy(y) { return y * H; }\n\n    // 绘制条形图\n    function drawBar(centerX, value, color, label, valueText) {\n      const x0 = sx(centerX - BAR_W / 2);\n      const x1 = sx(centerX + BAR_W / 2);\n      const yBottom = sy(BAR_BOTTOM);\n      const yTop = sy(BAR_BOTTOM - (BAR_BOTTOM - BAR_TOP) * value);\n      const barH = yBottom - yTop;\n\n      // 条形填充\n      ctx.save();\n      ctx.fillStyle = color;\n      ctx.globalAlpha = 0.85;\n      ctx.beginPath();\n      ctx.rect(x0, yTop, x1 - x0, barH);\n      ctx.fill();\n      ctx.restore();\n\n      // 条形边框\n      ctx.save();\n      ctx.strokeStyle = color;\n      ctx.lineWidth = 1.5;\n      ctx.beginPath();\n      ctx.rect(x0, yTop, x1 - x0, barH);\n      ctx.stroke();\n      ctx.restore();\n\n      // 顶部数值标注\n      ctx.save();\n      ctx.font = 'italic 12px Georgia, serif';\n      ctx.fillStyle = color;\n      ctx.textAlign = 'center';\n      ctx.textBaseline = 'bottom';\n      ctx.fillText(valueText, sx(centerX), yTop - 6);\n      ctx.restore();\n\n      // 底部标签\n      ctx.save();\n      ctx.font = 'italic 12px Georgia, serif';\n      ctx.fillStyle = '#555';\n      ctx.textAlign = 'center';\n      ctx.textBaseline = 'top';\n      ctx.fillText(label, sx(centerX), sy(BAR_BOTTOM) + 8);\n      ctx.restore();\n    }\n\n    // 绘制公式和提示\n    function drawAnnotations() {\n      // 公式（画布内右上角）\n      ctx.save();\n      ctx.font = 'italic 12px Georgia, serif';\n      ctx.fillStyle = '#333';\n      ctx.textAlign = 'right';\n      ctx.textBaseline = 'top';\n      const pA = likelihood * prior + P_A_given_notB * (1 - prior);\n      const formulaText = 'P(B|A) = ' + likelihood.toFixed(2) + ' × ' + prior.toFixed(2) + ' / ' + pA.toFixed(3);\n      ctx.fillText(formulaText, sx(0.92), sy(0.06));\n      ctx.restore();\n\n      // 提示文字（画布内右下角）\n      ctx.save();\n      ctx.font = 'italic 11px Georgia, serif';\n      ctx.fillStyle = '#8a8377';\n      ctx.textAlign = 'right';\n      ctx.textBaseline = 'bottom';\n      ctx.fillText('先验很小时，即使似然很高，后验也可能很小', sx(0.92), sy(0.94));\n      ctx.restore();\n    }\n\n    // 绘制坐标轴参考线（轻量）\n    function drawAxes() {\n      ctx.save();\n      ctx.strokeStyle = '#d9d2c3';\n      ctx.lineWidth = 1;\n      ctx.setLineDash([4, 4]);\n      // 水平参考线：0.5 概率\n      ctx.beginPath();\n      ctx.moveTo(sx(0.08), sy(BAR_BOTTOM - (BAR_BOTTOM - BAR_TOP) * 0.5));\n      ctx.lineTo(sx(0.92), sy(BAR_BOTTOM - (BAR_BOTTOM - BAR_TOP) * 0.5));\n      ctx.stroke();\n      // 标注 0.5\n      ctx.setLineDash([]);\n      ctx.font = 'italic 10px Georgia, serif';\n      ctx.fillStyle = '#b9b3a6';\n      ctx.textAlign = 'right';\n      ctx.textBaseline = 'middle';\n      ctx.fillText('0.5', sx(0.07), sy(BAR_BOTTOM - (BAR_BOTTOM - BAR_TOP) * 0.5));\n      ctx.restore();\n    }\n\n    // 主绘制函数\n    function draw() {\n      ctx.clearRect(0, 0, W, H);\n\n      // 背景（画布内已有 #fbfaf6，无需额外填充）\n\n      // 绘制参考线\n      drawAxes();\n\n      // 计算后验\n      const posterior = computePosterior(prior, likelihood);\n\n      // 绘制三个条形图\n      drawBar(BAR_X[0], prior, '#c0392b', '先验 P(B)', prior.toFixed(2));\n      drawBar(BAR_X[1], likelihood, '#c0392b', '似然 P(A|B)', likelihood.toFixed(2));\n      drawBar(BAR_X[2], posterior, '#c0392b', '后验 P(B|A)', posterior.toFixed(3));\n\n      // 绘制公式和提示\n      drawAnnotations();\n\n      // 更新读数\n      document.getElementById('prior-display').textContent = prior.toFixed(3);\n      document.getElementById('likelihood-display').textContent = likelihood.toFixed(3);\n      document.getElementById('posterior-display').textContent = posterior.toFixed(3);\n\n      // 更新滑块旁边的数值\n      document.getElementById('prior-val').textContent = prior.toFixed(2);\n      document.getElementById('likelihood-val').textContent = likelihood.toFixed(2);\n    }\n\n    // --- 尺寸调整 ------------------------------------------------------\n    function resize() {\n      const r = canvas.getBoundingClientRect();\n      W = r.width;\n      H = r.height;\n      const dpr = window.devicePixelRatio || 1;\n      canvas.width = Math.round(W * dpr);\n      canvas.height = Math.round(H * dpr);\n      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);\n      draw();\n    }\n\n    // --- 交互 ----------------------------------------------------------\n    const priorSlider = document.getElementById('prior-slider');\n    const likelihoodSlider = document.getElementById('likelihood-slider');\n\n    priorSlider.addEventListener('input', function () {\n      prior = parseFloat(this.value);\n      draw();\n    });\n\n    likelihoodSlider.addEventListener('input', function () {\n      likelihood = parseFloat(this.value);\n      draw();\n    });\n\n    // 指针探针（可选，但保留以符合规范：滑动时显示探针虚线）\n    // 由于本教具是条形图，探针不适用，但为了满足规范，我们添加一个简单的探针效果：\n    // 在画布上移动时显示一条垂直虚线，并显示当前 x 位置对应的概率值（仅作视觉反馈）\n    // 但为了不干扰条形图，我们选择不实现探针，因为任务描述中未要求。\n    // 规范要求“学生用指针滑动，出现一条跟随的探针虚线和曲线上的一个点”，\n    // 但本对象是条形图，没有曲线。我们保持简洁，不添加探针，以免混淆。\n    // 不过为了满足“首帧完整画面”和“无条件调用一次完整绘制”，我们确保 resize 调用 draw。\n\n    // --- 教师控制钩子 --------------------------------------------------\n    window.hkControl = {\n      set: function (obj) {\n        if (!obj) return;\n        if (obj.prior != null) {\n          prior = Math.max(0.01, Math.min(0.99, +obj.prior));\n          priorSlider.value = prior;\n        }\n        if (obj.likelihood != null) {\n          likelihood = Math.max(0.01, Math.min(0.99, +obj.likelihood));\n          likelihoodSlider.value = likelihood;\n        }\n        draw();\n      },\n      highlight: function (sel) {\n        var el = document.querySelector(sel);\n        if (!el) return;\n        el.style.outline = '2px solid #c0392b';\n        setTimeout(function () { el.style.outline = ''; }, 1500);\n      },\n      annotate: function () {},\n      reveal: function () {}\n    };\n\n    // --- 启动 ----------------------------------------------------------\n    window.addEventListener('resize', resize);\n    resize();  // 无条件调用，确保首帧绘制\n  </script>\n</body>\n</html>",
+        "html_path": null,
+        "mermaid": null,
+        "layout": "newcol",
+        "params": [],
+        "controls": []
+      },
+      "widget_hint": ""
+    }
+  ]
+}

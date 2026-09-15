@@ -1,0 +1,297 @@
+{
+  "session_id": "sess_4",
+  "course_id": "course_161c4b9518",
+  "title": "PyTorch 线性层的权重方向",
+  "learning_goal": "学生能区分数学教材列向量权重 W(n_out×n_in) 与 PyTorch nn.Linear 权重存储 out×in 的差异，并理解前向传播 X W^T 的等价性。",
+  "steps": [
+    {
+      "title": "一个看似简单的维度问题",
+      "beat": "poe",
+      "spoken_text": "先别翻文档。假设你写一行 PyTorch：nn.Linear(3, 5)。你猜它内部那个 weight 张量的形状是几乘几？板书第一行我写了两个候选。别急着查，凭直觉选一个——你觉得是 3 乘 5，还是 5 乘 3？",
+      "boards": [
+        {
+          "title": "",
+          "markdown": "- `nn.Linear(3, 5)` 的 weight 形状？\n- 候选 A：**3 × 5**（in × out）\n- 候选 B：**5 × 3**（out × in）\n- 你的直觉是哪一个？",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "circle",
+          "snippet": "5 × 3",
+          "board_index": 0,
+          "trigger_phrase": "还是 5 乘 3",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": {
+        "mode": "choice",
+        "question": "nn.Linear(3, 5) 里 weight 的形状，你第一反应是？",
+        "options": [
+          "3 × 5，输入在前输出在后",
+          "5 × 3，输出在前输入在后"
+        ],
+        "correct_index": 1,
+        "misconceptions": [
+          "这是最常见的直觉：以为参数顺序就是形状顺序。但 PyTorch 把输出维度放在前面。",
+          null
+        ],
+        "explanation": "PyTorch 的 weight 是 out × in，也就是 5 × 3，不是 3 × 5。"
+      },
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "数学教材与框架代码的并置",
+      "beat": "contrast",
+      "spoken_text": "看这张对比表。左列是数学教材的写法：输入 x 是列向量，权重 W 是 n_out 乘 n_in，输出直接 W 乘 x。右列是 PyTorch：输入 X 是行向量堆叠，权重存成 out 乘 in，前向写成 X 乘 W 的转置。注意右边那一格，多出来的那个转置符号就是全部差异。",
+      "boards": [
+        {
+          "title": "两种写法并排看",
+          "markdown": "| | 数学教材 | PyTorch |\n|---|---|---|\n| 输入 | 列向量 $x$ | 行堆叠 $X$ |\n| 权重形状 | $n_{out} \\times n_{in}$ | $out \\times in$ |\n| 前向 | $W x$ | $X W^{\\top}$ |",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "highlight",
+          "snippet": "X W^{\\top}",
+          "board_index": 0,
+          "trigger_phrase": "多出来的那个转置符号",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": null,
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "定义 PyTorch 的权重存储",
+      "beat": "define",
+      "spoken_text": "现在把定义钉死。看板书第二行：nn.Linear(in, out) 的 weight 形状就是 out 乘 in，输出维度在前。第三行是前向公式：X 乘 W 的转置。为什么转置？因为 X 每一行是一个样本，要和 W 的每一列做点积，而 W 的列正是输入维度。所以这个转置只是把存储方向掰回来，几乎不花时间。",
+      "boards": [
+        {
+          "title": "PyTorch 的定义",
+          "markdown": "- `nn.Linear(in, out)`\n- weight 形状：**out × in**（输出在前）\n- 前向：$X W^{\\top}$\n- 转置只改存储步幅 → 几乎免费",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "circle",
+          "snippet": "out × in",
+          "board_index": 0,
+          "trigger_phrase": "weight 形状就是 out 乘 in",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": null,
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "形状推导：为什么要转置",
+      "beat": "derive",
+      "spoken_text": "看板书第一行，输入 X 是 batch 乘 in，权重 W 存的是 out 乘 in。要让它们相乘，内维必须对上：X 的 in 要和 W 的 in 对上，所以得把 W 转置成 in 乘 out。这样 batch 乘 in 乘 in 乘 out，内维一消，剩下 batch 乘 out。看最后一行，输出形状正好是 batch 乘 out。那如果不转置，直接 X 乘 W，会得到什么形状？",
+      "boards": [
+        {
+          "title": "推导：X W^T",
+          "markdown": "- 输入 $X$：**batch × in**\n- 权重存储 $W$：**out × in**\n- 要相乘 → 内维必须对上\n- 转置：$W^{\\top}$ → **in × out**\n- $X W^{\\top}$：batch × in · in × out → **batch × out**",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "circle",
+          "snippet": "W^{\\top}",
+          "board_index": 0,
+          "trigger_phrase": "所以得把 W 转置成 in 乘 out",
+          "color": null
+        },
+        {
+          "kind": "highlight",
+          "snippet": "batch × out",
+          "board_index": 0,
+          "trigger_phrase": "剩下 batch 乘 out",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": {
+        "mode": "choice",
+        "question": "如果不转置，直接算 X 乘 W，会得到什么形状？",
+        "options": [
+          "batch 乘 out，正好对",
+          "batch 乘 in，内维对不上",
+          "根本乘不了，维度报错"
+        ],
+        "correct_index": 2,
+        "misconceptions": [
+          "这是把结果形状和存储形状搞混了，X 的第二维是 in，W 的第二维也是 in，内维不匹配。",
+          "这是最常见的直觉：以为两个矩阵总能乘，但内维不相等时 PyTorch 会直接报错。",
+          null
+        ],
+        "explanation": "X 是 batch×in，W 是 out×in，内维 in 和 out 不相等，直接相乘会维度报错，必须先转置。"
+      },
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "两种约定的对比",
+      "beat": "contrast",
+      "spoken_text": "看右边这张并排图。左边是数学教材：输入是列向量 x，形状 in 乘 1，权重 W 标的是 n_out 乘 n_in，输出直接 W 乘 x，得到 n_out 乘 1。右边是 PyTorch：输入是行堆叠的 X，形状 batch 乘 in，权重存储 W_p 标的是 out 乘 in，计算时用箭头把 W_p 转置一下，变成 in 乘 out，再和 X 相乘，输出 batch 乘 out。两张图里三个形状标注一一对应，差别只在谁在前谁在后。那如果我把右边图中的转置箭头去掉，X 还能和 W_p 相乘吗？",
+      "boards": [
+        {
+          "title": "两种约定",
+          "markdown": "| | 数学教材 | PyTorch |\n|---|---|---|\n| 输入 | 列向量 $x$：in × 1 | 行堆叠 $X$：batch × in |\n| 权重 | $W$：n_out × n_in | $W_p$：out × in |\n| 前向 | $y = W x$ | $Y = X W_p^{\\top}$ |\n| 输出 | n_out × 1 | batch × out |",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "circle",
+          "snippet": "X W_p^{\\top}",
+          "board_index": 0,
+          "trigger_phrase": "计算时用箭头把 W_p 转置一下",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": {
+        "mode": "choice",
+        "question": "如果去掉右边图中的转置箭头，X 还能和 W_p 相乘吗？",
+        "options": [
+          "能，多一个转置少一个转置不影响",
+          "不能，内维 in 和 out 对不上",
+          "能，PyTorch 会自动帮我转"
+        ],
+        "correct_index": 1,
+        "misconceptions": [
+          "这是把转置当成可有可无的装饰，实际上它决定了内维能否对齐。",
+          null,
+          "PyTorch 不会自动转置，它只会按你写的形状去乘，对不上就报错。"
+        ],
+        "explanation": "X 的第二维是 in，W_p 的第二维也是 in，去掉转置后内维 in 和 out 不相等，无法相乘。"
+      },
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "回顾与避坑",
+      "beat": "recap",
+      "spoken_text": "回看第一段板书最后一行：nn.Linear(in, out) 的 weight 形状是 out 乘 in，前向是 X W 转置。再看右边对比表里 PyTorch 那一列，权重存储和计算式都写清楚了。记住三件事：权重存 out 乘 in，前向要转置，转置只改存储步幅几乎免费。下次写代码时，先看一眼 weight.shape，再决定要不要加那个点 T。",
+      "boards": [
+        {
+          "title": "避坑清单",
+          "markdown": "- `nn.Linear(in, out)` → weight **out × in**\n- 前向：$X W^{\\top}$，不是 $X W$\n- 转置只改存储步幅，**几乎免费**\n- 写代码前先看 `weight.shape`",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "highlight",
+          "snippet": "X W^{\\top}",
+          "board_index": 0,
+          "trigger_phrase": "前向是 X W 转置",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": null,
+      "reward": {
+        "title": "PyTorch 线性层方向口诀",
+        "description": "权重存 out×in，前向算 X W^T；转置只改步幅，写码先看 shape。"
+      },
+      "new_page_title": null
+    }
+  ],
+  "exercises": [
+    {
+      "exercise_id": "sess_4_ex1",
+      "kind": "fill_blank",
+      "stem": "在 PyTorch 中，`nn.Linear(in, out)` 的 weight 张量形状是 ____。",
+      "options": [],
+      "correct_index": null,
+      "answer": "out × in",
+      "accepted": [
+        "out×in",
+        "out 乘 in",
+        "输出维度在前",
+        "out 行 in 列"
+      ],
+      "explanation": "PyTorch 将权重存储为 out × in，即输出维度在前，这与数学教材中 W 为 n_out × n_in 的存储方向一致，但输入输出布局不同。",
+      "widget": null,
+      "widget_hint": ""
+    },
+    {
+      "exercise_id": "sess_4_ex2",
+      "kind": "single_choice",
+      "stem": "设 $X$ 形状为 $4 \\times 3$，$W$ 形状为 $5 \\times 3$，则 $X W^{\\top}$ 的形状是？",
+      "options": [
+        "$4 \\times 5$",
+        "$5 \\times 4$",
+        "$4 \\times 3$",
+        "$5 \\times 3$"
+      ],
+      "correct_index": 0,
+      "answer": null,
+      "accepted": [],
+      "explanation": "$X$ 是 $4 \\times 3$，$W^{\\top}$ 是 $3 \\times 5$，相乘后内维 $3$ 消去，得到 $4 \\times 5$。",
+      "widget": null,
+      "widget_hint": ""
+    },
+    {
+      "exercise_id": "sess_4_ex3",
+      "kind": "single_choice",
+      "stem": "在 PyTorch 的线性层中，前向传播的公式是 $X W^{\\top}$ 而不是 $X W$，主要原因是？",
+      "options": [
+        "为了匹配数学教材中 $Wx$ 的列向量约定",
+        "因为 $X$ 的列数必须与 $W$ 的行数相等",
+        "因为 $W$ 存储为 out × in，转置后变为 in × out 才能与 $X$ 相乘",
+        "因为转置操作会改变权重的数值"
+      ],
+      "correct_index": 2,
+      "answer": null,
+      "accepted": [],
+      "explanation": "PyTorch 中 $W$ 存储为 out × in，而 $X$ 是 batch × in，直接相乘内维不匹配。转置后 $W^{\\top}$ 为 in × out，与 $X$ 相乘得到 batch × out。",
+      "widget": null,
+      "widget_hint": ""
+    },
+    {
+      "exercise_id": "sess_4_ex4",
+      "kind": "interactive",
+      "stem": "在教具中，调整权重矩阵 $W$ 的形状，观察 $X W^{\\top}$ 的输出形状。当 $X$ 为 $2 \\times 3$，$W$ 为 $4 \\times 3$ 时，输出形状是？",
+      "options": [
+        "$2 \\times 4$",
+        "$4 \\times 2$",
+        "$2 \\times 3$",
+        "$4 \\times 3$"
+      ],
+      "correct_index": 0,
+      "answer": null,
+      "accepted": [],
+      "explanation": "$X$ 为 $2 \\times 3$，$W$ 为 $4 \\times 3$，$W^{\\top}$ 为 $3 \\times 4$，相乘得到 $2 \\times 4$。",
+      "widget": {
+        "kind": "explorable",
+        "title": "线性层形状探索器",
+        "task": "拖动滑块设置输入 $X$ 的 batch 大小和 in 维度，以及权重 $W$ 的 out 和 in 维度。观察 $X W^{\\top}$ 的输出形状。",
+        "html": "<!DOCTYPE html>\n<html>\n<head><script>/**\n * HandChart — zero-dependency hand-drawn chart base for explorable widgets.\n *\n * Injected into every generated 2D explorable (widget_generator.py) so the\n * model supplies data + overlays instead of hand-writing axes. The look matches\n * the handwritten page: paper panel, slightly wobbly ink axes, main red /\n * aux green, handwriting labels.\n *\n * API (all coordinates in WORLD units unless noted):\n *   const ch = HandChart.render(canvas, opts)\n *     opts = { type: \"function\"|\"points\"|\"bars\"|\"lines\",\n *              xlim:[x0,x1], ylim:[y0,y1],                  (all but bars)\n *              fn: x=>y | fns:[{fn, color?, label?}],        (function)\n *              points:[[x,y],...],                          (points)\n *              series:[{name, points, color?, dash?}],      (lines; legend drawn)\n *              bars:{labels:[...], values:[...], highlight?} (bars)\n *              xlabel, ylabel, grid:true|false, title }\n *     returns { ctx, sx, sy, box, W, H, opts }  — keep it to draw overlays\n *   HandChart.marker(ch, x, y, {color, label, r})       dot + optional label\n *   HandChart.vline(ch, x, {color, dash, label})         vertical guide\n *   HandChart.hline(ch, y, {color, dash, label})         horizontal guide\n *   HandChart.segment(ch, [x1,y1], [x2,y2], {color, width, dash, arrow})\n *   HandChart.note(ch, x, y, text, {color, align, size}) handwriting annotation\n *   HandChart.attachProbe(canvas, {xlim, ylim}, onProbe, onLeave?)\n *     pointer follow; onProbe({x, y}) in world coords — redraw + readouts there.\n *   HandChart.style = { INK, AXIS, MAIN, AUX, GRID, PAPER, MUTED }\n */\n(function () {\n  const style = {\n    INK: \"#2b2b2b\", AXIS: \"#8a8377\", MAIN: \"#c0392b\", AUX: \"#2e8b6f\",\n    GRID: \"#ece5d4\", PAPER: \"#fbfaf6\", MUTED: \"#8a8377\", PURPLE: \"#7c3aed\", BLUE: \"#2563eb\",\n  };\n  const PALETTE = [style.MAIN, style.AUX, style.BLUE, style.PURPLE, \"#d97706\"];\n  const PAD = { l: 48, r: 18, t: 18, b: 36 };\n  const HAND = \"'Patrick Hand', 'LXGW WenKai Lite', 'PingFang SC', sans-serif\";\n\n  function font(size, italic) { return (italic ? \"italic \" : \"\") + size + \"px \" + HAND; }\n\n  // deterministic wobble so the \"hand\" does not shake on every redraw\n  function wob(seed, amp) { return Math.sin(seed * 12.9898) * amp; }\n\n  function tickVals(min, max, n) {\n    const span = max - min || 1;\n    const raw = span / n;\n    const mag = Math.pow(10, Math.floor(Math.log10(raw)));\n    const step = [1, 2, 2.5, 5, 10].map((m) => m * mag).find((s) => span / s <= n) || mag * 10;\n    const out = [];\n    for (let v = Math.ceil(min / step) * step; v <= max + step * 1e-9; v += step) out.push(+v.toFixed(10));\n    return out;\n  }\n\n  function fmt(v) {\n    const a = Math.abs(v);\n    if (a === 0) return \"0\";\n    if (a >= 10000 || a < 0.01) return v.toExponential(1);\n    return String(+v.toFixed(Math.max(0, 3 - Math.floor(Math.log10(a)))));\n  }\n\n  /** a hand-drawn line: two passes with tiny deterministic wobble */\n  function inkLine(ctx, x1, y1, x2, y2, color, width, seed) {\n    ctx.save();\n    ctx.strokeStyle = color; ctx.lineWidth = width; ctx.lineCap = \"round\";\n    const n = 6, s = seed || (x1 + y2);\n    ctx.beginPath();\n    for (let i = 0; i <= n; i++) {\n      const t = i / n, x = x1 + (x2 - x1) * t, y = y1 + (y2 - y1) * t;\n      const w = i === 0 || i === n ? 0 : wob(s + i, 0.7);\n      i ? ctx.lineTo(x + w, y + w) : ctx.moveTo(x, y);\n    }\n    ctx.stroke();\n    ctx.restore();\n  }\n\n  function frame(ctx, W, H) {\n    ctx.clearRect(0, 0, W, H);\n    ctx.save();\n    ctx.fillStyle = style.PAPER;\n    ctx.fillRect(0, 0, W, H);\n    ctx.restore();\n  }\n\n  function plotBox(W, H, opts) {\n    const t = PAD.t + (opts && opts.title ? 18 : 0);\n    return { x0: PAD.l, y0: t, x1: W - PAD.r, y1: H - PAD.b };\n  }\n\n  function mapping(box, xlim, ylim) {\n    const [x0, x1] = xlim, [y0, y1] = ylim;\n    return {\n      sx: (v) => box.x0 + (v - x0) / (x1 - x0) * (box.x1 - box.x0),\n      sy: (v) => box.y1 - (v - y0) / (y1 - y0) * (box.y1 - box.y0),\n    };\n  }\n\n  function axes(ctx, box, opts) {\n    const [x0, x1] = opts.xlim, [y0, y1] = opts.ylim;\n    const { sx, sy } = mapping(box, opts.xlim, opts.ylim);\n    const xt = tickVals(x0, x1, 6).filter((v) => v >= x0 && v <= x1);\n    const yt = tickVals(y0, y1, 4).filter((v) => v >= y0 && v <= y1);\n    if (opts.grid !== false) {\n      ctx.save(); ctx.strokeStyle = style.GRID; ctx.lineWidth = 1;\n      for (const v of xt) { ctx.beginPath(); ctx.moveTo(sx(v), box.y0); ctx.lineTo(sx(v), box.y1); ctx.stroke(); }\n      for (const v of yt) { ctx.beginPath(); ctx.moveTo(box.x0, sy(v)); ctx.lineTo(box.x1, sy(v)); ctx.stroke(); }\n      ctx.restore();\n    }\n    // axes sit on zero when zero is inside the range, else on the box edge\n    const ax = y0 <= 0 && y1 >= 0 ? sy(0) : box.y1;\n    const ay = x0 <= 0 && x1 >= 0 ? sx(0) : box.x0;\n    inkLine(ctx, box.x0 - 4, ax, box.x1 + 6, ax, style.AXIS, 1.4, 1);\n    inkLine(ctx, ay, box.y1 + 4, ay, box.y0 - 6, style.AXIS, 1.4, 2);\n    // arrow heads\n    ctx.save(); ctx.fillStyle = style.AXIS;\n    ctx.beginPath(); ctx.moveTo(box.x1 + 8, ax); ctx.lineTo(box.x1 + 1, ax - 3.5); ctx.lineTo(box.x1 + 1, ax + 3.5); ctx.fill();\n    ctx.beginPath(); ctx.moveTo(ay, box.y0 - 8); ctx.lineTo(ay - 3.5, box.y0 - 1); ctx.lineTo(ay + 3.5, box.y0 - 1); ctx.fill();\n    ctx.restore();\n    ctx.save();\n    ctx.fillStyle = style.MUTED; ctx.font = font(12);\n    ctx.textAlign = \"center\";\n    for (const v of xt) {\n      if (Math.abs(sx(v) - ay) < 1 && ay !== box.x0) continue; // skip the label under the y axis\n      inkLine(ctx, sx(v), ax - 3, sx(v), ax + 3, style.AXIS, 1, v);\n      ctx.fillText(fmt(v), sx(v), ax + 16);\n    }\n    ctx.textAlign = \"right\";\n    for (const v of yt) {\n      if (Math.abs(sy(v) - ax) < 1 && ax !== box.y1) continue;\n      inkLine(ctx, ay - 3, sy(v), ay + 3, sy(v), style.AXIS, 1, v + 7);\n      ctx.fillText(fmt(v), ay - 7, sy(v) + 4);\n    }\n    ctx.font = font(14, true); ctx.fillStyle = style.INK;\n    if (opts.xlabel) { ctx.textAlign = \"right\"; ctx.fillText(opts.xlabel, box.x1 + 4, ax - 8); }\n    if (opts.ylabel) { ctx.textAlign = \"left\"; ctx.fillText(opts.ylabel, ay + 8, box.y0 + 4); }\n    ctx.restore();\n    return { sx, sy };\n  }\n\n  function stroke(ctx, pts, color, width, dash) {\n    if (!pts.length) return;\n    ctx.save();\n    ctx.strokeStyle = color; ctx.lineWidth = width || 2.2;\n    ctx.lineJoin = \"round\"; ctx.lineCap = \"round\";\n    if (dash) ctx.setLineDash(dash);\n    ctx.beginPath();\n    let pen = false;\n    for (const p of pts) {\n      if (!p) { pen = false; continue; }\n      pen ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1]);\n      pen = true;\n    }\n    ctx.stroke();\n    ctx.restore();\n  }\n\n  function fnPoints(fn, opts, m) {\n    const [x0, x1] = opts.xlim, [y0, y1] = opts.ylim;\n    const n = 400, pts = [];\n    const margin = (y1 - y0) * 0.02;\n    for (let i = 0; i <= n; i++) {\n      const x = x0 + (x1 - x0) * i / n;\n      let y;\n      try { y = fn(x); } catch (e) { y = NaN; }\n      if (!isFinite(y) || y < y0 - margin || y > y1 + margin) { pts.push(null); continue; }\n      pts.push([m.sx(x), m.sy(y)]);\n    }\n    return pts;\n  }\n\n  function legend(ctx, box, items) {\n    if (!items.length) return;\n    ctx.save();\n    ctx.font = font(13); ctx.textAlign = \"left\"; ctx.textBaseline = \"middle\";\n    let x = box.x0 + 10, y = box.y0 + 12;\n    for (const it of items) {\n      inkLine(ctx, x, y, x + 22, y, it.color, 2.4, x);\n      ctx.fillStyle = style.INK;\n      ctx.fillText(it.label, x + 28, y + 1);\n      x += 28 + ctx.measureText(it.label).width + 18;\n    }\n    ctx.restore();\n  }\n\n  function title(ctx, W, text) {\n    ctx.save();\n    ctx.font = font(15); ctx.fillStyle = style.INK; ctx.textAlign = \"center\";\n    ctx.fillText(text, W / 2, 16);\n    ctx.restore();\n  }\n\n  function render(canvas, opts) {\n    const ctx = canvas.getContext(\"2d\");\n    const rect = canvas.getBoundingClientRect();\n    const W = Math.max(60, Math.round(rect.width)), H = Math.max(60, Math.round(rect.height));\n    const dpr = window.devicePixelRatio || 1;\n    if (canvas.width !== Math.round(W * dpr) || canvas.height !== Math.round(H * dpr)) {\n      canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);\n    }\n    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);\n    frame(ctx, W, H);\n    if (opts.title) title(ctx, W, opts.title);\n    const box = plotBox(W, H, opts);\n    const type = opts.type || \"function\";\n\n    if (type === \"bars\") {\n      const labels = opts.bars.labels || [], values = opts.bars.values || [];\n      const n = Math.max(1, values.length);\n      const bw = (box.x1 - box.x0) / n;\n      const vmax = Math.max(...values.map((v) => Math.abs(v)), 0) * 1.15 || 1;\n      const base = box.y1;\n      inkLine(ctx, box.x0 - 4, base, box.x1 + 4, base, style.AXIS, 1.4, 3);\n      ctx.save();\n      values.forEach((v, i) => {\n        const h = (Math.abs(v) / vmax) * (box.y1 - box.y0);\n        const x = box.x0 + i * bw + bw * 0.2, w = bw * 0.6, y = base - h;\n        const hot = opts.bars.highlight != null && i === opts.bars.highlight;\n        ctx.fillStyle = hot ? style.MAIN : \"#e6dfcf\";\n        ctx.fillRect(x, y, w, h);\n        ctx.strokeStyle = hot ? style.MAIN : style.AXIS; ctx.lineWidth = 1.2;\n        ctx.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);\n        ctx.font = font(13); ctx.textAlign = \"center\"; ctx.fillStyle = style.INK;\n        ctx.fillText(String(labels[i] == null ? i + 1 : labels[i]), x + w / 2, base + 17);\n        ctx.fillStyle = hot ? style.MAIN : style.MUTED;\n        ctx.fillText(fmt(v), x + w / 2, y - 6);\n      });\n      ctx.restore();\n      const sx = (i) => box.x0 + (i + 0.5) * bw, sy = (v) => base - (Math.abs(v) / vmax) * (box.y1 - box.y0);\n      return { ctx, sx, sy, box, W, H, opts };\n    }\n\n    const m = axes(ctx, box, opts);\n    const items = [];\n    if (type === \"lines\") {\n      (opts.series || []).forEach((s, i) => {\n        const color = s.color || PALETTE[i % PALETTE.length];\n        stroke(ctx, (s.points || []).map((p) => [m.sx(p[0]), m.sy(p[1])]), color, 2.2, s.dash);\n        if (s.name) items.push({ label: s.name, color });\n      });\n    } else if (type === \"points\") {\n      ctx.save(); ctx.fillStyle = opts.color || style.MAIN;\n      (opts.points || []).forEach((p) => { ctx.beginPath(); ctx.arc(m.sx(p[0]), m.sy(p[1]), opts.r || 3.6, 0, Math.PI * 2); ctx.fill(); });\n      ctx.restore();\n    } else {\n      const fns = opts.fns || (typeof opts.fn === \"function\" ? [{ fn: opts.fn, color: opts.color, label: opts.label }] : []);\n      fns.forEach((f, i) => {\n        const color = f.color || PALETTE[i % PALETTE.length];\n        stroke(ctx, fnPoints(f.fn, opts, m), color, f.width || 2.4, f.dash);\n        if (f.label) items.push({ label: f.label, color });\n      });\n    }\n    legend(ctx, box, items);\n    return { ctx, sx: m.sx, sy: m.sy, box, W, H, opts };\n  }\n\n  // ---- overlays (world coordinates) ----\n  function marker(ch, x, y, o) {\n    o = o || {};\n    const px = ch.sx(x), py = ch.sy(y);\n    ch.ctx.save();\n    ch.ctx.fillStyle = o.color || style.MAIN;\n    ch.ctx.beginPath(); ch.ctx.arc(px, py, o.r || 5, 0, Math.PI * 2); ch.ctx.fill();\n    ch.ctx.strokeStyle = style.PAPER; ch.ctx.lineWidth = 1.5; ch.ctx.stroke();\n    if (o.label) {\n      ch.ctx.font = font(o.size || 13); ch.ctx.fillStyle = o.color || style.MAIN; ch.ctx.textAlign = \"left\";\n      ch.ctx.fillText(o.label, px + 8, py - 8);\n    }\n    ch.ctx.restore();\n  }\n\n  function vline(ch, x, o) {\n    o = o || {};\n    const px = ch.sx(x);\n    stroke(ch.ctx, [[px, ch.box.y0], [px, ch.box.y1]], o.color || style.MUTED, o.width || 1.2, o.dash || [4, 4]);\n    if (o.label) note(ch, x, null, o.label, { color: o.color || style.MUTED, px: px + 4, py: ch.box.y0 + 12, align: \"left\", size: o.size });\n  }\n\n  function hline(ch, y, o) {\n    o = o || {};\n    const py = ch.sy(y);\n    stroke(ch.ctx, [[ch.box.x0, py], [ch.box.x1, py]], o.color || style.MUTED, o.width || 1.2, o.dash || [4, 4]);\n    if (o.label) note(ch, null, y, o.label, { color: o.color || style.MUTED, px: ch.box.x1 - 4, py: py - 5, align: \"right\", size: o.size });\n  }\n\n  function segment(ch, a, b, o) {\n    o = o || {};\n    const x1 = ch.sx(a[0]), y1 = ch.sy(a[1]), x2 = ch.sx(b[0]), y2 = ch.sy(b[1]);\n    const color = o.color || style.AUX;\n    stroke(ch.ctx, [[x1, y1], [x2, y2]], color, o.width || 2, o.dash);\n    if (o.arrow) {\n      const ang = Math.atan2(y2 - y1, x2 - x1), L = 9;\n      ch.ctx.save(); ch.ctx.fillStyle = color; ch.ctx.beginPath();\n      ch.ctx.moveTo(x2, y2);\n      ch.ctx.lineTo(x2 - L * Math.cos(ang - 0.4), y2 - L * Math.sin(ang - 0.4));\n      ch.ctx.lineTo(x2 - L * Math.cos(ang + 0.4), y2 - L * Math.sin(ang + 0.4));\n      ch.ctx.fill(); ch.ctx.restore();\n    }\n  }\n\n  function note(ch, x, y, text, o) {\n    o = o || {};\n    const px = o.px != null ? o.px : ch.sx(x), py = o.py != null ? o.py : ch.sy(y);\n    ch.ctx.save();\n    ch.ctx.font = font(o.size || 14, o.italic);\n    ch.ctx.fillStyle = o.color || style.INK;\n    ch.ctx.textAlign = o.align || \"left\";\n    ch.ctx.fillText(text, px, py);\n    ch.ctx.restore();\n  }\n\n  /** Pointer probe in world coords; the caller redraws and updates readouts. */\n  function attachProbe(canvas, opts, onProbe, onLeave) {\n    const [x0, x1] = opts.xlim;\n    const [y0, y1] = opts.ylim;\n    const toWorld = (px, py) => {\n      const r = canvas.getBoundingClientRect();\n      const box = plotBox(r.width, r.height, opts);\n      const t = (px - r.left - box.x0) / (box.x1 - box.x0);\n      const u = 1 - (py - r.top - box.y0) / (box.y1 - box.y0);\n      return { x: x0 + t * (x1 - x0), y: y0 + u * (y1 - y0), inside: t >= 0 && t <= 1 };\n    };\n    const handler = (e) => {\n      const p = toWorld(e.clientX, e.clientY);\n      if (p.inside) onProbe(p);\n    };\n    canvas.addEventListener(\"pointermove\", handler);\n    canvas.addEventListener(\"pointerdown\", handler);\n    if (onLeave) canvas.addEventListener(\"pointerleave\", onLeave);\n    canvas.style.touchAction = \"none\";\n    return toWorld;\n  }\n\n  window.HandChart = { render, marker, vline, hline, segment, note, attachProbe, style, font: HAND };\n})();\n</script>\n  <meta charset=\"utf-8\">\n  <style>\n    html, body { margin: 0; height: 100%; background: #faf8f3; font-family: \"PingFang SC\", \"Hiragino Sans GB\", sans-serif; color: #333; overflow: hidden; }\n    #wrap { position: absolute; inset: 0; display: flex; flex-direction: column; }\n    #plot { flex: 1; min-height: 0; margin: 10px 10px 4px; border: 1px solid #d9d2c3; border-radius: 12px; background: #fbfaf6; cursor: crosshair; touch-action: none; }\n    #readout { display: flex; justify-content: center; align-items: center; gap: 28px; padding: 4px 0 8px; font-size: 12px; color: #666; }\n    #readout .k { display: block; font-size: 11px; letter-spacing: .04em; }\n    #readout .v { display: block; font-family: ui-monospace, Menlo, monospace; font-size: 14px; font-weight: 700; color: #c0392b; min-width: 64px; text-align: center; }\n    #formula { display: inline-block; padding: 3px 10px; border: 1px solid #d9d2c3; border-radius: 6px; background: #fff; font-family: Georgia, \"Times New Roman\", serif; font-style: italic; font-size: 13px; color: #333; }\n    .control-row { display: flex; justify-content: center; align-items: center; gap: 18px; padding: 2px 0 6px; font-size: 12px; color: #555; flex-wrap: wrap; }\n    .control-row label { display: flex; align-items: center; gap: 6px; }\n    .control-row input[type=range] { width: 100px; accent-color: #c0392b; }\n    .control-row .val { font-family: ui-monospace, Menlo, monospace; font-weight: 700; color: #c0392b; min-width: 18px; text-align: center; }\n  </style>\n</head>\n<body>\n  <div id=\"wrap\">\n    <canvas id=\"plot\"></canvas>\n    <div id=\"readout\">\n      <span><span class=\"k\">输入形状</span><span class=\"v\" id=\"inputShape-display\">—</span></span>\n      <span><span class=\"k\">权重形状</span><span class=\"v\" id=\"weightShape-display\">—</span></span>\n      <span><span class=\"k\">输出形状</span><span class=\"v\" id=\"outputShape-display\">—</span></span>\n      <span id=\"formula\">(batch×in) @ (in×out)ᵀ = batch×out</span>\n    </div>\n    <div class=\"control-row\">\n      <label>batch <input type=\"range\" id=\"batchSize-slider\" min=\"1\" max=\"5\" value=\"2\" step=\"1\"><span class=\"val\" id=\"batchSize-val\">2</span></label>\n      <label>in <input type=\"range\" id=\"inDim-slider\" min=\"1\" max=\"5\" value=\"3\" step=\"1\"><span class=\"val\" id=\"inDim-val\">3</span></label>\n      <label>out <input type=\"range\" id=\"outDim-slider\" min=\"1\" max=\"5\" value=\"4\" step=\"1\"><span class=\"val\" id=\"outDim-val\">4</span></label>\n    </div>\n  </div>\n  <script>\n    // --- 核心参数 -------------------------------------------------------\n    let batchSize = 2, inDim = 3, outDim = 4;\n\n    // --- 画布与坐标 -----------------------------------------------------\n    const canvas = document.getElementById('plot');\n    const ctx = canvas.getContext('2d');\n    let W = 0, H = 0;\n    const PAD = { l: 30, r: 30, t: 30, b: 30 };\n\n    // 三个矩阵的锚点区域 (世界坐标 0..1 归一化)\n    // 输入矩阵 X: 区域 B2 (x: 0.08~0.30, y: 0.25~0.75)\n    // 权重矩阵 W: 区域 D2 (x: 0.42~0.64, y: 0.25~0.75)\n    // 输出矩阵 XWᵀ: 区域 F2 (x: 0.76~0.98, y: 0.25~0.75)\n    const REGIONS = {\n      input:  { x0: 0.06, x1: 0.28, y0: 0.22, y1: 0.78 },\n      weight: { x0: 0.40, x1: 0.62, y0: 0.22, y1: 0.78 },\n      output: { x0: 0.74, x1: 0.96, y0: 0.22, y1: 0.78 }\n    };\n\n    // 将归一化坐标转为画布像素\n    function px(nx) { return PAD.l + nx * (W - PAD.l - PAD.r); }\n    function py(ny) { return PAD.t + ny * (H - PAD.t - PAD.b); }\n\n    // --- 绘制工具 -------------------------------------------------------\n    function drawMatrix(region, rows, cols, color, label, sublabel) {\n      const x0 = px(region.x0), x1 = px(region.x1);\n      const y0 = py(region.y0), y1 = py(region.y1);\n      const w = x1 - x0, h = y1 - y0;\n      const cellW = w / cols, cellH = h / rows;\n\n      // 矩阵外框\n      ctx.save();\n      ctx.strokeStyle = color;\n      ctx.lineWidth = 2;\n      ctx.strokeRect(x0, y0, w, h);\n\n      // 网格线\n      ctx.strokeStyle = color;\n      ctx.lineWidth = 0.8;\n      ctx.globalAlpha = 0.5;\n      for (let i = 1; i < cols; i++) {\n        ctx.beginPath();\n        ctx.moveTo(x0 + i * cellW, y0);\n        ctx.lineTo(x0 + i * cellW, y1);\n        ctx.stroke();\n      }\n      for (let j = 1; j < rows; j++) {\n        ctx.beginPath();\n        ctx.moveTo(x0, y0 + j * cellH);\n        ctx.lineTo(x1, y0 + j * cellH);\n        ctx.stroke();\n      }\n      ctx.globalAlpha = 1;\n\n      // 单元格填充（浅色）\n      ctx.fillStyle = color;\n      ctx.globalAlpha = 0.08;\n      for (let r = 0; r < rows; r++) {\n        for (let c = 0; c < cols; c++) {\n          ctx.fillRect(x0 + c * cellW + 1, y0 + r * cellH + 1, cellW - 2, cellH - 2);\n        }\n      }\n      ctx.globalAlpha = 1;\n\n      // 矩阵名称标签\n      ctx.font = 'italic 13px Georgia, serif';\n      ctx.fillStyle = color;\n      ctx.textAlign = 'center';\n      ctx.fillText(label, (x0 + x1) / 2, y0 - 8);\n\n      // 维度标注\n      if (sublabel) {\n        ctx.font = 'italic 11px Georgia, serif';\n        ctx.fillStyle = '#8a8377';\n        ctx.fillText(sublabel, (x0 + x1) / 2, y1 + 16);\n      }\n\n      ctx.restore();\n    }\n\n    // --- 主绘制函数 -----------------------------------------------------\n    function draw() {\n      ctx.clearRect(0, 0, W, H);\n\n      // 背景网格（极淡的参考线，帮助定位）\n      ctx.save();\n      ctx.strokeStyle = '#e8e2d6';\n      ctx.lineWidth = 0.5;\n      for (let i = 1; i < 6; i++) {\n        const gx = px(i / 6);\n        ctx.beginPath(); ctx.moveTo(gx, py(0.1)); ctx.lineTo(gx, py(0.9)); ctx.stroke();\n      }\n      for (let j = 1; j < 6; j++) {\n        const gy = py(j / 6);\n        ctx.beginPath(); ctx.moveTo(px(0.02), gy); ctx.lineTo(px(0.98), gy); ctx.stroke();\n      }\n      ctx.restore();\n\n      // 绘制三个矩阵\n      drawMatrix(REGIONS.input, batchSize, inDim, '#c0392b', 'X', 'batch=' + batchSize + ', in=' + inDim);\n      drawMatrix(REGIONS.weight, outDim, inDim, '#c0392b', 'W', 'out=' + outDim + ', in=' + inDim);\n      drawMatrix(REGIONS.output, batchSize, outDim, '#c0392b', 'XWᵀ', 'batch=' + batchSize + ', out=' + outDim);\n\n      // 绘制操作箭头 (从输入矩阵指向输出矩阵，经过权重矩阵上方)\n      const ax0 = px(REGIONS.input.x1) + 6;\n      const ax1 = px(REGIONS.output.x0) - 6;\n      const ay = py(0.12);\n      ctx.save();\n      ctx.strokeStyle = '#2e8b6f';\n      ctx.lineWidth = 1.5;\n      ctx.setLineDash([5, 4]);\n      ctx.beginPath();\n      ctx.moveTo(ax0, ay);\n      ctx.lineTo(ax1, ay);\n      ctx.stroke();\n      // 箭头头部\n      ctx.setLineDash([]);\n      ctx.fillStyle = '#2e8b6f';\n      ctx.beginPath();\n      ctx.moveTo(ax1, ay);\n      ctx.lineTo(ax1 - 8, ay - 4);\n      ctx.lineTo(ax1 - 8, ay + 4);\n      ctx.closePath();\n      ctx.fill();\n      // 箭头标注\n      ctx.font = 'italic 12px Georgia, serif';\n      ctx.fillStyle = '#2e8b6f';\n      ctx.textAlign = 'center';\n      ctx.fillText('XWᵀ', (ax0 + ax1) / 2, ay - 6);\n      ctx.restore();\n\n      // 公式区域 (画布底部)\n      ctx.save();\n      ctx.font = 'italic 12px Georgia, serif';\n      ctx.fillStyle = '#8a8377';\n      ctx.textAlign = 'center';\n      const formulaY = py(0.92);\n      const formulaText = '(' + batchSize + '×' + inDim + ') @ (' + inDim + '×' + outDim + ')ᵀ = ' + batchSize + '×' + outDim;\n      ctx.fillText(formulaText, W / 2, formulaY);\n\n      // 高亮匹配的 in 维度\n      ctx.font = 'italic 12px Georgia, serif';\n      ctx.fillStyle = '#c0392b';\n      // 在公式中高亮 in 维度数字（简单处理：在公式下方画一个小标记）\n      ctx.fillStyle = '#2e8b6f';\n      ctx.font = 'italic 11px Georgia, serif';\n      ctx.fillText('in 维度匹配 ✓', W / 2, formulaY + 18);\n      ctx.restore();\n\n      // 更新读数\n      document.getElementById('inputShape-display').textContent = batchSize + '×' + inDim;\n      document.getElementById('weightShape-display').textContent = outDim + '×' + inDim;\n      document.getElementById('outputShape-display').textContent = batchSize + '×' + outDim;\n    }\n\n    // --- 尺寸调整 -------------------------------------------------------\n    function resize() {\n      const r = canvas.getBoundingClientRect();\n      W = r.width; H = r.height;\n      const dpr = window.devicePixelRatio || 1;\n      canvas.width = Math.round(W * dpr);\n      canvas.height = Math.round(H * dpr);\n      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);\n      draw();\n    }\n\n    // --- 滑块事件绑定 ---------------------------------------------------\n    function bindSlider(id, setter) {\n      const slider = document.getElementById(id + '-slider');\n      const valEl = document.getElementById(id + '-val');\n      slider.addEventListener('input', function () {\n        const v = parseInt(this.value, 10);\n        setter(v);\n        valEl.textContent = v;\n        draw();\n      });\n    }\n\n    bindSlider('batchSize', function (v) { batchSize = v; });\n    bindSlider('inDim', function (v) { inDim = v; });\n    bindSlider('outDim', function (v) { outDim = v; });\n\n    // --- 教师控制钩子 ---------------------------------------------------\n    window.hkControl = {\n      set: function (s) {\n        if (!s) return;\n        if (s.batchSize != null) {\n          batchSize = Math.max(1, Math.min(5, +s.batchSize));\n          document.getElementById('batchSize-slider').value = batchSize;\n          document.getElementById('batchSize-val').textContent = batchSize;\n        }\n        if (s.inDim != null) {\n          inDim = Math.max(1, Math.min(5, +s.inDim));\n          document.getElementById('inDim-slider').value = inDim;\n          document.getElementById('inDim-val').textContent = inDim;\n        }\n        if (s.outDim != null) {\n          outDim = Math.max(1, Math.min(5, +s.outDim));\n          document.getElementById('outDim-slider').value = outDim;\n          document.getElementById('outDim-val').textContent = outDim;\n        }\n        draw();\n      },\n      highlight: function (sel) {\n        var el = document.querySelector(sel);\n        if (!el) return;\n        el.style.outline = '2px solid #c0392b';\n        setTimeout(function () { el.style.outline = ''; }, 1500);\n      },\n      annotate: function () {},\n      reveal: function () {}\n    };\n\n    // --- 初始化 ---------------------------------------------------------\n    window.addEventListener('resize', resize);\n    resize();\n  </script>\n</body>\n</html>",
+        "html_path": null,
+        "mermaid": null,
+        "layout": "newcol",
+        "params": [],
+        "controls": []
+      },
+      "widget_hint": "调整 $W$ 的 out 和 in 滑块，注意输出形状如何变化。"
+    }
+  ]
+}

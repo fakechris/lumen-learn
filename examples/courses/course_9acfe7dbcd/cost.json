@@ -1,0 +1,86 @@
+{
+ "total": {
+  "calls": 105,
+  "prompt_tokens": 156004,
+  "completion_tokens": 88004,
+  "reasoning_tokens": 0,
+  "tts_chars": 6369,
+  "cost_usd": 0.138925,
+  "seconds": 500.8,
+  "estimated_price": true
+ },
+ "by_purpose": {
+  "synth": {
+   "calls": 16,
+   "prompt_tokens": 60758,
+   "completion_tokens": 22069,
+   "reasoning_tokens": 0,
+   "chars": 0,
+   "cost_usd": 0.040681,
+   "seconds": 91.7
+  },
+  "svg": {
+   "calls": 6,
+   "prompt_tokens": 3753,
+   "completion_tokens": 13787,
+   "reasoning_tokens": 0,
+   "chars": 0,
+   "cost_usd": 0.016179,
+   "seconds": 39.8
+  },
+  "exercise": {
+   "calls": 8,
+   "prompt_tokens": 15542,
+   "completion_tokens": 6935,
+   "reasoning_tokens": 0,
+   "chars": 0,
+   "cost_usd": 0.011825,
+   "seconds": 28.1
+  },
+  "widget_plan": {
+   "calls": 12,
+   "prompt_tokens": 4747,
+   "completion_tokens": 7705,
+   "reasoning_tokens": 0,
+   "chars": 0,
+   "cost_usd": 0.009757,
+   "seconds": 30.1
+  },
+  "widget": {
+   "calls": 13,
+   "prompt_tokens": 51939,
+   "completion_tokens": 35309,
+   "reasoning_tokens": 0,
+   "chars": 0,
+   "cost_usd": 0.052863,
+   "seconds": 105.8
+  },
+  "qa": {
+   "calls": 8,
+   "prompt_tokens": 14114,
+   "completion_tokens": 783,
+   "reasoning_tokens": 0,
+   "chars": 0,
+   "cost_usd": 0.004672,
+   "seconds": 7.6
+  },
+  "tts": {
+   "calls": 41,
+   "prompt_tokens": 0,
+   "completion_tokens": 0,
+   "reasoning_tokens": 0,
+   "chars": 6369,
+   "cost_usd": 0.0,
+   "seconds": 193.4
+  },
+  "synth_repair": {
+   "calls": 1,
+   "prompt_tokens": 5151,
+   "completion_tokens": 1416,
+   "reasoning_tokens": 0,
+   "chars": 0,
+   "cost_usd": 0.002948,
+   "seconds": 4.5
+  }
+ }
+}

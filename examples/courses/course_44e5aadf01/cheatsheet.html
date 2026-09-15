@@ -1,0 +1,37 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8">
+<title>中心极限定理：为什么正态分布到处都是 · 速查表</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<style>
+@media print { @page { size: A4; margin: 10mm; } body { -webkit-print-color-adjust: exact; } }
+body { font-family: 'LXGW WenKai Lite', 'Patrick Hand', sans-serif; color: #2b2b2b; background: #fbfaf7;
+       max-width: 210mm; margin: 0 auto; padding: 6mm; font-size: 11.5px; line-height: 1.45; }
+h1 { font-size: 17px; margin: 0 0 2mm; } h2 { font-size: 12.5px; margin: 3mm 0 1mm; border-bottom: 1.5px solid #4b4b4b; }
+.meta { color: #6b6b6b; font-size: 10px; margin-bottom: 2mm; }
+.cols { column-count: 2; column-gap: 6mm; }
+table { border-collapse: collapse; width: 100%; font-size: 10.5px; }
+td { border-bottom: 0.5px solid #d8d2c4; padding: 1mm 1.5mm 1mm 0; vertical-align: top; }
+td:first-child { white-space: nowrap; font-weight: 600; }
+ul { margin: 0.5mm 0 1.5mm 4mm; padding: 0; } li { margin-bottom: 0.6mm; }
+.rel { color: #4b4b4b; } .rel b { color: #8a4b2b; }
+.mis { background: #f7ece8; border-left: 2.5px solid #b0553a; padding: 0.8mm 2mm; margin-bottom: 1mm; }
+</style></head><body>
+<h1>中心极限定理：为什么正态分布到处都是 · 速查表</h1>
+<p class=meta>｜编译自课程包（概念图 / 要点 / 板书 / 误区），不含课堂之外的内容。</p>
+<h2>每节要点</h2>
+<p><b>从均匀骰子到钟形曲线</b></p>
+<ul><li><b>平均出钟形</b> — 均匀原始分布，多次取平均后，平均值分布趋向钟形，这是中心极限定理的起点。</li></ul>
+<p><b>从任意分布到正态：中心极限定理</b></p>
+<ul><li><b>中心极限定理</b> — 独立同分布、方差有限，样本均值标准化后趋向标准正态；方差 σ²/n，标准误差 σ/√n。</li></ul>
+<p><b>为什么正态分布无处不在？</b></p>
+<ul><li><b>中心极限定理</b> — 许多独立小贡献相加，总和的波动近似正态；这是统计推断的地基。</li></ul>
+<p><b>样本均值分布还是样本本身？</b></p>
+<ul><li><b>正态的是均值，不是数据</b> — CLT 说的是样本均值的分布收敛于正态：前提有限方差，n 越大越窄，按 sigma 除以根号 n 收缩。</li></ul>
+<h2>关键板书与公式</h2>
+<ul><li>大量重复取平均</li><li>→ 平均值的分布<b>趋向钟形</b></li><li>不依赖原始分布是否为钟形</li><li>原始均匀 → 平均后照样钟形</li><li>均匀原始分布</li><li>多次平均 → <b>钟形曲线</b></li><li>正态从平均中来</li><li>这是中心极限定理的起点</li><li>$X_1,\ldots,X_n$ <b>独立同分布</b>，均值 $\mu$，方差 $\sigma^2$ 有限</li><li>（分布形状不限：均匀、偏态、双峰都行）</li><li>$\dfrac{\bar{X}-\mu}{\sigma/\sqrt{n}} \xrightarrow{d} \mathcal{N}(0,1)$</li><li>等价：$\bar{X} \approx \mathcal{N}\!\left(\mu,\ \dfrac{\sigma^2}{n}\right)$</li><li>样本均值 $\bar{X}$ 近似 $\mathcal{N}(\mu,\ \sigma^2/n)$</li><li><b>方差</b>：$\sigma^2/n$ → 除以 $n$</li><li><b>标准误差</b>：$\sigma/\sqrt{n}$ → 除以 $\sqrt{n}$</li><li>关系：标准误差 $=\sqrt{\text{方差}}$</li><li>$n$ 变 4 倍 → 方差变 $1/4$，标准误差变 $1/2$</li><li>条件：<b>独立同分布</b>，方差 $\sigma^2$ 有限（形状不限）</li><li>结论：$\dfrac{\bar{X}-\mu}{\sigma/\sqrt{n}} \to \mathcal{N}(0,1)$</li><li>两个数：方差 $\sigma^2/n$，标准误差 $\sigma/\sqrt{n}$</li><li>误区一：原始分布不必正态</li><li>误区二：方差除以 $n$，不是除以 $\sqrt{n}$</li><li>前提：<b>很多</b>独立的小贡献相加，每个都不大</li><li>结论：总和的波动 → <b>近似正态</b></li></ul>
+<h2>常见误区（对的说法）</h2>
+<ul><li>中间点数 3、4 出现得多，两边少：这是把'平均之后'的形状提前安到了单颗骰子上。单颗骰子没有这个偏好。</li><li>还是六根一样高，均匀不会变：这是最顽固的直觉：以为原始均匀，平均之后也均匀。其实平均会把极端值拉回来，中间值出现得最多。</li><li>因为原始数据其实也是钟形，只是没看出来：这是典型误区：以为平均后钟形，就说明原始数据也钟形。其实原始六根柱一样高。</li><li>每个基因本身就是正态的，加起来还是正态：这是最常见的直觉：以为零件是正态的，拼起来才正态。其实零件可以完全不是正态的。</li><li>还是方的，原始分布是均匀的，平均出来也该是均匀的：这是最自然的猜测：以为平均只是把形状压扁，不会改变形状。但平均会把形状磨成钟形。</li><li>二分之一，因为标准差是 sigma 除以根号 n：这是把标准误差当成了方差：标准差确实变一半，但方差是它的平方，所以变四分之一。</li><li>因为基因、营养这些单个因素本身就是钟形分布：这是最常见的直觉：以为源头必须是正态的。但单个因素往往不是正态的，是相加这个动作造出了钟形。</li><li>还是平的，骰子本来就是均匀的：以为均匀性会一直保留。但每颗骰子独立，相加后中间的组合数远多于两边。</li><li>因为分数本身被设计成正态的：这是典型误区：以为正态是人为规定或数据量大自动出现，忽略了相加结构。</li><li>会，数据一多就自动变钟形：这是最常见的直觉：把“样本量”当成了“正态生成器”。但样本量只影响直方图的平滑程度，不改变它围绕哪个形状聚集。</li><li>已经变成对称的钟形了：很多人以为样本量一大，直方图就会自动对称。但样本量只让直方图更平滑，不改变它跟随的总体形状。</li><li>样本数据本身：这是最根深蒂固的误读：把“样本均值的分布”偷换成了“样本数据的分布”。定理从头到尾讲的是均值这个统计量的分布。</li></ul>
+<script>addEventListener('DOMContentLoaded', () => renderMathInElement(document.body,
+  {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]}));</script>
+</body></html>

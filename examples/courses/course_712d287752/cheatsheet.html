@@ -1,0 +1,43 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8">
+<title>浮点数为什么不准：0.1 + 0.2 ≠ 0.3 · 速查表</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<style>
+@media print { @page { size: A4; margin: 10mm; } body { -webkit-print-color-adjust: exact; } }
+body { font-family: 'LXGW WenKai Lite', 'Patrick Hand', sans-serif; color: #2b2b2b; background: #fbfaf7;
+       max-width: 210mm; margin: 0 auto; padding: 6mm; font-size: 11.5px; line-height: 1.45; }
+h1 { font-size: 17px; margin: 0 0 2mm; } h2 { font-size: 12.5px; margin: 3mm 0 1mm; border-bottom: 1.5px solid #4b4b4b; }
+.meta { color: #6b6b6b; font-size: 10px; margin-bottom: 2mm; }
+.cols { column-count: 2; column-gap: 6mm; }
+table { border-collapse: collapse; width: 100%; font-size: 10.5px; }
+td { border-bottom: 0.5px solid #d8d2c4; padding: 1mm 1.5mm 1mm 0; vertical-align: top; }
+td:first-child { white-space: nowrap; font-weight: 600; }
+ul { margin: 0.5mm 0 1.5mm 4mm; padding: 0; } li { margin-bottom: 0.6mm; }
+.rel { color: #4b4b4b; } .rel b { color: #8a4b2b; }
+.mis { background: #f7ece8; border-left: 2.5px solid #b0553a; padding: 0.8mm 2mm; margin-bottom: 1mm; }
+</style></head><body>
+<h1>浮点数为什么不准：0.1 + 0.2 ≠ 0.3 · 速查表</h1>
+<p class=meta>｜编译自课程包（概念图 / 要点 / 板书 / 误区），不含课堂之外的内容。</p>
+<h2>每节要点</h2>
+<p><b>二进制小数的先天问题</b></p>
+<ul><li><b>二进制小数的先天问题</b> — 0.1 在二进制下无限循环，计算机截断产生误差，0.1+0.2≠0.3 由此而来。</li></ul>
+<p><b>64位三段：符号、指数、尾数</b></p>
+<ul><li><b>浮点数三段布局</b> — 64 位 = 1 位符号 + 11 位指数 + 52 位尾数，值 = (-1)^s × 1.f × 2^{e-1023}，只能表示有限个离散实数。</li></ul>
+<p><b>尾数精度与间隔：为什么加1看不见</b></p>
+<ul><li><b>浮点精度是相对的</b> — 双精度约 15~16 位十进制有效数字，相邻可表示数间隔随指数指数级增长，大数附近加 1 看不见。</li></ul>
+<p><b>舍入累积</b></p>
+<ul><li><b>舍入累积</b> — 十进制小数转二进制存不下，每次运算再舍一次，误差逐次叠加；用整数分或十进制类型绕开。</li></ul>
+<p><b>大数吃小数</b></p>
+<ul><li><b>大数吃小数</b> — 浮点数在数量级差距大时，小数会被大数吸收；先累加小数再加大数可减少损失。</li></ul>
+<p><b>相等判断</b></p>
+<ul><li><b>浮点相等判断</b> — 用相对误差容限比较，ε 随量级缩放，避免固定常数和直接 ==。</li></ul>
+<p><b>浮点数的不可结合性</b></p>
+<ul><li><b>浮点数的工程直觉</b> — 范围大但精度有限，加法不可结合；误差是这门算术的物理属性，要在算法设计里安排进去。</li></ul>
+<h2>关键板书与公式</h2>
+<ul><li>无限长 → 计算机只能存有限位</li><li>在某一位置<b>截断</b>（砍掉后面的位）</li><li>被砍掉的部分 = <b>误差</b></li><li>误差从这里出生</li><li>$0.1_{10}$ 在二进制 → <b>无限循环</b></li><li>计算机必须<b>截断</b> → 砍掉尾巴</li><li>砍掉的部分 = <b>误差</b></li><li>所以 $0.1 + 0.2 \neq 0.3$</li><li>符号 $s$：<b>1 位</b></li><li>指数 $e$：<b>11 位</b></li><li>尾数 $f$：<b>52 位</b></li><li>$1 + 11 + 52 = 64$</li><li>符号：$(-1)^s$</li><li>尾数：<b>隐含前导 1</b> → $1.f$</li><li>指数：$e$ 要减偏移量 $1023$ → $2^{e-1023}$</li><li>合起来：$(-1)^s \times 1.f \times 2^{e-1023}$</li><li>布局：$1 + 11 + 52 = 64$</li><li>公式：$(-1)^s \times 1.f \times 2^{e-1023}$</li><li>本质：<b>有限个离散值</b>，相邻有间隔</li><li>尾数 52 位 + 隐含 1 = <b>53 位二进制有效数字</b></li><li>$\log_{10} 2 \approx 0.301$</li><li>$53 \times 0.301 \approx 15.95$</li><li>→ 约 <b>15~16 位十进制有效数字</b></li><li>53 位二进制有效数字 $\approx$ <b>15~16 位十进制</b></li></ul>
+<h2>常见误区（对的说法）</h2>
+<ul><li>当然能，换个进制而已，数又没变：这是最常见的直觉：以为进制只是写法，不改变数本身。但能不能写完，取决于分母里有没有 2 以外的质因子。</li><li>会停，只是位数多一点：很多人以为位数多但总有限。但 0.1 的分母含因子 5，二进制除不尽，循环节 0011 无限重复。</li><li>会，多写几位总能写完：这是最常见的直觉：以为多写几位就能写完。但循环节 0011 会永远重复，没有终点。</li><li>无限多个，位数够多就能表示所有实数：这是最常见的直觉：以为位数多就等于能覆盖整个实数轴。但 64 位只有 2 的 64 次方种组合，实数却是无限多的。</li><li>因为指数管范围，尾数管精度，精度更重要所以给得多：这是把位数和重要性搞反了：指数决定能表示多大或多小的数，尾数决定能表示多精细的数。日常计算里精度更常被用到，所以尾数分到更多位。</li><li>还是 1，指数位只是编号：以为指数位是直接的值，忘了要减 1023。</li><li>一样，浮点数精度是固定的：很多人以为浮点数像尺子一样刻度均匀，其实刻度是随指数变稀的。</li><li>0.01，因为最后一位是百分位：把有效数字位数和固定小数位数搞混了，以为小数点后总有两位。</li><li>变成 10 的 20 次方加 1，多 1 而已：这是最常见的直觉：以为加 1 总能改变数值。但 1 远小于间隔 16384 的一半，根本落不进下一个可表示数。</li><li>True，这不就是小学算术吗：这是最自然的直觉：十进制里 0.1 加 0.2 就是 0.3，可计算机存的是二进制，压根存不下精确的 0.1。</li><li>每次只偏一丁点，最后基本看不出来：很多人觉得单次误差小到可以忽略，但舍入方向若长期一致，误差会像滚雪球一样累积。</li><li>每加一次跳一下，跳完就停：这是常见的直觉：以为舍入误差是一次性的，加完就固定了。但每一次加法都会再舍一次，误差会一层层叠上去。</li></ul>
+<script>addEventListener('DOMContentLoaded', () => renderMathInElement(document.body,
+  {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]}));</script>
+</body></html>

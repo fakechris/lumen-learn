@@ -1,0 +1,302 @@
+{
+  "session_id": "sess_3",
+  "course_id": "course_7cb6a693f5",
+  "title": "相位：转过的角度与影子位置",
+  "learning_goal": "能用圆周运动的投影解释相位，并用相位差判断同相/反相。",
+  "steps": [
+    {
+      "title": "旋转的影子",
+      "beat": "hook",
+      "spoken_text": "先看这张图：一个质点在圆上匀速转，圆心在原点，半径是 A，它和 x 轴的夹角就是 θ。从质点往 x 轴作垂线，垂足那个点我标成影子。现在只看影子，它在 x 轴上从负 A 跑到正 A。你猜，影子是匀速跑，还是快到两头时慢下来？",
+      "boards": [
+        {
+          "title": "",
+          "markdown": "- 质点绕圆匀速转，半径 $A$\n- 夹角 $\\theta$，垂足 = **影子**\n- 影子只在 $x$ 轴上动：$-A \\to +A$",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "circle",
+          "snippet": "影子",
+          "board_index": 0,
+          "trigger_phrase": "垂足那个点我标成影子",
+          "color": null
+        }
+      ],
+      "illustration": {
+        "kind": "svg",
+        "caption": "圆周运动在 x 轴上的投影就是振动",
+        "brief": "左侧一个圆，圆心在原点，半径标 A；圆上画一个质点，从 x 轴正方向逆时针转过角度 θ，标 θ=ωt+φ；从质点向 x 轴作一条竖直虚线，垂足标为影子；x 轴上画出从 -A 到 +A 的振动范围，两端标 -A、+A；影子点用红色圆点标出。",
+        "figure_id": null,
+        "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 800 520\" font-family=\"'LXGW WenKai Lite', sans-serif\">\n  <!-- 标题 -->\n  <text x=\"400\" y=\"42\" text-anchor=\"middle\" font-size=\"24\" fill=\"#333\">圆周运动在 x 轴上的投影就是振动</text>\n\n  <!-- 左侧：圆周运动 -->\n  <g transform=\"translate(240, 290)\">\n    <!-- 坐标轴 -->\n    <line x1=\"-160\" y1=\"0\" x2=\"160\" y2=\"0\" stroke=\"#4b4b4b\" stroke-width=\"2\" stroke-linecap=\"round\"/>\n    <line x1=\"0\" y1=\"140\" x2=\"0\" y2=\"-140\" stroke=\"#4b4b4b\" stroke-width=\"2\" stroke-linecap=\"round\"/>\n    <!-- 圆 -->\n    <circle cx=\"0\" cy=\"0\" r=\"110\" fill=\"none\" stroke=\"#4b4b4b\" stroke-width=\"2\"/>\n    <!-- 半径 A -->\n    <line x1=\"0\" y1=\"0\" x2=\"110\" y2=\"0\" stroke=\"#4b4b4b\" stroke-width=\"2\" stroke-linecap=\"round\"/>\n    <!-- 质点位置：θ=60° -->\n    <line x1=\"0\" y1=\"0\" x2=\"55\" y2=\"-95.3\" stroke=\"#4b4b4b\" stroke-width=\"2\" stroke-linecap=\"round\"/>\n    <!-- 角度弧 -->\n    <path d=\"M 40 0 A 40 40 0 0 0 20 -34.6\" fill=\"none\" stroke=\"#e05656\" stroke-width=\"2\" stroke-linecap=\"round\"/>\n    <!-- 质点 -->\n    <circle cx=\"55\" cy=\"-95.3\" r=\"7\" fill=\"#c9d8e8\" stroke=\"#4b4b4b\" stroke-width=\"2\"/>\n    <!-- 竖直虚线到 x 轴 -->\n    <line x1=\"55\" y1=\"-95.3\" x2=\"55\" y2=\"0\" stroke=\"#4b4b4b\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-dasharray=\"6 6\"/>\n    <!-- 影子点 -->\n    <circle cx=\"55\" cy=\"0\" r=\"7\" fill=\"#e05656\" stroke=\"#4b4b4b\" stroke-width=\"2\"/>\n    <!-- 振动范围 -->\n    <line x1=\"-110\" y1=\"0\" x2=\"110\" y2=\"0\" stroke=\"#b8dcc6\" stroke-width=\"6\" stroke-linecap=\"round\" opacity=\"0.7\"/>\n    <!-- 端点 -->\n    <line x1=\"-110\" y1=\"-8\" x2=\"-110\" y2=\"8\" stroke=\"#4b4b4b\" stroke-width=\"2\" stroke-linecap=\"round\"/>\n    <line x1=\"110\" y1=\"-8\" x2=\"110\" y2=\"8\" stroke=\"#4b4b4b\" stroke-width=\"2\" stroke-linecap=\"round\"/>\n  </g>\n\n  <!-- 标注：半径 A -->\n  <text x=\"310\" y=\"270\" font-size=\"20\" fill=\"#333\">A</text>\n  <line x1=\"305\" y1=\"265\" x2=\"290\" y2=\"285\" stroke=\"#4b4b4b\" stroke-width=\"2\" stroke-linecap=\"round\"/>\n\n  <!-- 标注：θ=ωt+φ -->\n  <text x=\"300\" y=\"230\" font-size=\"20\" fill=\"#333\">θ=ωt+φ</text>\n  <line x1=\"298\" y1=\"235\" x2=\"278\" y2=\"258\" stroke=\"#4b4b4b\" stroke-width=\"2\" stroke-linecap=\"round\"/>\n\n  <!-- 标注：质点 -->\n  <text x=\"330\" y=\"170\" font-size=\"20\" fill=\"#333\">质点</text>\n  <line x1=\"328\" y1=\"175\" x2=\"300\" y2=\"195\" stroke=\"#4b4b4b\" stroke-width=\"2\" stroke-linecap=\"round\"/>\n\n  <!-- 标注：影子 -->\n  <text x=\"330\" y=\"310\" font-size=\"20\" fill=\"#333\">影子</text>\n  <line x1=\"328\" y1=\"305\" x2=\"300\" y2=\"292\" stroke=\"#4b4b4b\" stroke-width=\"2\" stroke-linecap=\"round\"/>\n\n  <!-- 标注：-A -->\n  <text x=\"110\" y=\"330\" font-size=\"20\" fill=\"#333\">-A</text>\n  <line x1=\"125\" y1=\"325\" x2=\"130\" y2=\"298\" stroke=\"#4b4b4b\" stroke-width=\"2\" stroke-linecap=\"round\"/>\n\n  <!-- 标注：+A -->\n  <text x=\"350\" y=\"330\" font-size=\"20\" fill=\"#333\">+A</text>\n  <line x1=\"348\" y1=\"325\" x2=\"350\" y2=\"298\" stroke=\"#4b4b4b\" stroke-width=\"2\" stroke-linecap=\"round\"/>\n\n  <!-- 右侧：振动图像 -->\n  <g transform=\"translate(600, 290)\">\n    <!-- 坐标轴 -->\n    <line x1=\"-120\" y1=\"0\" x2=\"120\" y2=\"0\" stroke=\"#4b4b4b\" stroke-width=\"2\" stroke-linecap=\"round\"/>\n    <line x1=\"0\" y1=\"120\" x2=\"0\" y2=\"-120\" stroke=\"#4b4b4b\" stroke-width=\"2\" stroke-linecap=\"round\"/>\n    <!-- 正弦曲线 -->\n    <path d=\"M -110 0 Q -82.5 -110 0 -110 Q 82.5 -110 110 0 Q 82.5 110 0 110 Q -82.5 110 -110 0\" fill=\"none\" stroke=\"#c9d8e8\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n    <!-- 当前影子位置对应点 -->\n    <circle cx=\"55\" cy=\"-95.3\" r=\"7\" fill=\"#e05656\" stroke=\"#4b4b4b\" stroke-width=\"2\"/>\n    <!-- 虚线连接 -->\n    <line x1=\"55\" y1=\"-95.3\" x2=\"55\" y2=\"0\" stroke=\"#4b4b4b\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-dasharray=\"6 6\"/>\n  </g>\n\n  <!-- 标注：振动图像 -->\n  <text x=\"600\" y=\"150\" text-anchor=\"middle\" font-size=\"20\" fill=\"#333\">振动图像</text>\n\n  <!-- 箭头连接左右 -->\n  <path d=\"M 400 290 L 460 290\" fill=\"none\" stroke=\"#4b4b4b\" stroke-width=\"2\" stroke-linecap=\"round\" marker-end=\"none\"/>\n  <path d=\"M 455 283 L 465 290 L 455 297\" fill=\"none\" stroke=\"#4b4b4b\" stroke-width=\"2\" stroke-linecap=\"round\"/>\n  <text x=\"430\" y=\"275\" text-anchor=\"middle\" font-size=\"18\" fill=\"#333\">投影</text>\n</svg>",
+        "svg_path": null,
+        "image_path": null,
+        "image_url": null,
+        "layout": "follow"
+      },
+      "widget": null,
+      "question": {
+        "mode": "choice",
+        "question": "只看影子在 x 轴上的运动，它是怎么动的？",
+        "options": [
+          "匀速来回，跟质点转圈一样快慢不变",
+          "两头慢、中间快，像被拉了一下"
+        ],
+        "correct_index": 1,
+        "misconceptions": [
+          "把影子当成独立的小球，以为它也匀速。其实影子的速度是圆周速度在 x 轴上的分量，转到两头时分量最小。",
+          null
+        ],
+        "explanation": "影子的速度等于圆周速度沿 x 轴的分量，在两端点分量趋近于零，所以两头慢、中间快。"
+      },
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "先猜后看：影子会怎么动？",
+      "beat": "poe",
+      "spoken_text": "先别急着算。回看上一段的图，质点转一圈，影子正好从左端到右端再回来，走一个完整来回。现在我问你：如果质点转得再快一点，影子的来回会变快，还是来回的幅度会变大？先猜一个，再看下一段怎么用角度说清楚。",
+      "boards": [
+        {
+          "title": "先猜",
+          "markdown": "- 质点转一圈 → 影子走一个**完整来回**\n- 转得更快，影子的来回会怎样？\n  - 变快？\n  - 幅度变大？\n- 先猜，再看角度",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "highlight",
+          "snippet": "转得更快，影子的来回会怎样？",
+          "board_index": 0,
+          "trigger_phrase": "影子的来回会变快，还是来回的幅度会变大",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": {
+        "mode": "choice",
+        "question": "质点转得更快，影子会怎么变？",
+        "options": [
+          "来回变快，幅度还是 A 不变",
+          "幅度变大，来回快慢不变"
+        ],
+        "correct_index": 0,
+        "misconceptions": [
+          "以为转得快影子就甩得更远。其实幅度由半径 A 决定，转速只改变影子来回的快慢。",
+          null
+        ],
+        "explanation": "影子的幅度由圆的半径 A 决定，转速 ω 只改变影子来回的快慢。"
+      },
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "相位是转过的角度",
+      "beat": "define",
+      "spoken_text": "现在把角度写成 θ 等于 ωt 加 φ。看板书第一行，ωt 是时间转出来的角度，φ 是出发时已经转过的角度。这个 θ 就是相位，它不是一个时间，而是一个角度。再看第二行，影子位置 x 等于 A 乘 cos θ，所以相位决定了影子在哪。",
+      "boards": [
+        {
+          "title": "相位",
+          "markdown": "- 相位 $\\theta(t) = \\omega t + \\varphi$\n  - $\\omega t$：时间转出的角度\n  - $\\varphi$：出发时的角度\n- 影子位置 $x = A \\cos(\\omega t + \\varphi)$\n- **相位是角度，不是时间**",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "circle",
+          "snippet": "\\theta(t) = \\omega t + \\varphi",
+          "board_index": 0,
+          "trigger_phrase": "θ 等于 ωt 加 φ",
+          "color": null
+        },
+        {
+          "kind": "highlight",
+          "snippet": "相位是角度，不是时间",
+          "board_index": 0,
+          "trigger_phrase": "它不是一个时间，而是一个角度",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": null,
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "从角度到影子坐标",
+      "beat": "derive",
+      "spoken_text": "回看上一段的板书，相位 θ 已经写在那儿了。现在看这张单位圆：半径是 A，夹角是 θ，从质点往 x 轴作垂线，垂足就是影子。这个直角三角形里，邻边比斜边就是 cosθ，所以影子坐标 x 等于 A 乘 cosθ。把 θ 换成 ωt 加 φ，就得到 x 等于 A 乘 cos(ωt 加 φ)。",
+      "boards": [
+        {
+          "title": "影子坐标怎么来",
+          "markdown": "- 半径 $A$，夹角 $\\theta$\n- 直角三角形：$\\frac{x}{A} = \\cos\\theta$\n- $\\Rightarrow x = A\\cos\\theta$\n- 代入相位：$x = A\\cos(\\omega t + \\varphi)$",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "circle",
+          "snippet": "x = A\\cos(\\omega t + \\varphi)",
+          "board_index": 0,
+          "trigger_phrase": "x 等于 A 乘 cos(ωt 加 φ)",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": null,
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "同相与反相：步调差",
+      "beat": "contrast",
+      "spoken_text": "看这张并排的图：左边圆里质点在 0 度，右边圆里质点在 180 度，两个圆半径一样。往下看投影轴，左边影子在正 A，右边影子在负 A。它们转得一样快，但一个在最右时另一个在最左。这个角度差就是相位差 Δφ。左边 Δφ 等于 0，叫同相；右边 Δφ 等于 π，叫反相。",
+      "boards": [
+        {
+          "title": "同相 vs 反相",
+          "markdown": "| | 同相 | 反相 |\n|---|---|---|\n| 相位差 $\\Delta\\varphi$ | $0$ | $\\pi$ |\n| 影子位置 | 一起到 $+A$ | 一个 $+A$ 一个 $-A$ |\n| 步调 | 完全同步 | 完全相反 |",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "highlight",
+          "snippet": "\\pi",
+          "board_index": 0,
+          "trigger_phrase": "右边 Δφ 等于 π",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": {
+        "mode": "choice",
+        "question": "如果两个振动的相位差是 π，它们的影子会怎样？",
+        "options": [
+          "一个在最右时，另一个也在最右",
+          "一个在最右时，另一个在最左"
+        ],
+        "correct_index": 1,
+        "misconceptions": [
+          "这是把同相和反相搞混了：相位差 π 意味着步调完全相反。",
+          null
+        ],
+        "explanation": "相位差 π 就是反相，两个影子永远在相反的两端。"
+      },
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "回顾：影子里的相位",
+      "beat": "recap",
+      "spoken_text": "最后把这三段串起来。第一，相位 θ 是圆周上转过的角度，不是时间本身。第二，影子位置 x 等于 A 乘 cosθ，所以相位决定影子在哪。第三，两个振动的步调差就是相位差 Δφ，等于 0 是同相，等于 π 是反相。记住，相位是角度，不是秒。",
+      "boards": [
+        {
+          "title": "一句话总结",
+          "markdown": "- 相位 = 转过的**角度** $\\theta = \\omega t + \\varphi$\n- 影子位置 $x = A\\cos\\theta$\n- 步调差 = 相位差 $\\Delta\\varphi$\n  - $\\Delta\\varphi = 0$ → 同相\n  - $\\Delta\\varphi = \\pi$ → 反相",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "spotlight",
+          "snippet": "相位 = 转过的**角度**",
+          "board_index": 0,
+          "trigger_phrase": "相位 θ 是圆周上转过的角度",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": null,
+      "reward": {
+        "title": "相位即角度",
+        "description": "相位是圆周运动转过的角度，影子位置由它决定；相位差 0 同相，π 反相。"
+      },
+      "new_page_title": null
+    }
+  ],
+  "exercises": [
+    {
+      "exercise_id": "sess_3_ex1",
+      "kind": "fill_blank",
+      "stem": "在圆周运动的投影模型中，相位 $\\theta(t)=\\omega t+\\varphi$ 描述的是质点转过的 ____，而不是时间本身。",
+      "options": [],
+      "correct_index": null,
+      "answer": "角度",
+      "accepted": [
+        "弧度",
+        "角位置",
+        "角"
+      ],
+      "explanation": "相位是圆周上转过的角度，$\\omega t$ 是时间转出的角度，$\\varphi$ 是出发时已经转过的角度，它们共同决定影子位置 $x=A\\cos\\theta$。",
+      "widget": null,
+      "widget_hint": ""
+    },
+    {
+      "exercise_id": "sess_3_ex2",
+      "kind": "single_choice",
+      "stem": "两个同频率的振动，相位分别为 $\\theta_1(t)=\\omega t+\\frac{\\pi}{6}$ 和 $\\theta_2(t)=\\omega t+\\frac{7\\pi}{6}$，它们的相位差 $\\Delta\\varphi$ 等于多少？",
+      "options": [
+        "$\\frac{\\pi}{6}$",
+        "$\\frac{\\pi}{3}$",
+        "$\\pi$",
+        "$2\\pi$"
+      ],
+      "correct_index": 2,
+      "answer": null,
+      "accepted": [],
+      "explanation": "相位差 $\\Delta\\varphi = \\theta_2 - \\theta_1 = \\frac{7\\pi}{6} - \\frac{\\pi}{6} = \\pi$，因此这两个振动反相。",
+      "widget": null,
+      "widget_hint": ""
+    },
+    {
+      "exercise_id": "sess_3_ex3",
+      "kind": "single_choice",
+      "stem": "若一个质点在圆上匀速转动，半径 $A=3$，相位 $\\theta(t)=\\omega t+\\varphi$。当 $\\theta=0$ 时，影子位置 $x$ 是多少？",
+      "options": [
+        "$x=0$",
+        "$x=3$",
+        "$x=-3$",
+        "$x=1.5$"
+      ],
+      "correct_index": 1,
+      "answer": null,
+      "accepted": [],
+      "explanation": "影子位置由 $x=A\\cos\\theta$ 决定。代入 $A=3$，$\\theta=0$，得 $x=3\\cos 0=3$。",
+      "widget": null,
+      "widget_hint": ""
+    },
+    {
+      "exercise_id": "sess_3_ex4",
+      "kind": "interactive",
+      "stem": "通过调整相位差，观察两个影子是否同步，并判断它们的步调关系。",
+      "options": [
+        "当 $\\Delta\\varphi=0$ 时，两个影子总是同时到达 $+A$，称为同相",
+        "当 $\\Delta\\varphi=\\pi$ 时，两个影子总是同时到达 $+A$，称为同相",
+        "当 $\\Delta\\varphi=0$ 时，一个影子在 $+A$ 时另一个在 $-A$，称为反相",
+        "当 $\\Delta\\varphi=\\pi$ 时，两个影子总是同时到达 $+A$，称为反相"
+      ],
+      "correct_index": 0,
+      "answer": null,
+      "accepted": [],
+      "explanation": "相位差 $\\Delta\\varphi=0$ 时，两个质点步调完全一致，影子同时到达 $+A$，称为同相；$\\Delta\\varphi=\\pi$ 时，一个影子在 $+A$ 时另一个在 $-A$，称为反相。",
+      "widget": {
+        "kind": "explorable",
+        "title": "相位差与影子步调",
+        "task": "画两个半径相同的圆，分别放置质点，并画出它们在 $x$ 轴上的影子。拖动滑块改变两个质点的相位差 $\\Delta\\varphi$，观察两个影子在 $x$ 轴上的位置关系。",
+        "html": "<!DOCTYPE html>\n<html>\n<head><script>/**\n * HandChart — zero-dependency hand-drawn chart base for explorable widgets.\n *\n * Injected into every generated 2D explorable (widget_generator.py) so the\n * model supplies data + overlays instead of hand-writing axes. The look matches\n * the handwritten page: paper panel, slightly wobbly ink axes, main red /\n * aux green, handwriting labels.\n *\n * API (all coordinates in WORLD units unless noted):\n *   const ch = HandChart.render(canvas, opts)\n *     opts = { type: \"function\"|\"points\"|\"bars\"|\"lines\",\n *              xlim:[x0,x1], ylim:[y0,y1],                  (all but bars)\n *              fn: x=>y | fns:[{fn, color?, label?}],        (function)\n *              points:[[x,y],...],                          (points)\n *              series:[{name, points, color?, dash?}],      (lines; legend drawn)\n *              bars:{labels:[...], values:[...], highlight?} (bars)\n *              xlabel, ylabel, grid:true|false, title }\n *     returns { ctx, sx, sy, box, W, H, opts }  — keep it to draw overlays\n *   HandChart.marker(ch, x, y, {color, label, r})       dot + optional label\n *   HandChart.vline(ch, x, {color, dash, label})         vertical guide\n *   HandChart.hline(ch, y, {color, dash, label})         horizontal guide\n *   HandChart.segment(ch, [x1,y1], [x2,y2], {color, width, dash, arrow})\n *   HandChart.note(ch, x, y, text, {color, align, size}) handwriting annotation\n *   HandChart.attachProbe(canvas, {xlim, ylim}, onProbe, onLeave?)\n *     pointer follow; onProbe({x, y}) in world coords — redraw + readouts there.\n *   HandChart.style = { INK, AXIS, MAIN, AUX, GRID, PAPER, MUTED }\n */\n(function () {\n  const style = {\n    INK: \"#2b2b2b\", AXIS: \"#8a8377\", MAIN: \"#c0392b\", AUX: \"#2e8b6f\",\n    GRID: \"#ece5d4\", PAPER: \"#fbfaf6\", MUTED: \"#8a8377\", PURPLE: \"#7c3aed\", BLUE: \"#2563eb\",\n  };\n  const PALETTE = [style.MAIN, style.AUX, style.BLUE, style.PURPLE, \"#d97706\"];\n  const PAD = { l: 48, r: 18, t: 18, b: 36 };\n  const HAND = \"'Patrick Hand', 'LXGW WenKai Lite', 'PingFang SC', sans-serif\";\n\n  function font(size, italic) { return (italic ? \"italic \" : \"\") + size + \"px \" + HAND; }\n\n  // deterministic wobble so the \"hand\" does not shake on every redraw\n  function wob(seed, amp) { return Math.sin(seed * 12.9898) * amp; }\n\n  function tickVals(min, max, n) {\n    const span = max - min || 1;\n    const raw = span / n;\n    const mag = Math.pow(10, Math.floor(Math.log10(raw)));\n    const step = [1, 2, 2.5, 5, 10].map((m) => m * mag).find((s) => span / s <= n) || mag * 10;\n    const out = [];\n    for (let v = Math.ceil(min / step) * step; v <= max + step * 1e-9; v += step) out.push(+v.toFixed(10));\n    return out;\n  }\n\n  function fmt(v) {\n    const a = Math.abs(v);\n    if (a === 0) return \"0\";\n    if (a >= 10000 || a < 0.01) return v.toExponential(1);\n    return String(+v.toFixed(Math.max(0, 3 - Math.floor(Math.log10(a)))));\n  }\n\n  /** a hand-drawn line: two passes with tiny deterministic wobble */\n  function inkLine(ctx, x1, y1, x2, y2, color, width, seed) {\n    ctx.save();\n    ctx.strokeStyle = color; ctx.lineWidth = width; ctx.lineCap = \"round\";\n    const n = 6, s = seed || (x1 + y2);\n    ctx.beginPath();\n    for (let i = 0; i <= n; i++) {\n      const t = i / n, x = x1 + (x2 - x1) * t, y = y1 + (y2 - y1) * t;\n      const w = i === 0 || i === n ? 0 : wob(s + i, 0.7);\n      i ? ctx.lineTo(x + w, y + w) : ctx.moveTo(x, y);\n    }\n    ctx.stroke();\n    ctx.restore();\n  }\n\n  function frame(ctx, W, H) {\n    ctx.clearRect(0, 0, W, H);\n    ctx.save();\n    ctx.fillStyle = style.PAPER;\n    ctx.fillRect(0, 0, W, H);\n    ctx.restore();\n  }\n\n  function plotBox(W, H, opts) {\n    const t = PAD.t + (opts && opts.title ? 18 : 0);\n    return { x0: PAD.l, y0: t, x1: W - PAD.r, y1: H - PAD.b };\n  }\n\n  function mapping(box, xlim, ylim) {\n    const [x0, x1] = xlim, [y0, y1] = ylim;\n    return {\n      sx: (v) => box.x0 + (v - x0) / (x1 - x0) * (box.x1 - box.x0),\n      sy: (v) => box.y1 - (v - y0) / (y1 - y0) * (box.y1 - box.y0),\n    };\n  }\n\n  function axes(ctx, box, opts) {\n    const [x0, x1] = opts.xlim, [y0, y1] = opts.ylim;\n    const { sx, sy } = mapping(box, opts.xlim, opts.ylim);\n    const xt = tickVals(x0, x1, 6).filter((v) => v >= x0 && v <= x1);\n    const yt = tickVals(y0, y1, 4).filter((v) => v >= y0 && v <= y1);\n    if (opts.grid !== false) {\n      ctx.save(); ctx.strokeStyle = style.GRID; ctx.lineWidth = 1;\n      for (const v of xt) { ctx.beginPath(); ctx.moveTo(sx(v), box.y0); ctx.lineTo(sx(v), box.y1); ctx.stroke(); }\n      for (const v of yt) { ctx.beginPath(); ctx.moveTo(box.x0, sy(v)); ctx.lineTo(box.x1, sy(v)); ctx.stroke(); }\n      ctx.restore();\n    }\n    // axes sit on zero when zero is inside the range, else on the box edge\n    const ax = y0 <= 0 && y1 >= 0 ? sy(0) : box.y1;\n    const ay = x0 <= 0 && x1 >= 0 ? sx(0) : box.x0;\n    inkLine(ctx, box.x0 - 4, ax, box.x1 + 6, ax, style.AXIS, 1.4, 1);\n    inkLine(ctx, ay, box.y1 + 4, ay, box.y0 - 6, style.AXIS, 1.4, 2);\n    // arrow heads\n    ctx.save(); ctx.fillStyle = style.AXIS;\n    ctx.beginPath(); ctx.moveTo(box.x1 + 8, ax); ctx.lineTo(box.x1 + 1, ax - 3.5); ctx.lineTo(box.x1 + 1, ax + 3.5); ctx.fill();\n    ctx.beginPath(); ctx.moveTo(ay, box.y0 - 8); ctx.lineTo(ay - 3.5, box.y0 - 1); ctx.lineTo(ay + 3.5, box.y0 - 1); ctx.fill();\n    ctx.restore();\n    ctx.save();\n    ctx.fillStyle = style.MUTED; ctx.font = font(12);\n    ctx.textAlign = \"center\";\n    for (const v of xt) {\n      if (Math.abs(sx(v) - ay) < 1 && ay !== box.x0) continue; // skip the label under the y axis\n      inkLine(ctx, sx(v), ax - 3, sx(v), ax + 3, style.AXIS, 1, v);\n      ctx.fillText(fmt(v), sx(v), ax + 16);\n    }\n    ctx.textAlign = \"right\";\n    for (const v of yt) {\n      if (Math.abs(sy(v) - ax) < 1 && ax !== box.y1) continue;\n      inkLine(ctx, ay - 3, sy(v), ay + 3, sy(v), style.AXIS, 1, v + 7);\n      ctx.fillText(fmt(v), ay - 7, sy(v) + 4);\n    }\n    ctx.font = font(14, true); ctx.fillStyle = style.INK;\n    if (opts.xlabel) { ctx.textAlign = \"right\"; ctx.fillText(opts.xlabel, box.x1 + 4, ax - 8); }\n    if (opts.ylabel) { ctx.textAlign = \"left\"; ctx.fillText(opts.ylabel, ay + 8, box.y0 + 4); }\n    ctx.restore();\n    return { sx, sy };\n  }\n\n  function stroke(ctx, pts, color, width, dash) {\n    if (!pts.length) return;\n    ctx.save();\n    ctx.strokeStyle = color; ctx.lineWidth = width || 2.2;\n    ctx.lineJoin = \"round\"; ctx.lineCap = \"round\";\n    if (dash) ctx.setLineDash(dash);\n    ctx.beginPath();\n    let pen = false;\n    for (const p of pts) {\n      if (!p) { pen = false; continue; }\n      pen ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1]);\n      pen = true;\n    }\n    ctx.stroke();\n    ctx.restore();\n  }\n\n  function fnPoints(fn, opts, m) {\n    const [x0, x1] = opts.xlim, [y0, y1] = opts.ylim;\n    const n = 400, pts = [];\n    const margin = (y1 - y0) * 0.02;\n    for (let i = 0; i <= n; i++) {\n      const x = x0 + (x1 - x0) * i / n;\n      let y;\n      try { y = fn(x); } catch (e) { y = NaN; }\n      if (!isFinite(y) || y < y0 - margin || y > y1 + margin) { pts.push(null); continue; }\n      pts.push([m.sx(x), m.sy(y)]);\n    }\n    return pts;\n  }\n\n  function legend(ctx, box, items) {\n    if (!items.length) return;\n    ctx.save();\n    ctx.font = font(13); ctx.textAlign = \"left\"; ctx.textBaseline = \"middle\";\n    let x = box.x0 + 10, y = box.y0 + 12;\n    for (const it of items) {\n      inkLine(ctx, x, y, x + 22, y, it.color, 2.4, x);\n      ctx.fillStyle = style.INK;\n      ctx.fillText(it.label, x + 28, y + 1);\n      x += 28 + ctx.measureText(it.label).width + 18;\n    }\n    ctx.restore();\n  }\n\n  function title(ctx, W, text) {\n    ctx.save();\n    ctx.font = font(15); ctx.fillStyle = style.INK; ctx.textAlign = \"center\";\n    ctx.fillText(text, W / 2, 16);\n    ctx.restore();\n  }\n\n  function render(canvas, opts) {\n    const ctx = canvas.getContext(\"2d\");\n    const rect = canvas.getBoundingClientRect();\n    const W = Math.max(60, Math.round(rect.width)), H = Math.max(60, Math.round(rect.height));\n    const dpr = window.devicePixelRatio || 1;\n    if (canvas.width !== Math.round(W * dpr) || canvas.height !== Math.round(H * dpr)) {\n      canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);\n    }\n    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);\n    frame(ctx, W, H);\n    if (opts.title) title(ctx, W, opts.title);\n    const box = plotBox(W, H, opts);\n    const type = opts.type || \"function\";\n\n    if (type === \"bars\") {\n      const labels = opts.bars.labels || [], values = opts.bars.values || [];\n      const n = Math.max(1, values.length);\n      const bw = (box.x1 - box.x0) / n;\n      const vmax = Math.max(...values.map((v) => Math.abs(v)), 0) * 1.15 || 1;\n      const base = box.y1;\n      inkLine(ctx, box.x0 - 4, base, box.x1 + 4, base, style.AXIS, 1.4, 3);\n      ctx.save();\n      values.forEach((v, i) => {\n        const h = (Math.abs(v) / vmax) * (box.y1 - box.y0);\n        const x = box.x0 + i * bw + bw * 0.2, w = bw * 0.6, y = base - h;\n        const hot = opts.bars.highlight != null && i === opts.bars.highlight;\n        ctx.fillStyle = hot ? style.MAIN : \"#e6dfcf\";\n        ctx.fillRect(x, y, w, h);\n        ctx.strokeStyle = hot ? style.MAIN : style.AXIS; ctx.lineWidth = 1.2;\n        ctx.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);\n        ctx.font = font(13); ctx.textAlign = \"center\"; ctx.fillStyle = style.INK;\n        ctx.fillText(String(labels[i] == null ? i + 1 : labels[i]), x + w / 2, base + 17);\n        ctx.fillStyle = hot ? style.MAIN : style.MUTED;\n        ctx.fillText(fmt(v), x + w / 2, y - 6);\n      });\n      ctx.restore();\n      const sx = (i) => box.x0 + (i + 0.5) * bw, sy = (v) => base - (Math.abs(v) / vmax) * (box.y1 - box.y0);\n      return { ctx, sx, sy, box, W, H, opts };\n    }\n\n    const m = axes(ctx, box, opts);\n    const items = [];\n    if (type === \"lines\") {\n      (opts.series || []).forEach((s, i) => {\n        const color = s.color || PALETTE[i % PALETTE.length];\n        stroke(ctx, (s.points || []).map((p) => [m.sx(p[0]), m.sy(p[1])]), color, 2.2, s.dash);\n        if (s.name) items.push({ label: s.name, color });\n      });\n    } else if (type === \"points\") {\n      ctx.save(); ctx.fillStyle = opts.color || style.MAIN;\n      (opts.points || []).forEach((p) => { ctx.beginPath(); ctx.arc(m.sx(p[0]), m.sy(p[1]), opts.r || 3.6, 0, Math.PI * 2); ctx.fill(); });\n      ctx.restore();\n    } else {\n      const fns = opts.fns || (typeof opts.fn === \"function\" ? [{ fn: opts.fn, color: opts.color, label: opts.label }] : []);\n      fns.forEach((f, i) => {\n        const color = f.color || PALETTE[i % PALETTE.length];\n        stroke(ctx, fnPoints(f.fn, opts, m), color, f.width || 2.4, f.dash);\n        if (f.label) items.push({ label: f.label, color });\n      });\n    }\n    legend(ctx, box, items);\n    return { ctx, sx: m.sx, sy: m.sy, box, W, H, opts };\n  }\n\n  // ---- overlays (world coordinates) ----\n  function marker(ch, x, y, o) {\n    o = o || {};\n    const px = ch.sx(x), py = ch.sy(y);\n    ch.ctx.save();\n    ch.ctx.fillStyle = o.color || style.MAIN;\n    ch.ctx.beginPath(); ch.ctx.arc(px, py, o.r || 5, 0, Math.PI * 2); ch.ctx.fill();\n    ch.ctx.strokeStyle = style.PAPER; ch.ctx.lineWidth = 1.5; ch.ctx.stroke();\n    if (o.label) {\n      ch.ctx.font = font(o.size || 13); ch.ctx.fillStyle = o.color || style.MAIN; ch.ctx.textAlign = \"left\";\n      ch.ctx.fillText(o.label, px + 8, py - 8);\n    }\n    ch.ctx.restore();\n  }\n\n  function vline(ch, x, o) {\n    o = o || {};\n    const px = ch.sx(x);\n    stroke(ch.ctx, [[px, ch.box.y0], [px, ch.box.y1]], o.color || style.MUTED, o.width || 1.2, o.dash || [4, 4]);\n    if (o.label) note(ch, x, null, o.label, { color: o.color || style.MUTED, px: px + 4, py: ch.box.y0 + 12, align: \"left\", size: o.size });\n  }\n\n  function hline(ch, y, o) {\n    o = o || {};\n    const py = ch.sy(y);\n    stroke(ch.ctx, [[ch.box.x0, py], [ch.box.x1, py]], o.color || style.MUTED, o.width || 1.2, o.dash || [4, 4]);\n    if (o.label) note(ch, null, y, o.label, { color: o.color || style.MUTED, px: ch.box.x1 - 4, py: py - 5, align: \"right\", size: o.size });\n  }\n\n  function segment(ch, a, b, o) {\n    o = o || {};\n    const x1 = ch.sx(a[0]), y1 = ch.sy(a[1]), x2 = ch.sx(b[0]), y2 = ch.sy(b[1]);\n    const color = o.color || style.AUX;\n    stroke(ch.ctx, [[x1, y1], [x2, y2]], color, o.width || 2, o.dash);\n    if (o.arrow) {\n      const ang = Math.atan2(y2 - y1, x2 - x1), L = 9;\n      ch.ctx.save(); ch.ctx.fillStyle = color; ch.ctx.beginPath();\n      ch.ctx.moveTo(x2, y2);\n      ch.ctx.lineTo(x2 - L * Math.cos(ang - 0.4), y2 - L * Math.sin(ang - 0.4));\n      ch.ctx.lineTo(x2 - L * Math.cos(ang + 0.4), y2 - L * Math.sin(ang + 0.4));\n      ch.ctx.fill(); ch.ctx.restore();\n    }\n  }\n\n  function note(ch, x, y, text, o) {\n    o = o || {};\n    const px = o.px != null ? o.px : ch.sx(x), py = o.py != null ? o.py : ch.sy(y);\n    ch.ctx.save();\n    ch.ctx.font = font(o.size || 14, o.italic);\n    ch.ctx.fillStyle = o.color || style.INK;\n    ch.ctx.textAlign = o.align || \"left\";\n    ch.ctx.fillText(text, px, py);\n    ch.ctx.restore();\n  }\n\n  /** Pointer probe in world coords; the caller redraws and updates readouts. */\n  function attachProbe(canvas, opts, onProbe, onLeave) {\n    const [x0, x1] = opts.xlim;\n    const [y0, y1] = opts.ylim;\n    const toWorld = (px, py) => {\n      const r = canvas.getBoundingClientRect();\n      const box = plotBox(r.width, r.height, opts);\n      const t = (px - r.left - box.x0) / (box.x1 - box.x0);\n      const u = 1 - (py - r.top - box.y0) / (box.y1 - box.y0);\n      return { x: x0 + t * (x1 - x0), y: y0 + u * (y1 - y0), inside: t >= 0 && t <= 1 };\n    };\n    const handler = (e) => {\n      const p = toWorld(e.clientX, e.clientY);\n      if (p.inside) onProbe(p);\n    };\n    canvas.addEventListener(\"pointermove\", handler);\n    canvas.addEventListener(\"pointerdown\", handler);\n    if (onLeave) canvas.addEventListener(\"pointerleave\", onLeave);\n    canvas.style.touchAction = \"none\";\n    return toWorld;\n  }\n\n  window.HandChart = { render, marker, vline, hline, segment, note, attachProbe, style, font: HAND };\n})();\n</script>\n  <meta charset=\"utf-8\">\n  <style>\n    html, body { margin: 0; height: 100%; background: #faf8f3; font-family: \"PingFang SC\", \"Hiragino Sans GB\", sans-serif; color: #333; overflow: hidden; }\n    #wrap { position: absolute; inset: 0; display: flex; flex-direction: column; }\n    #plot { flex: 1; min-height: 0; margin: 10px 10px 4px; border: 1px solid #d9d2c3; border-radius: 12px; background: #fbfaf6; cursor: crosshair; touch-action: none; }\n    #readout { display: flex; justify-content: center; align-items: center; gap: 28px; padding: 4px 0 8px; font-size: 12px; color: #666; }\n    #readout .k { display: block; font-size: 11px; letter-spacing: .04em; }\n    #readout .v { display: block; font-family: ui-monospace, Menlo, monospace; font-size: 14px; font-weight: 700; color: #c0392b; min-width: 64px; text-align: center; }\n    #formula { display: inline-block; padding: 3px 10px; border: 1px solid #d9d2c3; border-radius: 6px; background: #fff; font-family: Georgia, \"Times New Roman\", serif; font-style: italic; font-size: 13px; color: #333; }\n    #slider-row { display: flex; justify-content: center; align-items: center; gap: 12px; padding: 0 0 8px; font-size: 12px; color: #666; }\n    #phaseDiff-slider { width: 200px; accent-color: #c0392b; }\n  </style>\n</head>\n<body>\n  <div id=\"wrap\">\n    <canvas id=\"plot\"></canvas>\n    <div id=\"readout\">\n      <span><span class=\"k\">相位差 Δφ</span><span class=\"v\" id=\"phaseDiff-display\">—</span></span>\n      <span><span class=\"k\">影子间距</span><span class=\"v\" id=\"shadowDistance-display\">—</span></span>\n      <span id=\"formula\">Δφ = φ₂ − φ₁</span>\n    </div>\n    <div id=\"slider-row\">\n      <label for=\"phaseDiff-slider\">Δφ</label>\n      <input type=\"range\" id=\"phaseDiff-slider\" min=\"0\" max=\"6.283\" step=\"0.01\" value=\"1.5708\">\n    </div>\n  </div>\n  <script>\n    // --- 核心参数与状态 ------------------------------------------------\n    const R = 1.5;                 // 圆半径（世界单位）\n    const CX1 = -2.0;              // 左圆心 x\n    const CX2 = 2.0;               // 右圆心 x\n    const CY = 0.0;                // 圆心 y（世界坐标）\n    const X_MIN = -4.2, X_MAX = 4.2, Y_MIN = -2.2, Y_MAX = 2.2;\n\n    let phaseDiff = 1.5708;        // 默认 π/2\n    let phi1 = 0;                  // 第一个质点相位\n    let phi2 = phaseDiff;          // 第二个质点相位\n\n    // --- 画布与坐标映射 ------------------------------------------------\n    const canvas = document.getElementById('plot');\n    const ctx = canvas.getContext('2d');\n    let W = 0, H = 0;\n    const PAD = { l: 34, r: 18, t: 18, b: 26 };\n\n    const sx = (x) => PAD.l + (x - X_MIN) / (X_MAX - X_MIN) * (W - PAD.l - PAD.r);\n    const sy = (y) => PAD.t + (Y_MAX - y) / (Y_MAX - Y_MIN) * (H - PAD.t - PAD.b);\n\n    // --- 工具函数 ------------------------------------------------------\n    function drawCircle(cx, cy, r, color, dash) {\n      ctx.save();\n      ctx.strokeStyle = color;\n      ctx.lineWidth = 1.2;\n      if (dash) ctx.setLineDash(dash);\n      ctx.beginPath();\n      ctx.arc(sx(cx), sy(cy), r * (W - PAD.l - PAD.r) / (X_MAX - X_MIN), 0, Math.PI * 2);\n      ctx.stroke();\n      ctx.restore();\n    }\n\n    function drawParticle(cx, cy, r, angle, color) {\n      const px = cx + r * Math.cos(angle);\n      const py = cy + r * Math.sin(angle);\n      ctx.save();\n      ctx.fillStyle = color;\n      ctx.beginPath();\n      ctx.arc(sx(px), sy(py), 5, 0, Math.PI * 2);\n      ctx.fill();\n      ctx.restore();\n      return { x: px, y: py };\n    }\n\n    function drawShadow(cx, r, angle, color, label) {\n      const shadowX = cx + r * Math.cos(angle);\n      const shadowY = 0;\n      ctx.save();\n      ctx.fillStyle = color;\n      ctx.beginPath();\n      ctx.arc(sx(shadowX), sy(shadowY), 5, 0, Math.PI * 2);\n      ctx.fill();\n      // 垂直虚线从质点到影子\n      const particleX = cx + r * Math.cos(angle);\n      const particleY = r * Math.sin(angle);\n      ctx.strokeStyle = color;\n      ctx.lineWidth = 1;\n      ctx.setLineDash([3, 4]);\n      ctx.beginPath();\n      ctx.moveTo(sx(particleX), sy(particleY));\n      ctx.lineTo(sx(shadowX), sy(shadowY));\n      ctx.stroke();\n      ctx.restore();\n      return shadowX;\n    }\n\n    function drawPhaseArc(cx, cy, r, a1, a2, color) {\n      ctx.save();\n      ctx.strokeStyle = color;\n      ctx.lineWidth = 1.5;\n      ctx.setLineDash([]);\n      ctx.beginPath();\n      const start = Math.min(a1, a2);\n      const end = Math.max(a1, a2);\n      ctx.arc(sx(cx), sy(cy), r * (W - PAD.l - PAD.r) / (X_MAX - X_MIN), -end, -start);\n      ctx.stroke();\n      ctx.restore();\n    }\n\n    // --- 主绘制函数 ----------------------------------------------------\n    function draw() {\n      ctx.clearRect(0, 0, W, H);\n\n      // 坐标轴\n      ctx.save();\n      ctx.strokeStyle = '#b9b3a6';\n      ctx.lineWidth = 1;\n      ctx.beginPath();\n      ctx.moveTo(PAD.l, sy(0));\n      ctx.lineTo(W - PAD.r, sy(0));\n      ctx.moveTo(sx(0), PAD.t);\n      ctx.lineTo(sx(0), H - PAD.b);\n      ctx.stroke();\n\n      // 刻度\n      ctx.fillStyle = '#8a8377';\n      ctx.font = 'italic 11px Georgia, serif';\n      ctx.textAlign = 'center';\n      for (let x = -4; x <= 4; x++) {\n        if (x === 0) continue;\n        ctx.beginPath();\n        ctx.moveTo(sx(x), sy(0) - 3);\n        ctx.lineTo(sx(x), sy(0) + 3);\n        ctx.stroke();\n        ctx.fillText(x, sx(x), sy(0) + 14);\n      }\n      ctx.textAlign = 'right';\n      for (let y = -2; y <= 2; y++) {\n        if (y === 0) continue;\n        ctx.beginPath();\n        ctx.moveTo(sx(0) - 3, sy(y));\n        ctx.lineTo(sx(0) + 3, sy(y));\n        ctx.stroke();\n        ctx.fillText(y, sx(0) - 6, sy(y) + 4);\n      }\n      ctx.fillText('x', W - PAD.r - 2, sy(0) - 6);\n      ctx.textAlign = 'left';\n      ctx.fillText('y', sx(0) + 6, PAD.t + 8);\n      ctx.restore();\n\n      // 两个圆（辅助色 #2e8b6f 虚线）\n      drawCircle(CX1, CY, R, '#2e8b6f', [5, 4]);\n      drawCircle(CX2, CY, R, '#2e8b6f', [5, 4]);\n\n      // 圆心标记\n      ctx.save();\n      ctx.fillStyle = '#b9b3a6';\n      ctx.beginPath();\n      ctx.arc(sx(CX1), sy(CY), 2.5, 0, Math.PI * 2);\n      ctx.fill();\n      ctx.beginPath();\n      ctx.arc(sx(CX2), sy(CY), 2.5, 0, Math.PI * 2);\n      ctx.fill();\n      ctx.restore();\n\n      // 质点1（相位 phi1）\n      const p1 = drawParticle(CX1, CY, R, phi1, '#c0392b');\n      // 质点2（相位 phi2 = phi1 + phaseDiff）\n      const p2 = drawParticle(CX2, CY, R, phi2, '#c0392b');\n\n      // 影子1\n      const shadow1X = drawShadow(CX1, R, phi1, '#c0392b', 'S1');\n      // 影子2\n      const shadow2X = drawShadow(CX2, R, phi2, '#c0392b', 'S2');\n\n      // 影子间距标注\n      const dist = Math.abs(shadow2X - shadow1X);\n      ctx.save();\n      ctx.strokeStyle = '#c0392b';\n      ctx.lineWidth = 1.5;\n      ctx.setLineDash([]);\n      ctx.beginPath();\n      ctx.moveTo(sx(shadow1X), sy(0) - 12);\n      ctx.lineTo(sx(shadow2X), sy(0) - 12);\n      ctx.stroke();\n      // 箭头\n      const arrowSize = 5;\n      ctx.beginPath();\n      ctx.moveTo(sx(shadow1X), sy(0) - 12);\n      ctx.lineTo(sx(shadow1X) + arrowSize, sy(0) - 12 - arrowSize);\n      ctx.lineTo(sx(shadow1X) + arrowSize, sy(0) - 12 + arrowSize);\n      ctx.closePath();\n      ctx.fillStyle = '#c0392b';\n      ctx.fill();\n      ctx.beginPath();\n      ctx.moveTo(sx(shadow2X), sy(0) - 12);\n      ctx.lineTo(sx(shadow2X) - arrowSize, sy(0) - 12 - arrowSize);\n      ctx.lineTo(sx(shadow2X) - arrowSize, sy(0) - 12 + arrowSize);\n      ctx.closePath();\n      ctx.fill();\n      ctx.restore();\n\n      // 相位差弧线标注（在右侧圆上）\n      drawPhaseArc(CX2, CY, R * 0.6, phi1, phi2, '#2e8b6f');\n\n      // 文字标注\n      ctx.save();\n      ctx.font = 'italic 12px Georgia, serif';\n      ctx.fillStyle = '#2e8b6f';\n      ctx.textAlign = 'center';\n      ctx.fillText('Δφ', sx(CX2), sy(CY) - R * 0.75 * (W - PAD.l - PAD.r) / (X_MAX - X_MIN));\n      ctx.restore();\n\n      // 更新读数\n      document.getElementById('phaseDiff-display').textContent = phaseDiff.toFixed(3);\n      document.getElementById('shadowDistance-display').textContent = dist.toFixed(3);\n    }\n\n    // --- 交互与事件 ----------------------------------------------------\n    function updateFromSlider() {\n      phaseDiff = parseFloat(document.getElementById('phaseDiff-slider').value);\n      phi2 = phi1 + phaseDiff;\n      draw();\n    }\n\n    document.getElementById('phaseDiff-slider').addEventListener('input', updateFromSlider);\n\n    // 指针探针（可选，但保留以符合规范）\n    function onPointer(e) {\n      // 探针功能在此场景中不改变核心状态，但为了符合规范保留空实现\n      // 实际不需要探针，因为滑块是主要交互\n    }\n    canvas.addEventListener('pointermove', onPointer);\n    canvas.addEventListener('pointerdown', onPointer);\n\n    // --- 窗口尺寸调整 --------------------------------------------------\n    function resize() {\n      const r = canvas.getBoundingClientRect();\n      W = r.width;\n      H = r.height;\n      const dpr = window.devicePixelRatio || 1;\n      canvas.width = Math.round(W * dpr);\n      canvas.height = Math.round(H * dpr);\n      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);\n      draw();\n    }\n\n    window.addEventListener('resize', resize);\n\n    // --- 控制钩子 ------------------------------------------------------\n    window.hkControl = {\n      set: function (s) {\n        if (s && s.phaseDiff != null) {\n          phaseDiff = Math.max(0, Math.min(6.283, +s.phaseDiff));\n          document.getElementById('phaseDiff-slider').value = phaseDiff;\n          phi2 = phi1 + phaseDiff;\n          draw();\n        }\n      },\n      highlight: function (sel) {\n        var el = document.querySelector(sel);\n        if (!el) return;\n        el.style.outline = '2px solid #c0392b';\n        setTimeout(function () { el.style.outline = ''; }, 1500);\n      },\n      annotate: function () {},\n      reveal: function () {},\n    };\n\n    // --- 启动绘制 ------------------------------------------------------\n    resize();\n  </script>\n</body>\n</html>",
+        "html_path": null,
+        "mermaid": null,
+        "layout": "newcol",
+        "params": [],
+        "controls": []
+      },
+      "widget_hint": "拖动滑块改变相位差，观察两个影子是否同时到达最右端。"
+    }
+  ]
+}

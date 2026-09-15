@@ -1,0 +1,410 @@
+{
+  "course_id": "course_275dd6cb4c",
+  "title": "条件概率与贝叶斯：证据如何更新信念",
+  "target_audience": "",
+  "overview": "",
+  "generation_mode": "llm",
+  "document_id": "doc_6448f78f6a",
+  "chapters": [
+    {
+      "chapter_id": "ch_1",
+      "title": "条件概率：缩小样本空间",
+      "description": "介绍条件概率的定义与缩小样本空间的直觉。",
+      "unit": "",
+      "sessions": [
+        {
+          "session_id": "sess_1",
+          "title": "条件概率：缩小样本空间",
+          "learning_goal": "学生能解释条件概率的定义，并运用“缩小样本空间”的直觉理解分母为何变为 P(B)。",
+          "core_concept": "条件概率 P(A|B) = P(A∩B) / P(B)",
+          "cognitive_hurdle": "以为已知 B 发生后，A 的概率仍然是在原样本空间中衡量，忽略了样本空间已经缩小到 B。",
+          "source_sections": [
+            "s1"
+          ],
+          "estimated_duration_min": 5,
+          "tags": [
+            "Intuition",
+            "Definition"
+          ],
+          "segments": [
+            {
+              "title": "已知 B 发生，概率还看原地图吗？",
+              "intent": "让学生意识到已知事件发生会改变衡量概率的参照空间。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s1"
+              ]
+            },
+            {
+              "title": "裁剪地图：只留下 B",
+              "intent": "用裁剪地图的类比建立缩小样本空间的直觉。",
+              "media": "illustration",
+              "media_brief": "两栏图：左栏为一个矩形样本空间 S，内含两个相交的圆 A 和 B，B 用浅蓝色填充；右栏为裁剪后只保留 B 的区域，A∩B 用橙色高亮，旁边标注“新样本空间 B”。",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s1"
+              ]
+            },
+            {
+              "title": "条件概率的定义",
+              "intent": "让学生记住条件概率的数学定义。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s1"
+              ]
+            },
+            {
+              "title": "从直觉到公式",
+              "intent": "让学生理解公式如何从缩小样本空间的想法中自然导出。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s1"
+              ]
+            },
+            {
+              "title": "条件概率与无条件概率的对比",
+              "intent": "让学生看出两者分母不同，从而避免混淆。",
+              "media": "illustration",
+              "media_brief": "两栏对比图：左栏显示 P(A) = A 的面积 / S 的面积，用灰色矩形 S 和红色圆 A；右栏显示 P(A|B) = A∩B 的面积 / B 的面积，只显示蓝色圆 B 和橙色交集 A∩B。",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s1"
+              ]
+            },
+            {
+              "title": "回顾：在新地盘上重新量概率",
+              "intent": "强化条件概率就是缩小样本空间后重新测量的直觉。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s1"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "chapter_id": "ch_2",
+      "title": "全概率公式：分情况讨论的数学化",
+      "description": "把样本空间切成互斥几块，用加权求和计算事件概率。",
+      "unit": "",
+      "sessions": [
+        {
+          "session_id": "sess_2",
+          "title": "全概率公式：分情况加权求和",
+          "learning_goal": "学生能识别完备划分，并利用全概率公式将复杂事件概率分解为条件概率的加权和。",
+          "core_concept": "全概率公式：若B_i互斥且完备，则P(A)=∑P(A|B_i)P(B_i)，权重是各情况发生的概率。",
+          "cognitive_hurdle": "误以为全概率公式就是简单平均各条件概率，忽略权重（各情况自身的发生概率）。",
+          "source_sections": [
+            "s2"
+          ],
+          "estimated_duration_min": 5,
+          "tags": [
+            "Intuition",
+            "Definition"
+          ],
+          "segments": [
+            {
+              "title": "先猜：随机检测阳性率是多少？",
+              "intent": "让学生对总阳性率产生直觉冲突，发现不能直接看出答案。",
+              "media": "board",
+              "media_brief": "板书：患病率1%，检测灵敏度99%，误报率2%。随机一人检测阳性概率？先猜。",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s2"
+              ]
+            },
+            {
+              "title": "班级平均分的秘密",
+              "intent": "建立分情况加权平均的直觉：不同群体比例不同，不能简单平均。",
+              "media": "board",
+              "media_brief": "板书：班级平均分 = 男生均分×男生占比 + 女生均分×女生占比。强调权重是占比。",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s2"
+              ]
+            },
+            {
+              "title": "全概率公式：互斥完备划分下的加权求和",
+              "intent": "给出严谨定义，强调划分互斥且完备，权重是划分块的概率。",
+              "media": "board",
+              "media_brief": "板书公式 P(A)=∑ P(A|B_i)P(B_i)，标注 B_i 互斥且覆盖整个样本空间，P(B_i) 是权重。",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s2"
+              ]
+            },
+            {
+              "title": "从事件分割到公式",
+              "intent": "展示公式的推导逻辑，理解为什么成立。",
+              "media": "board",
+              "media_brief": "板书：A = (A∩B1) ∪ (A∩B2) ∪ …，互斥故 P(A)=Σ P(A∩B_i)，再由乘法公式 P(A∩B_i)=P(A|B_i)P(B_i)。",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s2"
+              ]
+            },
+            {
+              "title": "医学检测的加权计算",
+              "intent": "用具体数字应用公式，体会加权作用。",
+              "media": "illustration",
+              "media_brief": "画矩形代表全体人口，左侧1%患病块（内部99%涂色表示阳性），右侧99%健康块（内部2%涂色表示阳性），合并涂色区域得总阳性率约2.97%。标注各部分比例和条件概率。",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s2"
+              ]
+            },
+            {
+              "title": "错误做法：直接平均条件概率",
+              "intent": "通过对比指出常见错误：忽略权重直接平均条件概率。",
+              "media": "board",
+              "media_brief": "板书错误： (99%+2%)/2=50.5%；正确：99%×1%+2%×99%=2.97%，对比突出权重重要性。",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s2"
+              ]
+            },
+            {
+              "title": "回顾：三步走",
+              "intent": "总结全概率公式的应用步骤。",
+              "media": "board",
+              "media_brief": "板书：1) 找互斥完备划分；2) 求每个条件概率和权重；3) 加权求和。",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s2"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "chapter_id": "ch_3",
+      "title": "贝叶斯公式：把因果方向倒过来",
+      "description": "介绍贝叶斯公式及其在逆转条件概率方向中的作用。",
+      "unit": "",
+      "sessions": [
+        {
+          "session_id": "sess_3",
+          "title": "贝叶斯公式：因果换向杆",
+          "learning_goal": "学生能够写出贝叶斯公式，解释公式中各部分的意义，并说明它如何将 P(证据|原因) 转换为 P(原因|证据)。",
+          "core_concept": "贝叶斯公式是逆转条件概率方向的工具。",
+          "cognitive_hurdle": "学生容易混淆条件概率的方向，以为 P(患病|阳性) 就等于 P(阳性|患病)，或者认为检验灵敏度高则阳性结果必然意味着患病。",
+          "source_sections": [
+            "s3"
+          ],
+          "estimated_duration_min": 5,
+          "tags": [
+            "Intuition",
+            "Definition"
+          ],
+          "segments": [
+            {
+              "title": "医生的两难：已知因果，却需要逆推",
+              "intent": "让学生意识到条件概率有方向，医生需要从结果推原因。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s3"
+              ]
+            },
+            {
+              "title": "换向杆：从因果到果因",
+              "intent": "用换向杆比喻贝叶斯公式逆转条件概率方向的作用。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s3"
+              ]
+            },
+            {
+              "title": "贝叶斯公式",
+              "intent": "让学生记住公式并理解各部分含义。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s3"
+              ]
+            },
+            {
+              "title": "从条件概率推出换向公式",
+              "intent": "让学生理解公式不是魔法，而是条件概率定义的推论。",
+              "media": "mermaid",
+              "media_brief": "推导流程：从条件概率定义出发，分别写出 P(A|B) 与 P(B|A) 的表达式，指出两者共享 P(A∩B)，消去后得到贝叶斯公式。\n\n```mermaid\nflowchart TD\n  A[\"条件概率定义\\nP(A|B) = P(A∩B) / P(B)\"] --> B[\"同理写出反向\\nP(B|A) = P(A∩B) / P(A)\"]\n  B --> C[\"两式都含 P(A∩B)\\nP(A∩B) = P(A|B)·P(B) = P(B|A)·P(A)\"]\n  C --> D[\"消去 P(A∩B)，解出 P(A|B)\\nP(A|B) = P(B|A)·P(A) / P(B)\"]\n  D --> E[\"贝叶斯公式\\nP(原因|证据) = P(证据|原因)·P(原因) / P(证据)\"]\n```",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s3"
+              ]
+            },
+            {
+              "title": "回到医生：如何用贝叶斯诊断",
+              "intent": "让学生将公式应用到医生情境，明确所需信息。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s3"
+              ]
+            },
+            {
+              "title": "小结：贝叶斯是因果换向杆",
+              "intent": "巩固核心：条件概率方向不能随意互换，贝叶斯提供换向工具。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s3"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "chapter_id": "ch_4",
+      "title": "一个必须算的例子",
+      "description": "用患病率、灵敏度、误报率计算阳性预测值，揭示直觉偏差。",
+      "unit": "",
+      "sessions": [
+        {
+          "session_id": "sess_4",
+          "title": "基础率谬误：为什么阳性不等于患病",
+          "learning_goal": "学生能运用贝叶斯公式计算阳性预测值，并解释基础率对后验概率的影响。",
+          "core_concept": "基础率（先验概率）在贝叶斯更新中的关键作用",
+          "cognitive_hurdle": "以为检验阳性就大概率患病，忽略疾病本身罕见这一先验信息。",
+          "source_sections": [
+            "s4"
+          ],
+          "estimated_duration_min": 5,
+          "tags": [
+            "Intuition",
+            "Derivation"
+          ],
+          "segments": [
+            {
+              "title": "阳性了，患病概率多大？",
+              "intent": "让学生暴露直觉：阳性后患病概率很高。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s4"
+              ]
+            },
+            {
+              "title": "答案出乎意料",
+              "intent": "用正确答案制造认知冲突，激发探究。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s4"
+              ]
+            },
+            {
+              "title": "用一万人看穿假阳性",
+              "intent": "通过人群数量对比直观展示假阳性人数远超真阳性。",
+              "media": "illustration",
+              "media_brief": "展示10000人分成两组：患病100人（99阳性，1阴性），健康9900人（495阳性，9405阴性）；高亮阳性总人数594，其中真阳性99，占比约16.7%。标注患病率1%、灵敏度99%、误报率5%。",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s4"
+              ]
+            },
+            {
+              "title": "公式拆解",
+              "intent": "让学生掌握用贝叶斯公式计算阳性预测值的步骤。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s4"
+              ]
+            },
+            {
+              "title": "基础率谬误",
+              "intent": "明确忽略先验是概率推理的常见错误，并理解其根源。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s4"
+              ]
+            },
+            {
+              "title": "无处不在的同一道题",
+              "intent": "将基础率谬误迁移到分类器评估、垃圾邮件过滤等实际场景。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s4"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

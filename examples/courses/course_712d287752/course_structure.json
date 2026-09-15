@@ -1,0 +1,665 @@
+{
+  "course_id": "course_712d287752",
+  "title": "浮点数为什么不准：0.1 + 0.2 ≠ 0.3",
+  "target_audience": "",
+  "overview": "",
+  "generation_mode": "llm",
+  "document_id": "doc_2e2afc1fff",
+  "chapters": [
+    {
+      "chapter_id": "ch_1",
+      "title": "二进制小数的先天问题",
+      "description": "解释二进制表示小数时可能无限循环，导致截断误差。",
+      "unit": "",
+      "sessions": [
+        {
+          "session_id": "sess_1",
+          "title": "二进制小数的先天问题",
+          "learning_goal": "理解二进制小数0.1的无限循环特性及计算机截断如何产生误差。",
+          "core_concept": "二进制小数表示与截断误差",
+          "cognitive_hurdle": "以为十进制有限小数在二进制下也必定有限。",
+          "source_sections": [
+            "s1"
+          ],
+          "estimated_duration_min": 5,
+          "tags": [
+            "Intuition",
+            "Definition"
+          ],
+          "segments": [
+            {
+              "title": "十进制能写完的小数，二进制也能写完吗？",
+              "intent": "让学生意识到十进制有限小数在二进制不一定有限。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s1"
+              ]
+            },
+            {
+              "title": "猜一猜：0.1的二进制长什么样？",
+              "intent": "引发预测，揭示0.1二进制是无限循环。",
+              "media": "illustration",
+              "media_brief": "展示二进制小数0.0001100110011...，将循环节0011用框标出，旁边标注“无限循环”。",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s1"
+              ]
+            },
+            {
+              "title": "截断：计算机的无奈",
+              "intent": "让学生理解计算机必须在某一位截断，因此产生误差。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s1"
+              ]
+            },
+            {
+              "title": "0.1的二进制展开",
+              "intent": "具体看到0.1的二进制循环模式，巩固理解。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s1"
+              ]
+            },
+            {
+              "title": "十进制1/3 vs 二进制0.1",
+              "intent": "通过类比十进制1/3，让学生理解无限循环并非二进制特有，但0.1在这里碰巧无限。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s1"
+              ]
+            },
+            {
+              "title": "误差的出生地",
+              "intent": "总结截断导致浮点误差，回扣0.1+0.2≠0.3。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s1"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "chapter_id": "ch_2",
+      "title": "IEEE 754 双精度的布局",
+      "description": "64位如何分成符号、指数、尾数三段，以及由此决定的精度特点。",
+      "unit": "",
+      "sessions": [
+        {
+          "session_id": "sess_2",
+          "title": "64位三段：符号、指数、尾数",
+          "learning_goal": "能够说出双精度浮点数的64位布局，并用公式计算简单的浮点数值。",
+          "core_concept": "IEEE 754双精度数的位布局和值公式。",
+          "cognitive_hurdle": "误以为64位浮点数可以精确表示任意实数，实际上只能表示有限个离散值。",
+          "source_sections": [
+            "s2"
+          ],
+          "estimated_duration_min": 6,
+          "tags": [
+            "Definition",
+            "Derivation"
+          ],
+          "segments": [
+            {
+              "title": "64位能表示多少个数？",
+              "intent": "让学生意识到64位只能表示有限个不同的值，不是全部实数。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s2"
+              ]
+            },
+            {
+              "title": "二进制科学计数法",
+              "intent": "用科学计数法类比引出符号、指数、尾数三个组成部分。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s2"
+              ]
+            },
+            {
+              "title": "64位布局：1+11+52",
+              "intent": "明确双精度浮点数的位划分：1位符号、11位指数、52位尾数。",
+              "media": "illustration",
+              "media_brief": "一个64位长条，从左到右分成三段：符号（1位，标注s）、指数（11位，标注e）、尾数（52位，标注f），每段下方标注位数。",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s2"
+              ]
+            },
+            {
+              "title": "值公式：(-1)^s × 1.f × 2^{e-1023}",
+              "intent": "用公式把三个字段映射为实际数值，理解前导1和指数偏移。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s2"
+              ]
+            },
+            {
+              "title": "示例：解码一个简单位模式",
+              "intent": "通过应用公式计算具体数值，巩固解码过程。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s2"
+              ]
+            },
+            {
+              "title": "回顾：三段布局和公式",
+              "intent": "总结64位布局和解码公式，重申浮点数是离散采样。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s2"
+              ]
+            }
+          ]
+        },
+        {
+          "session_id": "sess_3",
+          "title": "尾数精度与间隔：为什么加1看不见",
+          "learning_goal": "解释双精度浮点数有效数字约为15-16位十进制，且相邻可表示数间隔随指数增大。",
+          "core_concept": "浮点数精度受尾数限制，绝对间隔随指数增长。",
+          "cognitive_hurdle": "误以为浮点数精度是固定的小数位数，实际上大数附近绝对间隔很大。",
+          "source_sections": [
+            "s2"
+          ],
+          "estimated_duration_min": 6,
+          "tags": [
+            "Derivation",
+            "Application"
+          ],
+          "segments": [
+            {
+              "title": "精度处处相同吗？",
+              "intent": "引发学生对浮点数精度是否随数值大小变化的思考。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s2"
+              ]
+            },
+            {
+              "title": "有限有效数字的类比",
+              "intent": "用有限有效数字的科学计数法类比，说明大数附近最小可分辨增量变大。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s2"
+              ]
+            },
+            {
+              "title": "52位尾数 → 约15~16位十进制",
+              "intent": "从尾数位数推导十进制有效数字位数约为15~16位。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s2"
+              ]
+            },
+            {
+              "title": "计算10^20附近的间隔",
+              "intent": "展示如何由指数计算相邻可表示数的间隔，得到16384。",
+              "media": "explorable",
+              "media_brief": "横轴为浮点数的指数 e（从 0 到 70，对应数值约 2^e），纵轴为相邻可表示数之间的间隔 ulp = 2^(e-52)。画一条随 e 单调上升的曲线（对数纵轴更直观）。提供滑块让学生拖动 e，探针显示当前 e、对应数值约 2^e、以及 ulp 的十进制值。预期现象：e 较小时 ulp 极小（如 e=0 时约 2.2e-16），e 增大到约 66（数值约 10^20）时 ulp 跳到 16384，学生看到间隔随指数指数级增长，从而理解为何 10^20 加 1 落在间隔之内、根本看不见。",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s2"
+              ]
+            },
+            {
+              "title": "加1根本看不见",
+              "intent": "应用间隔概念解释为什么10^20加1没有变化，因为增量小于最低有效位的一半。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s2"
+              ]
+            },
+            {
+              "title": "回顾：精度是相对的",
+              "intent": "总结浮点数精度是相对精度（约15-16位有效数字），绝对间隔随数值大小变化。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s2"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "chapter_id": "ch_3",
+      "title": "三条经典事故链",
+      "description": "舍入累积、大数吃小数、相等判断三种常见浮点错误场景及其工程规避方法",
+      "unit": "",
+      "sessions": [
+        {
+          "session_id": "sess_4",
+          "title": "舍入累积",
+          "learning_goal": "理解浮点数在十进制小数转二进制时产生舍入误差，且逐次运算误差会累积",
+          "core_concept": "浮点数有限精度导致十进制小数无法精确表示，运算结果逐次舍入",
+          "cognitive_hurdle": "认为 0.1 + 0.2 精确等于 0.3，或认为舍入误差可以忽略、不会影响结果",
+          "source_sections": [
+            "s3"
+          ],
+          "estimated_duration_min": 5,
+          "tags": [
+            "Intuition",
+            "Application"
+          ],
+          "segments": [
+            {
+              "title": "出人意料的加法",
+              "intent": "让学生意识到 0.1+0.2 在浮点中不等于 0.3，产生认知冲突",
+              "media": "board",
+              "media_brief": "板书代码：0.1 + 0.2 == 0.3 -> False；0.1 + 0.2 的结果为 0.30000000000000004",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s3"
+              ]
+            },
+            {
+              "title": "类比：十进制中的无限小数",
+              "intent": "用 1/3 的十进制截断类比二进制无法精确表示 0.1",
+              "media": "board",
+              "media_brief": "板书：1/3 = 0.333...，十进制只能写有限位；同理二进制中 0.1 是无限循环小数，只能保存近似值",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s3"
+              ]
+            },
+            {
+              "title": "浮点数的有限精度与舍入",
+              "intent": "明确浮点数只能表示有限精度，每次运算结果舍入到最接近的可表示数",
+              "media": "board",
+              "media_brief": "板书：浮点数有固定存储位数，运算后若结果不是可表示数，就向最近的机器数舍入",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s3"
+              ]
+            },
+            {
+              "title": "误差如何累积：0.1+0.2 的路径",
+              "intent": "展示 0.1 和 0.2 的近似值相加再舍入得到 0.30000000000000004 的过程",
+              "media": "explorable",
+              "media_brief": "对象：一条数轴，横轴为实数区间 [0.29, 0.31]，纵轴无。数轴上标出三个点：0.1 的浮点近似值 a、0.2 的浮点近似值 b、以及 a+b 的精确和；再标出该精确和舍入到最近可表示数后的结果 c。滑块参数 n 控制参与累加的 0.1 的个数（1~100），探针显示累计和与精确值 n/10 的差。预期现象：n=1 时差约 1e-17，随 n 增大误差单调累积，n=10 时累计和不再等于 1.0，直观看到误差随步数增长。",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s3"
+              ]
+            },
+            {
+              "title": "工程应对：整数分与十进制类型",
+              "intent": "给出金融系统避免舍入累积的标准做法",
+              "media": "board",
+              "media_brief": "板书：用整数分记账（如 10 分而不是 0.1 元），或使用十进制类型（Decimal）代替二进制浮点",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s3"
+              ]
+            },
+            {
+              "title": "回顾",
+              "intent": "总结舍入累积的事故链，强化原因与应对",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s3"
+              ]
+            }
+          ]
+        },
+        {
+          "session_id": "sess_5",
+          "title": "大数吃小数",
+          "learning_goal": "理解数量级相差过大时有限精度浮点加法会丢失小数，并掌握求和顺序的优化策略",
+          "core_concept": "浮点数在数量级差距大时，小数会被大数吸收",
+          "cognitive_hurdle": "认为 10^16 + 1 应该等于 10000000000000001，不知道 1 会被舍入掉",
+          "source_sections": [
+            "s3"
+          ],
+          "estimated_duration_min": 5,
+          "tags": [
+            "Intuition",
+            "Application"
+          ],
+          "segments": [
+            {
+              "title": "消失的 1",
+              "intent": "让学生预测 10^16 + 1 在浮点中的结果，制造悬念",
+              "media": "board",
+              "media_brief": "板书：10^16 + 1 = ?",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s3"
+              ]
+            },
+            {
+              "title": "实际验证",
+              "intent": "用代码/计算器揭示结果是 10^16，与直觉冲突",
+              "media": "board",
+              "media_brief": "板书：print(10**16 + 1) -> 10000000000000000；10**16 + 1 == 10**16 -> True",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s3"
+              ]
+            },
+            {
+              "title": "原因：浮点数的间隔吃掉小数",
+              "intent": "解释 1 小于 10^16 附近的机器数间隔，加 1 后无法表示更精细的差",
+              "media": "explorable",
+              "media_brief": "横轴为指数 e（从 0 到 20），纵轴为浮点数在 2^e 附近的相邻可表示数间隔（ulp）。对象是一条随 e 增大的阶梯/指数曲线。提供一个滑块控制 e，探针显示当前 e 对应的 ulp 值，并叠加一个固定的小数 1 作为水平参考线。预期现象：当 e 增大到约 16 时，ulp 超过 1，说明 10^16 附近加 1 无法表示，直观解释大数吃小数。",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s3"
+              ]
+            },
+            {
+              "title": "求和顺序的影响",
+              "intent": "指出先加小数再加大数可以减小损失",
+              "media": "board",
+              "media_brief": "板书：若有一列数包含大数和小数，先累加小数再与大数相加，可减少小数被吞掉的次数",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s3"
+              ]
+            },
+            {
+              "title": "两种顺序对比",
+              "intent": "用对比强化理解顺序对精度的影响",
+              "media": "board",
+              "media_brief": "板书：大数先加小数的误差 vs 小数先累加再加大数的误差对比示意",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s3"
+              ]
+            },
+            {
+              "title": "回顾",
+              "intent": "总结大数吃小数的原因与缓解策略",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s3"
+              ]
+            }
+          ]
+        },
+        {
+          "session_id": "sess_6",
+          "title": "相等判断",
+          "learning_goal": "理解浮点数不能用 == 直接比较，掌握误差容限比较法并知道 ε 应随量级缩放",
+          "core_concept": "浮点相等判断应使用相对误差容限而非直接 == 或固定绝对误差",
+          "cognitive_hurdle": "认为浮点数可以直接用 == 比较，或使用全局固定小常数如 1e-9 作为容差在所有场景都安全",
+          "source_sections": [
+            "s3"
+          ],
+          "estimated_duration_min": 5,
+          "tags": [
+            "Application",
+            "Definition"
+          ],
+          "segments": [
+            {
+              "title": "== 的陷阱",
+              "intent": "让学生意识到浮点比较不能用 ==",
+              "media": "board",
+              "media_brief": "板书：0.1 + 0.2 == 0.3 -> False",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s3"
+              ]
+            },
+            {
+              "title": "为什么不能直接比较",
+              "intent": "说明浮点误差导致两个理论相等的数可能有微小差异",
+              "media": "board",
+              "media_brief": "板书：浮点运算引入舍入误差，a 和 b 即使数学上相等，也可能差一个极小量",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s3"
+              ]
+            },
+            {
+              "title": "容差比较",
+              "intent": "给出替代方案：|a-b| < ε",
+              "media": "board",
+              "media_brief": "板书：abs(0.1+0.2 - 0.3) < 1e-12 -> True",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s3"
+              ]
+            },
+            {
+              "title": "固定 ε 的局限",
+              "intent": "指出全局固定小常数在数量级悬殊时会失效",
+              "media": "explorable",
+              "media_brief": "横轴为数值量级（log10 尺度，从 1e-6 到 1e6），纵轴为绝对误差 |a-b|（log 尺度）。固定 ε 显示为一条水平线（如 1e-9）。探针/滑块控制两个数的量级，并显示 |a-b| 随量级的变化曲线。预期现象：当量级远大于 1 时，|a-b| 超过固定 ε，导致误判为不等；当量级远小于 1 时，|a-b| 远小于 ε，导致误判为相等。",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s3"
+              ]
+            },
+            {
+              "title": "相对误差实践",
+              "intent": "给出 ε 随量级缩放的标准做法",
+              "media": "board",
+              "media_brief": "板书：|a-b| < ε * max(|a|,|b|)，例如 ε=1e-12 相对误差",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s3"
+              ]
+            },
+            {
+              "title": "回顾",
+              "intent": "总结浮点相等判断的原则",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s3"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "chapter_id": "ch_4",
+      "title": "工程直觉",
+      "description": "浮点数的范围、精度与不可结合性",
+      "unit": "",
+      "sessions": [
+        {
+          "session_id": "sess_7",
+          "title": "浮点数的不可结合性",
+          "learning_goal": "理解浮点数范围与精度的权衡，认识到不可结合性是浮点运算的固有属性，并能在算法设计中将误差作为设计因素。",
+          "core_concept": "浮点数是科学计数法的不完美实现，范围巨大但精度有限，导致加法不可结合。",
+          "cognitive_hurdle": "以为浮点数运算满足结合律，即 (a+b)+c 一定等于 a+(b+c)，没有意识到有限精度下的舍入误差会导致不可结合。",
+          "source_sections": [
+            "s4"
+          ],
+          "estimated_duration_min": 5,
+          "tags": [
+            "Definition",
+            "Derivation"
+          ],
+          "segments": [
+            {
+              "title": "浮点数违反直觉？",
+              "intent": "让学生意识到浮点数运算可能与数学直觉不同。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s4"
+              ]
+            },
+            {
+              "title": "科学计数法的不完美实现",
+              "intent": "建立浮点数是科学计数法的近似实现的直觉。",
+              "media": "board",
+              "media_brief": "板书：浮点数 ≈ 科学计数法（有限尾数），范围巨大 ≈10±308，精度有限",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s4"
+              ]
+            },
+            {
+              "title": "表达范围与精度不可兼得",
+              "intent": "明确定义浮点数的两个特性：范围巨大与有限精度。",
+              "media": "illustration",
+              "media_brief": "左侧：一条数轴，两端标注 10^-308 和 10^308，展示表达范围巨大；右侧：放大数轴上一小段，标注有限个可表示浮点数点（约3-5个点），展示精度有限。标题：浮点数不完美实现。",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s4"
+              ]
+            },
+            {
+              "title": "不可结合的机制",
+              "intent": "推导为什么浮点数加法不可结合。",
+              "media": "board",
+              "media_brief": "板书：有限精度导致中间结果舍入；(a+b)+c 先算 a+b，舍入后加 c；a+(b+c) 先算 b+c，舍入后加 a；舍入点不同，结果可能不同",
+              "figure_id": null,
+              "ask": true,
+              "beat": null,
+              "source_sections": [
+                "s4"
+              ]
+            },
+            {
+              "title": "把误差设计进算法",
+              "intent": "明白误差是浮点算术的物理属性，需要在算法设计中考虑。",
+              "media": "board",
+              "media_brief": "板书：写算法时，接受不可结合，不要假设精确算术；设计时考虑舍入误差",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s4"
+              ]
+            },
+            {
+              "title": "回顾：不完美但可设计",
+              "intent": "总结本章核心：浮点数范围大但精度有限，不可结合，误差不可避免需设计。",
+              "media": "board",
+              "media_brief": "",
+              "figure_id": null,
+              "ask": false,
+              "beat": null,
+              "source_sections": [
+                "s4"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

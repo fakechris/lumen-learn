@@ -1,0 +1,65 @@
+{
+  "session_id": "sess_3",
+  "items": [
+    {
+      "stem": "某批数据有 50 个样本，每个样本 20 个特征，第一层有 8 个神经元。若按课堂约定 $H=XW+b$ 做批处理，$W$ 的形状应该是什么？",
+      "options": [
+        "$8 \\times 20$",
+        "$20 \\times 8$",
+        "$50 \\times 8$",
+        "$20 \\times 50$"
+      ],
+      "correct_index": 1,
+      "kind": "transfer",
+      "explanation": "按约定 $X$ 是 $m \\times n_{in}$，$W$ 必须是 $n_{in} \\times n_{out}$，即 $20 \\times 8$；$8 \\times 20$ 是常见的“每行一个神经元”误区，会导致 $XW$ 内侧维度 $20$ 与 $8$ 不相等。"
+    },
+    {
+      "stem": "如果坚持让权重矩阵的每一行对应一个神经元，即 $W$ 取 $n_{out} \\times n_{in}$，而样本仍按行排成 $X \\in \\mathbb{R}^{m \\times n_{in}}$，直接计算 $XW$ 会发生什么？",
+      "options": [
+        "结果仍是 $m \\times n_{out}$，只是数值顺序变了",
+        "结果变成 $n_{out} \\times n_{in}$，但可以继续加偏置",
+        "矩阵乘法内侧维度 $n_{in}$ 与 $n_{out}$ 不相等，无法直接相乘",
+        "只要 $m=n_{out}$ 就总能相乘，所以通常没问题"
+      ],
+      "correct_index": 2,
+      "kind": "why",
+      "explanation": "矩阵乘法要求内侧维度相等，$X$ 的列数是 $n_{in}$，而 $W$ 的行数是 $n_{out}$，二者一般不相等，所以不能直接相乘；只有 $m=n_{out}$ 这种偶然情况才碰巧能乘，不能作为通用做法。"
+    },
+    {
+      "stem": "已知 $X=\\begin{bmatrix}2&1\\\\0&3\\end{bmatrix}$，$W=\\begin{bmatrix}1&2\\\\3&4\\end{bmatrix}$，按 $H=XW$ 计算，$H$ 的左上角元素是多少？",
+      "options": [
+        "5",
+        "8",
+        "2",
+        "11"
+      ],
+      "correct_index": 0,
+      "kind": "compute",
+      "explanation": "左上角是 $X$ 第一行与 $W$ 第一列的内积：$2\\times1+1\\times3=5$；$8$ 是误把 $W$ 第一行当第一列算出的结果，属于行列混淆。"
+    },
+    {
+      "stem": "某同学说：“权重矩阵写成 $n_{out} \\times n_{in}$ 更自然，因为每行就是一个神经元；批处理时只要把 $X$ 也转置一下，让样本按列排，就能用这个形状。”这个说法的主要问题是什么？",
+      "options": [
+        "样本按列排后，$X^T$ 是 $n_{in} \\times m$，与 $n_{out} \\times n_{in}$ 相乘仍然内侧不匹配",
+        "样本按列排后，输出会变成每个神经元一行，不符合每行一个样本的约定",
+        "只要同时转置 $X$ 和 $W$，任何形状都能相乘，所以没有问题",
+        "权重矩阵每行一个神经元本身没有错，错在偏置不能广播"
+      ],
+      "correct_index": 0,
+      "kind": "near_miss",
+      "explanation": "把 $X$ 转置成 $n_{in} \\times m$ 后，与 $n_{out} \\times n_{in}$ 相乘的内侧维度是 $m$ 和 $n_{out}$，仍不相等；误区在于以为转置 $X$ 就能救“每行一个神经元”的形状。"
+    },
+    {
+      "stem": "一批 4 个样本、每个样本 3 个输入，经过一层 5 个神经元后得到输出 $H$。若 $H=XW+b$，则 $H$ 的形状和 $b$ 的广播方式分别是？",
+      "options": [
+        "$H \\in \\mathbb{R}^{4 \\times 5}$，$b$ 是长度 4 的向量并广播到每一列",
+        "$H \\in \\mathbb{R}^{5 \\times 4}$，$b$ 是长度 5 的向量并广播到每一行",
+        "$H \\in \\mathbb{R}^{4 \\times 5}$，$b$ 是长度 5 的向量并广播到每一行",
+        "$H \\in \\mathbb{R}^{3 \\times 5}$，$b$ 是长度 3 的向量并广播到每一行"
+      ],
+      "correct_index": 2,
+      "kind": "transfer",
+      "explanation": "$X$ 是 $4 \\times 3$，$W$ 是 $3 \\times 5$，所以 $H$ 是 $4 \\times 5$，每行一个样本；偏置长度等于神经元数 5，并广播到每一行。"
+    }
+  ]
+}

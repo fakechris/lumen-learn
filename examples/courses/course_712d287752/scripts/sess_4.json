@@ -1,0 +1,307 @@
+{
+  "session_id": "sess_4",
+  "course_id": "course_712d287752",
+  "title": "舍入累积",
+  "learning_goal": "理解浮点数在十进制小数转二进制时产生舍入误差，且逐次运算误差会累积",
+  "steps": [
+    {
+      "title": "出人意料的加法",
+      "beat": "hook",
+      "spoken_text": "先别信我，咱们直接跑一行代码。看板书第一行，0.1 加 0.2 等于等于 0.3，你猜它返回什么？很多人脱口而出 True。可实际跑出来是 False，结果多出一串尾巴。你平时按计算器从没遇到过这种事，对吧？",
+      "boards": [
+        {
+          "title": "",
+          "markdown": "- `0.1 + 0.2 == 0.3` → **False**\n- 实际结果：`0.30000000000000004`\n- 多出来的尾巴：`...0004`",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "circle",
+          "snippet": "False",
+          "board_index": 0,
+          "trigger_phrase": "你猜它返回什么",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": {
+        "mode": "choice",
+        "question": "0.1 加 0.2 等于等于 0.3，你觉得会返回什么？",
+        "options": [
+          "True，这不就是小学算术吗",
+          "False，结果会多出一串尾巴"
+        ],
+        "correct_index": 1,
+        "misconceptions": [
+          "这是最自然的直觉：十进制里 0.1 加 0.2 就是 0.3，可计算机存的是二进制，压根存不下精确的 0.1。",
+          null
+        ],
+        "explanation": "浮点数里 0.1 和 0.2 都只是近似值，相加后得到 0.30000000000000004，所以判断为 False。"
+      },
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "类比：十进制中的无限小数",
+      "beat": "analogy",
+      "spoken_text": "为什么存不下？拿三分之一来类比。板书第一行，1 除以 3 等于 0.333 一直循环下去，可你在纸上只能写有限位，写 0.333 就已经不是三分之一了。二进制里 0.1 也是同样的处境：它是个无限循环小数，机器只能截断保存。所以那个尾巴不是 bug，是截断留下的痕迹。",
+      "boards": [
+        {
+          "title": "十进制写不下 1/3",
+          "markdown": "- $\\frac{1}{3} = 0.333\\ldots$ 无限循环\n- 纸上只能写有限位 → $0.333$ 已不是 $\\frac{1}{3}$\n- 二进制里 $0.1$ 同样无限循环\n- 机器只能存 **近似值**",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "highlight",
+          "snippet": "0.333",
+          "board_index": 0,
+          "trigger_phrase": "写 0.333 就已经不是三分之一了",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": null,
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "浮点数的有限精度与舍入",
+      "beat": "define",
+      "spoken_text": "把这件事说清楚：浮点数的存储位数是固定的，能表示的数只有有限多个，像一条数轴上稀疏的点。每次运算的真实结果如果落在两个点之间，机器就把它推到最近的那个点上，这叫舍入。看板书最后一行，0.1 加 0.2 的真实和落在两个可表示数中间，被推到了偏大的那个。那问题来了：如果连续做一百次加法，这些被推偏的小点会怎样？",
+      "boards": [
+        {
+          "title": "有限精度 → 必须舍入",
+          "markdown": "- 浮点数位数固定 → 可表示的数**有限多个**\n- 真实结果落在两点之间\n- 规则：推到**最近的可表示数**（舍入）\n- $0.1 + 0.2$ 的真实和 → 被推到偏大的点",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "circle",
+          "snippet": "推到**最近的可表示数**",
+          "board_index": 0,
+          "trigger_phrase": "推到最近的那个点上",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": {
+        "mode": "choice",
+        "question": "如果连续做一百次这种加法，那些被推偏的小点会怎样？",
+        "options": [
+          "每次只偏一丁点，最后基本看不出来",
+          "偏的方向可能一致，一百次叠起来就明显了"
+        ],
+        "correct_index": 1,
+        "misconceptions": [
+          "很多人觉得单次误差小到可以忽略，但舍入方向若长期一致，误差会像滚雪球一样累积。",
+          null
+        ],
+        "explanation": "每次舍入都往同一侧偏一点，逐次运算误差叠加，一百次后偏差就不可忽略了。"
+      },
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "误差如何累积",
+      "beat": "poe",
+      "spoken_text": "看下方这张探针图。横轴是 0.29 到 0.31 这一段实数，蓝点是 0.1 和 0.2 各自的浮点近似值，红点是它们相加后舍入到的位置。我把滑块 n 推到 10，看读数：累计和已经不等于 1.0 了。你猜误差是每加一次就跳一下，还是慢慢爬上去的？",
+      "boards": [
+        {
+          "title": "误差怎么长出来",
+          "markdown": "- 0.1 的近似 $a$，0.2 的近似 $b$\n- 真实和 $a+b$ 落在两点之间\n- 舍入 → $c = 0.30000000000000004$\n- 每加一次，**再舍一次**\n- 误差不是一次性的，是**一层层叠上去**的",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "circle",
+          "snippet": "一层层叠上去",
+          "board_index": 0,
+          "trigger_phrase": "慢慢爬上去的",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": {
+        "kind": "explorable",
+        "title": "数轴上的舍入累积",
+        "task": "画一条横轴，范围 0.29 到 0.31。标出三个点：0.1 的浮点近似值 a、0.2 的浮点近似值 b、以及 a+b 的精确和；再标出精确和舍入到最近可表示数后的结果 c。下方一个滑块 n 控制参与累加的 0.1 的个数，范围 1 到 100。探针实时读出累计和与精确值 n/10 的差。预期现象：n=1 时差约 1e-17，随 n 增大误差单调累积，n=10 时累计和不再等于 1.0，直观看到误差随步数增长。",
+        "html": "<!DOCTYPE html>\n<html>\n<head><script>/**\n * HandChart — zero-dependency hand-drawn chart base for explorable widgets.\n *\n * Injected into every generated 2D explorable (widget_generator.py) so the\n * model supplies data + overlays instead of hand-writing axes. The look matches\n * the handwritten page: paper panel, slightly wobbly ink axes, main red /\n * aux green, handwriting labels.\n *\n * API (all coordinates in WORLD units unless noted):\n *   const ch = HandChart.render(canvas, opts)\n *     opts = { type: \"function\"|\"points\"|\"bars\"|\"lines\",\n *              xlim:[x0,x1], ylim:[y0,y1],                  (all but bars)\n *              fn: x=>y | fns:[{fn, color?, label?}],        (function)\n *              points:[[x,y],...],                          (points)\n *              series:[{name, points, color?, dash?}],      (lines; legend drawn)\n *              bars:{labels:[...], values:[...], highlight?} (bars)\n *              xlabel, ylabel, grid:true|false, title }\n *     returns { ctx, sx, sy, box, W, H, opts }  — keep it to draw overlays\n *   HandChart.marker(ch, x, y, {color, label, r})       dot + optional label\n *   HandChart.vline(ch, x, {color, dash, label})         vertical guide\n *   HandChart.hline(ch, y, {color, dash, label})         horizontal guide\n *   HandChart.segment(ch, [x1,y1], [x2,y2], {color, width, dash, arrow})\n *   HandChart.note(ch, x, y, text, {color, align, size}) handwriting annotation\n *   HandChart.attachProbe(canvas, {xlim, ylim}, onProbe, onLeave?)\n *     pointer follow; onProbe({x, y}) in world coords — redraw + readouts there.\n *   HandChart.style = { INK, AXIS, MAIN, AUX, GRID, PAPER, MUTED }\n */\n(function () {\n  const style = {\n    INK: \"#2b2b2b\", AXIS: \"#8a8377\", MAIN: \"#c0392b\", AUX: \"#2e8b6f\",\n    GRID: \"#ece5d4\", PAPER: \"#fbfaf6\", MUTED: \"#8a8377\", PURPLE: \"#7c3aed\", BLUE: \"#2563eb\",\n  };\n  const PALETTE = [style.MAIN, style.AUX, style.BLUE, style.PURPLE, \"#d97706\"];\n  const PAD = { l: 48, r: 18, t: 18, b: 36 };\n  const HAND = \"'Patrick Hand', 'LXGW WenKai Lite', 'PingFang SC', sans-serif\";\n\n  function font(size, italic) { return (italic ? \"italic \" : \"\") + size + \"px \" + HAND; }\n\n  // deterministic wobble so the \"hand\" does not shake on every redraw\n  function wob(seed, amp) { return Math.sin(seed * 12.9898) * amp; }\n\n  function tickVals(min, max, n) {\n    const span = max - min || 1;\n    const raw = span / n;\n    const mag = Math.pow(10, Math.floor(Math.log10(raw)));\n    const step = [1, 2, 2.5, 5, 10].map((m) => m * mag).find((s) => span / s <= n) || mag * 10;\n    const out = [];\n    for (let v = Math.ceil(min / step) * step; v <= max + step * 1e-9; v += step) out.push(+v.toFixed(10));\n    return out;\n  }\n\n  function fmt(v) {\n    const a = Math.abs(v);\n    if (a === 0) return \"0\";\n    if (a >= 10000 || a < 0.01) return v.toExponential(1);\n    return String(+v.toFixed(Math.max(0, 3 - Math.floor(Math.log10(a)))));\n  }\n\n  /** a hand-drawn line: two passes with tiny deterministic wobble */\n  function inkLine(ctx, x1, y1, x2, y2, color, width, seed) {\n    ctx.save();\n    ctx.strokeStyle = color; ctx.lineWidth = width; ctx.lineCap = \"round\";\n    const n = 6, s = seed || (x1 + y2);\n    ctx.beginPath();\n    for (let i = 0; i <= n; i++) {\n      const t = i / n, x = x1 + (x2 - x1) * t, y = y1 + (y2 - y1) * t;\n      const w = i === 0 || i === n ? 0 : wob(s + i, 0.7);\n      i ? ctx.lineTo(x + w, y + w) : ctx.moveTo(x, y);\n    }\n    ctx.stroke();\n    ctx.restore();\n  }\n\n  function frame(ctx, W, H) {\n    ctx.clearRect(0, 0, W, H);\n    ctx.save();\n    ctx.fillStyle = style.PAPER;\n    ctx.fillRect(0, 0, W, H);\n    ctx.restore();\n  }\n\n  function plotBox(W, H, opts) {\n    const t = PAD.t + (opts && opts.title ? 18 : 0);\n    return { x0: PAD.l, y0: t, x1: W - PAD.r, y1: H - PAD.b };\n  }\n\n  function mapping(box, xlim, ylim) {\n    const [x0, x1] = xlim, [y0, y1] = ylim;\n    return {\n      sx: (v) => box.x0 + (v - x0) / (x1 - x0) * (box.x1 - box.x0),\n      sy: (v) => box.y1 - (v - y0) / (y1 - y0) * (box.y1 - box.y0),\n    };\n  }\n\n  function axes(ctx, box, opts) {\n    const [x0, x1] = opts.xlim, [y0, y1] = opts.ylim;\n    const { sx, sy } = mapping(box, opts.xlim, opts.ylim);\n    const xt = tickVals(x0, x1, 6).filter((v) => v >= x0 && v <= x1);\n    const yt = tickVals(y0, y1, 4).filter((v) => v >= y0 && v <= y1);\n    if (opts.grid !== false) {\n      ctx.save(); ctx.strokeStyle = style.GRID; ctx.lineWidth = 1;\n      for (const v of xt) { ctx.beginPath(); ctx.moveTo(sx(v), box.y0); ctx.lineTo(sx(v), box.y1); ctx.stroke(); }\n      for (const v of yt) { ctx.beginPath(); ctx.moveTo(box.x0, sy(v)); ctx.lineTo(box.x1, sy(v)); ctx.stroke(); }\n      ctx.restore();\n    }\n    // axes sit on zero when zero is inside the range, else on the box edge\n    const ax = y0 <= 0 && y1 >= 0 ? sy(0) : box.y1;\n    const ay = x0 <= 0 && x1 >= 0 ? sx(0) : box.x0;\n    inkLine(ctx, box.x0 - 4, ax, box.x1 + 6, ax, style.AXIS, 1.4, 1);\n    inkLine(ctx, ay, box.y1 + 4, ay, box.y0 - 6, style.AXIS, 1.4, 2);\n    // arrow heads\n    ctx.save(); ctx.fillStyle = style.AXIS;\n    ctx.beginPath(); ctx.moveTo(box.x1 + 8, ax); ctx.lineTo(box.x1 + 1, ax - 3.5); ctx.lineTo(box.x1 + 1, ax + 3.5); ctx.fill();\n    ctx.beginPath(); ctx.moveTo(ay, box.y0 - 8); ctx.lineTo(ay - 3.5, box.y0 - 1); ctx.lineTo(ay + 3.5, box.y0 - 1); ctx.fill();\n    ctx.restore();\n    ctx.save();\n    ctx.fillStyle = style.MUTED; ctx.font = font(12);\n    ctx.textAlign = \"center\";\n    for (const v of xt) {\n      if (Math.abs(sx(v) - ay) < 1 && ay !== box.x0) continue; // skip the label under the y axis\n      inkLine(ctx, sx(v), ax - 3, sx(v), ax + 3, style.AXIS, 1, v);\n      ctx.fillText(fmt(v), sx(v), ax + 16);\n    }\n    ctx.textAlign = \"right\";\n    for (const v of yt) {\n      if (Math.abs(sy(v) - ax) < 1 && ax !== box.y1) continue;\n      inkLine(ctx, ay - 3, sy(v), ay + 3, sy(v), style.AXIS, 1, v + 7);\n      ctx.fillText(fmt(v), ay - 7, sy(v) + 4);\n    }\n    ctx.font = font(14, true); ctx.fillStyle = style.INK;\n    if (opts.xlabel) { ctx.textAlign = \"right\"; ctx.fillText(opts.xlabel, box.x1 + 4, ax - 8); }\n    if (opts.ylabel) { ctx.textAlign = \"left\"; ctx.fillText(opts.ylabel, ay + 8, box.y0 + 4); }\n    ctx.restore();\n    return { sx, sy };\n  }\n\n  function stroke(ctx, pts, color, width, dash) {\n    if (!pts.length) return;\n    ctx.save();\n    ctx.strokeStyle = color; ctx.lineWidth = width || 2.2;\n    ctx.lineJoin = \"round\"; ctx.lineCap = \"round\";\n    if (dash) ctx.setLineDash(dash);\n    ctx.beginPath();\n    let pen = false;\n    for (const p of pts) {\n      if (!p) { pen = false; continue; }\n      pen ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1]);\n      pen = true;\n    }\n    ctx.stroke();\n    ctx.restore();\n  }\n\n  function fnPoints(fn, opts, m) {\n    const [x0, x1] = opts.xlim, [y0, y1] = opts.ylim;\n    const n = 400, pts = [];\n    const margin = (y1 - y0) * 0.02;\n    for (let i = 0; i <= n; i++) {\n      const x = x0 + (x1 - x0) * i / n;\n      let y;\n      try { y = fn(x); } catch (e) { y = NaN; }\n      if (!isFinite(y) || y < y0 - margin || y > y1 + margin) { pts.push(null); continue; }\n      pts.push([m.sx(x), m.sy(y)]);\n    }\n    return pts;\n  }\n\n  function legend(ctx, box, items) {\n    if (!items.length) return;\n    ctx.save();\n    ctx.font = font(13); ctx.textAlign = \"left\"; ctx.textBaseline = \"middle\";\n    let x = box.x0 + 10, y = box.y0 + 12;\n    for (const it of items) {\n      inkLine(ctx, x, y, x + 22, y, it.color, 2.4, x);\n      ctx.fillStyle = style.INK;\n      ctx.fillText(it.label, x + 28, y + 1);\n      x += 28 + ctx.measureText(it.label).width + 18;\n    }\n    ctx.restore();\n  }\n\n  function title(ctx, W, text) {\n    ctx.save();\n    ctx.font = font(15); ctx.fillStyle = style.INK; ctx.textAlign = \"center\";\n    ctx.fillText(text, W / 2, 16);\n    ctx.restore();\n  }\n\n  function render(canvas, opts) {\n    const ctx = canvas.getContext(\"2d\");\n    const rect = canvas.getBoundingClientRect();\n    const W = Math.max(60, Math.round(rect.width)), H = Math.max(60, Math.round(rect.height));\n    const dpr = window.devicePixelRatio || 1;\n    if (canvas.width !== Math.round(W * dpr) || canvas.height !== Math.round(H * dpr)) {\n      canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);\n    }\n    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);\n    frame(ctx, W, H);\n    if (opts.title) title(ctx, W, opts.title);\n    const box = plotBox(W, H, opts);\n    const type = opts.type || \"function\";\n\n    if (type === \"bars\") {\n      const labels = opts.bars.labels || [], values = opts.bars.values || [];\n      const n = Math.max(1, values.length);\n      const bw = (box.x1 - box.x0) / n;\n      const vmax = Math.max(...values.map((v) => Math.abs(v)), 0) * 1.15 || 1;\n      const base = box.y1;\n      inkLine(ctx, box.x0 - 4, base, box.x1 + 4, base, style.AXIS, 1.4, 3);\n      ctx.save();\n      values.forEach((v, i) => {\n        const h = (Math.abs(v) / vmax) * (box.y1 - box.y0);\n        const x = box.x0 + i * bw + bw * 0.2, w = bw * 0.6, y = base - h;\n        const hot = opts.bars.highlight != null && i === opts.bars.highlight;\n        ctx.fillStyle = hot ? style.MAIN : \"#e6dfcf\";\n        ctx.fillRect(x, y, w, h);\n        ctx.strokeStyle = hot ? style.MAIN : style.AXIS; ctx.lineWidth = 1.2;\n        ctx.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);\n        ctx.font = font(13); ctx.textAlign = \"center\"; ctx.fillStyle = style.INK;\n        ctx.fillText(String(labels[i] == null ? i + 1 : labels[i]), x + w / 2, base + 17);\n        ctx.fillStyle = hot ? style.MAIN : style.MUTED;\n        ctx.fillText(fmt(v), x + w / 2, y - 6);\n      });\n      ctx.restore();\n      const sx = (i) => box.x0 + (i + 0.5) * bw, sy = (v) => base - (Math.abs(v) / vmax) * (box.y1 - box.y0);\n      return { ctx, sx, sy, box, W, H, opts };\n    }\n\n    const m = axes(ctx, box, opts);\n    const items = [];\n    if (type === \"lines\") {\n      (opts.series || []).forEach((s, i) => {\n        const color = s.color || PALETTE[i % PALETTE.length];\n        stroke(ctx, (s.points || []).map((p) => [m.sx(p[0]), m.sy(p[1])]), color, 2.2, s.dash);\n        if (s.name) items.push({ label: s.name, color });\n      });\n    } else if (type === \"points\") {\n      ctx.save(); ctx.fillStyle = opts.color || style.MAIN;\n      (opts.points || []).forEach((p) => { ctx.beginPath(); ctx.arc(m.sx(p[0]), m.sy(p[1]), opts.r || 3.6, 0, Math.PI * 2); ctx.fill(); });\n      ctx.restore();\n    } else {\n      const fns = opts.fns || (typeof opts.fn === \"function\" ? [{ fn: opts.fn, color: opts.color, label: opts.label }] : []);\n      fns.forEach((f, i) => {\n        const color = f.color || PALETTE[i % PALETTE.length];\n        stroke(ctx, fnPoints(f.fn, opts, m), color, f.width || 2.4, f.dash);\n        if (f.label) items.push({ label: f.label, color });\n      });\n    }\n    legend(ctx, box, items);\n    return { ctx, sx: m.sx, sy: m.sy, box, W, H, opts };\n  }\n\n  // ---- overlays (world coordinates) ----\n  function marker(ch, x, y, o) {\n    o = o || {};\n    const px = ch.sx(x), py = ch.sy(y);\n    ch.ctx.save();\n    ch.ctx.fillStyle = o.color || style.MAIN;\n    ch.ctx.beginPath(); ch.ctx.arc(px, py, o.r || 5, 0, Math.PI * 2); ch.ctx.fill();\n    ch.ctx.strokeStyle = style.PAPER; ch.ctx.lineWidth = 1.5; ch.ctx.stroke();\n    if (o.label) {\n      ch.ctx.font = font(o.size || 13); ch.ctx.fillStyle = o.color || style.MAIN; ch.ctx.textAlign = \"left\";\n      ch.ctx.fillText(o.label, px + 8, py - 8);\n    }\n    ch.ctx.restore();\n  }\n\n  function vline(ch, x, o) {\n    o = o || {};\n    const px = ch.sx(x);\n    stroke(ch.ctx, [[px, ch.box.y0], [px, ch.box.y1]], o.color || style.MUTED, o.width || 1.2, o.dash || [4, 4]);\n    if (o.label) note(ch, x, null, o.label, { color: o.color || style.MUTED, px: px + 4, py: ch.box.y0 + 12, align: \"left\", size: o.size });\n  }\n\n  function hline(ch, y, o) {\n    o = o || {};\n    const py = ch.sy(y);\n    stroke(ch.ctx, [[ch.box.x0, py], [ch.box.x1, py]], o.color || style.MUTED, o.width || 1.2, o.dash || [4, 4]);\n    if (o.label) note(ch, null, y, o.label, { color: o.color || style.MUTED, px: ch.box.x1 - 4, py: py - 5, align: \"right\", size: o.size });\n  }\n\n  function segment(ch, a, b, o) {\n    o = o || {};\n    const x1 = ch.sx(a[0]), y1 = ch.sy(a[1]), x2 = ch.sx(b[0]), y2 = ch.sy(b[1]);\n    const color = o.color || style.AUX;\n    stroke(ch.ctx, [[x1, y1], [x2, y2]], color, o.width || 2, o.dash);\n    if (o.arrow) {\n      const ang = Math.atan2(y2 - y1, x2 - x1), L = 9;\n      ch.ctx.save(); ch.ctx.fillStyle = color; ch.ctx.beginPath();\n      ch.ctx.moveTo(x2, y2);\n      ch.ctx.lineTo(x2 - L * Math.cos(ang - 0.4), y2 - L * Math.sin(ang - 0.4));\n      ch.ctx.lineTo(x2 - L * Math.cos(ang + 0.4), y2 - L * Math.sin(ang + 0.4));\n      ch.ctx.fill(); ch.ctx.restore();\n    }\n  }\n\n  function note(ch, x, y, text, o) {\n    o = o || {};\n    const px = o.px != null ? o.px : ch.sx(x), py = o.py != null ? o.py : ch.sy(y);\n    ch.ctx.save();\n    ch.ctx.font = font(o.size || 14, o.italic);\n    ch.ctx.fillStyle = o.color || style.INK;\n    ch.ctx.textAlign = o.align || \"left\";\n    ch.ctx.fillText(text, px, py);\n    ch.ctx.restore();\n  }\n\n  /** Pointer probe in world coords; the caller redraws and updates readouts. */\n  function attachProbe(canvas, opts, onProbe, onLeave) {\n    const [x0, x1] = opts.xlim;\n    const [y0, y1] = opts.ylim;\n    const toWorld = (px, py) => {\n      const r = canvas.getBoundingClientRect();\n      const box = plotBox(r.width, r.height, opts);\n      const t = (px - r.left - box.x0) / (box.x1 - box.x0);\n      const u = 1 - (py - r.top - box.y0) / (box.y1 - box.y0);\n      return { x: x0 + t * (x1 - x0), y: y0 + u * (y1 - y0), inside: t >= 0 && t <= 1 };\n    };\n    const handler = (e) => {\n      const p = toWorld(e.clientX, e.clientY);\n      if (p.inside) onProbe(p);\n    };\n    canvas.addEventListener(\"pointermove\", handler);\n    canvas.addEventListener(\"pointerdown\", handler);\n    if (onLeave) canvas.addEventListener(\"pointerleave\", onLeave);\n    canvas.style.touchAction = \"none\";\n    return toWorld;\n  }\n\n  window.HandChart = { render, marker, vline, hline, segment, note, attachProbe, style, font: HAND };\n})();\n</script>\n  <meta charset=\"utf-8\">\n  <style>\n    html, body { margin: 0; height: 100%; background: #faf8f3; font-family: \"PingFang SC\", \"Hiragino Sans GB\", sans-serif; color: #333; overflow: hidden; }\n    #wrap { position: absolute; inset: 0; display: flex; flex-direction: column; }\n    #plot { flex: 1; min-height: 0; margin: 10px 10px 4px; border: 1px solid #d9d2c3; border-radius: 12px; background: #fbfaf6; cursor: crosshair; touch-action: none; }\n    #readout { display: flex; justify-content: center; align-items: center; gap: 28px; padding: 4px 0 8px; font-size: 12px; color: #666; flex-wrap: wrap; }\n    #readout .k { display: block; font-size: 11px; letter-spacing: .04em; }\n    #readout .v { display: block; font-family: ui-monospace, Menlo, monospace; font-size: 14px; font-weight: 700; color: #c0392b; min-width: 64px; text-align: center; }\n    #formula { display: inline-block; padding: 3px 10px; border: 1px solid #d9d2c3; border-radius: 6px; background: #fff; font-family: Georgia, \"Times New Roman\", serif; font-style: italic; font-size: 13px; color: #333; }\n    #slider-row { display: flex; align-items: center; gap: 12px; padding: 0 0 8px; justify-content: center; }\n    #slider-row label { font-size: 12px; color: #666; }\n    #n-slider { width: 200px; accent-color: #c0392b; }\n    #n-display { font-family: ui-monospace, Menlo, monospace; font-weight: 700; color: #c0392b; min-width: 32px; text-align: center; }\n  </style>\n</head>\n<body>\n  <div id=\"wrap\">\n    <canvas id=\"plot\"></canvas>\n    <div id=\"readout\">\n      <span><span class=\"k\">误差 (累计和 − n/10)</span><span class=\"v\" id=\"diff-display\">—</span></span>\n      <span><span class=\"k\">n</span><span class=\"v\" id=\"n-display\">1</span></span>\n      <span id=\"formula\">0.1 累加 n 次</span>\n    </div>\n    <div id=\"slider-row\">\n      <label for=\"n-slider\">n</label>\n      <input type=\"range\" id=\"n-slider\" min=\"1\" max=\"100\" value=\"1\" step=\"1\">\n    </div>\n  </div>\n  <script>\n    // --- the thing being explored -------------------------------------\n    // 0.1 的浮点近似值 a, 0.2 的浮点近似值 b\n    var a = 0.1;          // 0.1 的浮点表示\n    var b = 0.2;          // 0.2 的浮点表示\n    var exactSum = a + b; // 0.30000000000000004 (精确和)\n    var c = Math.round(exactSum * 1e16) / 1e16; // 舍入到最近可表示数 (0.3)\n\n    // 数轴范围\n    var X_MIN = 0.29, X_MAX = 0.31;\n\n    // 当前 n 值\n    var n = 1;\n\n    // 计算 n 个 0.1 累加的浮点和\n    function accumulatedSum(n) {\n      var s = 0;\n      for (var i = 0; i < n; i++) s += 0.1;\n      return s;\n    }\n\n    // --- plumbing ------------------------------------------------------\n    var canvas = document.getElementById(\"plot\");\n    var ctx = canvas.getContext(\"2d\");\n    var W = 0, H = 0;\n    var PAD = { l: 34, r: 18, t: 18, b: 26 };\n    var sx = function (x) { return PAD.l + (x - X_MIN) / (X_MAX - X_MIN) * (W - PAD.l - PAD.r); };\n    var ux = function (px) { return X_MIN + (px - PAD.l) / (W - PAD.l - PAD.r) * (X_MAX - X_MIN); };\n\n    function resize() {\n      var r = canvas.getBoundingClientRect();\n      W = r.width; H = r.height;\n      var dpr = window.devicePixelRatio || 1;\n      canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);\n      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);\n      draw();\n    }\n\n    function label(text, x, y, color, align) {\n      ctx.save(); ctx.font = \"italic 12px Georgia, serif\"; ctx.fillStyle = color; ctx.textAlign = align || \"left\"; ctx.fillText(text, x, y); ctx.restore();\n    }\n\n    function draw() {\n      ctx.clearRect(0, 0, W, H);\n\n      // 数轴 (横轴)\n      var axisY = H * 0.55;\n      ctx.save();\n      ctx.strokeStyle = \"#b9b3a6\"; ctx.lineWidth = 1.5;\n      ctx.beginPath(); ctx.moveTo(PAD.l, axisY); ctx.lineTo(W - PAD.r, axisY); ctx.stroke();\n\n      // 刻度\n      ctx.fillStyle = \"#8a8377\"; ctx.font = \"italic 11px Georgia, serif\"; ctx.textAlign = \"center\";\n      var ticks = [0.29, 0.295, 0.30, 0.305, 0.31];\n      for (var i = 0; i < ticks.length; i++) {\n        var tx = sx(ticks[i]);\n        ctx.beginPath(); ctx.moveTo(tx, axisY - 4); ctx.lineTo(tx, axisY + 4); ctx.stroke();\n        ctx.fillText(ticks[i].toFixed(3), tx, axisY + 16);\n      }\n      // 轴名\n      ctx.fillStyle = \"#8a8377\"; ctx.font = \"italic 12px Georgia, serif\"; ctx.textAlign = \"right\";\n      ctx.fillText(\"x\", W - PAD.r - 2, axisY - 8);\n      ctx.restore();\n\n      // 固定点: a, b, 精确和, c\n      var points = [\n        { x: a, label: \"a = 0.1\", color: \"#c0392b\", dy: -28 },\n        { x: b, label: \"b = 0.2\", color: \"#c0392b\", dy: -28 },\n        { x: exactSum, label: \"a+b 精确和\", color: \"#2e8b6f\", dy: -48 },\n        { x: c, label: \"c = 舍入后\", color: \"#c0392b\", dy: -68 }\n      ];\n\n      for (var j = 0; j < points.length; j++) {\n        var p = points[j];\n        var px = sx(p.x);\n        // 竖线\n        ctx.save();\n        ctx.strokeStyle = p.color; ctx.lineWidth = 1.2;\n        ctx.setLineDash([4, 3]);\n        ctx.beginPath(); ctx.moveTo(px, axisY); ctx.lineTo(px, axisY + p.dy); ctx.stroke();\n        ctx.restore();\n        // 点\n        ctx.save();\n        ctx.fillStyle = p.color;\n        ctx.beginPath(); ctx.arc(px, axisY, 4, 0, Math.PI * 2); ctx.fill();\n        ctx.restore();\n        // 标签\n        label(p.label, px, axisY + p.dy - 6, p.color, \"center\");\n      }\n\n      // 当前累计和与精确值\n      var sum = accumulatedSum(n);\n      var exact = n / 10;\n\n      // 精确值 n/10 (辅助绿)\n      var ex = sx(exact);\n      ctx.save();\n      ctx.strokeStyle = \"#2e8b6f\"; ctx.lineWidth = 1.2;\n      ctx.setLineDash([5, 4]);\n      ctx.beginPath(); ctx.moveTo(ex, axisY); ctx.lineTo(ex, axisY + 40); ctx.stroke();\n      ctx.restore();\n      ctx.save();\n      ctx.fillStyle = \"#2e8b6f\";\n      ctx.beginPath(); ctx.arc(ex, axisY, 3.5, 0, Math.PI * 2); ctx.fill();\n      ctx.restore();\n      label(\"n/10 = \" + exact.toFixed(1), ex, axisY + 54, \"#2e8b6f\", \"center\");\n\n      // 累计和 (主红)\n      var sxPos = sx(sum);\n      ctx.save();\n      ctx.strokeStyle = \"#c0392b\"; ctx.lineWidth = 2;\n      ctx.beginPath(); ctx.moveTo(sxPos, axisY); ctx.lineTo(sxPos, axisY - 40); ctx.stroke();\n      ctx.restore();\n      ctx.save();\n      ctx.fillStyle = \"#c0392b\";\n      ctx.beginPath(); ctx.arc(sxPos, axisY, 5, 0, Math.PI * 2); ctx.fill();\n      ctx.restore();\n      label(\"累计和\", sxPos, axisY - 48, \"#c0392b\", \"center\");\n\n      // 误差读数\n      var diff = sum - exact;\n      document.getElementById(\"diff-display\").textContent = diff.toExponential(2);\n      document.getElementById(\"n-display\").textContent = n;\n    }\n\n    // 滑块事件\n    var slider = document.getElementById(\"n-slider\");\n    slider.addEventListener(\"input\", function () {\n      n = parseInt(slider.value, 10);\n      draw();\n    });\n\n    // 探针 (pointermove / pointerdown)\n    function onPointer(e) {\n      var r = canvas.getBoundingClientRect();\n      var mx = e.clientX - r.left;\n      var worldX = ux(mx);\n      // 探针只用于显示，不改变 n，但可以显示当前鼠标位置对应的值\n      // 这里我们让探针显示当前 n 对应的累计和与精确值，但为了交互感，可以显示鼠标位置\n      // 按照任务描述，探针实时读出累计和与精确值 n/10 的差\n      // 但 n 由滑块控制，所以探针可以显示鼠标位置对应的\"如果 n 等于该位置\"的误差？不，任务说探针实时读出累计和与精确值 n/10 的差\n      // 实际上探针应该跟随鼠标显示数轴上的位置，但读数还是基于当前 n\n      // 为了符合\"探针实时读出累计和与精确值 n/10 的差\"，我们让探针显示鼠标位置，但读数不变\n      // 或者我们可以让探针显示鼠标位置对应的 n 值？但 n 是整数，且由滑块控制\n      // 按照范例，探针是跟随鼠标的虚线，这里我们画一条跟随鼠标的虚线，并显示鼠标位置的值\n      // 但读数行显示的是当前 n 的误差，这已经由滑块控制\n      // 为了不混淆，我们让探针显示鼠标位置，并在画布上标注鼠标位置的值\n      // 但任务要求\"探针实时读出累计和与精确值 n/10 的差\"，这已经由读数行完成\n      // 所以探针可以只是视觉上的跟随，不改变读数\n      // 我们画一条跟随鼠标的虚线\n      draw();\n      // 画探针虚线\n      ctx.save();\n      ctx.strokeStyle = \"rgba(192,57,43,.4)\";\n      ctx.setLineDash([3, 4]);\n      ctx.lineWidth = 1;\n      ctx.beginPath();\n      ctx.moveTo(mx, PAD.t);\n      ctx.lineTo(mx, H - PAD.b);\n      ctx.stroke();\n      ctx.restore();\n      // 显示鼠标位置的值\n      var val = ux(mx);\n      ctx.save();\n      ctx.font = \"italic 11px Georgia, serif\";\n      ctx.fillStyle = \"#c0392b\";\n      ctx.textAlign = \"center\";\n      ctx.fillText(val.toFixed(5), mx, PAD.t + 12);\n      ctx.restore();\n    }\n\n    canvas.addEventListener(\"pointermove\", onPointer);\n    canvas.addEventListener(\"pointerdown\", onPointer);\n\n    // 教师控制钩子\n    window.hkControl = {\n      set: function (s) {\n        if (s && s.n != null) {\n          n = Math.max(1, Math.min(100, Math.round(+s.n)));\n          slider.value = n;\n          draw();\n        }\n      },\n      highlight: function (sel) {\n        var el = document.querySelector(sel);\n        if (!el) return;\n        el.style.outline = \"2px solid #c0392b\";\n        setTimeout(function () { el.style.outline = \"\"; }, 1500);\n      },\n      annotate: function () {},\n      reveal: function () {}\n    };\n\n    window.addEventListener(\"resize\", resize);\n    resize();\n  </script>\n</body>\n</html>",
+        "html_path": null,
+        "mermaid": null,
+        "layout": "newcol",
+        "params": [
+          "n"
+        ],
+        "controls": [
+          {
+            "trigger_phrase": "我把滑块 n 推到 10",
+            "at_ms": null,
+            "op": "set",
+            "payload": {
+              "n": 10
+            }
+          }
+        ]
+      },
+      "question": {
+        "mode": "choice",
+        "question": "拖滑块的时候，误差是每加一次就跳一下，还是慢慢爬上去的？",
+        "options": [
+          "每加一次跳一下，跳完就停",
+          "慢慢爬上去，加得越多越偏"
+        ],
+        "correct_index": 1,
+        "misconceptions": [
+          "这是常见的直觉：以为舍入误差是一次性的，加完就固定了。但每一次加法都会再舍一次，误差会一层层叠上去。",
+          null
+        ],
+        "explanation": "每次加法都产生新的舍入，误差随步数累积，所以 n 越大累计和偏离 n/10 越远。"
+      },
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "工程上怎么绕开",
+      "beat": "apply",
+      "spoken_text": "既然误差会累积，金融系统就不敢用二进制浮点记账。看板书第一行：用整数分记账，10 分而不是 0.1 元，所有加法都在整数上做，没有舍入。第二行是另一条路：用十进制类型，比如 Decimal，它按十进制存，0.1 就是 0.1。你想想，为什么整数分能彻底避开这个问题？",
+      "boards": [
+        {
+          "title": "两条绕行路",
+          "markdown": "- 整数分记账：$10$ 分，不是 $0.1$ 元\n- 十进制类型：`Decimal('0.1')`\n- 共同点：**不把十进制小数塞进二进制**\n- 代价：慢一点、占地方多一点",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "highlight",
+          "snippet": "不把十进制小数塞进二进制",
+          "board_index": 0,
+          "trigger_phrase": "没有舍入",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": null,
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "回顾",
+      "beat": "recap",
+      "spoken_text": "回到开头那个 False。现在你能说清整条链了：十进制小数转二进制时就被舍入，每次运算又再舍一次，误差一层层叠上去，0.1 加 0.2 就多出了那条尾巴。工程上的应对也很直接：整数分记账，或者用十进制类型，别把十进制小数塞进二进制。记住，浮点数不是不准，是它只能表示有限多个点。",
+      "boards": [
+        {
+          "title": "舍入累积",
+          "markdown": "- 十进制小数 → 二进制：**存不下**\n- 每次运算 → **再舍一次**\n- 误差**累积** → `0.1 + 0.2` 多出尾巴\n- 应对：整数分 / 十进制类型",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "spotlight",
+          "snippet": "误差**累积**",
+          "board_index": 0,
+          "trigger_phrase": "误差一层层叠上去",
+          "color": null
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": null,
+      "reward": {
+        "title": "舍入累积",
+        "description": "十进制小数转二进制存不下，每次运算再舍一次，误差逐次叠加；用整数分或十进制类型绕开。"
+      },
+      "new_page_title": null
+    }
+  ],
+  "exercises": [
+    {
+      "exercise_id": "sess_4_ex1",
+      "kind": "fill_blank",
+      "stem": "在浮点数运算中，当真实结果落在两个可表示数之间时，机器会将其推到最近的可表示数，这一过程称为____。",
+      "options": [],
+      "correct_index": null,
+      "answer": "舍入",
+      "accepted": [
+        "四舍五入",
+        "近似",
+        "取整",
+        "舍入处理"
+      ],
+      "explanation": "舍入是浮点数运算的核心机制，它解释了为什么 0.1 + 0.2 不等于 0.3，也是误差累积的根源。",
+      "widget": null,
+      "widget_hint": ""
+    },
+    {
+      "exercise_id": "sess_4_ex2",
+      "kind": "single_choice",
+      "stem": "已知 $x = 0.1$，$y = 0.2$，在常见浮点数系统中，$x + y$ 的计算结果最接近下列哪个值？",
+      "options": [
+        "0.3",
+        "0.30000000000000004",
+        "0.29999999999999998",
+        "0.3000000000000001"
+      ],
+      "correct_index": 1,
+      "answer": null,
+      "accepted": [],
+      "explanation": "由于 0.1 和 0.2 在二进制中都是无限循环小数，存储时已被舍入，相加后再舍入，结果约为 $0.30000000000000004$，比 0.3 略大。",
+      "widget": null,
+      "widget_hint": ""
+    },
+    {
+      "exercise_id": "sess_4_ex3",
+      "kind": "single_choice",
+      "stem": "在金融系统中，为了避免浮点数舍入误差累积，常采用哪种方式记账？",
+      "options": [
+        "直接用二进制浮点数存储金额",
+        "用整数分存储金额",
+        "用字符串存储金额",
+        "用四舍五入保留两位小数"
+      ],
+      "correct_index": 1,
+      "answer": null,
+      "accepted": [],
+      "explanation": "整数分记账将所有金额表示为整数（如 10 分而不是 0.1 元），所有运算都在整数上进行，没有舍入，从而彻底避免误差累积。",
+      "widget": null,
+      "widget_hint": ""
+    },
+    {
+      "exercise_id": "sess_4_ex4",
+      "kind": "interactive",
+      "stem": "通过调整滑块 n 来累加 0.1，观察累计和与理论值 n*0.1 的偏差。当 n=10 时，累计和与 1.0 的关系是？",
+      "options": [
+        "累计和等于 1.0",
+        "累计和略大于 1.0",
+        "累计和略小于 1.0",
+        "累计和与 1.0 的偏差超过 0.1"
+      ],
+      "correct_index": 2,
+      "answer": null,
+      "accepted": [],
+      "explanation": "每次加 0.1 都会引入舍入误差，这些误差累积后，n=10 时累计和约为 0.9999999999999999，略小于 1.0。",
+      "widget": {
+        "kind": "explorable",
+        "title": "累加 0.1 的误差探针",
+        "task": "拖动滑块 n（1 到 20），观察累计和与理论值 n*0.1 的偏差。注意当 n=10 时，累计和是否等于 1.0。",
+        "html": "<!DOCTYPE html>\n<html>\n<head><script>/**\n * HandChart — zero-dependency hand-drawn chart base for explorable widgets.\n *\n * Injected into every generated 2D explorable (widget_generator.py) so the\n * model supplies data + overlays instead of hand-writing axes. The look matches\n * the handwritten page: paper panel, slightly wobbly ink axes, main red /\n * aux green, handwriting labels.\n *\n * API (all coordinates in WORLD units unless noted):\n *   const ch = HandChart.render(canvas, opts)\n *     opts = { type: \"function\"|\"points\"|\"bars\"|\"lines\",\n *              xlim:[x0,x1], ylim:[y0,y1],                  (all but bars)\n *              fn: x=>y | fns:[{fn, color?, label?}],        (function)\n *              points:[[x,y],...],                          (points)\n *              series:[{name, points, color?, dash?}],      (lines; legend drawn)\n *              bars:{labels:[...], values:[...], highlight?} (bars)\n *              xlabel, ylabel, grid:true|false, title }\n *     returns { ctx, sx, sy, box, W, H, opts }  — keep it to draw overlays\n *   HandChart.marker(ch, x, y, {color, label, r})       dot + optional label\n *   HandChart.vline(ch, x, {color, dash, label})         vertical guide\n *   HandChart.hline(ch, y, {color, dash, label})         horizontal guide\n *   HandChart.segment(ch, [x1,y1], [x2,y2], {color, width, dash, arrow})\n *   HandChart.note(ch, x, y, text, {color, align, size}) handwriting annotation\n *   HandChart.attachProbe(canvas, {xlim, ylim}, onProbe, onLeave?)\n *     pointer follow; onProbe({x, y}) in world coords — redraw + readouts there.\n *   HandChart.style = { INK, AXIS, MAIN, AUX, GRID, PAPER, MUTED }\n */\n(function () {\n  const style = {\n    INK: \"#2b2b2b\", AXIS: \"#8a8377\", MAIN: \"#c0392b\", AUX: \"#2e8b6f\",\n    GRID: \"#ece5d4\", PAPER: \"#fbfaf6\", MUTED: \"#8a8377\", PURPLE: \"#7c3aed\", BLUE: \"#2563eb\",\n  };\n  const PALETTE = [style.MAIN, style.AUX, style.BLUE, style.PURPLE, \"#d97706\"];\n  const PAD = { l: 48, r: 18, t: 18, b: 36 };\n  const HAND = \"'Patrick Hand', 'LXGW WenKai Lite', 'PingFang SC', sans-serif\";\n\n  function font(size, italic) { return (italic ? \"italic \" : \"\") + size + \"px \" + HAND; }\n\n  // deterministic wobble so the \"hand\" does not shake on every redraw\n  function wob(seed, amp) { return Math.sin(seed * 12.9898) * amp; }\n\n  function tickVals(min, max, n) {\n    const span = max - min || 1;\n    const raw = span / n;\n    const mag = Math.pow(10, Math.floor(Math.log10(raw)));\n    const step = [1, 2, 2.5, 5, 10].map((m) => m * mag).find((s) => span / s <= n) || mag * 10;\n    const out = [];\n    for (let v = Math.ceil(min / step) * step; v <= max + step * 1e-9; v += step) out.push(+v.toFixed(10));\n    return out;\n  }\n\n  function fmt(v) {\n    const a = Math.abs(v);\n    if (a === 0) return \"0\";\n    if (a >= 10000 || a < 0.01) return v.toExponential(1);\n    return String(+v.toFixed(Math.max(0, 3 - Math.floor(Math.log10(a)))));\n  }\n\n  /** a hand-drawn line: two passes with tiny deterministic wobble */\n  function inkLine(ctx, x1, y1, x2, y2, color, width, seed) {\n    ctx.save();\n    ctx.strokeStyle = color; ctx.lineWidth = width; ctx.lineCap = \"round\";\n    const n = 6, s = seed || (x1 + y2);\n    ctx.beginPath();\n    for (let i = 0; i <= n; i++) {\n      const t = i / n, x = x1 + (x2 - x1) * t, y = y1 + (y2 - y1) * t;\n      const w = i === 0 || i === n ? 0 : wob(s + i, 0.7);\n      i ? ctx.lineTo(x + w, y + w) : ctx.moveTo(x, y);\n    }\n    ctx.stroke();\n    ctx.restore();\n  }\n\n  function frame(ctx, W, H) {\n    ctx.clearRect(0, 0, W, H);\n    ctx.save();\n    ctx.fillStyle = style.PAPER;\n    ctx.fillRect(0, 0, W, H);\n    ctx.restore();\n  }\n\n  function plotBox(W, H, opts) {\n    const t = PAD.t + (opts && opts.title ? 18 : 0);\n    return { x0: PAD.l, y0: t, x1: W - PAD.r, y1: H - PAD.b };\n  }\n\n  function mapping(box, xlim, ylim) {\n    const [x0, x1] = xlim, [y0, y1] = ylim;\n    return {\n      sx: (v) => box.x0 + (v - x0) / (x1 - x0) * (box.x1 - box.x0),\n      sy: (v) => box.y1 - (v - y0) / (y1 - y0) * (box.y1 - box.y0),\n    };\n  }\n\n  function axes(ctx, box, opts) {\n    const [x0, x1] = opts.xlim, [y0, y1] = opts.ylim;\n    const { sx, sy } = mapping(box, opts.xlim, opts.ylim);\n    const xt = tickVals(x0, x1, 6).filter((v) => v >= x0 && v <= x1);\n    const yt = tickVals(y0, y1, 4).filter((v) => v >= y0 && v <= y1);\n    if (opts.grid !== false) {\n      ctx.save(); ctx.strokeStyle = style.GRID; ctx.lineWidth = 1;\n      for (const v of xt) { ctx.beginPath(); ctx.moveTo(sx(v), box.y0); ctx.lineTo(sx(v), box.y1); ctx.stroke(); }\n      for (const v of yt) { ctx.beginPath(); ctx.moveTo(box.x0, sy(v)); ctx.lineTo(box.x1, sy(v)); ctx.stroke(); }\n      ctx.restore();\n    }\n    // axes sit on zero when zero is inside the range, else on the box edge\n    const ax = y0 <= 0 && y1 >= 0 ? sy(0) : box.y1;\n    const ay = x0 <= 0 && x1 >= 0 ? sx(0) : box.x0;\n    inkLine(ctx, box.x0 - 4, ax, box.x1 + 6, ax, style.AXIS, 1.4, 1);\n    inkLine(ctx, ay, box.y1 + 4, ay, box.y0 - 6, style.AXIS, 1.4, 2);\n    // arrow heads\n    ctx.save(); ctx.fillStyle = style.AXIS;\n    ctx.beginPath(); ctx.moveTo(box.x1 + 8, ax); ctx.lineTo(box.x1 + 1, ax - 3.5); ctx.lineTo(box.x1 + 1, ax + 3.5); ctx.fill();\n    ctx.beginPath(); ctx.moveTo(ay, box.y0 - 8); ctx.lineTo(ay - 3.5, box.y0 - 1); ctx.lineTo(ay + 3.5, box.y0 - 1); ctx.fill();\n    ctx.restore();\n    ctx.save();\n    ctx.fillStyle = style.MUTED; ctx.font = font(12);\n    ctx.textAlign = \"center\";\n    for (const v of xt) {\n      if (Math.abs(sx(v) - ay) < 1 && ay !== box.x0) continue; // skip the label under the y axis\n      inkLine(ctx, sx(v), ax - 3, sx(v), ax + 3, style.AXIS, 1, v);\n      ctx.fillText(fmt(v), sx(v), ax + 16);\n    }\n    ctx.textAlign = \"right\";\n    for (const v of yt) {\n      if (Math.abs(sy(v) - ax) < 1 && ax !== box.y1) continue;\n      inkLine(ctx, ay - 3, sy(v), ay + 3, sy(v), style.AXIS, 1, v + 7);\n      ctx.fillText(fmt(v), ay - 7, sy(v) + 4);\n    }\n    ctx.font = font(14, true); ctx.fillStyle = style.INK;\n    if (opts.xlabel) { ctx.textAlign = \"right\"; ctx.fillText(opts.xlabel, box.x1 + 4, ax - 8); }\n    if (opts.ylabel) { ctx.textAlign = \"left\"; ctx.fillText(opts.ylabel, ay + 8, box.y0 + 4); }\n    ctx.restore();\n    return { sx, sy };\n  }\n\n  function stroke(ctx, pts, color, width, dash) {\n    if (!pts.length) return;\n    ctx.save();\n    ctx.strokeStyle = color; ctx.lineWidth = width || 2.2;\n    ctx.lineJoin = \"round\"; ctx.lineCap = \"round\";\n    if (dash) ctx.setLineDash(dash);\n    ctx.beginPath();\n    let pen = false;\n    for (const p of pts) {\n      if (!p) { pen = false; continue; }\n      pen ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1]);\n      pen = true;\n    }\n    ctx.stroke();\n    ctx.restore();\n  }\n\n  function fnPoints(fn, opts, m) {\n    const [x0, x1] = opts.xlim, [y0, y1] = opts.ylim;\n    const n = 400, pts = [];\n    const margin = (y1 - y0) * 0.02;\n    for (let i = 0; i <= n; i++) {\n      const x = x0 + (x1 - x0) * i / n;\n      let y;\n      try { y = fn(x); } catch (e) { y = NaN; }\n      if (!isFinite(y) || y < y0 - margin || y > y1 + margin) { pts.push(null); continue; }\n      pts.push([m.sx(x), m.sy(y)]);\n    }\n    return pts;\n  }\n\n  function legend(ctx, box, items) {\n    if (!items.length) return;\n    ctx.save();\n    ctx.font = font(13); ctx.textAlign = \"left\"; ctx.textBaseline = \"middle\";\n    let x = box.x0 + 10, y = box.y0 + 12;\n    for (const it of items) {\n      inkLine(ctx, x, y, x + 22, y, it.color, 2.4, x);\n      ctx.fillStyle = style.INK;\n      ctx.fillText(it.label, x + 28, y + 1);\n      x += 28 + ctx.measureText(it.label).width + 18;\n    }\n    ctx.restore();\n  }\n\n  function title(ctx, W, text) {\n    ctx.save();\n    ctx.font = font(15); ctx.fillStyle = style.INK; ctx.textAlign = \"center\";\n    ctx.fillText(text, W / 2, 16);\n    ctx.restore();\n  }\n\n  function render(canvas, opts) {\n    const ctx = canvas.getContext(\"2d\");\n    const rect = canvas.getBoundingClientRect();\n    const W = Math.max(60, Math.round(rect.width)), H = Math.max(60, Math.round(rect.height));\n    const dpr = window.devicePixelRatio || 1;\n    if (canvas.width !== Math.round(W * dpr) || canvas.height !== Math.round(H * dpr)) {\n      canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);\n    }\n    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);\n    frame(ctx, W, H);\n    if (opts.title) title(ctx, W, opts.title);\n    const box = plotBox(W, H, opts);\n    const type = opts.type || \"function\";\n\n    if (type === \"bars\") {\n      const labels = opts.bars.labels || [], values = opts.bars.values || [];\n      const n = Math.max(1, values.length);\n      const bw = (box.x1 - box.x0) / n;\n      const vmax = Math.max(...values.map((v) => Math.abs(v)), 0) * 1.15 || 1;\n      const base = box.y1;\n      inkLine(ctx, box.x0 - 4, base, box.x1 + 4, base, style.AXIS, 1.4, 3);\n      ctx.save();\n      values.forEach((v, i) => {\n        const h = (Math.abs(v) / vmax) * (box.y1 - box.y0);\n        const x = box.x0 + i * bw + bw * 0.2, w = bw * 0.6, y = base - h;\n        const hot = opts.bars.highlight != null && i === opts.bars.highlight;\n        ctx.fillStyle = hot ? style.MAIN : \"#e6dfcf\";\n        ctx.fillRect(x, y, w, h);\n        ctx.strokeStyle = hot ? style.MAIN : style.AXIS; ctx.lineWidth = 1.2;\n        ctx.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);\n        ctx.font = font(13); ctx.textAlign = \"center\"; ctx.fillStyle = style.INK;\n        ctx.fillText(String(labels[i] == null ? i + 1 : labels[i]), x + w / 2, base + 17);\n        ctx.fillStyle = hot ? style.MAIN : style.MUTED;\n        ctx.fillText(fmt(v), x + w / 2, y - 6);\n      });\n      ctx.restore();\n      const sx = (i) => box.x0 + (i + 0.5) * bw, sy = (v) => base - (Math.abs(v) / vmax) * (box.y1 - box.y0);\n      return { ctx, sx, sy, box, W, H, opts };\n    }\n\n    const m = axes(ctx, box, opts);\n    const items = [];\n    if (type === \"lines\") {\n      (opts.series || []).forEach((s, i) => {\n        const color = s.color || PALETTE[i % PALETTE.length];\n        stroke(ctx, (s.points || []).map((p) => [m.sx(p[0]), m.sy(p[1])]), color, 2.2, s.dash);\n        if (s.name) items.push({ label: s.name, color });\n      });\n    } else if (type === \"points\") {\n      ctx.save(); ctx.fillStyle = opts.color || style.MAIN;\n      (opts.points || []).forEach((p) => { ctx.beginPath(); ctx.arc(m.sx(p[0]), m.sy(p[1]), opts.r || 3.6, 0, Math.PI * 2); ctx.fill(); });\n      ctx.restore();\n    } else {\n      const fns = opts.fns || (typeof opts.fn === \"function\" ? [{ fn: opts.fn, color: opts.color, label: opts.label }] : []);\n      fns.forEach((f, i) => {\n        const color = f.color || PALETTE[i % PALETTE.length];\n        stroke(ctx, fnPoints(f.fn, opts, m), color, f.width || 2.4, f.dash);\n        if (f.label) items.push({ label: f.label, color });\n      });\n    }\n    legend(ctx, box, items);\n    return { ctx, sx: m.sx, sy: m.sy, box, W, H, opts };\n  }\n\n  // ---- overlays (world coordinates) ----\n  function marker(ch, x, y, o) {\n    o = o || {};\n    const px = ch.sx(x), py = ch.sy(y);\n    ch.ctx.save();\n    ch.ctx.fillStyle = o.color || style.MAIN;\n    ch.ctx.beginPath(); ch.ctx.arc(px, py, o.r || 5, 0, Math.PI * 2); ch.ctx.fill();\n    ch.ctx.strokeStyle = style.PAPER; ch.ctx.lineWidth = 1.5; ch.ctx.stroke();\n    if (o.label) {\n      ch.ctx.font = font(o.size || 13); ch.ctx.fillStyle = o.color || style.MAIN; ch.ctx.textAlign = \"left\";\n      ch.ctx.fillText(o.label, px + 8, py - 8);\n    }\n    ch.ctx.restore();\n  }\n\n  function vline(ch, x, o) {\n    o = o || {};\n    const px = ch.sx(x);\n    stroke(ch.ctx, [[px, ch.box.y0], [px, ch.box.y1]], o.color || style.MUTED, o.width || 1.2, o.dash || [4, 4]);\n    if (o.label) note(ch, x, null, o.label, { color: o.color || style.MUTED, px: px + 4, py: ch.box.y0 + 12, align: \"left\", size: o.size });\n  }\n\n  function hline(ch, y, o) {\n    o = o || {};\n    const py = ch.sy(y);\n    stroke(ch.ctx, [[ch.box.x0, py], [ch.box.x1, py]], o.color || style.MUTED, o.width || 1.2, o.dash || [4, 4]);\n    if (o.label) note(ch, null, y, o.label, { color: o.color || style.MUTED, px: ch.box.x1 - 4, py: py - 5, align: \"right\", size: o.size });\n  }\n\n  function segment(ch, a, b, o) {\n    o = o || {};\n    const x1 = ch.sx(a[0]), y1 = ch.sy(a[1]), x2 = ch.sx(b[0]), y2 = ch.sy(b[1]);\n    const color = o.color || style.AUX;\n    stroke(ch.ctx, [[x1, y1], [x2, y2]], color, o.width || 2, o.dash);\n    if (o.arrow) {\n      const ang = Math.atan2(y2 - y1, x2 - x1), L = 9;\n      ch.ctx.save(); ch.ctx.fillStyle = color; ch.ctx.beginPath();\n      ch.ctx.moveTo(x2, y2);\n      ch.ctx.lineTo(x2 - L * Math.cos(ang - 0.4), y2 - L * Math.sin(ang - 0.4));\n      ch.ctx.lineTo(x2 - L * Math.cos(ang + 0.4), y2 - L * Math.sin(ang + 0.4));\n      ch.ctx.fill(); ch.ctx.restore();\n    }\n  }\n\n  function note(ch, x, y, text, o) {\n    o = o || {};\n    const px = o.px != null ? o.px : ch.sx(x), py = o.py != null ? o.py : ch.sy(y);\n    ch.ctx.save();\n    ch.ctx.font = font(o.size || 14, o.italic);\n    ch.ctx.fillStyle = o.color || style.INK;\n    ch.ctx.textAlign = o.align || \"left\";\n    ch.ctx.fillText(text, px, py);\n    ch.ctx.restore();\n  }\n\n  /** Pointer probe in world coords; the caller redraws and updates readouts. */\n  function attachProbe(canvas, opts, onProbe, onLeave) {\n    const [x0, x1] = opts.xlim;\n    const [y0, y1] = opts.ylim;\n    const toWorld = (px, py) => {\n      const r = canvas.getBoundingClientRect();\n      const box = plotBox(r.width, r.height, opts);\n      const t = (px - r.left - box.x0) / (box.x1 - box.x0);\n      const u = 1 - (py - r.top - box.y0) / (box.y1 - box.y0);\n      return { x: x0 + t * (x1 - x0), y: y0 + u * (y1 - y0), inside: t >= 0 && t <= 1 };\n    };\n    const handler = (e) => {\n      const p = toWorld(e.clientX, e.clientY);\n      if (p.inside) onProbe(p);\n    };\n    canvas.addEventListener(\"pointermove\", handler);\n    canvas.addEventListener(\"pointerdown\", handler);\n    if (onLeave) canvas.addEventListener(\"pointerleave\", onLeave);\n    canvas.style.touchAction = \"none\";\n    return toWorld;\n  }\n\n  window.HandChart = { render, marker, vline, hline, segment, note, attachProbe, style, font: HAND };\n})();\n</script>\n  <meta charset=\"utf-8\">\n  <style>\n    html, body { margin: 0; height: 100%; background: #faf8f3; font-family: \"PingFang SC\", \"Hiragino Sans GB\", sans-serif; color: #333; overflow: hidden; }\n    #wrap { position: absolute; inset: 0; display: flex; flex-direction: column; }\n    #plot { flex: 1; min-height: 0; margin: 10px 10px 4px; border: 1px solid #d9d2c3; border-radius: 12px; background: #fbfaf6; cursor: crosshair; touch-action: none; }\n    #readout { display: flex; justify-content: center; align-items: center; gap: 20px; padding: 4px 0 8px; font-size: 12px; color: #666; flex-wrap: wrap; }\n    #readout .k { display: block; font-size: 11px; letter-spacing: .04em; }\n    #readout .v { display: block; font-family: ui-monospace, Menlo, monospace; font-size: 13px; font-weight: 700; color: #c0392b; min-width: 64px; text-align: center; }\n    #formula { display: inline-block; padding: 3px 10px; border: 1px solid #d9d2c3; border-radius: 6px; background: #fff; font-family: Georgia, \"Times New Roman\", serif; font-style: italic; font-size: 13px; color: #333; }\n    #ctrl { display: flex; justify-content: center; align-items: center; gap: 12px; padding: 0 0 10px; font-size: 12px; color: #666; }\n    #n-slider { width: 220px; accent-color: #c0392b; }\n    #n-display { font-family: ui-monospace, Menlo, monospace; font-weight: 700; color: #c0392b; min-width: 22px; text-align: center; }\n  </style>\n</head>\n<body>\n  <div id=\"wrap\">\n    <canvas id=\"plot\"></canvas>\n    <div id=\"readout\">\n      <span><span class=\"k\">累计和</span><span class=\"v\" id=\"sum-display\">—</span></span>\n      <span><span class=\"k\">理论值</span><span class=\"v\" id=\"theoretical-display\">—</span></span>\n      <span><span class=\"k\">偏差</span><span class=\"v\" id=\"error-display\">—</span></span>\n      <span id=\"formula\">sum = Σ 0.1 (n 次)</span>\n    </div>\n    <div id=\"ctrl\">\n      <span>n</span>\n      <input id=\"n-slider\" type=\"range\" min=\"1\" max=\"20\" step=\"1\" value=\"1\">\n      <span id=\"n-display\">1</span>\n    </div>\n  </div>\n  <script>\n    // --- the thing being explored -------------------------------------\n    // 累加 n 次 0.1 的浮点结果\n    function accumulate(n) {\n      var s = 0;\n      for (var i = 0; i < n; i++) s += 0.1;\n      return s;\n    }\n    var X_MIN = 0, X_MAX = 2.0;\n\n    // --- plumbing ------------------------------------------------------\n    var canvas = document.getElementById('plot');\n    var ctx = canvas.getContext('2d');\n    var W = 0, H = 0;\n    var n = 1;\n    var PAD = { l: 40, r: 40, t: 30, b: 60 };\n    var axisY = 0;\n\n    function sx(x) {\n      return PAD.l + (x - X_MIN) / (X_MAX - X_MIN) * (W - PAD.l - PAD.r);\n    }\n\n    function resize() {\n      var r = canvas.getBoundingClientRect();\n      W = r.width; H = r.height;\n      var dpr = window.devicePixelRatio || 1;\n      canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);\n      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);\n      draw();\n    }\n\n    function label(text, x, y, color, align, font) {\n      ctx.save();\n      ctx.font = font || 'italic 12px Georgia, serif';\n      ctx.fillStyle = color;\n      ctx.textAlign = align || 'left';\n      ctx.fillText(text, x, y);\n      ctx.restore();\n    }\n\n    function draw() {\n      ctx.clearRect(0, 0, W, H);\n      axisY = PAD.t + (H - PAD.t - PAD.b) * 0.42;\n\n      var sum = accumulate(n);\n      var theoretical = n * 0.1;\n      var error = sum - theoretical;\n\n      // --- number line ---\n      ctx.save();\n      ctx.strokeStyle = '#b9b3a6';\n      ctx.lineWidth = 1.5;\n      ctx.beginPath();\n      ctx.moveTo(sx(X_MIN), axisY);\n      ctx.lineTo(sx(X_MAX), axisY);\n      ctx.stroke();\n\n      // arrow head\n      ctx.beginPath();\n      ctx.moveTo(sx(X_MAX), axisY);\n      ctx.lineTo(sx(X_MAX) - 8, axisY - 4);\n      ctx.lineTo(sx(X_MAX) - 8, axisY + 4);\n      ctx.closePath();\n      ctx.fillStyle = '#b9b3a6';\n      ctx.fill();\n      ctx.restore();\n\n      // ticks every 0.1\n      ctx.save();\n      ctx.strokeStyle = '#b9b3a6';\n      ctx.lineWidth = 1;\n      ctx.font = 'italic 11px Georgia, serif';\n      ctx.fillStyle = '#8a8377';\n      ctx.textAlign = 'center';\n      for (var i = 0; i <= 20; i++) {\n        var v = i * 0.1;\n        var px = sx(v);\n        var major = (i % 5 === 0);\n        ctx.beginPath();\n        ctx.moveTo(px, axisY - (major ? 6 : 3));\n        ctx.lineTo(px, axisY + (major ? 6 : 3));\n        ctx.stroke();\n        if (major) {\n          var txt = (i === 0) ? '0' : v.toFixed(1);\n          ctx.fillText(txt, px, axisY + 20);\n        }\n      }\n      ctx.restore();\n\n      // axis label\n      label('x', sx(X_MAX) + 6, axisY + 4, '#8a8377', 'left', 'italic 12px Georgia, serif');\n\n      // --- theoretical marker (hollow, AUX green) ---\n      var tx = sx(theoretical);\n      ctx.save();\n      ctx.strokeStyle = '#2e8b6f';\n      ctx.lineWidth = 2;\n      ctx.beginPath();\n      ctx.arc(tx, axisY, 6, 0, Math.PI * 2);\n      ctx.stroke();\n      ctx.restore();\n\n      // --- actual marker (solid, MAIN red) ---\n      var ax = sx(sum);\n      ctx.save();\n      ctx.fillStyle = '#c0392b';\n      ctx.beginPath();\n      ctx.arc(ax, axisY, 5, 0, Math.PI * 2);\n      ctx.fill();\n      ctx.restore();\n\n      // --- error bar (MUTED) ---\n      if (Math.abs(error) > 1e-15) {\n        ctx.save();\n        ctx.strokeStyle = '#8a8377';\n        ctx.lineWidth = 1.5;\n        ctx.beginPath();\n        ctx.moveTo(tx, axisY - 14);\n        ctx.lineTo(ax, axisY - 14);\n        ctx.stroke();\n        // end caps\n        ctx.beginPath();\n        ctx.moveTo(tx, axisY - 18);\n        ctx.lineTo(tx, axisY - 10);\n        ctx.moveTo(ax, axisY - 18);\n        ctx.lineTo(ax, axisY - 10);\n        ctx.stroke();\n        ctx.restore();\n      }\n\n      // --- labels for markers ---\n      label('理论 ' + theoretical.toFixed(1), tx, axisY - 26, '#2e8b6f', 'center');\n      label('实际 ' + sum.toFixed(4), ax, axisY + 40, '#c0392b', 'center');\n\n      // --- error display text on canvas ---\n      var errStr;\n      if (error === 0) {\n        errStr = '0';\n      } else {\n        errStr = error.toExponential(3);\n      }\n      var infoY = axisY + 70;\n      ctx.save();\n      ctx.font = 'italic 12px Georgia, serif';\n      ctx.fillStyle = '#333';\n      ctx.textAlign = 'center';\n      ctx.fillText('n = ' + n + '   累计和 = ' + sum + '   理论值 = ' + theoretical + '   偏差 = ' + errStr, W / 2, infoY);\n      ctx.restore();\n\n      // --- update readouts ---\n      document.getElementById('sum-display').textContent = sum.toFixed(16);\n      document.getElementById('theoretical-display').textContent = theoretical.toFixed(1);\n      document.getElementById('error-display').textContent = (error === 0 ? '0' : error.toExponential(3));\n      document.getElementById('n-display').textContent = n;\n    }\n\n    // --- slider ---\n    var slider = document.getElementById('n-slider');\n    slider.addEventListener('input', function () {\n      n = parseInt(slider.value, 10);\n      draw();\n    });\n\n    // --- pointer probe on canvas ---\n    function onPointer(e) {\n      var r = canvas.getBoundingClientRect();\n      var px = e.clientX - r.left;\n      var worldX = X_MIN + (px - PAD.l) / (W - PAD.l - PAD.r) * (X_MAX - X_MIN);\n      // map worldX to nearest n (0.1 increments)\n      var nn = Math.round(worldX / 0.1);\n      if (nn < 1) nn = 1;\n      if (nn > 20) nn = 20;\n      n = nn;\n      slider.value = n;\n      draw();\n    }\n    canvas.addEventListener('pointermove', onPointer);\n    canvas.addEventListener('pointerdown', onPointer);\n\n    // --- teacher control hook ---\n    window.hkControl = {\n      set: function (s) {\n        if (s && s.n != null) {\n          n = Math.max(1, Math.min(20, Math.round(+s.n)));\n          slider.value = n;\n          draw();\n        }\n      },\n      highlight: function (sel) {\n        var el = document.querySelector(sel);\n        if (!el) return;\n        el.style.outline = '2px solid #c0392b';\n        setTimeout(function () { el.style.outline = ''; }, 1500);\n      },\n      annotate: function () {},\n      reveal: function () {}\n    };\n\n    window.addEventListener('resize', resize);\n    resize();\n  </script>\n</body>\n</html>",
+        "html_path": null,
+        "mermaid": null,
+        "layout": "newcol",
+        "params": [],
+        "controls": []
+      },
+      "widget_hint": "拖动滑块改变累加次数，观察累计和的变化。"
+    }
+  ]
+}
