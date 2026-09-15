@@ -140,3 +140,52 @@ def test_mastery_endpoint_reports_evidence(client):
     assert {m["session_id"] for m in data["mastery"]} == {"sess_1", "sess_2"}
     assert data["course"]["memory"] == 8.0 and data["composite"] is not None
     assert all(m["note"] for m in data["mastery"])
+
+
+def test_settings_put_masks_persists_and_rebuilds(client):
+    import os as _os
+    # no key anywhere → not configured, settings view is empty
+    view = client.get("/api/v1/settings").json()
+    assert view["llm"]["configured"] is False and view["settings"]["api_key"] == ""
+    # save a key → GET masks it, the plaintext never appears in any response
+    view = client.put("/api/v1/settings", json={"provider": "openai", "api_key": "sk-test-1234567890",
+                                                "base_url": "https://api.example.com/v1", "model": "test-model",
+                                                "tts_engine": "silent"}).json()
+    assert view["llm"]["configured"] is True and view["llm"]["model"] == "test-model"
+    assert view["settings"]["api_key"].startswith("••••") and "7890" in view["settings"]["api_key"]
+    assert "sk-test-1234567890" not in client.get("/api/v1/settings").text
+    # persisted to the git-ignored local file, not the repo
+    path = _os.path.join(_os.environ["HK_OUTPUT_ROOT"], "settings.json")
+    assert "sk-test-1234567890" in open(path, encoding="utf-8").read()
+    assert not _os.path.exists(_os.path.join(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__))), "settings.json"))
+    # echoing the mask back must not clobber the stored key; clearing empties it
+    masked = view["settings"]["api_key"]
+    view = client.put("/api/v1/settings", json={"api_key": masked}).json()
+    assert view["settings"]["api_key"] == masked
+    view = client.put("/api/v1/settings", json={"api_key": ""}).json()
+    assert view["llm"]["configured"] is False and view["settings"]["api_key"] == ""
+    assert client.get("/api/v1/capabilities").json()["llm"]["configured"] is False
+
+
+def test_settings_test_endpoint_probes_candidate_without_saving(client, monkeypatch):
+    import src.llm.client as llm_mod
+
+    class _Fake:
+        model = "fake-model"
+        config = type("C", (), {"provider": "openai"})()
+
+        async def complete(self, *a, **k):
+            return "ok"
+
+    monkeypatch.setattr(llm_mod, "make_client", lambda **kw: _Fake())
+    r = client.post("/api/v1/settings/test", json={"api_key": "sk-candidate-key-123", "model": "fake-model"}).json()
+    assert r["llm"]["ok"] is True and r["llm"]["model"] == "fake-model"
+    assert r["tts"]["ok"] is True and r["tts"]["engine"] == "silent"
+    # the candidate was only probed — nothing was persisted
+    import os as _os
+    path = _os.path.join(_os.environ["HK_OUTPUT_ROOT"], "settings.json")
+    assert not _os.path.exists(path) or "candidate" not in open(path, encoding="utf-8").read()
+
+    monkeypatch.setattr(llm_mod, "make_client", lambda **kw: None)
+    r = client.post("/api/v1/settings/test").json()
+    assert r["llm"]["ok"] is False and "API Key" in r["llm"]["error"]

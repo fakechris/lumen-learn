@@ -56,6 +56,7 @@
     <button class="pill btn level" id="levelBtn" title="讲解档位：按证据自动，也可以自己选">档位 · 自动</button>
     <button class="pill btn" id="openHome" title="课程主页">☰ 课程</button>
     <span class="pill" id="capsPill" title="服务端能力">…</span>
+    <button class="pill btn" id="openSettings" title="模型与语音设置（自带 Key，无需重启）">⚙ 设置</button>
     <button class="pill btn primary" id="openGenerate">＋ 从讲义生成</button>
     <button class="pill btn" id="toggleSidebar" title="对话 / 大纲">💬</button>
   </header>
@@ -94,6 +95,43 @@
       <button class="round interject" id="interjectBtn" title="打断提问">✋</button>
       <button class="round skip" id="skipBtn" title="我懂了：跳过这段讲解，直接到提问">懂了</button>
       <span class="state" id="stateBadge" data-state="idle">空闲</span>
+    </div>
+  </div>
+
+  <div class="modal" id="settingsModal">
+    <div class="modal-box">
+      <div class="modal-head"><h3>模型与语音设置</h3><button class="icon" id="closeSettings">×</button></div>
+      <p class="hint">自带 Key（BYOK）：密钥只保存在本机（服务端 output/settings.json，不进 git），保存后立即生效，无需重启服务。留空的项沿用环境变量。</p>
+      <div class="row2">
+        <label>服务商
+          <select id="setProvider">
+            <option value="">自动（按密钥推断）</option>
+            <option value="deepseek">DeepSeek</option>
+            <option value="openai">OpenAI 兼容（OneAPI / vLLM / Ollama…）</option>
+            <option value="anthropic">Anthropic</option>
+          </select>
+        </label>
+        <label>语音引擎
+          <select id="setTts">
+            <option value="">默认（本机 say / edge）</option>
+            <option value="say">macOS say</option>
+            <option value="edge">edge-tts</option>
+            <option value="minimax">MiniMax</option>
+            <option value="silent">silent（不出声）</option>
+          </select>
+        </label>
+      </div>
+      <label>API Key<input type="password" id="setApiKey" placeholder="留空 = 保持现状" autocomplete="off"></label>
+      <div class="row2">
+        <label>Base URL（OpenAI 兼容端点）<input id="setBaseUrl" placeholder="https://api.deepseek.com"></label>
+        <label>模型<input id="setModel" placeholder="deepseek-v4-flash"></label>
+      </div>
+      <label>深度模型（规划/复杂生成，可选）<input id="setModelPro" placeholder="deepseek-v4-pro"></label>
+      <div class="modal-actions">
+        <button class="pill btn" id="settingsTest">测试连通性</button>
+        <button class="pill btn primary" id="settingsSave">保存</button>
+      </div>
+      <div class="doc-summary" id="settingsStatus"></div>
     </div>
   </div>
 
