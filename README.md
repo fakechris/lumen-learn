@@ -57,6 +57,8 @@ The entire system is powered by a typed wire protocol (`speak`, `tts_segment`, `
 | **Bilingual TTS** | Measured speech durations, LaTeX-to-speech phoneme conversion, character/word-level marks (Edge-TTS / macOS / MiniMax). | 支持多引擎真实时长测量与 LaTeX 公式口语化转写，支持字符/单词级同步锚点。 |
 | **Feynman Round** | "Explain to me" mode where a curious peer agent probes the user's understanding for 4 progressive rounds. | 讲给我听（费曼演练）：学生用自己的话解释，AI 好奇学伴连续 4 轮追问深度检验。 |
 | **Mastery & Concept Map** | Append-only learner evidence feeding a 4-axis mastery model and dynamic typed concept graph. | 学习证据驱动的四维掌握度模型，动态生成课程概念拓扑网络与掌握度热力映射。 |
+| **Printable Cheatsheet** | ≤2-page A4 cheatsheet compiled per course from the concept map, step takeaways, key boards, and misconception correctives — no LLM, pure data compilation. | 每门课可打印的考前两页速查表：概念速览、关键公式、概念关系与常见误区，纯课程包数据编译，不额外生成内容。 |
+| **BYOK Settings** | Configure any OpenAI-compatible endpoint (DeepSeek / Kimi / Ollama / vLLM) and TTS engine in the UI; keys stay in a git-ignored local file and apply without a restart. | 界面内自带 Key：任意 OpenAI 兼容端点与语音引擎即配即用，密钥仅存本机且不进 git，保存后无需重启。 |
 
 ---
 

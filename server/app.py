@@ -177,6 +177,26 @@ async def run_events(run_id: str, after: int = 0, limit: int = 500):
     return {"events": get_db(OUTPUT_ROOT).events(run_id, after, limit)}
 
 
+@app.get("/api/v1/courses/{course_id}/cheatsheet")
+async def course_cheatsheet(course_id: str, format: str = "html"):
+    """Printable cheatsheet compiled from the package (concept map / rewards /
+    boards / misconceptions). Serves the cached file when present, otherwise
+    builds it in memory — read-only deployments never need to write."""
+    course_dir = store._course_dir(course_id)
+    if not course_dir:
+        raise HTTPException(404, "course not found")
+    from src.content.cheatsheet import build_cheatsheet, write_cheatsheet
+    try:
+        cs = write_cheatsheet(course_dir)
+    except OSError:                       # read-only package dir → serve without caching
+        cs = build_cheatsheet(course_dir)
+    if format == "md":
+        from fastapi.responses import PlainTextResponse
+        return PlainTextResponse(cs.markdown, media_type="text/markdown; charset=utf-8")
+    from fastapi.responses import HTMLResponse
+    return HTMLResponse(cs.html)
+
+
 @app.get("/api/v1/courses/{course_id}/qa")
 async def course_qa(course_id: str):
     rows = get_db(OUTPUT_ROOT).sessions(course_id)
