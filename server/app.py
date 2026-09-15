@@ -30,6 +30,7 @@ from src.content.store import CourseStore
 from src.llm.client import make_client
 from src.llm.usage import GLOBAL_LEDGER
 from src.obs.db import get_db
+from src.settings import Settings
 from src.protocol.actions import ConnectionEstablished, ErrorMessage, parse_client_message
 from src.runtime.session_runtime import SessionRuntime
 from src.runtime.tutor import LiveTutor
@@ -48,12 +49,93 @@ os.makedirs(LIVE_AUDIO_DIR, exist_ok=True)
 app = FastAPI(title="Socratic Whiteboard", version="2.0.0")
 
 store = CourseStore([EXAMPLES_ROOT, OUTPUT_ROOT])
-llm = make_client()
-tts = choose_engine()
+settings_store = Settings(os.path.join(OUTPUT_ROOT, "settings.json"))
+settings_store.load()
+llm = make_client(**settings_store.llm_overrides())
+tts = choose_engine(settings_store.tts_engine() or None)
 tutor = LiveTutor(llm)
 jobs: Dict[str, dict] = {}
 
 log.info("LLM: %s   TTS: %s", f"{llm.config.provider}/{llm.model}" if llm else "not configured", tts.name)
+
+
+class SettingsRequest(BaseModel):
+    provider: Optional[str] = None      # auto | deepseek | openai | anthropic（auto = 按密钥推断）
+    api_key: Optional[str] = None       # None=保持，""=清除；回传掩码值时忽略
+    base_url: Optional[str] = None      # 任意 OpenAI 兼容端点（OneAPI/vLLM/Ollama…）
+    model: Optional[str] = None
+    model_pro: Optional[str] = None
+    tts_engine: Optional[str] = None    # say | edge | minimax | silent | auto
+
+
+def _settings_view() -> dict:
+    return {"settings": settings_store.masked(),
+            "llm": {"configured": llm is not None, "provider": llm.config.provider if llm else None,
+                    "model": llm.model if llm else None},
+            "tts": {"engine": tts.name}}
+
+
+@app.get("/api/v1/settings")
+async def get_settings():
+    return _settings_view()
+
+
+@app.put("/api/v1/settings")
+async def put_settings(req: SettingsRequest):
+    """Persist BYOK settings locally (git-ignored) and rebuild the LLM/TTS clients
+    in place — new generation jobs and WebSocket sessions use them without a restart."""
+    global llm, tts, tutor
+    settings_store.update(req.model_dump())
+    llm = make_client(**settings_store.llm_overrides())
+    tts = choose_engine(settings_store.tts_engine() or None)
+    tutor = LiveTutor(llm)
+    log.info("settings updated: LLM %s   TTS %s",
+             f"{llm.config.provider}/{llm.model}" if llm else "not configured", tts.name)
+    return _settings_view()
+
+
+@app.post("/api/v1/settings/test")
+async def test_settings(req: Optional[SettingsRequest] = None):
+    """Connectivity probe: one minimal LLM completion + one short TTS synthesis.
+    Accepts the same fields as PUT to probe a candidate config before saving."""
+    import tempfile
+    import time as _time
+    from src.llm.client import make_client as _make_client  # late import: tests monkeypatch this
+
+    cand = dict(settings_store.data)
+    for k, v in (req.model_dump() if req else {}).items():
+        if v is None:
+            continue
+        v = v.strip()
+        if k == "api_key" and v == settings_store.mask():
+            continue
+        if v:
+            cand[k] = v
+        else:
+            cand.pop(k, None)
+    overrides = {k: cand[k] for k in ("provider", "api_key", "base_url", "model", "model_pro") if cand.get(k)}
+
+    out: Dict[str, dict] = {}
+    client = _make_client(**overrides)
+    if client is None:
+        out["llm"] = {"ok": False, "error": "未配置 API Key（也没有可用的环境变量）"}
+    else:
+        t0 = _time.time()
+        try:
+            await asyncio.wait_for(
+                client.complete("你是连通性测试。", "只回复两个字：正常", temperature=0, purpose="qa"), 30)
+            out["llm"] = {"ok": True, "model": client.model, "latency_ms": int((_time.time() - t0) * 1000)}
+        except Exception as exc:  # noqa: BLE001 — the probe reports, it never throws
+            out["llm"] = {"ok": False, "error": str(exc)[:200], "latency_ms": int((_time.time() - t0) * 1000)}
+    t0 = _time.time()
+    try:
+        eng = choose_engine(cand.get("tts_engine") or None)
+        with tempfile.TemporaryDirectory() as d:
+            await asyncio.wait_for(eng.synthesize("测", os.path.join(d, "probe")), 30)
+        out["tts"] = {"ok": True, "engine": eng.name, "latency_ms": int((_time.time() - t0) * 1000)}
+    except Exception as exc:  # noqa: BLE001
+        out["tts"] = {"ok": False, "error": str(exc)[:200]}
+    return out
 
 
 # --------------------------------------------------------------------------- #

@@ -9,6 +9,7 @@ import { AudioClock, charsAtMs } from "./audio-clock.js";
 import { Whiteboard } from "./board.js";
 import { renderMarkdownInto, escapeHtml } from "./markdown.js";
 import { ExerciseView } from "./exercises.js";
+import { initSettings, refreshCapsPill } from "./settings.js";
 
 const $ = (id) => document.getElementById(id);
 const SPEEDS = [1.0, 1.25, 1.5, 2.0];
@@ -443,6 +444,7 @@ class App {
     $("zoomOut").addEventListener("click", () => this.setZoom(this.zoom - 0.1));
     $("openGenerate").addEventListener("click", () => $("generateModal").classList.add("open"));
     $("closeGenerate").addEventListener("click", () => $("generateModal").classList.remove("open"));
+    initSettings();
     $("ingestBtn").addEventListener("click", () => this.ingestAndPlan());
     $("buildBtn").addEventListener("click", () => this.buildFromPlan());
     $("backToImport").addEventListener("click", () => this.showGenStep("import"));
