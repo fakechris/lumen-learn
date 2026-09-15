@@ -108,6 +108,15 @@ session's cognitive hurdle as a belief (sess_3 novice: pre 2/6 → post 5/6, +0.
 beats flow plan → synthesis with per-beat writing rules; compressed variants precomputed (`--variants-for`) and played
 for fast learners (sess_3 fast: hook skipped, derive replaced by 要点, gate kept, ~25 s to the first gate);
 media-quota pass in the planner; widget technical plan (grid anchors) before code; SVG grid layout rule.
+Then (2026-09-15, INV-259): frozen evaluation contract (`src/content/eval_contract.py`) — items carry
+objective / misconception / source / content-hash, misconception-targeted items get A/B parallel twins
+(pre = A, post = B, kills the re-test artifact), leak checks drop items that quote narration / gate
+questions / board lines, the INV-258 ambiguous gate is a registered known-bad pattern, reports recompute
+deterministically from raw rows × manifest (zero/negative gains are results, missing/failed runs listed),
+human evidence stays UNVERIFIED. `tools/sim_student.py` gained `--build-eval-set` / `--eval-set` / `--auto`
+(auto = the real entry-diagnosis path replayed: prereq quiz answered cold → mastery evidence → decide_level),
+per-run isolated learner profiles (`_eval_iso/<run>/` as HK_OUTPUT_ROOT). Frozen set:
+`output/_eval/evalset_stage10_v1.json` (20 sessions, 150 items, 30 B-twins).
 Open: the LLM student still knows too much for most items (gain is only visible where a misconception is planted) —
 real-learner data or misconception-targeted items are the honest ruler; 111-session variant precompute not run yet
 (cost ≈ $0.5, ~40 min of `say`). Suspicious gate sess_3 step 8 rewritten (INV-258, 2026-09-15): the "why nin×nout"
