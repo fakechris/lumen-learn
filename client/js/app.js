@@ -333,6 +333,9 @@ class App {
     $("levelBtn").addEventListener("click", () => this.cycleLevel());
     $("skipBtn").addEventListener("click", () => this.skipStep());
     $("openMap").addEventListener("click", () => this.openConceptMap());
+    $("openCheatsheet").addEventListener("click", () => {
+      if (this.course) window.open(`/api/v1/courses/${this.course.course_id}/cheatsheet`, "_blank");
+    });
     $("fmSend").addEventListener("click", () => this.feynmanSend());
     $("fmDone").addEventListener("click", () => this.feynmanSummary());
   }

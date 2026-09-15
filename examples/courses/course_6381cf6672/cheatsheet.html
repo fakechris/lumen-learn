@@ -1,0 +1,31 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8">
+<title>两个向量能张成什么？ · 速查表</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<style>
+@media print { @page { size: A4; margin: 10mm; } body { -webkit-print-color-adjust: exact; } }
+body { font-family: 'LXGW WenKai Lite', 'Patrick Hand', sans-serif; color: #2b2b2b; background: #fbfaf7;
+       max-width: 210mm; margin: 0 auto; padding: 6mm; font-size: 11.5px; line-height: 1.45; }
+h1 { font-size: 17px; margin: 0 0 2mm; } h2 { font-size: 12.5px; margin: 3mm 0 1mm; border-bottom: 1.5px solid #4b4b4b; }
+.meta { color: #6b6b6b; font-size: 10px; margin-bottom: 2mm; }
+.cols { column-count: 2; column-gap: 6mm; }
+table { border-collapse: collapse; width: 100%; font-size: 10.5px; }
+td { border-bottom: 0.5px solid #d8d2c4; padding: 1mm 1.5mm 1mm 0; vertical-align: top; }
+td:first-child { white-space: nowrap; font-weight: 600; }
+ul { margin: 0.5mm 0 1.5mm 4mm; padding: 0; } li { margin-bottom: 0.6mm; }
+.rel { color: #4b4b4b; } .rel b { color: #8a4b2b; }
+.mis { background: #f7ece8; border-left: 2.5px solid #b0553a; padding: 0.8mm 2mm; margin-bottom: 1mm; }
+</style></head><body>
+<h1>两个向量能张成什么？ · 速查表</h1>
+<p class=meta>学生能解释两个非零不平行向量在三维空间中的张成是一个平面，并理解为什么不能张成整个三维空间。｜编译自课程包（概念图 / 要点 / 板书 / 误区），不含课堂之外的内容。</p>
+<h2>每节要点</h2>
+<p><b>两个向量能张成什么？</b></p>
+<ul><li><b>张成 = 棍子能到的所有地方</b> — 两根不平行的棍子只能铺出一张过原点的纸（平面）。再多的棍子，只要都躺在纸上，纸还是纸；一根戳出纸面的棍子，才能把纸变成整个房间。维度数的是独立方向，不是向量个数。</li></ul>
+<h2>关键板书与公式</h2>
+<ul><li>$\vec{v}_3 = \vec{v}_1 + \vec{v}_2$ → 没有新方向</li><li>$\text{span}(\vec{v}_1, \vec{v}_2, \vec{v}_3) = \text{span}(\vec{v}_1, \vec{v}_2)$，<b>线性相关</b></li><li>换一根戳出纸面的 $\vec{u}$ → $\text{span}(\vec{v}_1, \vec{v}_2, \vec{u}) = \mathbb{R}^3$</li><li>决定维度的：<b>独立方向的个数</b>，不是向量个数</li></ul>
+<h2>常见误区（对的说法）</h2>
+<ul><li>能，c1 c2 随便调，总有一组行：这是最常见的直觉：以为两个参数可以自由到任何地方。但两个参数只能在一张纸上滑动，红球在纸的上方。</li><li>能，多一根总比少一根强：以为向量数量多了维度就自动多了。可 v3 本来就是 v1、v2 拼出来的，它没带来新方向。</li></ul>
+<script>addEventListener('DOMContentLoaded', () => renderMathInElement(document.body,
+  {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]}));</script>
+</body></html>
