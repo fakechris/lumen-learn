@@ -120,7 +120,7 @@ class Student:
 
 async def run_session(store: CourseStore, llm, course_id: str, session_id: str, persona: str, level: Optional[str],
                       baseline: bool, allow_interrupt: bool, posttest_n: int, live_dir: str,
-                      regen_posttest: bool = False) -> Dict[str, Any]:
+                      regen_posttest: bool = False, posttest_forms=None, level_auto: bool = False) -> Dict[str, Any]:
     transport = SimTransport()
     course = store.get_course(course_id)
     outline = next((x for x in course.all_sessions() if x.session_id == session_id), None) if course else None
@@ -128,10 +128,20 @@ async def run_session(store: CourseStore, llm, course_id: str, session_id: str, 
     rt = SessionRuntime(transport, store, LiveTutor(llm), SilentEngine(), live_dir, remediation=not baseline)
     mark = GLOBAL_LEDGER.mark()
     t0 = time.time()
-    # the same transfer items serve as pre-test (cold) and post-test → learning gain
-    test = await get_posttest(store._course_dir(course_id), store.get_script(course_id, session_id), llm, n=posttest_n,
-                              hurdle=(outline.cognitive_hurdle if outline else ""), regen=regen_posttest)
-    pre = [await student.take_item(None, it) == it.correct_index for it in test.items]
+    if posttest_forms is not None:
+        # frozen parallel forms: pre-test = A, post-test = B twin (kills the re-test artifact)
+        pre_items, post_items = posttest_forms
+    else:
+        # the same transfer items serve as pre-test (cold) and post-test → learning gain
+        test = await get_posttest(store._course_dir(course_id), store.get_script(course_id, session_id), llm, n=posttest_n,
+                                  hurdle=(outline.cognitive_hurdle if outline else ""), regen=regen_posttest)
+        pre_items = post_items = test.items
+    pre = []
+    for it in pre_items:
+        pre.append({"item_version": it.version() if hasattr(it, "version") else None,
+                    "correct": await student.take_item(None, it) == it.correct_index})
+    if level_auto and not baseline:
+        level = await auto_diagnose(store, llm, student, course_id, session_id, live_dir)
     await rt.handle(StartSession(course_id=course_id, session_id=session_id, level=level))
     seen = 0
     gates: List[dict] = []
@@ -177,9 +187,10 @@ async def run_session(store: CourseStore, llm, course_id: str, session_id: str, 
     level_msgs = [m for m in transport.sent if m["type"] == "level_update"]
     # post-test (transfer items, generated once per session and cached)
     results = []
-    for it, was_right in zip(test.items, pre):
+    for it, was_right in zip(post_items, pre):
         ok = await student.take_item(transport.sent, it) == it.correct_index
-        results.append({"kind": it.kind, "pre": bool(was_right), "correct": bool(ok), "stem": it.stem[:50]})
+        results.append({"kind": it.kind, "pre": bool(was_right["correct"]), "correct": bool(ok), "stem": it.stem[:50],
+                        "item_version": it.version() if hasattr(it, "version") else None})
     usage = GLOBAL_LEDGER.summary(since=mark)["total"]
     choice_gates = [g for g in gates if not g.get("open")]
     return {
@@ -194,8 +205,37 @@ async def run_session(store: CourseStore, llm, course_id: str, session_id: str, 
         "posttest_rate": round(sum(1 for r in results if r["correct"]) / len(results), 2) if results else None,
         "gain": round((sum(1 for r in results if r["correct"]) - sum(1 for r in results if r["pre"])) / len(results), 2) if results else None,
         "audio_min": round(audio_ms / 60000, 1), "wall_s": round(time.time() - t0, 1),
-        "cost_usd": round(usage["cost_usd"], 4), "gates": gates, "posttest": results,
+        "cost_usd": round(usage["cost_usd"], 4), "gates": gates, "posttest": results, "pretest": pre,
     }
+
+
+async def auto_diagnose(store: CourseStore, llm, student: "Student", course_id: str, session_id: str,
+                        run_root: str) -> Optional[str]:
+    """The real entry path (server /entry → diagnosis quiz → evidence → level), replayed
+    with the simulated student: prereq exercises answered cold, mastery evidence recorded
+    into the run-isolated DB, then decide_level re-run on that evidence."""
+    from src.content.adaptive import decide_level, diagnosis_questions, prereq_sessions
+    from src.content.concept_map import load_map
+    from src.content.mastery import record as record_evidence
+    from src.obs.db import get_db
+
+    db = get_db(run_root)
+    course = store.get_course(course_id)
+    cmap = load_map(store._course_dir(course_id) or "")
+    prereqs = prereq_sessions(course, cmap, session_id) if course else []
+    entry = decide_level(db, course_id, session_id, prereqs, None)
+    if not entry.needs_diagnosis:
+        return entry.level
+    for q in diagnosis_questions(store, course_id, prereqs):
+        if q["kind"] != "single_choice":
+            continue
+        sess = store.get_session(course_id, q["session_id"])
+        ex = next((e for e in (sess.exercises if sess else []) if e.exercise_id == q["exercise_id"]), None)
+        if ex is None or ex.correct_index is None:
+            continue
+        a = await student.answer_choice([], {"question": q["stem"], "options": [{"text": o} for o in q["options"]]})
+        record_evidence(db, course_id, q["session_id"], ex.kind, a["choice"] == ex.correct_index, None, str(a["choice"]))
+    return decide_level(db, course_id, session_id, prereqs, None).level
 
 
 def find_suspicious_gates(rows: List[Dict[str, Any]], n_personas: int) -> List[tuple]:
@@ -217,7 +257,7 @@ def find_suspicious_gates(rows: List[Dict[str, Any]], n_personas: int) -> List[t
 async def main() -> int:
     p = argparse.ArgumentParser()
     p.add_argument("course_id")
-    p.add_argument("--sessions", required=True, help="comma-separated session ids")
+    p.add_argument("--sessions", required=False, help="comma-separated session ids (ignored with --eval-set)")
     p.add_argument("--personas", default="novice,standard,fast")
     p.add_argument("--baseline", action="store_true", help="standard level, one answer per gate, no ladder")
     p.add_argument("--both", action="store_true", help="run baseline and adaptive")
@@ -225,34 +265,94 @@ async def main() -> int:
     p.add_argument("--posttest", type=int, default=5)
     p.add_argument("--regen-posttest", action="store_true", help="regenerate the cached transfer post-tests")
     p.add_argument("--output", default="output")
+    p.add_argument("--build-eval-set", metavar="PATH", help="freeze an evaluation manifest for --sessions and exit")
+    p.add_argument("--eval-id", default="stage10-v1", help="eval set id when building")
+    p.add_argument("--eval-set", metavar="PATH", help="run the frozen matrix from this manifest")
+    p.add_argument("--auto", action="store_true", help="with --eval-set: also run adaptive with auto (entry-diagnosis) levels")
     a = p.parse_args()
     os.environ.setdefault("HK_OUTPUT_ROOT", os.path.abspath(a.output))
     llm = make_client()
     if llm is None:
         print("no LLM configured (DEEPSEEK_API_KEY)"); return 1
     store = CourseStore([a.output, os.path.join(os.path.dirname(__file__), "..", "examples", "courses")])
+
+    if a.build_eval_set:
+        from src.content.eval_contract import build_eval_set, flag_known_bad, leak_issues, save_eval_set
+        sids = [s.strip() for s in a.sessions.split(",")] if a.sessions else []
+        es = await build_eval_set(store, llm, a.course_id, sids, a.eval_id,
+                                  generator={"model": os.getenv("LLM_MODEL", "deepseek-v4-flash")})
+        problems = 0
+        for s in es.sessions:
+            script = store.get_script(a.course_id, s.session_id)
+            leaks = leak_issues(script, s.items)
+            flagged = flag_known_bad(s.items, es.known_bad)
+            problems += len(leaks) + len(flagged)
+            if leaks or flagged:
+                print(f"{s.session_id}: leaks={leaks} known_bad={list(flagged.values())}")
+        save_eval_set(es, a.build_eval_set)
+        print(f"froze {len(es.sessions)} sessions ({sum(len(s.items) for s in es.sessions)} items) "
+              f"-> {a.build_eval_set} | problems flagged: {problems}")
+        return 0
+
     live_dir = os.path.join(a.output, "live")
-    modes = [True, False] if a.both else [a.baseline]
+    if a.eval_set:
+        from src.content.eval_contract import load_eval_set, recompute
+        es = load_eval_set(a.eval_set)
+        sids = [s.session_id for s in es.sessions]
+    else:
+        es = None
+        if not a.sessions:
+            p.error("--sessions is required without --eval-set")
+        sids = [s.strip() for s in a.sessions.split(",")]
+    level_modes = [("adaptive", "forced")] if not a.baseline or a.both else []
+    if a.baseline or a.both or es:
+        level_modes = [("baseline", "forced")] + level_modes
+    if a.auto:
+        level_modes.append(("adaptive", "auto"))
     rows = []
-    for baseline in modes:
-        for sid in a.sessions.split(","):
-            for persona in a.personas.split(","):
-                level = "standard" if baseline else persona
-                r = await run_session(store, llm, a.course_id, sid.strip(), persona, level, baseline, a.interrupt, a.posttest, live_dir,
-                                      regen_posttest=a.regen_posttest and persona == a.personas.split(",")[0] and baseline == modes[0])
+    for mode, level_mode in (level_modes or [("adaptive", "forced")]):
+        baseline = mode == "baseline"
+        for sid in sids:
+            for persona in (es.personas if es else a.personas.split(",")):
+                level = ("standard" if baseline else persona) if level_mode == "forced" else None
+                run_root = os.path.join(a.output, "_eval_iso", f"{mode}_{level_mode}_{sid}_{persona}")
+                os.makedirs(run_root, exist_ok=True)
+                os.environ["HK_OUTPUT_ROOT"] = run_root      # per-run isolated learner profile & events
+                forms = es.find(sid).forms() if es else None
+                try:
+                    r = await run_session(store, llm, a.course_id, sid, persona, level, baseline, a.interrupt,
+                                          a.posttest, os.path.join(run_root, "live"), posttest_forms=forms,
+                                          level_auto=(level_mode == "auto"))
+                    r["level_mode"] = level_mode
+                except Exception as exc:  # noqa: BLE001 — a failed run is a reported result, not a crash
+                    r = {"mode": mode, "level_mode": level_mode, "session_id": sid, "persona": persona, "error": str(exc)}
                 rows.append(r)
-                print(f"{r['mode']:8s} {sid:8s} {persona:8s} level={r['level']:8s} gates {r['gates_correct']}/{r['gates_total']} "
+                if "error" in r:
+                    print(f"{mode:8s} {sid:10s} {persona:8s} FAILED: {r['error']}", flush=True)
+                    continue
+                print(f"{r['mode']:8s} {sid:10s} {persona:8s} lvl={str(r['level']):8s}({level_mode}) gates {r['gates_correct']}/{r['gates_total']} "
                       f"remed {r['remediations']} pre {r['pretest_correct']}/{r['posttest_n']} post {r['posttest_correct']}/{r['posttest_n']} "
                       f"gain {r['gain']:+.2f} audio {r['audio_min']}min ${r['cost_usd']:.3f}", flush=True)
     os.makedirs(os.path.join(a.output, "_eval"), exist_ok=True)
     path = os.path.join(a.output, "_eval", f"sim_{time.strftime('%Y%m%d_%H%M%S')}.json")
     with open(path, "w", encoding="utf-8") as f:
         json.dump(rows, f, ensure_ascii=False, indent=2)
+    if es:
+        from src.content.eval_contract import recompute
+        report = recompute(rows, es)
+        rpath = path.replace("sim_", "report_")
+        with open(rpath, "w", encoding="utf-8") as f:
+            json.dump(report, f, ensure_ascii=False, indent=2)
+        comp = report["completeness"]
+        print(f"\ncompleteness: {comp['ran']}/{comp['expected']} missing={comp['missing']} failed={len(comp['failed'])}")
+        print(f"known_bad flagged: {report['known_bad_flagged'] or 'none'}")
+        print(f"human_evidence: {report['human_evidence']} | report -> {rpath}")
+    ok_rows = [r for r in rows if "error" not in r]
     print("\n| mode | persona | sessions | gate rate | remediations | pre-test | post-test | gain | audio min | cost |")
     print("|---|---|---|---|---|---|---|---|---|---|")
-    for mode in sorted({r["mode"] for r in rows}):
+    for mode in sorted({r["mode"] for r in ok_rows}):
         for persona in a.personas.split(","):
-            rs = [r for r in rows if r["mode"] == mode and r["persona"] == persona]
+            rs = [r for r in ok_rows if r["mode"] == mode and r["persona"] == persona]
             if not rs:
                 continue
             g = [r["gate_rate"] for r in rs if r["gate_rate"] is not None]
@@ -264,7 +364,7 @@ async def main() -> int:
                   f"{avg(pr):.2f} | {avg(pt):.2f} | {avg(gn):+.2f} | {sum(r['audio_min'] for r in rs):.1f} | ${sum(r['cost_usd'] for r in rs):.3f} |")
     # gates every persona fails on the first try are content defects (ambiguous question or wrong key),
     # not learner problems — list them for regeneration (--only) or a question rewrite
-    suspicious = find_suspicious_gates(rows, len(a.personas.split(",")))
+    suspicious = find_suspicious_gates(ok_rows, len(a.personas.split(",")))
     if suspicious:
         print("\n可疑提问（所有学生第一次都答错 → 题目或答案有问题，不是学生的问题）：")
         for (sid, step), personas in suspicious:
