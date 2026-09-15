@@ -144,29 +144,36 @@ def recompute(rows: List[Dict], eval_set: EvalSet) -> Dict:
     got = {(r.get("mode"), r.get("session_id"), r.get("persona")) for r in rows if not r.get("error")}
     failed = [{"mode": r.get("mode"), "session_id": r.get("session_id"), "persona": r.get("persona"),
                "error": r.get("error")} for r in rows if r.get("error")]
+    def _append_row(table: List[Dict], mode: str, lm: str, p: str, rs: List[Dict]) -> None:
+        if not rs:
+            return
+        g = [r["gate_rate"] for r in rs if r.get("gate_rate") is not None]
+        pre_n = pre_c = post_n = post_c = 0
+        for r in rs:
+            n, c = clean(r.get("posttest", []))
+            post_n += n
+            post_c += c
+            n, c = clean(r.get("pretest", []))
+            pre_n += n
+            pre_c += c
+        table.append({
+            "mode": mode, "level_mode": lm, "persona": p, "sessions": len(rs),
+            "gate_rate": round(sum(g) / len(g), 2) if g else None,
+            "pretest_rate": round(pre_c / pre_n, 2) if pre_n else None,
+            "posttest_rate": round(post_c / post_n, 2) if post_n else None,
+            "gain": round((post_c - pre_c) / post_n, 2) if post_n else None,
+            "cost_usd": round(sum(r.get("cost_usd", 0) for r in rs), 4),
+        })
+
     table = []
     for mode in eval_set.modes:
         for p in eval_set.personas:
-            rs = [r for r in rows if r.get("mode") == mode and r.get("persona") == p and not r.get("error")]
-            if not rs:
-                continue
-            g = [r["gate_rate"] for r in rs if r.get("gate_rate") is not None]
-            pre_n = pre_c = post_n = post_c = 0
-            for r in rs:
-                n, c = clean(r.get("posttest", []))
-                post_n += n
-                post_c += c
-                n, c = clean(r.get("pretest", []))
-                pre_n += n
-                pre_c += c
-            table.append({
-                "mode": mode, "persona": p, "sessions": len(rs),
-                "gate_rate": round(sum(g) / len(g), 2) if g else None,
-                "pretest_rate": round(pre_c / pre_n, 2) if pre_n else None,
-                "posttest_rate": round(post_c / post_n, 2) if post_n else None,
-                "gain": round((post_c - pre_c) / post_n, 2) if post_n else None,
-                "cost_usd": round(sum(r.get("cost_usd", 0) for r in rs), 4),
-            })
+            level_modes = sorted({r.get("level_mode", "forced") for r in rows
+                                  if r.get("mode") == mode and r.get("persona") == p and not r.get("error")})
+            for lm in level_modes or ["forced"]:
+                rs = [r for r in rows if r.get("mode") == mode and r.get("persona") == p
+                      and r.get("level_mode", "forced") == lm and not r.get("error")]
+                _append_row(table, mode, lm, p, rs)
     return {
         "eval_set_id": eval_set.eval_set_id,
         "human_evidence": HUMAN_EVIDENCE_UNVERIFIED,
