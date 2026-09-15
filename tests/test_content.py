@@ -1,3 +1,4 @@
+import json
 import os
 
 import pytest
@@ -607,3 +608,57 @@ def test_suspicious_gate_detection_ignores_split_open_and_variant_gates():
          "gates": [{"step": 8, "choice": 2, "correct": True, "confused": False}]},
     ]
     assert _find_suspicious_gates(rows) == []
+
+
+# ---- INV-569: cheatsheet compiled from the package (no LLM) ----
+
+def _cheatsheet_fixture(tmp_path):
+    d = tmp_path / "course_cs"
+    (d / "scripts").mkdir(parents=True)
+    (d / "course_structure.json").write_text(json.dumps({
+        "course_id": "course_cs", "title": "夹逼定理入门", "overview": "用两边夹住的办法求极限",
+        "chapters": [{"chapter_id": "ch_1", "title": "第一章", "sessions": [
+            {"session_id": "sess_1", "title": "什么是夹逼", "core_concept": "夹逼定理",
+             "cognitive_hurdle": "以为夹逼就是取平均"}]}]}), )
+    (d / "scripts" / "sess_1.json").write_text(json.dumps({
+        "session_id": "sess_1", "course_id": "course_cs", "title": "什么是夹逼", "learning_goal": "会用夹逼",
+        "steps": [
+            {"title": "定义", "beat": "define", "spoken_text": "如果 g(x) ≤ f(x) ≤ h(x) 且两边极限都是 A，那么中间也是 A。",
+             "boards": [{"title": "定义", "markdown": "- $g(x) \\le f(x) \\le h(x)$\n- 两边极限相等 $\\Rightarrow$ 中间相等"}],
+             "question": {"question": "夹逼定理要求两边的极限怎样？", "options": ["都等于同一个值", "一个大于另一个", "无所谓"],
+                          "correct_index": 0,
+                          "misconceptions": [None, "夹逼不是取平均：两边必须收敛到同一个极限，中间才被夹住。", None],
+                          "explanation": "两边极限相等才夹得住。"}},
+            {"title": "小结", "beat": "recap", "spoken_text": "小结一下。",
+             "reward": {"title": "夹逼定理", "description": "两边夹住、极限相同，中间函数极限就被确定。"}}],
+        "exercises": []}, ensure_ascii=True))
+    (d / "concept_map.json").write_text(json.dumps({
+        "course_id": "course_cs", "nodes": [
+            {"id": "squeeze", "label": "夹逼定理", "summary": "两边夹住中间，极限相同则中间确定。", "weight": 3},
+            {"id": "limit", "label": "极限", "summary": "函数趋近的值。", "weight": 2},
+            {"id": "ineq", "label": "不等式", "summary": "两边夹住的条件。", "weight": 1},
+            {"id": "ghost", "label": "幽灵概念", "summary": "课上从没出现的概念。", "weight": 1}],
+        "edges": [{"source": "limit", "target": "squeeze", "type": "prerequisite", "relation": "先懂极限"},
+                  {"source": "ineq", "target": "squeeze", "type": "contrast", "relation": "条件不是结论"}]}), )
+    return d
+
+
+def test_cheatsheet_compiles_with_coverage_and_clean_math(tmp_path):
+    from src.content.cheatsheet import build_cheatsheet, write_cheatsheet
+    d = _cheatsheet_fixture(tmp_path)
+    cs = build_cheatsheet(str(d))
+    assert "夹逼定理" in cs.markdown and "速查表" in cs.markdown
+    assert "$g(x) \\le f(x) \\le h(x)$" in cs.markdown          # formulas survive verbatim
+    assert not math_issues(cs.markdown)                          # KaTeX-safe
+    assert "夹逼不是取平均" in cs.markdown                        # misconception corrective included
+    assert cs.coverage == 0.75 and cs.missing == ["幽灵概念"]   # ghost node reported, not faked
+    # the real bundled course keeps lesson-derived coverage ≥ 80%
+    from src.content.cheatsheet import build_cheatsheet as _bc
+    real = _bc(os.path.join(os.path.dirname(__file__), "..", "examples", "courses", "course_2ce925fec9"))
+    assert real.coverage >= 0.8
+    html = cs.html
+    assert "@page" in html and "size: A4" in html and "<table>" in html
+    assert "<b>夹逼定理</b>" in html or "<i>" in html             # mini renderer bolds **…**
+    cs2 = write_cheatsheet(str(d))
+    assert (d / "cheatsheet.md").exists() and (d / "cheatsheet.html").stat().st_size > 0
+    assert cs2.coverage == cs.coverage                            # deterministic compilation

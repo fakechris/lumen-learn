@@ -596,6 +596,7 @@ def main(argv=None) -> int:
     p.add_argument("--from-plan", help="Build from an (edited) plan.json")
     p.add_argument("--exercises-for", help="Generate exercises for an existing course id (in --output or examples/courses)")
     p.add_argument("--variants-for", help="Precompute compressed step variants (for fast learners) for an existing course id")
+    p.add_argument("--cheatsheet-for", help="Compile the printable cheatsheet for an existing course id")
     p.add_argument("--only", help="Comma-separated session ids to (re)build; others are kept from the existing package")
     p.add_argument("--chapters", help="Comma-separated chapter ids to build (e.g. ch_1,ch_2); use with --from-plan")
     p.add_argument("--all-chapters", action="store_true", help="Build every chapter in order, one run per chapter, resumable")
@@ -608,8 +609,8 @@ def main(argv=None) -> int:
     p.add_argument("--tts", default=None, help="say|edge|silent|auto (default: TTS_ENGINE env or auto)")
     args = p.parse_args(argv)
 
-    if not (args.input or args.script or (args.doc and args.from_plan) or args.exercises_for or args.variants_for):
-        p.error("need --input, --script, --doc with --from-plan, --exercises-for, or --variants-for")
+    if not (args.input or args.script or (args.doc and args.from_plan) or args.exercises_for or args.variants_for or args.cheatsheet_for):
+        p.error("need --input, --script, --doc with --from-plan, --exercises-for, --variants-for, or --cheatsheet-for")
     llm = make_client() if args.mode != "heuristic" else None
     if args.mode == "auto" and llm is None:
         print("ℹ️  no LLM key found; running heuristic walk-through mode", flush=True)
@@ -635,6 +636,17 @@ def main(argv=None) -> int:
     get_db(pipeline.output_root).abort_stale_runs()  # a fresh CLI run means earlier CLI runs are dead
 
     async def run():
+        if args.cheatsheet_for:
+            from src.content.cheatsheet import write_cheatsheet
+            for root in ("examples/courses", args.output):
+                d = os.path.join(root, args.cheatsheet_for)
+                if os.path.isdir(d):
+                    cs = write_cheatsheet(d)
+                    print(f"cheatsheet: {d}/cheatsheet.md (+.html) | concepts covered {cs.coverage:.0%}"
+                          + (f" | missing: {', '.join(cs.missing)}" if cs.missing else ""))
+                    return 0
+            print(f"course {args.cheatsheet_for} not found in {args.output} or examples/courses")
+            return 1
         if args.variants_for:
             only = set(args.only.split(",")) if args.only else None
             return await pipeline.add_variants(args.variants_for, roots=[args.output, "examples/courses"], only=only,
