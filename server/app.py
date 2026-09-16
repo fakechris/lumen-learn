@@ -364,6 +364,139 @@ def _record_evidence(course_id: str, session_id: str, kind: str, correct, qualit
         log.warning("mastery evidence failed: %s", exc)
 
 
+# ---- review → targeted regeneration (INV-257) ----
+
+class FeedbackRequest(BaseModel):
+    session_id: str
+    step_uid: str
+    comment: str
+    base_revision: Optional[str] = None
+    reviewer: str = ""
+
+
+@app.post("/api/v1/courses/{course_id}/feedback")
+async def add_course_feedback(course_id: str, req: FeedbackRequest):
+    """Reviewer feedback bound to (session, step, base revision); deduplicated."""
+    course_dir = store._course_dir(course_id)
+    if not course_dir:
+        raise HTTPException(404, "course not found")
+    from src.content.revisions import current
+    from src.content.review import add_feedback
+    cur = current(course_dir)
+    fb, dup = add_feedback(course_dir, course_id, req.session_id, req.step_uid, req.comment,
+                           base_revision=req.base_revision or (cur.revision_id if cur else None),
+                           reviewer=req.reviewer)
+    return {"feedback_id": fb.feedback_id, "duplicate": dup, "status": fb.status,
+            "base_revision": fb.base_revision}
+
+
+@app.get("/api/v1/courses/{course_id}/feedback")
+async def list_course_feedback(course_id: str, session_id: Optional[str] = None):
+    course_dir = store._course_dir(course_id)
+    if not course_dir:
+        raise HTTPException(404, "course not found")
+    from src.content.review import list_feedback
+    return {"feedback": [fb.model_dump(mode="json") for fb in list_feedback(course_dir, session_id)]}
+
+
+class RegenerateRequest(BaseModel):
+    session_id: str
+    content: str = ""                    # the lecture source (falls back to the stored doc when empty)
+    doc_key: str = ""
+    mode: str = "heuristic"
+    base_revision: Optional[str] = None
+    feedback_ids: List[str] = Field(default_factory=list)
+
+
+@app.post("/api/v1/courses/{course_id}/regenerate")
+async def regenerate_session(course_id: str, req: RegenerateRequest):
+    """Rebuild ONE session (pipeline ``only``), record a draft revision with the
+    replaced files snapshotted, and return the diff. current/published packages
+    are untouched until /revisions/{rid}/publish; a failed build rolls back."""
+    course_dir = store._course_dir(course_id)
+    if not course_dir:
+        raise HTTPException(404, "course not found")
+    from src.content import revisions as rev_mod
+    from src.content.review import (diff_before_after, mark_applied, restore_session,
+                                    save_snapshot, snapshot_session)
+    cur = rev_mod.current(course_dir)
+    base = req.base_revision or (cur.revision_id if cur else None)
+    snap = snapshot_session(course_dir, req.session_id)
+
+    try:
+        pipeline = ContentPipeline(OUTPUT_ROOT)
+        if req.doc_key:
+            doc = pipeline.docs.load(req.doc_key)
+            if doc is None:
+                raise HTTPException(404, f"no ingested document under {pipeline.docs.dir_for(req.doc_key)}")
+        elif req.content.strip():
+            _, doc = pipeline.ingest_text(req.content, title=course_id)
+        else:
+            raise HTTPException(400, "regeneration needs lecture content or a doc_key")
+        plan = CourseStructure.model_validate_json(
+            open(os.path.join(course_dir, "course_structure.json"), encoding="utf-8").read())
+        await pipeline.build(doc, plan, only={req.session_id}, qa=(req.mode == "llm"))
+        draft = rev_mod.draft(course_dir, base=base, only=[req.session_id])
+    except HTTPException:
+        restore_session(course_dir, req.session_id, snap)
+        raise
+    except Exception as exc:  # noqa: BLE001 — failed build: restore files, keep current
+        restore_session(course_dir, req.session_id, snap)
+        raise HTTPException(500, f"regeneration failed; the published package is untouched: {str(exc)[:160]}")
+
+    save_snapshot(course_dir, draft.revision_id, req.session_id, snap)
+    diff = diff_before_after(course_dir, req.session_id, snap)
+    if req.feedback_ids:
+        mark_applied(course_dir, req.feedback_ids)
+    return {"revision_id": draft.revision_id, "base_revision": draft.base_revision,
+            "state": draft.state, "diff": diff,
+            "publish": f"/api/v1/courses/{course_id}/revisions/{draft.revision_id}/publish"}
+
+
+@app.get("/api/v1/courses/{course_id}/revisions/{revision_id}/diff")
+async def revision_diff(course_id: str, revision_id: str, session_id: str):
+    course_dir = store._course_dir(course_id)
+    if not course_dir:
+        raise HTTPException(404, "course not found")
+    from src.content.review import diff_before_after, load_snapshot
+    before = load_snapshot(course_dir, revision_id, session_id)
+    if not before:
+        raise HTTPException(404, "no snapshot for this revision/session")
+    return diff_before_after(course_dir, session_id, before)
+
+
+@app.post("/api/v1/courses/{course_id}/revisions/{revision_id}/review")
+async def mark_revision_reviewable(course_id: str, revision_id: str):
+    """The reviewer's gate between build and publish (draft → reviewable)."""
+    course_dir = store._course_dir(course_id)
+    if not course_dir:
+        raise HTTPException(404, "course not found")
+    from src.content.revisions import mark_reviewable
+    try:
+        rev = mark_reviewable(course_dir, revision_id)
+    except ValueError as exc:
+        raise HTTPException(400, str(exc))
+    return {"revision_id": rev.revision_id, "state": rev.state}
+
+
+@app.post("/api/v1/courses/{course_id}/revisions/{revision_id}/publish")
+async def publish_revision(course_id: str, revision_id: str, request: Request):
+    """Explicit CAS publish: expected_base must be the current revision the
+    reviewer saw. A racing reviewer gets 409, never a silent overwrite."""
+    course_dir = store._course_dir(course_id)
+    if not course_dir:
+        raise HTTPException(404, "course not found")
+    from src.content.revisions import RevisionConflict, publish
+    expected_base = (request.query_params.get("expected_base") or "").strip() or None
+    try:
+        rev = publish(course_dir, revision_id, expected_base=expected_base)
+    except RevisionConflict as exc:
+        raise HTTPException(409, str(exc))
+    except ValueError as exc:
+        raise HTTPException(400, str(exc))
+    return {"revision_id": rev.revision_id, "state": rev.state, "published": rev.published}
+
+
 @app.get("/api/v1/courses/{course_id}/concept_map")
 async def concept_map(course_id: str, rebuild: bool = False):
     """Course concept map. Built once by the LLM and cached in the package; without an LLM the
