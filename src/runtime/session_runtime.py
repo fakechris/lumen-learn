@@ -358,7 +358,10 @@ class SessionRuntime:
                 correct = ask.correct_index is not None and answer.answer_index == ask.correct_index
                 self._gates[1] += 1
                 self._gates[0] += int(correct)
-                self.record_evidence("ask_choice", correct, None, chosen)
+                # identity = the ORIGINAL gate: remediation re-asks of the same question
+                # are retries and can never raise the score (INV-507 重试不涨分)
+                rid = f"gate:{self.session.session_id}:{ask.step_id}:{self.learner_id}"
+                self.record_evidence("ask_choice", correct, None, chosen, response_id=rid)
                 if not correct:
                     wrong.append(chosen)
             else:
@@ -424,13 +427,15 @@ class SessionRuntime:
         await self._prereq_review(self._prereqs[0], title_prefix="回到先修")
         return self._live_step != before
 
-    def record_evidence(self, kind: str, correct, quality, detail: str = "") -> None:
-        """Learner-model evidence; never breaks a lesson."""
+    def record_evidence(self, kind: str, correct, quality, detail: str = "",
+                        response_id: Optional[str] = None, exercise_id: Optional[str] = None) -> None:
+        """Learner-model evidence; never breaks a lesson. response_id makes the
+        evidence idempotent: retries of the same gate never raise the score (INV-507)."""
         try:
             from src.content.mastery import record
             from src.obs.db import get_db
             record(get_db(), self.session.course_id, self.session.session_id, kind, correct, quality, detail,
-                      learner_id=self.learner_id)
+                   learner_id=self.learner_id, response_id=response_id, exercise_id=exercise_id)
         except Exception as exc:  # noqa: BLE001
             log.warning("mastery evidence failed: %s", exc)
 

@@ -297,6 +297,7 @@ class GradeRequest(BaseModel):
     answer_text: Optional[str] = None
     answer_index: Optional[int] = None
     attempt_id: Optional[str] = None  # INV-506: must belong to the calling learner
+    assisted: bool = False            # INV-507: a hint was shown before this answer
     snapshot_events: List[SnapshotEvent] = Field(default_factory=list)  # INV-509 parameter_hunt evidence
 
 
@@ -336,22 +337,29 @@ async def grade(req: GradeRequest, request: Request, response: Response):
                 "hint": "" if correct or not ex.widget_hint else ex.widget_hint}
     if ex.kind == "fill_blank":
         correct, feedback = await grade_fill_blank(ex, req.answer_text or "", llm)
-        _record_evidence(req.course_id, req.session_id, ex.kind, correct, None, req.answer_text or "", learner, attempt_id)
+        rid = f"{learner}|{attempt_id or 'na'}|{ex.exercise_id}"
+        _record_evidence(req.course_id, req.session_id, ex.kind, correct, None, req.answer_text or "",
+                         learner, attempt_id, response_id=rid, assisted=req.assisted, exercise_id=ex.exercise_id)
         return {"correct": correct, "feedback": feedback, "answer": ex.answer, "explanation": ex.explanation,
                 "graded_by": "llm" if (llm and not correct) or (llm and feedback != ex.explanation) else "match"}
     correct = req.answer_index is not None and req.answer_index == ex.correct_index
-    _record_evidence(req.course_id, req.session_id, ex.kind, correct, None, str(req.answer_index), learner, attempt_id)
+    rid = f"{learner}|{attempt_id or 'na'}|{ex.exercise_id}"
+    _record_evidence(req.course_id, req.session_id, ex.kind, correct, None, str(req.answer_index),
+                     learner, attempt_id, response_id=rid, assisted=req.assisted, exercise_id=ex.exercise_id)
     return {"correct": correct, "feedback": ex.explanation, "answer": ex.options[ex.correct_index] if ex.correct_index is not None else None,
             "explanation": ex.explanation, "graded_by": "match"}
 
 
 def _record_evidence(course_id: str, session_id: str, kind: str, correct, quality, detail: str = "",
-                     learner_id: str = "", attempt_id: Optional[str] = None) -> None:
+                     learner_id: str = "", attempt_id: Optional[str] = None,
+                     response_id: Optional[str] = None, assisted: bool = False,
+                     exercise_id: Optional[str] = None) -> None:
     """Learner-model evidence (four-axis mastery); never fails a request."""
     try:
         from src.content.mastery import record
         record(get_db(OUTPUT_ROOT), course_id, session_id, kind, correct, quality, detail,
-               learner_id=learner_id, attempt_id=attempt_id)
+               learner_id=learner_id, attempt_id=attempt_id, response_id=response_id,
+               assisted=assisted, exercise_id=exercise_id)
     except Exception as exc:  # noqa: BLE001
         log.warning("mastery evidence failed: %s", exc)
 
@@ -474,10 +482,15 @@ async def set_profile(course_id: str, req: ProfileRequest, request: Request, res
 async def course_mastery(course_id: str, request: Request, response: Response):
     """Four-axis mastery per session + a course-level average, for the calling learner.
     Sessions without evidence are absent."""
-    from src.content.mastery import AXES, composite, row_to_view
-    rows = [row_to_view(r) for r in get_db(OUTPUT_ROOT).learners(course_id, _learner_id(request, response))]
+    from src.content.mastery import AXES, composite, estimate, row_to_view
+    learner = _learner_id(request, response)
+    db = get_db(OUTPUT_ROOT)
+    rows = [row_to_view(r) for r in db.learners(course_id, learner)]
     course = {a: round(sum(r["scores"][a] for r in rows) / len(rows), 1) for a in AXES} if rows else None
-    return {"mastery": rows, "course": course, "composite": composite(course) if course else None}
+    all_events = db.learner_events(course_id, learner_id=learner)
+    return {"mastery": rows, "course": course, "composite": composite(course) if course else None,
+            "estimate": estimate(
+                db.learner(course_id, rows[0]["session_id"], learner) if rows else None, all_events)}
 
 
 class TtsRequest(BaseModel):

@@ -132,7 +132,9 @@ def test_mastery_endpoint_reports_evidence(client):
     import os as _os
     from src.content.mastery import record
     from src.obs.db import get_db
-    assert client.get("/api/v1/courses/nothing/mastery").json() == {"mastery": [], "course": None, "composite": None}
+    empty = client.get("/api/v1/courses/nothing/mastery").json()
+    assert empty["mastery"] == [] and empty["course"] is None and empty["composite"] is None
+    assert empty["estimate"]["status"] == "insufficient"      # INV-507: 未知不等于通过
     # evidence recorded under the calling learner's cookie identity (INV-506)
     client.get("/api/v1/courses/nothing/mastery")   # issues the learner cookie into the jar
     learner = client.cookies.get("lumen_learner")

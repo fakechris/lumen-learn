@@ -50,12 +50,16 @@ CREATE TABLE IF NOT EXISTS learning_attempts (
 CREATE INDEX IF NOT EXISTS attempts_learner ON learning_attempts(learner_id, course_id, session_id);
 CREATE TABLE IF NOT EXISTS learner_v2 (
   learner_id TEXT, course_id TEXT, session_id TEXT, memory REAL, comprehension REAL, structure REAL, application REAL,
-  events INTEGER, wrong_streak INTEGER, note TEXT, updated REAL,
+  events INTEGER, wrong_streak INTEGER, note TEXT, updated REAL, folded_through INTEGER DEFAULT 0,
+  needs_review INTEGER DEFAULT 0,
   PRIMARY KEY (learner_id, course_id, session_id));
 CREATE TABLE IF NOT EXISTS learner_events_v2 (
   id INTEGER PRIMARY KEY AUTOINCREMENT, learner_id TEXT, course_id TEXT, session_id TEXT, ts REAL,
-  kind TEXT, correct INTEGER, quality REAL, detail TEXT, attempt_id TEXT);
+  kind TEXT, correct INTEGER, quality REAL, detail TEXT, attempt_id TEXT,
+  response_id TEXT, assisted INTEGER DEFAULT 0, exercise_id TEXT, review TEXT);
 CREATE INDEX IF NOT EXISTS learner_events_v2_session ON learner_events_v2(learner_id, course_id, session_id, id);
+CREATE UNIQUE INDEX IF NOT EXISTS ev_response_unique ON learner_events_v2(learner_id, response_id)
+  WHERE response_id IS NOT NULL;
 CREATE TABLE IF NOT EXISTS learner_profile_v2 (
   learner_id TEXT, course_id TEXT, level TEXT, pace REAL, skips INTEGER, gates_ok INTEGER, gates_total INTEGER, updated REAL,
   PRIMARY KEY (learner_id, course_id));
@@ -74,10 +78,22 @@ class DB:
         self._conn.execute("PRAGMA journal_mode=WAL")
         self._legacy_to_local()
         self._conn.executescript(SCHEMA)
-        try:  # learning_attempts gained revision_id after first shipping (INV-508)
-            self._conn.execute("ALTER TABLE learning_attempts ADD COLUMN revision_id TEXT")
-        except sqlite3.OperationalError:
-            pass
+        for stmt in (
+            "ALTER TABLE learning_attempts ADD COLUMN revision_id TEXT",      # INV-508
+            "ALTER TABLE learner_events_v2 ADD COLUMN response_id TEXT",      # INV-507
+            "ALTER TABLE learner_events_v2 ADD COLUMN assisted INTEGER DEFAULT 0",
+            "ALTER TABLE learner_events_v2 ADD COLUMN exercise_id TEXT",
+            "ALTER TABLE learner_events_v2 ADD COLUMN review TEXT",
+            "ALTER TABLE learner_v2 ADD COLUMN folded_through INTEGER DEFAULT 0",
+            "ALTER TABLE learner_v2 ADD COLUMN needs_review INTEGER DEFAULT 0",
+        ):
+            try:
+                self._conn.execute(stmt)
+            except sqlite3.OperationalError:
+                pass
+        self._conn.executescript(
+            "CREATE UNIQUE INDEX IF NOT EXISTS ev_response_unique ON learner_events_v2(learner_id, response_id) "
+            "WHERE response_id IS NOT NULL;")
 
     def _exec(self, sql: str, params: tuple = ()) -> None:
         with self._lock:
@@ -229,15 +245,21 @@ class DB:
 
     def add_learner_event(self, course_id: str, session_id: str, kind: str, correct: Optional[bool],
                           quality: Optional[float] = None, detail: str = "", learner_id: str = "",
-                          attempt_id: Optional[str] = None) -> int:
+                          attempt_id: Optional[str] = None, response_id: Optional[str] = None,
+                          assisted: bool = False, exercise_id: Optional[str] = None,
+                          review: Optional[str] = None) -> tuple:
+        """Insert one evidence event. A repeated response_id is a no-op (INV-507:
+        retries/re-submissions count exactly once). Returns (event_id, inserted)."""
+        sql = ("INSERT INTO learner_events_v2 (learner_id, course_id, session_id, ts, kind, correct, quality, detail, "
+               "attempt_id, response_id, assisted, exercise_id, review) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)")
+        if response_id:
+            sql += " ON CONFLICT(learner_id, response_id) WHERE response_id IS NOT NULL DO NOTHING"
         with self._lock:
-            cur = self._conn.execute(
-                "INSERT INTO learner_events_v2 (learner_id, course_id, session_id, ts, kind, correct, quality, detail, attempt_id) "
-                "VALUES (?,?,?,?,?,?,?,?,?)",
-                (learner_id, course_id, session_id, time.time(), kind, None if correct is None else int(correct), quality,
-                 (detail or "")[:300], attempt_id))
+            cur = self._conn.execute(sql, (
+                learner_id, course_id, session_id, time.time(), kind, None if correct is None else int(correct),
+                quality, (detail or "")[:300], attempt_id, response_id, int(assisted), exercise_id, review))
             self._conn.commit()
-            return int(cur.lastrowid)
+            return int(cur.lastrowid), bool(cur.rowcount)
 
     def learner_events(self, course_id: str, session_id: Optional[str] = None, limit: int = 500,
                        learner_id: str = "") -> List[Dict[str, Any]]:
@@ -247,12 +269,18 @@ class DB:
         return self._rows("SELECT * FROM learner_events_v2 WHERE learner_id=? AND course_id=? ORDER BY id LIMIT ?",
                           (learner_id, course_id, limit))
 
+    def events_after(self, course_id: str, session_id: str, learner_id: str, after_id: int = 0) -> List[Dict[str, Any]]:
+        return self._rows("SELECT * FROM learner_events_v2 WHERE learner_id=? AND course_id=? AND session_id=? "
+                          "AND id>? ORDER BY id", (learner_id, course_id, session_id, after_id))
+
     def upsert_learner(self, course_id: str, session_id: str, scores: Dict[str, float], events: int,
                        wrong_streak: int, note: str, learner_id: str = "") -> None:
         self._exec("INSERT OR REPLACE INTO learner_v2 (learner_id, course_id, session_id, memory, comprehension, "
-                   "structure, application, events, wrong_streak, note, updated) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+                   "structure, application, events, wrong_streak, note, updated, folded_through, needs_review) "
+                   "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
                    (learner_id, course_id, session_id, scores.get("memory"), scores.get("comprehension"),
-                    scores.get("structure"), scores.get("application"), events, wrong_streak, note[:300], time.time()))
+                    scores.get("structure"), scores.get("application"), events, wrong_streak, note[:300], time.time(),
+                    scores.get("folded_through", 0), int(scores.get("needs_review", 0))))
 
     def learner(self, course_id: str, session_id: str, learner_id: str = "") -> Optional[Dict[str, Any]]:
         rows = self._rows("SELECT * FROM learner_v2 WHERE learner_id=? AND course_id=? AND session_id=?",
