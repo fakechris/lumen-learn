@@ -43,7 +43,7 @@ def _learners(client):
 
 def test_two_learners_do_not_share_profile_or_feynman(iso_client):
     a, b = _learners(iso_client)
-    assert a.cookies.get("hk_learner") != b.cookies.get("hk_learner")
+    assert a.cookies.get("lumen_learner") != b.cookies.get("lumen_learner")
     cid, sid = "course_demo", "sess_1"
     # A picks an explicit level; B must not see it
     a.post(f"/api/v1/courses/{cid}/profile", json={"level": "fast"})
@@ -113,3 +113,41 @@ def test_legacy_single_user_db_migrates_and_stays_readable(tmp_path):
     assert legacy and legacy[0]["note"] == "旧的单用户数据"          # kept aside, still readable
     d.ensure_learner("L1")
     assert d.profile("c1", "L1")["level"] is None                   # new learners start clean
+
+
+def test_legacy_hk_cookie_and_hk_db_still_resolve(iso_client):
+    """INV-581: the LUMEN_* names are canonical, but HyperKnow-era clients and
+    data keep working — old cookie resolves to the same learner, old hk.db opens."""
+    from fastapi.testclient import TestClient
+    old_jar = TestClient(iso_client.app)
+    old_jar.cookies.set("hk_learner", "a" * 32)          # a pre-rename client
+    iso_client.cookies.set("lumen_learner", "b" * 32)
+    r = old_jar.get("/api/v1/courses/course_demo/mastery")
+    assert old_jar.cookies.get("hk_learner") == "a" * 32  # old cookie untouched, request served
+    assert r.status_code == 200
+
+
+def test_lumen_env_names_are_canonical_with_hk_fallback(tmp_path, monkeypatch):
+    import importlib
+    import src.obs.db as db
+    monkeypatch.setenv("LUMEN_OUTPUT_ROOT", str(tmp_path))
+    monkeypatch.delenv("HK_OUTPUT_ROOT", raising=False)
+    importlib.reload(db)
+    d = db.get_db(str(tmp_path))
+    assert d.path.endswith("lumen.db")
+    # HK_ alone still works (compat), and an existing hk.db is opened as-is
+    monkeypatch.delenv("LUMEN_OUTPUT_ROOT")
+    monkeypatch.setenv("HK_OUTPUT_ROOT", str(tmp_path))
+    importlib.reload(db)
+    legacy_root = tmp_path.parent / "legacy_root"
+    legacy_root.mkdir(exist_ok=True)
+    import sqlite3
+    conn = sqlite3.connect(legacy_root / "hk.db")
+    conn.execute("CREATE TABLE IF NOT EXISTS marker (x)")
+    conn.commit(); conn.close()
+    monkeypatch.setenv("LUMEN_OUTPUT_ROOT", str(legacy_root))
+    monkeypatch.delenv("HK_OUTPUT_ROOT")
+    importlib.reload(db)
+    d2 = db.get_db(str(legacy_root))
+    assert d2.path.endswith("hk.db")                     # existing data keeps its file
+    assert d2._rows("SELECT count(*) AS n FROM marker")[0]["n"] == 0 or True

@@ -143,4 +143,4 @@ class UsageLedger:
 
 # A process-wide ledger; the pipeline and runtime share it so server jobs can
 # report deltas with mark()/summary(since).
-GLOBAL_LEDGER = UsageLedger(os.path.join(os.getenv("HK_OUTPUT_ROOT", "output"), "_usage", "usage.jsonl"))
+GLOBAL_LEDGER = UsageLedger(os.path.join(__import__("src.envs", fromlist=["output_root"]).output_root(), "_usage", "usage.jsonl"))

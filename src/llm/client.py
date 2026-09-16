@@ -128,7 +128,7 @@ def _dump_bad_output(text: str, reason: str) -> None:
     """Keep unparseable model replies for diagnosis (output/_debug/)."""
     try:
         import time
-        d = os.path.join(os.getenv("HK_OUTPUT_ROOT", "output"), "_debug")
+        d = os.path.join(__import__("src.envs", fromlist=["output_root"]).output_root(), "_debug")
         os.makedirs(d, exist_ok=True)
         with open(os.path.join(d, f"badjson_{int(time.time() * 1000)}.txt"), "w", encoding="utf-8") as f:
             f.write(f"# {reason}\n{text}")

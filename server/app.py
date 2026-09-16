@@ -41,32 +41,32 @@ logging.basicConfig(level=os.getenv("LOG_LEVEL", "INFO"))
 log = logging.getLogger("server")
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-OUTPUT_ROOT = os.path.abspath(os.getenv("HK_OUTPUT_ROOT", os.path.join(ROOT, "output")))
+from src.envs import courses_roots as _courses_roots_env, output_root as _env_output_root
+OUTPUT_ROOT = os.path.abspath(_env_output_root(os.path.join(ROOT, "output")))
 EXAMPLES_ROOT = os.path.join(ROOT, "examples", "courses")
 LIVE_AUDIO_DIR = os.path.join(OUTPUT_ROOT, "live")
 CLIENT_DIR = os.path.join(ROOT, "client")
 os.makedirs(LIVE_AUDIO_DIR, exist_ok=True)
 
-app = FastAPI(title="Socratic Whiteboard", version="2.0.0")
+app = FastAPI(title="Lumen Learn", version="2.0.0")
 
 
 def _learner_id(request: "Request", response: "Response") -> str:
     """Server-resolved anonymous learner identity (INV-506): an httpOnly cookie
     issued on first contact. Every learner-scoped read/write keys off this."""
     from fastapi import Request, Response  # local import keeps the module import surface unchanged
-    lid = request.cookies.get("hk_learner") or ""
+    lid = request.cookies.get("lumen_learner") or request.cookies.get("hk_learner") or ""
     if not lid or len(lid) != 32:
         lid = uuid.uuid4().hex
-        response.set_cookie("hk_learner", lid, httponly=True, samesite="lax", max_age=31536000)
+        response.set_cookie("lumen_learner", lid, httponly=True, samesite="lax", max_age=31536000)
     get_db(OUTPUT_ROOT).ensure_learner(lid)
     return lid
 
 
 def _course_roots() -> List[str]:
-    """Course packages live wherever HK_COURSES_ROOT points (e.g. a checkout of the
+    """Course packages live wherever LUMEN_COURSES_ROOT points (e.g. a checkout of the
     private lumen-learn-class repo), then the built-in roots."""
-    extra = [r for r in os.getenv("HK_COURSES_ROOT", "").replace(";", ":").split(":") if r]
-    return extra + [EXAMPLES_ROOT, OUTPUT_ROOT]
+    return _courses_roots_env() + [EXAMPLES_ROOT, OUTPUT_ROOT]
 
 
 store = CourseStore(_course_roots())
@@ -774,7 +774,7 @@ class WsTransport:
 async def whiteboard_ws(ws: WebSocket):
     await ws.accept()
     transport = WsTransport(ws)
-    learner = ws.cookies.get("hk_learner") or ""
+    learner = ws.cookies.get("lumen_learner") or ws.cookies.get("hk_learner") or ""
     if len(learner) != 32:
         learner = uuid.uuid4().hex          # WS-only clients get a session identity too
     get_db(OUTPUT_ROOT).ensure_learner(learner)
