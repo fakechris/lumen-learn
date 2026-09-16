@@ -679,3 +679,39 @@ def test_suspicious_gate_detection_exempts_hook_prediction_gates():
         for g in r["gates"]:
             g.pop("beat")
     assert len(_find_suspicious_gates(rows)) == 3
+
+
+# ---- INV-573: entry diagnosis placement uses cold-quiz accuracy, not composite ----
+
+class _FakeDB:
+    def learners(self, course_id):
+        return []
+
+
+def test_decide_level_diagnosis_accuracy_path():
+    from src.content.adaptive import decide_level
+    db = _FakeDB()
+    # <50% cold accuracy → novice
+    e = decide_level(db, "c", "s", ["p1"], diagnosis={"accuracy": 0.33, "n": 3})
+    assert e.level == "novice" and "33%" in e.reason
+    # 2/3 → standard, no confirmation detour
+    e = decide_level(db, "c", "s", ["p1"], diagnosis={"accuracy": 2 / 3, "n": 3})
+    assert e.level == "standard" and not e.needs_diagnosis
+    # perfect but <3 items → standard (not enough signal for fast)
+    e = decide_level(db, "c", "s", ["p1"], diagnosis={"accuracy": 1.0, "n": 2})
+    assert e.level == "standard" and not e.needs_diagnosis
+    # perfect ≥3 without confirm → asks the confirmation question
+    e = decide_level(db, "c", "s", ["p1"], diagnosis={"accuracy": 1.0, "n": 3})
+    assert e.level == "standard" and e.needs_diagnosis
+    # …confirmed → fast
+    e = decide_level(db, "c", "s", ["p1"], diagnosis={"accuracy": 1.0, "n": 3, "confirm_correct": True})
+    assert e.level == "fast"
+    # …failed confirmation → standard, no re-diagnosis
+    e = decide_level(db, "c", "s", ["p1"], diagnosis={"accuracy": 1.0, "n": 3, "confirm_correct": False})
+    assert e.level == "standard" and not e.needs_diagnosis
+    # explicit override still wins over everything
+    e = decide_level(db, "c", "s", ["p1"], override="novice", diagnosis={"accuracy": 1.0, "n": 3, "confirm_correct": True})
+    assert e.level == "novice"
+    # no diagnosis → legacy thresholds untouched (returning learner path)
+    e = decide_level(db, "c", "s", [], diagnosis=None)
+    assert e.level == "standard"
