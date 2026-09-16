@@ -46,7 +46,7 @@ CREATE TABLE IF NOT EXISTS learners (
   learner_id TEXT PRIMARY KEY, label TEXT, created REAL);
 CREATE TABLE IF NOT EXISTS learning_attempts (
   attempt_id TEXT PRIMARY KEY, learner_id TEXT, course_id TEXT, session_id TEXT,
-  started REAL, state TEXT, summary TEXT, score REAL);
+  started REAL, state TEXT, summary TEXT, score REAL, revision_id TEXT);
 CREATE INDEX IF NOT EXISTS attempts_learner ON learning_attempts(learner_id, course_id, session_id);
 CREATE TABLE IF NOT EXISTS learner_v2 (
   learner_id TEXT, course_id TEXT, session_id TEXT, memory REAL, comprehension REAL, structure REAL, application REAL,
@@ -74,6 +74,10 @@ class DB:
         self._conn.execute("PRAGMA journal_mode=WAL")
         self._legacy_to_local()
         self._conn.executescript(SCHEMA)
+        try:  # learning_attempts gained revision_id after first shipping (INV-508)
+            self._conn.execute("ALTER TABLE learning_attempts ADD COLUMN revision_id TEXT")
+        except sqlite3.OperationalError:
+            pass
 
     def _exec(self, sql: str, params: tuple = ()) -> None:
         with self._lock:
@@ -197,11 +201,12 @@ class DB:
     def ensure_learner(self, learner_id: str, label: str = "") -> None:
         self._exec("INSERT OR IGNORE INTO learners VALUES (?,?,?)", (learner_id, label[:120], time.time()))
 
-    def start_attempt(self, learner_id: str, course_id: str, session_id: str) -> str:
+    def start_attempt(self, learner_id: str, course_id: str, session_id: str,
+                      revision_id: Optional[str] = None) -> str:
         import uuid as _uuid
         attempt_id = _uuid.uuid4().hex[:16]
-        self._exec("INSERT INTO learning_attempts VALUES (?,?,?,?,?,?,?,?)",
-                   (attempt_id, learner_id, course_id, session_id, time.time(), "open", None, None))
+        self._exec("INSERT INTO learning_attempts VALUES (?,?,?,?,?,?,?,?,?)",
+                   (attempt_id, learner_id, course_id, session_id, time.time(), "open", None, None, revision_id))
         return attempt_id
 
     def attempt(self, attempt_id: str) -> Optional[Dict[str, Any]]:
