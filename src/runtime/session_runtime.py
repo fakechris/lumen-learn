@@ -343,31 +343,44 @@ class SessionRuntime:
         return again
 
     async def _handle_ask(self, ask: Ask, owner_step: Optional[int] = None) -> None:
-        """Gate + remediation loop (SYSTEM_DESIGN §10.4): wrong once → try again; wrong twice → a
-        deeper re-telling of the step; still wrong → replay the prerequisite; then explain and move on."""
+        """Gate + misconception-directed remediation (INV-510; SYSTEM_DESIGN §10.4):
+        the picked option's misconception tag chooses the method (targeted re-tell,
+        parallel re-check), clarify runs first on low confidence, two layers or the
+        time budget end in an explicit park — 放行不计为学会."""
+        import time as _time
+
+        from src.content.teaching_policy import TIME_BUDGET_S, decide_misconception_action
         wrong: List[str] = []
         current = ask
-        for attempt in range(4):
+        layers = 0
+        started = _time.monotonic()
+        evidence_ids: List[str] = []
+        decision_reason = ""
+        for attempt in range(6):
             answer = await self._wait_answer(current)
             if answer is None:
                 return
-            if ask.mode == "choice" and answer.answer_index is not None:
-                chosen = ask.options[answer.answer_index].text if 0 <= answer.answer_index < len(ask.options) else "?"
+            if current.mode == "choice" and answer.answer_index is not None:
+                chosen = current.options[answer.answer_index].text if 0 <= answer.answer_index < len(current.options) else "?"
                 self.ctx.transcript.append(f"学生：选择了「{chosen}」")
-                feedback = await self.tutor.feedback_for_choice(self.ctx, ask, answer.answer_index)
-                correct = ask.correct_index is not None and answer.answer_index == ask.correct_index
+                feedback = await self.tutor.feedback_for_choice(self.ctx, current, answer.answer_index)
+                correct = current.correct_index is not None and answer.answer_index == current.correct_index
                 self._gates[1] += 1
                 self._gates[0] += int(correct)
-                # identity = the ORIGINAL gate: remediation re-asks of the same question
-                # are retries and can never raise the score (INV-507 重试不涨分)
-                rid = f"gate:{self.session.session_id}:{ask.step_id}:{self.learner_id}"
+                # retries of the ORIGINAL gate share one evidence identity (INV-507 重试不涨分);
+                # a PARALLEL twin is a new question — its evidence stands on its own
+                if current is ask:
+                    rid = f"gate:{self.session.session_id}:{ask.step_id}:{self.learner_id}"
+                else:
+                    rid = f"gate:{self.session.session_id}:{ask.step_id}:twin:{self.learner_id}"
+                evidence_ids.append(rid)
                 self.record_evidence("ask_choice", correct, None, chosen, response_id=rid)
                 if not correct:
                     wrong.append(chosen)
             else:
                 self.ctx.transcript.append(f"学生：{answer.answer_text or ''}")
-                feedback = await self.tutor.feedback_for_open(self.ctx, ask, answer.answer_text or "")
-                quality = await self.tutor.judge_open(ask, answer.answer_text or "")
+                feedback = await self.tutor.feedback_for_open(self.ctx, current, answer.answer_text or "")
+                quality = await self.tutor.judge_open(current, answer.answer_text or "")
                 self.record_evidence("ask_open", None, quality, (answer.answer_text or "")[:80])
                 correct = quality is None or quality >= 0.4
                 if not correct:
@@ -375,26 +388,52 @@ class SessionRuntime:
             await self._narrate_live(feedback)
             if correct or not self.remediation:
                 return
-            # remediation ladder
-            if attempt == 0:
+            budget_left = TIME_BUDGET_S - (_time.monotonic() - started)
+            td = decide_misconception_action(
+                [o.model_dump() for o in ask.options] if ask.mode == "choice" else [],
+                answer.answer_index if ask.mode == "choice" else None,
+                wrong_count=len(wrong), layers_used=layers, budget_left_s=budget_left,
+                evidence_ids=evidence_ids, confused=bool(getattr(answer, "confused", False)))
+            decision_reason = td.reason
+            await self.transport.send(Status(state=self.state, detail=f"teaching_policy:{td.action}:{td.layer}"))
+            if td.action == "park":
+                break
+            if td.action == "clarify":
                 current = await self._re_ask(ask)
-            elif attempt == 1:
+                continue
+            if td.action == "retell":
                 played = await self._play_variant("deeper", owner_step, ask, wrong)
                 if not played:
-                    break
-                current = await self._re_ask(ask)
-            elif attempt == 2:
-                played = await self._replay_prereq()
-                if not played:
-                    break
-                current = await self._re_ask(ask)
-        # gave up for now: say the answer, mark the misconception, keep the lesson moving
+                    current = await self._re_ask(ask)
+                else:
+                    current = await self._re_ask(ask)
+                layers += 1
+                if td.parallel_check and self.tutor is not None:
+                    try:
+                        twin = await self.tutor.parallel_gate(self.ctx, ask)
+                    except Exception:  # noqa: BLE001 — a failed twin degrades to a plain re-ask
+                        twin = None
+                    if twin is not None:
+                        self._live_step += 1
+                        current = twin.model_copy(update={"step_id": self._live_step})
+                        await self.transport.send(current)
+                        continue
+                continue
+        # parked: say the answer, mark the misconception as unresolved, keep the
+        # lesson moving — the parked attempt never counts as mastery
         if ask.mode == "choice" and ask.correct_index is not None and ask.options:
             text = f"这个问题我们先放一放，答案是「{ask.options[ask.correct_index].text}」。{ask.explanation or ''}课后用「讲给我听」再把它讲一遍。"
         else:
-            text = f"先记住这个点：{ask.explanation or ask.question}。课后用「讲给我听」再把它讲一遍。"
-        self.record_evidence("remediation_failed", False, None, ask.question[:80])
+            text = "这个问题我们先放一放，课后用「讲给我听」再把它讲一遍。"
         await self._narrate_live(text)
+        self.record_evidence("remediation_failed", False, None,
+                             decision_reason[:120] or "parked", response_id=f"parked:{evidence_ids[-1] if evidence_ids else ask.step_id}")
+        try:
+            from src.obs.db import get_db
+            get_db().add_event(None, "remediation_parked", decision_reason[:200],
+                               session_id=self.session.session_id)
+        except Exception:  # noqa: BLE001
+            pass
 
     # ---- variants (deeper / compressed), cached in the package ----
     async def _play_variant(self, kind: str, owner_step: Optional[int], ask: Optional[Ask], wrong: List[str]) -> bool:
