@@ -81,16 +81,18 @@ def next_step_note(scores: Scores, wrong_streak: int = 0) -> str:
 
 
 def record(db, course_id: str, session_id: str, kind: str, correct: Optional[bool],
-           quality: Optional[float] = None, detail: str = "") -> Scores:
-    """Append the event and refold the learner row. Never raises into a lesson."""
-    row = db.learner(course_id, session_id)
+           quality: Optional[float] = None, detail: str = "", learner_id: str = "",
+           attempt_id: Optional[str] = None) -> Scores:
+    """Append the event and refold the learner row (learner-scoped since INV-506).
+    Never raises into a lesson."""
+    row = db.learner(course_id, session_id, learner_id)
     prev = {a: float(row[a] or 0.0) for a in AXES} if row else blank()
     scores = apply_evidence(prev, kind, correct, quality)
     streak = (int(row["wrong_streak"] or 0) if row else 0)
     streak = streak + 1 if correct is False else (0 if correct is True or (quality or 0) >= 0.6 else streak)
     events = (int(row["events"] or 0) if row else 0) + 1
-    db.add_learner_event(course_id, session_id, kind, correct, quality, detail)
-    db.upsert_learner(course_id, session_id, scores, events, streak, next_step_note(scores, streak))
+    db.add_learner_event(course_id, session_id, kind, correct, quality, detail, learner_id=learner_id, attempt_id=attempt_id)
+    db.upsert_learner(course_id, session_id, scores, events, streak, next_step_note(scores, streak), learner_id)
     return scores
 
 

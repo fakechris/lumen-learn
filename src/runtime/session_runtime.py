@@ -49,7 +49,8 @@ class Transport(Protocol):
 class SessionRuntime:
     def __init__(self, transport: Transport, store: CourseStore, tutor: LiveTutor, tts: TtsEngine,
                  live_audio_dir: str, live_audio_url: str = "/live",
-                 ack_timeout_s: float = 20.0, answer_timeout_s: Optional[float] = None, remediation: bool = True):
+                 ack_timeout_s: float = 20.0, answer_timeout_s: Optional[float] = None, remediation: bool = True,
+                 learner_id: str = ""):
         self.transport = transport
         self.store = store
         self.tutor = tutor
@@ -59,6 +60,7 @@ class SessionRuntime:
         self.ack_timeout_s = ack_timeout_s
         self.answer_timeout_s = answer_timeout_s
         self.remediation = remediation  # False = baseline: one answer per gate, no ladder (used by the eval harness)
+        self.learner_id = learner_id    # INV-506: mastery/profile writes key off this (empty = anonymous-local)
 
         self.state = "idle"
         self.session: Optional[CompiledSession] = None
@@ -287,7 +289,7 @@ class SessionRuntime:
             self.policy = play_policy("fast", self.keypoints, self._prereqs)
             try:
                 from src.obs.db import get_db
-                get_db().set_profile(self.session.course_id, level="fast", skips=self._skips)
+                get_db().set_profile(self.session.course_id, level="fast", skips=self._skips, learner_id=self.learner_id)
             except Exception as exc:  # noqa: BLE001
                 log.warning("profile update failed: %s", exc)
             await self.transport.send(LevelUpdate(level="fast", reason="连续跳过且提问全对，切到快进",
@@ -427,7 +429,8 @@ class SessionRuntime:
         try:
             from src.content.mastery import record
             from src.obs.db import get_db
-            record(get_db(), self.session.course_id, self.session.session_id, kind, correct, quality, detail)
+            record(get_db(), self.session.course_id, self.session.session_id, kind, correct, quality, detail,
+                      learner_id=self.learner_id)
         except Exception as exc:  # noqa: BLE001
             log.warning("mastery evidence failed: %s", exc)
 

@@ -729,7 +729,8 @@ class App {
         chip.className = "chip";
         chip.textContent = opt.text;
         chip.addEventListener("click", () => {
-          chip.classList.add(i === m.correct_index ? "correct" : "incorrect");
+          if (m.correct_index != null) chip.classList.add(i === m.correct_index ? "correct" : "incorrect");
+          else chip.classList.add("chosen");
           finish({ answer_index: i }, opt.text);
         });
         row.appendChild(chip);
