@@ -14,7 +14,8 @@ DB; the learner row is the fold of those events.
 
 from __future__ import annotations
 
-from typing import Dict, Optional
+import time
+from typing import Any, Dict, List, Optional
 
 AXES = ("memory", "comprehension", "structure", "application")
 WEIGHTS = {"memory": 0.25, "comprehension": 0.30, "structure": 0.20, "application": 0.25}
@@ -39,9 +40,12 @@ def blank() -> Scores:
     return {a: 0.0 for a in AXES}
 
 
-def apply_evidence(prev: Optional[Scores], kind: str, correct: Optional[bool], quality: Optional[float] = None) -> Scores:
+def apply_evidence(prev: Optional[Scores], kind: str, correct: Optional[bool],
+                   quality: Optional[float] = None, assisted: bool = False) -> Scores:
     """Fold one piece of evidence into the scores. Wrong answers earn nothing;
-    `quality` (0..1) scales open evidence; gains diminish as an axis fills."""
+    `quality` (0..1) scales open evidence; gains diminish as an axis fills.
+    Hint-assisted answers earn at most 25% of the gain and never count as
+    independent coverage (INV-507)."""
     scores = dict(prev) if prev else blank()
     gains = GAINS.get(kind)
     if not gains:
@@ -49,6 +53,8 @@ def apply_evidence(prev: Optional[Scores], kind: str, correct: Optional[bool], q
     if correct is False:
         return scores
     q = 1.0 if quality is None else max(0.0, min(1.0, float(quality)))
+    if assisted:
+        q *= 0.25
     if correct is None and quality is None:
         q = 0.0  # engagement without judged quality is not evidence
     for axis, base in gains.items():
@@ -82,18 +88,77 @@ def next_step_note(scores: Scores, wrong_streak: int = 0) -> str:
 
 def record(db, course_id: str, session_id: str, kind: str, correct: Optional[bool],
            quality: Optional[float] = None, detail: str = "", learner_id: str = "",
-           attempt_id: Optional[str] = None) -> Scores:
-    """Append the event and refold the learner row (learner-scoped since INV-506).
-    Never raises into a lesson."""
+           attempt_id: Optional[str] = None, response_id: Optional[str] = None,
+           assisted: bool = False, exercise_id: Optional[str] = None) -> Scores:
+    """Append one evidence event and fold it into the estimate (INV-507).
+    Idempotent on response_id — a retry or re-submission of the same response
+    is stored once and never raises the score. Returns the current scores."""
     row = db.learner(course_id, session_id, learner_id)
-    prev = {a: float(row[a] or 0.0) for a in AXES} if row else blank()
-    scores = apply_evidence(prev, kind, correct, quality)
+    prev = _row_scores(row)
+    event_id, inserted = db.add_learner_event(
+        course_id, session_id, kind, correct, quality, detail, learner_id=learner_id,
+        attempt_id=attempt_id, response_id=response_id, assisted=assisted, exercise_id=exercise_id,
+        review=None if correct is not None else "pending")
+    if not inserted:
+        return prev
+    scores = apply_evidence(prev, kind, correct, quality, assisted=assisted)
     streak = (int(row["wrong_streak"] or 0) if row else 0)
     streak = streak + 1 if correct is False else (0 if correct is True or (quality or 0) >= 0.6 else streak)
     events = (int(row["events"] or 0) if row else 0) + 1
-    db.add_learner_event(course_id, session_id, kind, correct, quality, detail, learner_id=learner_id, attempt_id=attempt_id)
+    needs_review = int(row["needs_review"] or 0) if row else 0
+    if correct is None:                       # unjudgeable evidence needs a review pass
+        needs_review = 1
+    scores["folded_through"] = event_id
+    scores["needs_review"] = needs_review
     db.upsert_learner(course_id, session_id, scores, events, streak, next_step_note(scores, streak), learner_id)
     return scores
+
+
+def _row_scores(row) -> Scores:
+    return {a: float(row[a] or 0.0) for a in AXES} if row else blank()
+
+
+def rebuild(db, course_id: str, session_id: str, learner_id: str = "") -> Scores:
+    """Refold the estimate from the full event log — the projection is derived
+    data; this is the consistency check (and the repair tool)."""
+    scores, streak = blank(), 0
+    events = db.learner_events(course_id, session_id, limit=100000, learner_id=learner_id)
+    last_id = 0
+    for ev in events:
+        correct = None if ev["correct"] is None else bool(ev["correct"])
+        scores = apply_evidence(scores, ev["kind"], correct, ev["quality"], assisted=bool(ev.get("assisted")))
+        streak = streak + 1 if correct is False else (0 if correct is True or (ev["quality"] or 0) >= 0.6 else streak)
+        last_id = ev["id"]
+    row = db.learner(course_id, session_id, learner_id)
+    events_n = (int(row["events"] or 0) if row else 0)
+    needs_review = int(row["needs_review"] or 0) if row else 0
+    scores["folded_through"] = last_id
+    scores["needs_review"] = needs_review
+    db.upsert_learner(course_id, session_id, scores, events_n, streak, next_step_note(scores, streak), learner_id)
+    return scores
+
+
+def estimate(row, events: List[dict]) -> Dict[str, Any]:
+    """The interpretable CURRENT-knowledge estimate (INV-507): deliberately not a
+    single encouraging number. 未知不等于通过——insufficient evidence says so."""
+    scores = _row_scores(row)
+    comp = composite(scores)
+    n = len(events)
+    independent = [e for e in events if not e.get("assisted") and e.get("correct") is not None]
+    distinct_items = len({e.get("exercise_id") or f"{e['kind']}:{e['id']}" for e in independent})
+    assisted_ratio = round(1 - len(independent) / n, 2) if n else 1.0
+    latest = max((e["ts"] for e in events), default=None)
+    stale_days = round((time.time() - latest) / 86400, 1) if latest else None
+    if n < 3 or distinct_items < 2:
+        status = "insufficient"
+    elif row and row.get("needs_review"):
+        status = "needs_review"
+    else:
+        status = "provisional" if comp is not None and comp < 60 else "established"
+    return {"status": status, "composite": comp, "evidence_n": n,
+            "distinct_items": distinct_items, "assisted_ratio": assisted_ratio,
+            "stale_days": stale_days, "needs_review": bool(row and row.get("needs_review")),
+            "scores": scores}
 
 
 def row_to_view(row) -> dict:
