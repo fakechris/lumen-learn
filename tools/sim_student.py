@@ -294,11 +294,12 @@ async def main() -> int:
     p.add_argument("--eval-set", metavar="PATH", help="run the frozen matrix from this manifest")
     p.add_argument("--auto", action="store_true", help="with --eval-set: also run adaptive with auto (entry-diagnosis) levels")
     a = p.parse_args()
-    os.environ.setdefault("HK_OUTPUT_ROOT", os.path.abspath(a.output))
+    os.environ.setdefault("LUMEN_OUTPUT_ROOT", os.path.abspath(a.output))
     llm = make_client()
     if llm is None:
         print("no LLM configured (DEEPSEEK_API_KEY)"); return 1
-    extra = [r for r in os.getenv("HK_COURSES_ROOT", "").replace(";", ":").split(":") if r]
+    from src.envs import courses_roots
+    extra = courses_roots()
     store = CourseStore(extra + [a.output, os.path.join(os.path.dirname(__file__), "..", "examples", "courses")])
 
     if a.build_eval_set:

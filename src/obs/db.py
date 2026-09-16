@@ -284,8 +284,11 @@ _DBS: Dict[str, DB] = {}
 
 
 def get_db(output_root: Optional[str] = None) -> DB:
-    root = os.path.abspath(output_root or os.getenv("HK_OUTPUT_ROOT", "output"))
-    path = os.path.join(root, "hk.db")
+    from src.envs import output_root as env_output_root
+    root = os.path.abspath(output_root or env_output_root())
+    path = os.path.join(root, "lumen.db")
+    if not os.path.isfile(path) and os.path.isfile(os.path.join(root, "hk.db")):
+        path = os.path.join(root, "hk.db")   # pre-rename single-box data stays readable
     if path not in _DBS:
         _DBS[path] = DB(path)
     return _DBS[path]

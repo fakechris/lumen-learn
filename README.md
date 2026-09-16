@@ -28,7 +28,7 @@ This repository holds the **runnable system only**. Course packages, lecture sou
 ```bash
 git clone git@github.com:fakechris/lumen-learn.git
 git clone git@github.com:fakechris/lumen-learn-class.git   # private: courses, docs, eval data
-export HK_COURSES_ROOT="$PWD/lumen-learn-class/courses"   # serve its course catalog
+export LUMEN_COURSES_ROOT="$PWD/lumen-learn-class/courses"   # serve its course catalog (HK_COURSES_ROOT still accepted)
 ```
 
 A tiny synthetic demo course ships here (`examples/courses/course_demo`) so the UI is never empty; real content comes from the companion repo or your own generation.

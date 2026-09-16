@@ -1,5 +1,5 @@
 [project]
-name = "socratic-whiteboard"
+name = "lumen-learn"
 version = "2.0.0"
 description = "Protocol-driven Socratic whiteboard tutor (Lumen Learn)"
 requires-python = ">=3.11"

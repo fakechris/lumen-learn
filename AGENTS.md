@@ -8,5 +8,6 @@ canned content: fail loudly or label the mode (`generation_mode`).
 Repository scope: this repo holds the runnable system only. Course packages,
 lecture sources, design/decision docs, research and acceptance data live in the
 private companion repo `fakechris/lumen-learn-class`; mount its catalogs with
-`HK_COURSES_ROOT` (colon-separated roots). `examples/courses/course_demo` is a
+`LUMEN_COURSES_ROOT` (colon-separated roots; the legacy `HK_COURSES_ROOT` is
+still accepted). `examples/courses/course_demo` is a
 synthetic fixture — do not replace it with real course content.
