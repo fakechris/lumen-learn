@@ -17,7 +17,7 @@ from typing import Dict, List, Optional
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
-from fastapi import FastAPI, File, Form, HTTPException, UploadFile, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, File, Form, HTTPException, Request, Response, UploadFile, WebSocket, WebSocketDisconnect
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field, ValidationError
@@ -47,6 +47,18 @@ CLIENT_DIR = os.path.join(ROOT, "client")
 os.makedirs(LIVE_AUDIO_DIR, exist_ok=True)
 
 app = FastAPI(title="Socratic Whiteboard", version="2.0.0")
+
+
+def _learner_id(request: "Request", response: "Response") -> str:
+    """Server-resolved anonymous learner identity (INV-506): an httpOnly cookie
+    issued on first contact. Every learner-scoped read/write keys off this."""
+    from fastapi import Request, Response  # local import keeps the module import surface unchanged
+    lid = request.cookies.get("hk_learner") or ""
+    if not lid or len(lid) != 32:
+        lid = uuid.uuid4().hex
+        response.set_cookie("hk_learner", lid, httponly=True, samesite="lax", max_age=31536000)
+    get_db(OUTPUT_ROOT).ensure_learner(lid)
+    return lid
 
 
 def _course_roots() -> List[str]:
@@ -232,10 +244,21 @@ async def get_course(course_id: str):
 
 @app.get("/api/v1/courses/{course_id}/sessions/{session_id}")
 async def get_session(course_id: str, session_id: str):
+    """Public compiled-session DTO (INV-506): answer keys are stripped — correctness
+    is judged server-side (/grade, runtime feedback), never shipped to the client."""
     session = store.get_session(course_id, session_id)
     if not session:
         raise HTTPException(404, "session not found")
-    return session.model_dump(mode="json")
+    data = session.model_dump(mode="json")
+    for a in data.get("actions", []):
+        if a.get("type") == "ask":
+            a["correct_index"] = None
+            for opt in a.get("options", []):
+                opt["misconception"] = None
+    for ex in data.get("exercises", []):
+        ex.pop("correct_index", None)
+        ex.pop("answer", None)
+    return data
 
 
 @app.get("/api/v1/courses/{course_id}/scripts/{session_id}")
@@ -260,11 +283,22 @@ class GradeRequest(BaseModel):
     exercise_id: str
     answer_text: Optional[str] = None
     answer_index: Optional[int] = None
+    attempt_id: Optional[str] = None  # INV-506: must belong to the calling learner
 
 
 @app.post("/api/v1/grade")
-async def grade(req: GradeRequest):
-    """Grade one exercise. fill_blank answers are judged semantically by the tutor LLM."""
+async def grade(req: GradeRequest, request: Request, response: Response):
+    """Grade one exercise. fill_blank answers are judged semantically by the tutor LLM.
+    Evidence is learner-scoped; an attempt_id must belong to the calling learner."""
+    learner = _learner_id(request, response)
+    attempt_id = req.attempt_id
+    if attempt_id:
+        att = get_db(OUTPUT_ROOT).attempt(attempt_id)
+        if att is None or att["learner_id"] != learner:
+            raise HTTPException(403, "attempt does not belong to this learner")
+    else:
+        att = get_db(OUTPUT_ROOT).open_attempt(learner, req.course_id, req.session_id)
+        attempt_id = att["attempt_id"] if att else None
     session = store.get_session(req.course_id, req.session_id)
     if not session:
         raise HTTPException(404, "session not found")
@@ -273,20 +307,22 @@ async def grade(req: GradeRequest):
         raise HTTPException(404, "exercise not found")
     if ex.kind == "fill_blank":
         correct, feedback = await grade_fill_blank(ex, req.answer_text or "", llm)
-        _record_evidence(req.course_id, req.session_id, ex.kind, correct, None, req.answer_text or "")
+        _record_evidence(req.course_id, req.session_id, ex.kind, correct, None, req.answer_text or "", learner, attempt_id)
         return {"correct": correct, "feedback": feedback, "answer": ex.answer, "explanation": ex.explanation,
                 "graded_by": "llm" if (llm and not correct) or (llm and feedback != ex.explanation) else "match"}
     correct = req.answer_index is not None and req.answer_index == ex.correct_index
-    _record_evidence(req.course_id, req.session_id, ex.kind, correct, None, str(req.answer_index))
+    _record_evidence(req.course_id, req.session_id, ex.kind, correct, None, str(req.answer_index), learner, attempt_id)
     return {"correct": correct, "feedback": ex.explanation, "answer": ex.options[ex.correct_index] if ex.correct_index is not None else None,
             "explanation": ex.explanation, "graded_by": "match"}
 
 
-def _record_evidence(course_id: str, session_id: str, kind: str, correct, quality, detail: str = "") -> None:
+def _record_evidence(course_id: str, session_id: str, kind: str, correct, quality, detail: str = "",
+                     learner_id: str = "", attempt_id: Optional[str] = None) -> None:
     """Learner-model evidence (four-axis mastery); never fails a request."""
     try:
         from src.content.mastery import record
-        record(get_db(OUTPUT_ROOT), course_id, session_id, kind, correct, quality, detail)
+        record(get_db(OUTPUT_ROOT), course_id, session_id, kind, correct, quality, detail,
+               learner_id=learner_id, attempt_id=attempt_id)
     except Exception as exc:  # noqa: BLE001
         log.warning("mastery evidence failed: %s", exc)
 
@@ -315,7 +351,7 @@ async def concept_map(course_id: str, rebuild: bool = False):
 
 
 @app.get("/api/v1/courses/{course_id}/sessions/{session_id}/entry")
-async def session_entry(course_id: str, session_id: str):
+async def session_entry(course_id: str, session_id: str, request: Request, response: Response):
     """Where is this learner before the session (SYSTEM_DESIGN §10.2): level + reason,
     prerequisite sessions, and up to three diagnosis questions when there is no evidence yet."""
     from src.content.adaptive import decide_level, diagnosis_questions, prereq_sessions
@@ -325,8 +361,9 @@ async def session_entry(course_id: str, session_id: str):
         raise HTTPException(404, "session not found")
     cmap = load_map(store._course_dir(course_id) or "")
     prereqs = prereq_sessions(course, cmap, session_id)
+    learner = _learner_id(request, response)
     db = get_db(OUTPUT_ROOT)
-    profile = db.profile(course_id)
+    profile = db.profile(course_id, learner)
     entry = decide_level(db, course_id, session_id, prereqs, profile.get("level"))
     questions = diagnosis_questions(store, course_id, prereqs) if entry.needs_diagnosis else []
     titles = {s.session_id: s.title for s in course.all_sessions()}
@@ -381,7 +418,8 @@ async def answer_entry_diagnosis(course_id: str, session_id: str, req: Diagnosis
         gate = next((a for a in (sess.actions if sess else []) if a.type == "ask" and a.correct_index is not None), None)
         diagnosis["confirm_correct"] = (gate is not None and req.confirm == gate.correct_index)
     db = get_db(OUTPUT_ROOT)
-    profile = db.profile(course_id)
+    learner = _learner_id(request, response)
+    profile = db.profile(course_id, learner)
     entry = decide_level(db, course_id, session_id, prereqs, profile.get("level"), diagnosis=diagnosis)
     return {"level": entry.level, "reason": entry.reason, "accuracy": round(accuracy, 2), "n": len(asked),
             "needs_confirm": confirm_q is not None, "confirm_question": confirm_q, "evidence": entry.evidence}
@@ -393,21 +431,22 @@ class ProfileRequest(BaseModel):
 
 
 @app.post("/api/v1/courses/{course_id}/profile")
-async def set_profile(course_id: str, req: ProfileRequest):
+async def set_profile(course_id: str, req: ProfileRequest, request: Request, response: Response):
     """The learner's explicit choice (快一点 / 慢一点 / 自动) for this course."""
     if req.level is not None and req.level not in ("novice", "standard", "fast"):
         raise HTTPException(400, "level must be novice | standard | fast")
     fields = {"level": req.level}
     if req.pace is not None:
         fields["pace"] = max(0.5, min(2.0, req.pace))
-    return get_db(OUTPUT_ROOT).set_profile(course_id, **fields)
+    return get_db(OUTPUT_ROOT).set_profile(course_id, learner_id=_learner_id(request, response), **fields)
 
 
 @app.get("/api/v1/courses/{course_id}/mastery")
-async def course_mastery(course_id: str):
-    """Four-axis mastery per session + a course-level average. Sessions without evidence are absent."""
+async def course_mastery(course_id: str, request: Request, response: Response):
+    """Four-axis mastery per session + a course-level average, for the calling learner.
+    Sessions without evidence are absent."""
     from src.content.mastery import AXES, composite, row_to_view
-    rows = [row_to_view(r) for r in get_db(OUTPUT_ROOT).learners(course_id)]
+    rows = [row_to_view(r) for r in get_db(OUTPUT_ROOT).learners(course_id, _learner_id(request, response))]
     course = {a: round(sum(r["scores"][a] for r in rows) / len(rows), 1) for a in AXES} if rows else None
     return {"mastery": rows, "course": course, "composite": composite(course) if course else None}
 
@@ -612,8 +651,8 @@ async def get_job(job_id: str):
 feynman_sessions: Dict[str, FeynmanSession] = {}
 
 
-def _feynman_key(course_id: str, session_id: str) -> str:
-    return f"{course_id}/{session_id}"
+def _feynman_key(learner: str, course_id: str, session_id: str) -> str:
+    return f"{learner}/{course_id}/{session_id}"
 
 
 def _feynman_digest(course, session_id: str) -> str:
@@ -629,22 +668,28 @@ def _feynman_digest(course, session_id: str) -> str:
 
 
 @app.post("/api/v1/courses/{course_id}/sessions/{session_id}/feynman/start")
-async def feynman_start(course_id: str, session_id: str):
+async def feynman_start(course_id: str, session_id: str, request: Request, response: Response):
+    learner = _learner_id(request, response)
     course = store.get_course(course_id)
     session = course and next((s for s in course.all_sessions() if s.session_id == session_id), None)
     if session is None:
         raise HTTPException(404, "session not found")
-    key = _feynman_key(course_id, session_id)
+    key = _feynman_key(learner, course_id, session_id)
     fs = FeynmanSession(topic=session.title, concept_digest=_feynman_digest(course, session_id))
     feynman_sessions[key] = fs
-    return {"round": 0, "max_rounds": MAX_ROUNDS, "prompt": fs.opening(), "llm": llm is not None}
+    db = get_db(OUTPUT_ROOT)
+    att = db.open_attempt(learner, course_id, session_id) or {}
+    attempt_id = att.get("attempt_id") or db.start_attempt(learner, course_id, session_id)
+    return {"round": 0, "max_rounds": MAX_ROUNDS, "prompt": fs.opening(), "llm": llm is not None,
+            "attempt_id": attempt_id}
 
 
 @app.post("/api/v1/courses/{course_id}/sessions/{session_id}/feynman/turn")
-async def feynman_turn_endpoint(course_id: str, session_id: str, body: dict):
+async def feynman_turn_endpoint(course_id: str, session_id: str, body: dict, request: Request, response: Response):
     if llm is None:
         raise HTTPException(400, "费曼回合需要配置 LLM（当前服务端未设置任何模型 key）")
-    fs = feynman_sessions.get(_feynman_key(course_id, session_id))
+    learner = _learner_id(request, response)
+    fs = feynman_sessions.get(_feynman_key(learner, course_id, session_id))
     if fs is None:
         raise HTTPException(404, "feynman session not started")
     if fs.done:
@@ -653,20 +698,29 @@ async def feynman_turn_endpoint(course_id: str, session_id: str, body: dict):
     if not explanation:
         raise HTTPException(400, "explanation is empty")
     round_ = await feynman_turn(llm, fs, explanation)
-    _record_evidence(course_id, session_id, "feynman_round", None, round_.quality, explanation[:80])
+    _record_evidence(course_id, session_id, "feynman_round", None, round_.quality, explanation[:80], learner)
     return {"round": len(fs.rounds), "max_rounds": MAX_ROUNDS,
             "question": round_.question, "vague_point": round_.vague_point, "done": fs.done}
 
 
 @app.post("/api/v1/courses/{course_id}/sessions/{session_id}/feynman/summary")
-async def feynman_summary_endpoint(course_id: str, session_id: str):
+async def feynman_summary_endpoint(course_id: str, session_id: str, request: Request, response: Response):
     if llm is None:
         raise HTTPException(400, "费曼回合需要配置 LLM（当前服务端未设置任何模型 key）")
-    fs = feynman_sessions.get(_feynman_key(course_id, session_id))
+    learner = _learner_id(request, response)
+    fs = feynman_sessions.get(_feynman_key(learner, course_id, session_id))
     if fs is None or not fs.rounds:
         raise HTTPException(404, "feynman session has no rounds")
+    db = get_db(OUTPUT_ROOT)
+    att = db.latest_attempt(learner, course_id, session_id)
+    if att and att.get("summary") is not None:
+        # idempotent: a repeated summary returns the cached verdict, never re-scores
+        return {"summary": att["summary"], "rounds": len(fs.rounds), "score": att["score"], "cached": True}
     summary, score = await feynman_summary(llm, fs)
-    _record_evidence(course_id, session_id, "feynman_summary", None, score, summary[:80])
+    _record_evidence(course_id, session_id, "feynman_summary", None, score, summary[:80], learner,
+                     att.get("attempt_id") if att else None)
+    if att:
+        db.finish_attempt(att["attempt_id"], summary=summary[:500], score=score)
     return {"summary": summary, "rounds": len(fs.rounds), "score": score}
 
 
@@ -691,8 +745,13 @@ class WsTransport:
 async def whiteboard_ws(ws: WebSocket):
     await ws.accept()
     transport = WsTransport(ws)
-    runtime = SessionRuntime(transport, store, tutor, tts, LIVE_AUDIO_DIR)
-    await transport.send(ConnectionEstablished(llm_available=llm is not None, tts_engine=tts.name))
+    learner = ws.cookies.get("hk_learner") or ""
+    if len(learner) != 32:
+        learner = uuid.uuid4().hex          # WS-only clients get a session identity too
+    get_db(OUTPUT_ROOT).ensure_learner(learner)
+    runtime = SessionRuntime(transport, store, tutor, tts, LIVE_AUDIO_DIR, learner_id=learner)
+    await transport.send(ConnectionEstablished(llm_available=llm is not None, tts_engine=tts.name,
+                                               learner_id=learner))
     try:
         while True:
             raw = await ws.receive_text()

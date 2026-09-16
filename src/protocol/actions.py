@@ -275,6 +275,7 @@ class ConnectionEstablished(BaseModel):
     type: Literal["connection_established"] = "connection_established"
     llm_available: bool = False
     tts_engine: str = "silent"
+    learner_id: Optional[str] = Field(None, description="server-resolved anonymous learner (INV-506)")
 
 
 # --------------------------------------------------------------------------- #

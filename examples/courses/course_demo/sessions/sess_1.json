@@ -91,7 +91,22 @@
       "step_id": 7
     }
   ],
-  "exercises": [],
+  "exercises": [
+    {
+      "exercise_id": "ex_demo_1",
+      "kind": "single_choice",
+      "stem": "这节演示课的教学内容来自哪里？",
+      "options": [
+        "真实教材章节",
+        "完全合成的演示内容",
+        "网络搜索"
+      ],
+      "correct_index": 1,
+      "answer": null,
+      "accepted": [],
+      "explanation": "演示课是随仓库发布的合成内容，不含真实教学内容。"
+    }
+  ],
   "keypoints": [
     {
       "step_id": 1,

@@ -133,9 +133,12 @@ def test_mastery_endpoint_reports_evidence(client):
     from src.content.mastery import record
     from src.obs.db import get_db
     assert client.get("/api/v1/courses/nothing/mastery").json() == {"mastery": [], "course": None, "composite": None}
+    # evidence recorded under the calling learner's cookie identity (INV-506)
+    client.get("/api/v1/courses/nothing/mastery")   # issues the learner cookie into the jar
+    learner = client.cookies.get("hk_learner")
     db = get_db(_os.environ["HK_OUTPUT_ROOT"])
-    record(db, "course_m", "sess_1", "fill_blank", True)
-    record(db, "course_m", "sess_2", "interactive", True)
+    record(db, "course_m", "sess_1", "fill_blank", True, learner_id=learner)
+    record(db, "course_m", "sess_2", "interactive", True, learner_id=learner)
     data = client.get("/api/v1/courses/course_m/mastery").json()
     assert {m["session_id"] for m in data["mastery"]} == {"sess_1", "sess_2"}
     assert data["course"]["memory"] == 8.0 and data["composite"] is not None

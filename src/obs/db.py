@@ -12,6 +12,7 @@ from __future__ import annotations
 import json
 import os
 import sqlite3
+import logging
 import threading
 import time
 from typing import Any, Dict, List, Optional
@@ -39,16 +40,28 @@ CREATE TABLE IF NOT EXISTS usage (
   prompt_tokens INTEGER, completion_tokens INTEGER, reasoning_tokens INTEGER, chars INTEGER,
   seconds REAL, cost_usd REAL);
 CREATE INDEX IF NOT EXISTS usage_run ON usage(run_id);
-CREATE TABLE IF NOT EXISTS learner (
-  course_id TEXT, session_id TEXT, memory REAL, comprehension REAL, structure REAL, application REAL,
-  events INTEGER, wrong_streak INTEGER, note TEXT, updated REAL, PRIMARY KEY (course_id, session_id));
-CREATE TABLE IF NOT EXISTS learner_events (
-  id INTEGER PRIMARY KEY AUTOINCREMENT, course_id TEXT, session_id TEXT, ts REAL,
-  kind TEXT, correct INTEGER, quality REAL, detail TEXT);
-CREATE INDEX IF NOT EXISTS learner_events_session ON learner_events(course_id, session_id, id);
-CREATE TABLE IF NOT EXISTS learner_profile (
-  course_id TEXT PRIMARY KEY, level TEXT, pace REAL, skips INTEGER, gates_ok INTEGER, gates_total INTEGER, updated REAL);
+-- pre-INV-506 course-scoped learner tables are renamed to *_legacy_local on open;
+-- they are never created again.
+CREATE TABLE IF NOT EXISTS learners (
+  learner_id TEXT PRIMARY KEY, label TEXT, created REAL);
+CREATE TABLE IF NOT EXISTS learning_attempts (
+  attempt_id TEXT PRIMARY KEY, learner_id TEXT, course_id TEXT, session_id TEXT,
+  started REAL, state TEXT, summary TEXT, score REAL);
+CREATE INDEX IF NOT EXISTS attempts_learner ON learning_attempts(learner_id, course_id, session_id);
+CREATE TABLE IF NOT EXISTS learner_v2 (
+  learner_id TEXT, course_id TEXT, session_id TEXT, memory REAL, comprehension REAL, structure REAL, application REAL,
+  events INTEGER, wrong_streak INTEGER, note TEXT, updated REAL,
+  PRIMARY KEY (learner_id, course_id, session_id));
+CREATE TABLE IF NOT EXISTS learner_events_v2 (
+  id INTEGER PRIMARY KEY AUTOINCREMENT, learner_id TEXT, course_id TEXT, session_id TEXT, ts REAL,
+  kind TEXT, correct INTEGER, quality REAL, detail TEXT, attempt_id TEXT);
+CREATE INDEX IF NOT EXISTS learner_events_v2_session ON learner_events_v2(learner_id, course_id, session_id, id);
+CREATE TABLE IF NOT EXISTS learner_profile_v2 (
+  learner_id TEXT, course_id TEXT, level TEXT, pace REAL, skips INTEGER, gates_ok INTEGER, gates_total INTEGER, updated REAL,
+  PRIMARY KEY (learner_id, course_id));
 """
+
+LEGACY_TABLES = ("learner", "learner_events", "learner_profile")
 
 
 class DB:
@@ -59,6 +72,7 @@ class DB:
         self._conn = sqlite3.connect(path, check_same_thread=False)
         self._conn.row_factory = sqlite3.Row
         self._conn.execute("PRAGMA journal_mode=WAL")
+        self._legacy_to_local()
         self._conn.executescript(SCHEMA)
 
     def _exec(self, sql: str, params: tuple = ()) -> None:
@@ -156,48 +170,110 @@ class DB:
         return {"total": total, "by_purpose": rows}
 
 
-    # ---- learner model (four-axis mastery) ----
-    def add_learner_event(self, course_id: str, session_id: str, kind: str, correct: Optional[bool],
-                          quality: Optional[float] = None, detail: str = "") -> None:
-        self._exec("INSERT INTO learner_events (course_id, session_id, ts, kind, correct, quality, detail) "
-                   "VALUES (?,?,?,?,?,?,?)",
-                   (course_id, session_id, time.time(), kind, None if correct is None else int(correct), quality,
-                    (detail or "")[:300]))
+    # ---- learner model (four-axis mastery), learner-scoped since INV-506 ----
+    def _legacy_to_local(self) -> None:
+        """Pre-INV-506 tables were course-scoped (single-user prototype). Rename them
+        aside as *_legacy_local — data is kept, marked aggregate, never mixed into
+        the per-learner tables."""
+        have = {r["name"] for r in self._rows("SELECT name FROM sqlite_master WHERE type='table'")}
+        moved = []
+        with self._lock:
+            for t in ("learner", "learner_events", "learner_profile"):
+                if t not in have:
+                    continue
+                target = f"{t}_legacy_local"
+                if target in have:
+                    n = self._conn.execute(f"SELECT COUNT(*) FROM {t}").fetchone()[0]
+                    if n == 0:          # an empty schema-only leftover from an earlier open
+                        self._conn.execute(f"DROP TABLE {t}")
+                        continue
+                    target = f"{t}_legacy_local_{int(time.time())}"
+                self._conn.execute(f"ALTER TABLE {t} RENAME TO {target}")
+                moved.append(target)
+            self._conn.commit()
+        if moved:
+            log.warning("legacy course-scoped learner tables kept aside: %s", moved)
 
-    def learner_events(self, course_id: str, session_id: Optional[str] = None, limit: int = 500) -> List[Dict[str, Any]]:
-        if session_id:
-            return self._rows("SELECT * FROM learner_events WHERE course_id=? AND session_id=? ORDER BY id LIMIT ?",
-                              (course_id, session_id, limit))
-        return self._rows("SELECT * FROM learner_events WHERE course_id=? ORDER BY id LIMIT ?", (course_id, limit))
+    def ensure_learner(self, learner_id: str, label: str = "") -> None:
+        self._exec("INSERT OR IGNORE INTO learners VALUES (?,?,?)", (learner_id, label[:120], time.time()))
 
-    def upsert_learner(self, course_id: str, session_id: str, scores: Dict[str, float], events: int,
-                       wrong_streak: int, note: str) -> None:
-        self._exec("INSERT OR REPLACE INTO learner (course_id, session_id, memory, comprehension, structure, "
-                   "application, events, wrong_streak, note, updated) VALUES (?,?,?,?,?,?,?,?,?,?)",
-                   (course_id, session_id, scores.get("memory"), scores.get("comprehension"), scores.get("structure"),
-                    scores.get("application"), events, wrong_streak, note[:300], time.time()))
+    def start_attempt(self, learner_id: str, course_id: str, session_id: str) -> str:
+        import uuid as _uuid
+        attempt_id = _uuid.uuid4().hex[:16]
+        self._exec("INSERT INTO learning_attempts VALUES (?,?,?,?,?,?,?,?)",
+                   (attempt_id, learner_id, course_id, session_id, time.time(), "open", None, None))
+        return attempt_id
 
-    def learner(self, course_id: str, session_id: str) -> Optional[Dict[str, Any]]:
-        rows = self._rows("SELECT * FROM learner WHERE course_id=? AND session_id=?", (course_id, session_id))
+    def attempt(self, attempt_id: str) -> Optional[Dict[str, Any]]:
+        rows = self._rows("SELECT * FROM learning_attempts WHERE attempt_id=?", (attempt_id,))
         return rows[0] if rows else None
 
-    def learners(self, course_id: str) -> List[Dict[str, Any]]:
-        return self._rows("SELECT * FROM learner WHERE course_id=? ORDER BY session_id", (course_id,))
+    def latest_attempt(self, learner_id: str, course_id: str, session_id: str) -> Optional[Dict[str, Any]]:
+        rows = self._rows("SELECT * FROM learning_attempts WHERE learner_id=? AND course_id=? AND session_id=? "
+                          "ORDER BY started DESC LIMIT 1", (learner_id, course_id, session_id))
+        return rows[0] if rows else None
 
+    def open_attempt(self, learner_id: str, course_id: str, session_id: str) -> Optional[Dict[str, Any]]:
+        rows = self._rows("SELECT * FROM learning_attempts WHERE learner_id=? AND course_id=? AND session_id=? "
+                          "AND state='open' ORDER BY started DESC LIMIT 1", (learner_id, course_id, session_id))
+        return rows[0] if rows else None
 
-    def profile(self, course_id: str) -> Dict[str, Any]:
-        rows = self._rows("SELECT * FROM learner_profile WHERE course_id=?", (course_id,))
-        return rows[0] if rows else {"course_id": course_id, "level": None, "pace": 1.0, "skips": 0, "gates_ok": 0,
-                                     "gates_total": 0, "updated": None}
+    def finish_attempt(self, attempt_id: str, summary: Optional[str] = None, score: Optional[float] = None) -> None:
+        self._exec("UPDATE learning_attempts SET state='done', summary=COALESCE(?, summary), score=COALESCE(?, score) "
+                   "WHERE attempt_id=?", (summary, score, attempt_id))
+
+    def add_learner_event(self, course_id: str, session_id: str, kind: str, correct: Optional[bool],
+                          quality: Optional[float] = None, detail: str = "", learner_id: str = "",
+                          attempt_id: Optional[str] = None) -> int:
+        with self._lock:
+            cur = self._conn.execute(
+                "INSERT INTO learner_events_v2 (learner_id, course_id, session_id, ts, kind, correct, quality, detail, attempt_id) "
+                "VALUES (?,?,?,?,?,?,?,?,?)",
+                (learner_id, course_id, session_id, time.time(), kind, None if correct is None else int(correct), quality,
+                 (detail or "")[:300], attempt_id))
+            self._conn.commit()
+            return int(cur.lastrowid)
+
+    def learner_events(self, course_id: str, session_id: Optional[str] = None, limit: int = 500,
+                       learner_id: str = "") -> List[Dict[str, Any]]:
+        if session_id:
+            return self._rows("SELECT * FROM learner_events_v2 WHERE learner_id=? AND course_id=? AND session_id=? "
+                              "ORDER BY id LIMIT ?", (learner_id, course_id, session_id, limit))
+        return self._rows("SELECT * FROM learner_events_v2 WHERE learner_id=? AND course_id=? ORDER BY id LIMIT ?",
+                          (learner_id, course_id, limit))
+
+    def upsert_learner(self, course_id: str, session_id: str, scores: Dict[str, float], events: int,
+                       wrong_streak: int, note: str, learner_id: str = "") -> None:
+        self._exec("INSERT OR REPLACE INTO learner_v2 (learner_id, course_id, session_id, memory, comprehension, "
+                   "structure, application, events, wrong_streak, note, updated) VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+                   (learner_id, course_id, session_id, scores.get("memory"), scores.get("comprehension"),
+                    scores.get("structure"), scores.get("application"), events, wrong_streak, note[:300], time.time()))
+
+    def learner(self, course_id: str, session_id: str, learner_id: str = "") -> Optional[Dict[str, Any]]:
+        rows = self._rows("SELECT * FROM learner_v2 WHERE learner_id=? AND course_id=? AND session_id=?",
+                          (learner_id, course_id, session_id))
+        return rows[0] if rows else None
+
+    def learners(self, course_id: str, learner_id: str = "") -> List[Dict[str, Any]]:
+        return self._rows("SELECT * FROM learner_v2 WHERE learner_id=? AND course_id=? ORDER BY session_id",
+                          (learner_id, course_id))
+
+    def profile(self, course_id: str, learner_id: str = "") -> Dict[str, Any]:
+        rows = self._rows("SELECT * FROM learner_profile_v2 WHERE learner_id=? AND course_id=?", (learner_id, course_id))
+        return rows[0] if rows else {"course_id": course_id, "level": None, "pace": 1.0, "skips": 0,
+                                     "gates_ok": 0, "gates_total": 0, "updated": None}
 
     def set_profile(self, course_id: str, **fields) -> Dict[str, Any]:
-        cur = self.profile(course_id)
+        learner_id = fields.pop("learner_id", "")
+        cur = self.profile(course_id, learner_id)
         cur.update({k: v for k, v in fields.items() if k in ("level", "pace", "skips", "gates_ok", "gates_total")})
-        self._exec("INSERT OR REPLACE INTO learner_profile VALUES (?,?,?,?,?,?,?)",
-                   (course_id, cur.get("level"), cur.get("pace") or 1.0, cur.get("skips") or 0, cur.get("gates_ok") or 0,
-                    cur.get("gates_total") or 0, time.time()))
-        return self.profile(course_id)
+        self._exec("INSERT OR REPLACE INTO learner_profile_v2 VALUES (?,?,?,?,?,?,?,?)",
+                   (learner_id, course_id, cur.get("level"), cur.get("pace") or 1.0, cur.get("skips") or 0,
+                    cur.get("gates_ok") or 0, cur.get("gates_total") or 0, time.time()))
+        return self.profile(course_id, learner_id)
 
+
+log = logging.getLogger("db")
 
 _DBS: Dict[str, DB] = {}
 
