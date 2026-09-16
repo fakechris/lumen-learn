@@ -199,3 +199,13 @@ def test_cheatsheet_route_serves_bundled_course(client):
     md = client.get("/api/v1/courses/course_demo/cheatsheet?format=md")
     assert md.status_code == 200 and md.headers["content-type"].startswith("text/markdown")
     assert client.get("/api/v1/courses/nope/cheatsheet").status_code == 404
+
+
+def test_entry_diagnosis_endpoint_places_from_accuracy(client):
+    r = client.post("/api/v1/courses/course_demo/sessions/sess_1/entry/answer", json={"answers": [1, 1, 1]})
+    if r.status_code == 400:      # no prerequisite exercises → nothing to diagnose
+        assert "no diagnosis" in r.json()["detail"]
+    else:
+        data = r.json()
+        assert data["level"] in ("standard", "fast", "novice") and data["n"] >= 1
+    assert client.post("/api/v1/courses/nope/sessions/sess_1/entry/answer", json={"answers": []}).status_code == 404

@@ -20,7 +20,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile, WebSocket, WebSocketDisconnect
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel, ValidationError
+from pydantic import BaseModel, Field, ValidationError
 
 from src.content.exercise_generator import grade_fill_blank
 from src.content.feynman import FeynmanSession, MAX_ROUNDS, feynman_summary, feynman_turn
@@ -333,6 +333,58 @@ async def session_entry(course_id: str, session_id: str):
     return {"level": entry.level, "reason": entry.reason, "needs_diagnosis": bool(questions),
             "prereqs": [{"session_id": p, "title": titles.get(p, p)} for p in prereqs],
             "questions": questions, "evidence": entry.evidence, "profile_level": profile.get("level")}
+
+
+class DiagnosisAnswer(BaseModel):
+    """Answered entry-diagnosis items, in one batch (INV-573): the placement
+    decision uses the cold-quiz accuracy directly, so a 2-3 item quiz cannot
+    be mistaken for accumulated mastery."""
+    answers: List[int] = Field(default_factory=list, description="chosen index per question, in order")
+    confirm: Optional[int] = None  # answer to the session's own confirmation question (hurdle gate)
+
+
+@app.post("/api/v1/courses/{course_id}/sessions/{session_id}/entry/answer")
+async def answer_entry_diagnosis(course_id: str, session_id: str, req: DiagnosisAnswer):
+    """Place the learner from their cold entry quiz: accuracy <50% → novice,
+    <100% (or <3 items) → standard, perfect ≥3 → a confirmation question first,
+    passing it → fast. Deterministic; no mastery writes."""
+    from src.content.adaptive import decide_level, diagnosis_questions, prereq_sessions
+    from src.content.concept_map import load_map
+    course = store.get_course(course_id)
+    if not course or not any(s.session_id == session_id for s in course.all_sessions()):
+        raise HTTPException(404, "session not found")
+    cmap = load_map(store._course_dir(course_id) or "")
+    prereqs = prereq_sessions(course, cmap, session_id)
+    qs = diagnosis_questions(store, course_id, prereqs, n=max(3, len(req.answers)))
+    if not qs:
+        raise HTTPException(400, "no diagnosis questions for this session")
+    asked = qs[:len(req.answers)] if req.answers else qs
+    if req.answers and len(req.answers) != len(asked):
+        raise HTTPException(400, f"expected {len(asked)} answers")
+    correct = 0
+    for q, a in zip(asked, req.answers):
+        sess = store.get_session(course_id, q["session_id"])
+        ex = next((e for e in (sess.exercises if sess else []) if e.exercise_id == q["exercise_id"]), None)
+        if ex is not None and ex.correct_index is not None and a == ex.correct_index:
+            correct += 1
+    accuracy = correct / len(asked) if asked else 0.0
+    confirm_q = None
+    if asked and accuracy == 1.0 and len(asked) >= 3 and req.confirm is None:
+        outline = next((s for s in course.all_sessions() if s.session_id == session_id), None)
+        hurdle = getattr(outline, "cognitive_hurdle", "") or ""
+        confirm_q = {"question": f"确认题（本节核心）：{session_id}",  # rendered from the session's first gate
+                     "hurdle": hurdle}
+    diagnosis = {"accuracy": accuracy, "n": len(asked)}
+    if req.confirm is not None:
+        # the confirmation item is the session's first gate question — grade it directly
+        sess = store.get_session(course_id, session_id)
+        gate = next((a for a in (sess.actions if sess else []) if a.type == "ask" and a.correct_index is not None), None)
+        diagnosis["confirm_correct"] = (gate is not None and req.confirm == gate.correct_index)
+    db = get_db(OUTPUT_ROOT)
+    profile = db.profile(course_id)
+    entry = decide_level(db, course_id, session_id, prereqs, profile.get("level"), diagnosis=diagnosis)
+    return {"level": entry.level, "reason": entry.reason, "accuracy": round(accuracy, 2), "n": len(asked),
+            "needs_confirm": confirm_q is not None, "confirm_question": confirm_q, "evidence": entry.evidence}
 
 
 class ProfileRequest(BaseModel):

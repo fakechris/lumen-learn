@@ -59,8 +59,15 @@ class Entry:
     evidence: Dict[str, Optional[float]] = field(default_factory=dict)
 
 
-def decide_level(db, course_id: str, session_id: str, prereqs: Sequence[str], override: Optional[str] = None) -> Entry:
-    """Evidence → level. An explicit override always wins."""
+def decide_level(db, course_id: str, session_id: str, prereqs: Sequence[str], override: Optional[str] = None,
+                 diagnosis: Optional[Dict[str, float]] = None) -> Entry:
+    """Evidence → level. An explicit override always wins.
+
+    ``diagnosis`` = {"accuracy": cold-quiz accuracy 0..1, "n": items asked} from
+    the entry quiz (INV-573). When present it decides the *first* placement —
+    a 2-3 item cold quiz simply cannot produce the accumulated composite that
+    the thresholds below expect. Without it (returning learner), the historical
+    mastery thresholds apply unchanged."""
     rows = {r["session_id"]: r for r in db.learners(course_id)}
     comps = [composite({a: r[a] for a in ("memory", "comprehension", "structure", "application")})
              for sid in prereqs for r in [rows.get(sid)] if r]
@@ -71,6 +78,22 @@ def decide_level(db, course_id: str, session_id: str, prereqs: Sequence[str], ov
     evidence = {"prereq_mastery": prereq_avg, "self_comprehension": self_comp}
     if override in LEVELS:
         return Entry(override, "你选择的档位", list(prereqs), False, evidence)
+    if diagnosis and diagnosis.get("n"):
+        acc = float(diagnosis.get("accuracy", 0.0))
+        n = int(diagnosis.get("n", 0))
+        if diagnosis.get("confirm_correct") is not None:
+            evidence["diagnosis_confirm"] = bool(diagnosis["confirm_correct"])
+        if acc < 0.5:
+            return Entry("novice", f"先修诊断 {acc:.0%}，先补一下再讲", list(prereqs), False, evidence)
+        if acc < 1.0 or n < 3:
+            return Entry("standard", f"先修诊断 {acc:.0%}，按教案讲", list(prereqs), False, evidence)
+        # perfect cold quiz: confirm on this session's own hurdle before fast
+        confirm = diagnosis.get("confirm_correct")
+        if confirm is True:
+            return Entry("fast", "先修诊断满分 + 核心题通过，可以快进", list(prereqs), False, evidence)
+        if confirm is None:
+            return Entry("standard", "先修诊断满分，做一道核心题确认", list(prereqs), True, evidence)
+        return Entry("standard", "先修扎实但核心题没过，按教案讲", list(prereqs), False, evidence)
     if prereq_avg is None and prereqs:
         return Entry("standard", "还没有先修证据，先做几道小题", list(prereqs), True, evidence)
     if prereq_avg is not None and prereq_avg < NOVICE_PREREQ_THRESHOLD:

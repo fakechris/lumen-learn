@@ -236,19 +236,28 @@ async def auto_diagnose(store: CourseStore, llm, student: "Student", course_id: 
     course = store.get_course(course_id)
     cmap = load_map(store._course_dir(course_id) or "")
     prereqs = prereq_sessions(course, cmap, session_id) if course else []
-    entry = decide_level(db, course_id, session_id, prereqs, None)
-    if not entry.needs_diagnosis:
+    qs = [q for q in diagnosis_questions(store, course_id, prereqs) if q["kind"] == "single_choice"]
+    if not qs:
+        entry = decide_level(db, course_id, session_id, prereqs, None)
         return entry.level
-    for q in diagnosis_questions(store, course_id, prereqs):
-        if q["kind"] != "single_choice":
-            continue
+    answers = []
+    for q in qs:
         sess = store.get_session(course_id, q["session_id"])
         ex = next((e for e in (sess.exercises if sess else []) if e.exercise_id == q["exercise_id"]), None)
         if ex is None or ex.correct_index is None:
             continue
         a = await student.answer_choice([], {"question": q["stem"], "options": [{"text": o} for o in q["options"]]})
-        record_evidence(db, course_id, q["session_id"], ex.kind, a["choice"] == ex.correct_index, None, str(a["choice"]))
-    return decide_level(db, course_id, session_id, prereqs, None).level
+        answers.append(a["choice"] == ex.correct_index)
+    accuracy = sum(answers) / len(answers) if answers else 0.0
+    diagnosis = {"accuracy": accuracy, "n": len(answers)}
+    if accuracy == 1.0 and len(answers) >= 3:
+        # the real flow confirms with the session's own hurdle gate before going fast
+        sess = store.get_session(course_id, session_id)
+        gate = next((a for a in (sess.actions if sess else []) if a.type == "ask" and a.correct_index is not None), None)
+        if gate is not None:
+            a = await student.answer_choice([], {"question": gate.question, "options": [{"text": o.text} for o in gate.options]})
+            diagnosis["confirm_correct"] = a["choice"] == gate.correct_index
+    return decide_level(db, course_id, session_id, prereqs, None, diagnosis=diagnosis).level
 
 
 def find_suspicious_gates(rows: List[Dict[str, Any]], n_personas: int) -> List[tuple]:
