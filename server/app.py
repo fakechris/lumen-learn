@@ -23,6 +23,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field, ValidationError
 
 from src.content.exercise_generator import grade_fill_blank
+from src.content.gadget_tasks import issue_token
 from src.content.feynman import FeynmanSession, MAX_ROUNDS, feynman_summary, feynman_turn
 from src.content.pipeline import ContentPipeline
 from src.protocol.session import CourseStructure
@@ -277,6 +278,18 @@ async def get_exercises(course_id: str, session_id: str):
     return {"exercises": [e.model_dump(mode="json") for e in session.exercises]}
 
 
+class SnapshotEvent(BaseModel):
+    v: int = 1
+    token: str = ""
+    actor: str = "learner"
+    seq: int = 0
+    ts: int = 0
+    snapshot: dict = Field(default_factory=dict)
+
+
+SETTINGS_SECRET = os.getenv("HK_EVIDENCE_SECRET", "local-evidence-secret")  # single-box deployment
+
+
 class GradeRequest(BaseModel):
     course_id: str
     session_id: str
@@ -284,6 +297,7 @@ class GradeRequest(BaseModel):
     answer_text: Optional[str] = None
     answer_index: Optional[int] = None
     attempt_id: Optional[str] = None  # INV-506: must belong to the calling learner
+    snapshot_events: List[SnapshotEvent] = Field(default_factory=list)  # INV-509 parameter_hunt evidence
 
 
 @app.post("/api/v1/grade")
@@ -305,6 +319,21 @@ async def grade(req: GradeRequest, request: Request, response: Response):
     ex = next((e for e in session.exercises if e.exercise_id == req.exercise_id), None)
     if not ex:
         raise HTTPException(404, "exercise not found")
+    if ex.kind == "parameter_hunt":
+        from src.content.gadget_tasks import GadgetTask, Predicate, evaluate_task, grading_snapshot
+        if not req.snapshot_events or not ex.task:
+            raise HTTPException(400, "parameter_hunt needs operation events")
+        try:
+            token = issue_token(req.course_id, ex.exercise_id, learner, SETTINGS_SECRET)
+            snap = grading_snapshot([e.model_dump() for e in req.snapshot_events], token)
+            verdict = evaluate_task(GadgetTask(**{**ex.task, "goal": Predicate(**ex.task["goal"])}), snap)
+        except ValueError as exc:
+            raise HTTPException(403, f"invalid operation evidence: {exc}")
+        correct = bool(verdict)
+        _record_evidence(req.course_id, req.session_id, "interactive", correct, None, "parameter_hunt", learner, attempt_id)
+        return {"correct": correct, "feedback": ex.explanation, "answer": None,
+                "explanation": ex.explanation, "graded_by": "predicate",
+                "hint": "" if correct or not ex.widget_hint else ex.widget_hint}
     if ex.kind == "fill_blank":
         correct, feedback = await grade_fill_blank(ex, req.answer_text or "", llm)
         _record_evidence(req.course_id, req.session_id, ex.kind, correct, None, req.answer_text or "", learner, attempt_id)

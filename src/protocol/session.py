@@ -163,9 +163,11 @@ class RewardSpec(BaseModel):
 class ExerciseSpec(BaseModel):
     """Post-session exercise. fill_blank is graded semantically by the live
     tutor (exact matches against `accepted` short-circuit); single_choice and
-    interactive compare `correct_index`; interactive embeds a widget."""
+    interactive compare `correct_index`; interactive embeds a widget;
+    parameter_hunt (INV-509) grades a gadget snapshot against a deterministic
+    predicate — no answer key exists to leak."""
     exercise_id: str = ""
-    kind: Literal["fill_blank", "single_choice", "interactive"]
+    kind: Literal["fill_blank", "single_choice", "interactive", "parameter_hunt"]
     stem: str = Field(..., description="Markdown/KaTeX; fill_blank contains exactly one ____")
     options: List[str] = Field(default_factory=list)
     correct_index: Optional[int] = None
@@ -174,6 +176,7 @@ class ExerciseSpec(BaseModel):
     explanation: str = ""
     widget: Optional[WidgetSpec] = None
     widget_hint: str = ""
+    task: Optional[dict] = None   # GadgetTask payload for parameter_hunt (INV-509)
 
     @model_validator(mode="after")
     def _check(self) -> "ExerciseSpec":
