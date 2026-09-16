@@ -1,0 +1,74 @@
+{
+ "function_plot": {
+  "title": "函数图像与探针",
+  "params": {
+   "expr": {
+    "type": "string",
+    "required": true
+   },
+   "x_min": {
+    "type": "number",
+    "min": -100,
+    "max": 100
+   },
+   "x_max": {
+    "type": "number",
+    "min": -100,
+    "max": 100
+   }
+  },
+  "snapshots": [
+   "x",
+   "y"
+  ],
+  "predicates": [
+   "x_in_range",
+   "y_above",
+   "y_below",
+   "probe_on_curve"
+  ]
+ },
+ "vector_2d": {
+  "title": "二维向量操作",
+  "params": {
+   "vectors": {
+    "type": "string",
+    "required": true
+   }
+  },
+  "snapshots": [
+   "vectors"
+  ],
+  "predicates": [
+   "vector_parallel",
+   "vector_length_above",
+   "vectors_collinear"
+  ]
+ },
+ "matrix_shape": {
+  "title": "矩阵维度拖拽",
+  "params": {
+   "rows_min": {
+    "type": "number"
+   },
+   "rows_max": {
+    "type": "number"
+   },
+   "cols_min": {
+    "type": "number"
+   },
+   "cols_max": {
+    "type": "number"
+   }
+  },
+  "snapshots": [
+   "rows",
+   "cols"
+  ],
+  "predicates": [
+   "rows_in_range",
+   "cols_in_range",
+   "shape_equals"
+  ]
+ }
+}
