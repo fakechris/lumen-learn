@@ -7,7 +7,8 @@ import pytest
 from src.content.compiler import StepAudio, compile_session
 from src.content.store import CourseStore, write_package
 from src.protocol.actions import (
-    ActionStepComplete, InterjectQuestion, InterjectResume, InterjectStart, QuestionAnswers, SkipStep, StartSession,
+    ActionStepComplete, Ask, AskOption, InterjectQuestion, InterjectResume, InterjectStart, QuestionAnswers,
+    SkipStep, StartSession,
 )
 from src.protocol.session import (
     BoardSpec, ChapterOutline, CourseStructure, QuestionSpec, SessionOutline, SessionScript, StepSpec,
@@ -52,7 +53,8 @@ def package(tmp_path):
                              chapters=[ChapterOutline(chapter_id="ch_1", title="Ch", sessions=[outline])])
     script = SessionScript(session_id="sess_1", course_id="course_x", title="T", learning_goal="G", steps=[
         StepSpec(spoken_text="第一步", boards=[BoardSpec(markdown="A")],
-                 question=QuestionSpec(question="q?", options=["错", "对"], correct_index=1, explanation="因为")),
+                 question=QuestionSpec(question="q?", options=["错", "对"], correct_index=1, explanation="因为",
+                                       misconceptions=["以为正负号代表方向搞反了", None])),
         StepSpec(spoken_text="第二步"),
     ])
     compiled = compile_session(script, {0: StepAudio(None, 300, 3, 0), 1: StepAudio(None, 300, 3, 0)}, "authored")
@@ -314,7 +316,8 @@ def two_session_package(tmp_path):
         StepSpec(title="先修推导", beat="derive", spoken_text="先修二", boards=[BoardSpec(markdown="P2")])])
     s2 = SessionScript(session_id="sess_2", course_id="course_r", title="本节", learning_goal="G2", steps=[
         StepSpec(title="推导", beat="derive", spoken_text="推导", boards=[BoardSpec(markdown="D")],
-                 question=QuestionSpec(question="q?", options=["错", "对"], correct_index=1, explanation="因为")),
+                 question=QuestionSpec(question="q?", options=["错", "对"], correct_index=1, explanation="因为",
+                                       misconceptions=["以为正负号代表方向搞反了", None])),
         StepSpec(title="回顾", beat="recap", spoken_text="回顾")])
     c1 = compile_session(s1, {0: StepAudio(None, 300, 3, 0), 1: StepAudio(None, 300, 3, 0)}, "authored")
     c2 = compile_session(s2, {0: StepAudio(None, 300, 3, 0), 1: StepAudio(None, 300, 3, 0)}, "authored")
@@ -331,6 +334,14 @@ class StubTutor(LiveTutor):
     @property
     def available(self):
         return True
+
+    async def parallel_gate(self, ctx, ask):
+        """Deterministic twin: rotate the options, move the key with them."""
+        texts = [o.text for o in ask.options]
+        rotated = texts[1:] + texts[:1]
+        return Ask(step_id=ask.step_id, mode="choice", question=ask.question + "（平行题）",
+                   options=[AskOption(text=t) for t in rotated],
+                   correct_index=(ask.correct_index - 1) % len(rotated), explanation=ask.explanation)
 
     async def variant_script(self, ctx, kind, course_id, session_id, ask=None, wrong_answers=None):
         self.variants += 1
@@ -362,29 +373,64 @@ async def test_remediation_without_llm_reasks_once_then_explains(two_session_pac
     await rt.handle(StartSession(course_id="course_r", session_id="sess_2", level="standard"))
     await _drive_answers(rt, transport, [0, 0, 0])
     asks = [m for m in transport.sent if m["type"] == "ask"]
-    assert len(asks) == 2 and asks[1]["step_id"] >= 100000          # asked once more, then gave up
+    # tagged miss → targeted re-tell (no LLM: plain re-ask) → layer-2 twin (None → re-ask) → park
+    assert len(asks) == 3 and all(a["step_id"] >= 3 for a in asks)
     speaks = [m["spoken_text"] for m in transport.sent if m["type"] == "speak"]
     assert any("我们先放一放" in t and "对" in t for t in speaks)
-    assert rt._gates == [0, 2]
+    assert rt._gates == [0, 3]
 
 
 @pytest.mark.asyncio
-async def test_remediation_ladder_variant_then_prereq_then_pass(two_session_package, tmp_path, monkeypatch):
-    monkeypatch.setenv("HK_OUTPUT_ROOT", str(tmp_path / "out"))
+async def test_remediation_directed_by_misconception_then_parallel_check(two_session_package, tmp_path, monkeypatch):
+    monkeypatch.setenv("LUMEN_OUTPUT_ROOT", str(tmp_path / "out"))
     transport = FakeTransport()
     tutor = StubTutor()
     rt = SessionRuntime(transport, two_session_package, tutor, SilentEngine(), str(tmp_path / "live"))
     await rt.handle(StartSession(course_id="course_r", session_id="sess_2", level="standard"))
-    await _drive_answers(rt, transport, [0, 0, 0, 1])                 # wrong ×3, then right
+    # wrong (tagged misconception) → targeted re-tell + re-ask; wrong → layer-2
+    # re-tell with a PARALLEL twin; answering the twin correctly shows transfer
+    await _drive_answers(rt, transport, [0, 0, 0])
     asks = [m for m in transport.sent if m["type"] == "ask"]
     assert len(asks) == 4
+    assert "（平行题）" in asks[3]["question"]                          # level 2: parallel re-check
     titles = [m["title"] for m in transport.sent if m["type"] == "board"]
-    assert "换个讲法：概念" in titles                                   # level 1: deeper variant
-    assert any(t.startswith("回到先修：先修") for t in titles)           # level 2: prerequisite replay
-    assert tutor.variants == 1
+    assert "换个讲法：概念" in titles                                   # targeted re-tell played
+    assert tutor.variants == 1   # one cached deeper variant per step; layer 2 differs by the PARALLEL twin
     assert os.path.isfile(str(tmp_path / "course_r" / "variants" / "sess_2_1_deeper.json"))  # cached
-    assert rt._gates == [1, 4]
+    assert rt._gates == [1, 3]
     assert not any("我们先放一放" in m.get("spoken_text", "") for m in transport.sent if m["type"] == "speak")
+
+
+async def test_untagged_wrong_parks_after_clarify_and_records_unresolved(tmp_path, monkeypatch):
+    monkeypatch.setenv("LUMEN_OUTPUT_ROOT", str(tmp_path / "out2"))
+    from src.protocol.session import BoardSpec, QuestionSpec, SessionScript, StepSpec
+    from src.content.compiler import StepAudio, compile_session
+    from src.content.store import write_package
+    from src.protocol.session import CourseStructure, ChapterOutline, SessionOutline
+    outlines = [SessionOutline(session_id="sess_1", title="本节", learning_goal="G", core_concept="C")]
+    course = CourseStructure(course_id="course_u", title="U", generation_mode="authored",
+                             chapters=[ChapterOutline(chapter_id="ch_1", title="Ch", sessions=outlines)])
+    s1 = SessionScript(session_id="sess_1", course_id="course_u", title="本节", learning_goal="G", steps=[
+        StepSpec(title="门", beat="derive", spoken_text="门", boards=[BoardSpec(markdown="D")],
+                 question=QuestionSpec(question="q?", options=["错", "对"], correct_index=1, explanation="因为"))])
+    c1 = compile_session(s1, {0: StepAudio(None, 300, 3, 0)}, "authored")
+    write_package(str(tmp_path / "course_u"), course, [s1], [c1])
+    store = CourseStore([str(tmp_path)])
+    transport = FakeTransport()
+    rt = SessionRuntime(transport, store, LiveTutor(None), SilentEngine(), str(tmp_path / "live2"))
+    await rt.handle(StartSession(course_id="course_u", session_id="sess_1", level="standard"))
+    await _drive_answers(rt, transport, [0, 0])
+    asks = [m for m in transport.sent if m["type"] == "ask"]
+    assert len(asks) == 2                                             # clarify once, then park
+    speaks = [m.get("spoken_text", "") for m in transport.sent if m["type"] == "speak"]
+    assert any("我们先放一放" in t for t in speaks)                      # 停车：放行不计为学会
+    statuses = [m["detail"] for m in transport.sent if m["type"] == "status" and str(m.get("detail", "")).startswith("teaching_policy")]
+    assert any(":park" in s for s in statuses)                        # the decision is visible in the stream
+    import sqlite3
+    db_path = str(tmp_path / "out2" / "lumen.db")
+    events = sqlite3.connect(db_path).execute(
+        "select kind, correct from learner_events_v2 where kind='remediation_failed'").fetchall()
+    assert events == [("remediation_failed", 0)]                      # parked, recorded, not mastered
 
 
 @pytest.mark.asyncio

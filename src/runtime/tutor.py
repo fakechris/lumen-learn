@@ -151,6 +151,30 @@ class LiveTutor:
         except LLMError as e:
             yield f"抱歉，答疑服务暂时出错了：{e}"
 
+    async def parallel_gate(self, ctx: TutorContext, ask: Ask) -> Optional[Ask]:
+        """A parallel re-check for the SAME objective (INV-510): new wording/numbers,
+        shuffled key — so remembering the first explanation cannot pass. None when
+        no LLM is available (the runtime then falls back to a plain re-ask)."""
+        if self.llm is None or ask.mode != "choice" or ask.correct_index is None:
+            return None
+        system = ("你是出题老师。把这道课堂检查题改写成一道**平行题**：考同一个目标、"
+                  "换全新的情境或数字、正确答案的位置必须移动；干扰项同样要换说法。"
+                  '只输出 JSON：{"question": "", "options": ["", "", ""], "correct_index": 0}')
+        try:
+            raw = await self.llm.complete(system, f"题目：{ask.question}\n选项：{[o.text for o in ask.options]}",
+                                          json_mode=True, purpose="parallel_gate")
+            from src.llm.client import extract_json
+            data = extract_json(raw)
+            opts = [str(o) for o in data.get("options", [])]
+            key = int(data.get("correct_index", 0))
+            if len(opts) < 2 or not 0 <= key < len(opts):
+                return None
+            return Ask(mode="choice", question=str(data.get("question") or ask.question),
+                       options=[AskOption(text=o) for o in opts], correct_index=key,
+                       explanation=ask.explanation)
+        except Exception:  # noqa: BLE001 — a failed twin degrades to a plain re-ask
+            return None
+
     async def feedback_for_choice(self, ctx: TutorContext, ask: Ask, answer_index: int) -> str:
         correct = ask.correct_index is not None and answer_index == ask.correct_index
         chosen = ask.options[answer_index].text if 0 <= answer_index < len(ask.options) else ""
