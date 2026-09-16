@@ -48,7 +48,15 @@ os.makedirs(LIVE_AUDIO_DIR, exist_ok=True)
 
 app = FastAPI(title="Socratic Whiteboard", version="2.0.0")
 
-store = CourseStore([EXAMPLES_ROOT, OUTPUT_ROOT])
+
+def _course_roots() -> List[str]:
+    """Course packages live wherever HK_COURSES_ROOT points (e.g. a checkout of the
+    private lumen-learn-class repo), then the built-in roots."""
+    extra = [r for r in os.getenv("HK_COURSES_ROOT", "").replace(";", ":").split(":") if r]
+    return extra + [EXAMPLES_ROOT, OUTPUT_ROOT]
+
+
+store = CourseStore(_course_roots())
 settings_store = Settings(os.path.join(OUTPUT_ROOT, "settings.json"))
 settings_store.load()
 llm = make_client(**settings_store.llm_overrides())
@@ -664,5 +672,6 @@ async def _no_stale_client(request, call_next):
 
 
 app.mount("/live", StaticFiles(directory=LIVE_AUDIO_DIR), name="live")
-app.mount("/examples", StaticFiles(directory=os.path.join(ROOT, "examples")), name="examples")
+if os.path.isdir(os.path.join(ROOT, "examples")):  # sample lectures may live in the private content repo
+    app.mount("/examples", StaticFiles(directory=os.path.join(ROOT, "examples")), name="examples")
 app.mount("/", StaticFiles(directory=CLIENT_DIR, html=True), name="client")

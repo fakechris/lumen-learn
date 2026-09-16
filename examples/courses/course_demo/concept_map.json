@@ -1,0 +1,17 @@
+{
+  "course_id": "course_demo",
+  "source": "structure",
+  "nodes": [
+    {
+      "id": "demo",
+      "label": "系统交互演示",
+      "summary": "板书、语音与提问门的最小闭环。",
+      "sessions": [
+        "sess_1"
+      ],
+      "weight": 1
+    }
+  ],
+  "edges": [],
+  "note": "合成演示概念图"
+}

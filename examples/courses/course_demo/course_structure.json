@@ -1,0 +1,23 @@
+{
+  "course_id": "course_demo",
+  "title": "示例课：一个最小的白板课堂",
+  "target_audience": "第一次打开系统的任何人",
+  "generation_mode": "heuristic",
+  "chapters": [
+    {
+      "chapter_id": "ch_1",
+      "title": "演示",
+      "sessions": [
+        {
+          "session_id": "sess_1",
+          "title": "示例课：一个最小的白板课堂",
+          "learning_goal": "体验音画同步板书与提问门（合成演示）",
+          "core_concept": "系统交互演示",
+          "cognitive_hurdle": "",
+          "source_sections": [],
+          "estimated_duration_min": 1
+        }
+      ]
+    }
+  ]
+}

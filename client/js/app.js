@@ -451,8 +451,16 @@ class App {
     $("ingestBtn").addEventListener("click", () => this.ingestAndPlan());
     $("buildBtn").addEventListener("click", () => this.buildFromPlan());
     $("backToImport").addEventListener("click", () => this.showGenStep("import"));
-    $("loadExample").addEventListener("click", async () => {
-      $("genContent").value = await (await fetch("/examples/linear_algebra_basis.md")).text().catch(() => "");
+    $("loadExample").addEventListener("click", () => {
+      // a tiny synthetic sample — real lecture collections live in the private content repo
+      $("genContent").value = [
+        "# 我的讲义标题", "",
+        "## 第一节：概念",
+        "用一两段话讲清一个概念，公式用 $LaTeX$，例如 $f(x) = ax^2 + bx + c$。",
+        "系统会把每个二级标题变成一节课，段落变成板书与讲解。", "",
+        "## 第二节：应用",
+        "给一个具体数字的例子，再留一个让学生先猜后验的问题，效果最好。", "",
+      ].join("\n");
     });
     document.addEventListener("keydown", (e) => {
       if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;

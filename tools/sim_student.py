@@ -289,7 +289,8 @@ async def main() -> int:
     llm = make_client()
     if llm is None:
         print("no LLM configured (DEEPSEEK_API_KEY)"); return 1
-    store = CourseStore([a.output, os.path.join(os.path.dirname(__file__), "..", "examples", "courses")])
+    extra = [r for r in os.getenv("HK_COURSES_ROOT", "").replace(";", ":").split(":") if r]
+    store = CourseStore(extra + [a.output, os.path.join(os.path.dirname(__file__), "..", "examples", "courses")])
 
     if a.build_eval_set:
         from src.content.eval_contract import build_eval_set, flag_known_bad, leak_issues, save_eval_set

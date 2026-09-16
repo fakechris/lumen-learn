@@ -192,8 +192,10 @@ def test_settings_test_endpoint_probes_candidate_without_saving(client, monkeypa
 
 
 def test_cheatsheet_route_serves_bundled_course(client):
-    r = client.get("/api/v1/courses/course_2ce925fec9/cheatsheet")
+    # course_demo is the synthetic fixture that ships with the repo; real course
+    # packages live in the private lumen-learn-class repo (HK_COURSES_ROOT)
+    r = client.get("/api/v1/courses/course_demo/cheatsheet")
     assert r.status_code == 200 and "速查表" in r.text and "size: A4" in r.text
-    md = client.get("/api/v1/courses/course_2ce925fec9/cheatsheet?format=md")
+    md = client.get("/api/v1/courses/course_demo/cheatsheet?format=md")
     assert md.status_code == 200 and md.headers["content-type"].startswith("text/markdown")
     assert client.get("/api/v1/courses/nope/cheatsheet").status_code == 404

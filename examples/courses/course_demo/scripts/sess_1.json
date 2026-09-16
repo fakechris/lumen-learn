@@ -1,0 +1,65 @@
+{
+  "session_id": "sess_1",
+  "course_id": "course_demo",
+  "title": "示例课：一个最小的白板课堂",
+  "learning_goal": "体验音画同步板书与提问门（本课为合成演示，不含真实教学内容）",
+  "steps": [
+    {
+      "title": "一行板书与一个问题",
+      "beat": "define",
+      "spoken_text": "这是一节完全合成的示例课，用来演示系统的基本交互：板书随讲解出现，讲到关键处老师会停下来提问。屏幕上有一个可以拖动的探针，它的读数会跟着变。",
+      "boards": [
+        {
+          "title": "示例板书",
+          "markdown": "- 合成示例：板书按语音节奏逐行出现\n- 装饰：关键词被圈出\n- 门：答对继续，答错换法再讲",
+          "layout": "follow"
+        }
+      ],
+      "decorations": [
+        {
+          "kind": "circle",
+          "snippet": "示例",
+          "board_index": 0,
+          "trigger_phrase": "合成示例",
+          "color": "red"
+        }
+      ],
+      "illustration": null,
+      "widget": null,
+      "question": {
+        "mode": "choice",
+        "question": "这节课的内容来自哪里？",
+        "options": [
+          "真实教材章节",
+          "完全合成的演示内容",
+          "网络搜索"
+        ],
+        "correct_index": 1,
+        "misconceptions": [
+          null,
+          null,
+          "演示课不联网、不检索；生成课才由讲义驱动。"
+        ],
+        "explanation": "本课是随仓库发布的合成演示，不含真实教学内容。"
+      },
+      "reward": null,
+      "new_page_title": null
+    },
+    {
+      "title": "小结",
+      "beat": "recap",
+      "spoken_text": "小结：把你的讲义交给系统，就能得到这样一节可交互的课。",
+      "boards": [],
+      "decorations": [],
+      "illustration": null,
+      "widget": null,
+      "question": null,
+      "reward": {
+        "title": "最小可用闭环",
+        "description": "讲义进来，互动课出来；音频、板书、提问门全自动对齐。"
+      },
+      "new_page_title": null
+    }
+  ],
+  "exercises": []
+}

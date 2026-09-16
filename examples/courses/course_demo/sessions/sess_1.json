@@ -1,0 +1,109 @@
+{
+  "manifest_version": "2.0",
+  "session_id": "sess_1",
+  "course_id": "course_demo",
+  "title": "示例课：一个最小的白板课堂",
+  "learning_goal": "体验音画同步板书与提问门（本课为合成演示，不含真实教学内容）",
+  "generation_mode": "heuristic",
+  "total_duration_ms": 10000,
+  "actions": [
+    {
+      "type": "board",
+      "step_id": 2,
+      "board_uid": 1,
+      "title": "示例板书",
+      "board_content": "- 合成示例：板书按语音节奏逐行出现\n- 装饰：关键词被圈出\n- 门：答对继续，答错换法再讲",
+      "layout": "follow",
+      "reveal_gate_step": 1,
+      "page_id": "page-1"
+    },
+    {
+      "type": "speak",
+      "step_id": 1,
+      "spoken_text": "这是一节完全合成的示例课，用来演示系统的基本交互：板书随讲解出现，讲到关键处老师会停下来提问。屏幕上有一个可以拖动的探针，它的读数会跟着变。"
+    },
+    {
+      "type": "circle",
+      "step_id": 3,
+      "target_board_uid": 1,
+      "snippet": "示例",
+      "color": "red",
+      "during_step": 1,
+      "at_ms": 2100
+    },
+    {
+      "type": "tts_segment",
+      "step_id": 1,
+      "audio_url": null,
+      "duration_ms": 6000,
+      "tts_cjk": 40,
+      "tts_latin": 10,
+      "speed": 1.0,
+      "skipped": false,
+      "marks": null
+    },
+    {
+      "type": "ask",
+      "step_id": 4,
+      "mode": "choice",
+      "question": "这节课的内容来自哪里？",
+      "options": [
+        {
+          "text": "真实教材章节",
+          "misconception": null
+        },
+        {
+          "text": "完全合成的演示内容",
+          "misconception": null
+        },
+        {
+          "text": "网络搜索",
+          "misconception": "演示课不联网、不检索；生成课才由讲义驱动。"
+        }
+      ],
+      "correct_index": 1,
+      "explanation": "本课是随仓库发布的合成演示，不含真实教学内容。"
+    },
+    {
+      "type": "speak",
+      "step_id": 5,
+      "spoken_text": "小结：把你的讲义交给系统，就能得到这样一节可交互的课。"
+    },
+    {
+      "type": "tts_segment",
+      "step_id": 5,
+      "audio_url": null,
+      "duration_ms": 4000,
+      "tts_cjk": 25,
+      "tts_latin": 5,
+      "speed": 1.0,
+      "skipped": false,
+      "marks": null
+    },
+    {
+      "type": "reward_user",
+      "step_id": 6,
+      "master_concept_title": "最小可用闭环",
+      "master_concept_description": "讲义进来，互动课出来；音频、板书、提问门全自动对齐。"
+    },
+    {
+      "type": "done",
+      "step_id": 7
+    }
+  ],
+  "exercises": [],
+  "keypoints": [
+    {
+      "step_id": 1,
+      "title": "一行板书与一个问题",
+      "beat": "define",
+      "has_question": true
+    },
+    {
+      "step_id": 5,
+      "title": "小结",
+      "beat": "recap",
+      "has_question": false
+    }
+  ]
+}
