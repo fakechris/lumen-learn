@@ -58,8 +58,6 @@ CREATE TABLE IF NOT EXISTS learner_events_v2 (
   kind TEXT, correct INTEGER, quality REAL, detail TEXT, attempt_id TEXT,
   response_id TEXT, assisted INTEGER DEFAULT 0, exercise_id TEXT, review TEXT);
 CREATE INDEX IF NOT EXISTS learner_events_v2_session ON learner_events_v2(learner_id, course_id, session_id, id);
-CREATE UNIQUE INDEX IF NOT EXISTS ev_response_unique ON learner_events_v2(learner_id, response_id)
-  WHERE response_id IS NOT NULL;
 CREATE TABLE IF NOT EXISTS learner_profile_v2 (
   learner_id TEXT, course_id TEXT, level TEXT, pace REAL, skips INTEGER, gates_ok INTEGER, gates_total INTEGER, updated REAL,
   PRIMARY KEY (learner_id, course_id));

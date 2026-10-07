@@ -33,7 +33,7 @@ from src.protocol.actions import (
     TtsSegment,
 )
 from src.protocol.session import CompiledSession
-from src.runtime.tutor import LiveTutor, TutorContext
+from src.runtime.tutor import LiveTutor, TutorContext, wants_figure
 from src.content.adaptive import decide_level, fill_beats, play_policy, prereq_sessions
 from src.tts.engine import TtsEngine
 
@@ -562,12 +562,24 @@ class SessionRuntime:
             else:
                 await self.transport.send(Status(state="interjecting", detail="preparing"))
                 script = await self.tutor.detour_script(self.ctx, question, self.session.course_id, self.session.session_id)
-                # figures (optional, at most one) and aligned audio per step
-                for i, st in enumerate(script.steps[:1]):
+                asked_figure = wants_figure(question)
+                if asked_figure:
+                    await self.transport.send(Status(state="interjecting", detail="drawing"))
+                for st in script.steps:
                     il = st.illustration
-                    if il and il.kind == "svg" and not il.svg:
-                        filled = await fill_illustration(il, self.tutor.llm, "", "")
-                        st.illustration = filled if filled.svg else None
+                    if il is None or il.svg or il.image_url:
+                        continue
+                    filled = await fill_illustration(il, self.tutor.llm, "", "")
+                    st.illustration = filled if (filled.svg or filled.image_url) else None
+                if asked_figure and not any(st.illustration and (st.illustration.svg or st.illustration.image_url)
+                                            for st in script.steps):
+                    log.warning("detour illustration failed for %r", question)
+                    await self.transport.send(Status(state="interjecting", detail="illustration_failed"))
+                    if script.steps:
+                        note = "示意图这次没画出来，我先用板书讲。"
+                        st0 = script.steps[0]
+                        if note not in st0.spoken_text:
+                            script.steps[0] = st0.model_copy(update={"spoken_text": st0.spoken_text.rstrip() + note})
                 audio: Dict[int, StepAudio] = {}
                 for i, st in enumerate(script.steps):
                     audio[i] = await self._synthesize_live(st.spoken_text, f"detour_{interject_id}_{i + 1}")

@@ -23,6 +23,7 @@ DEFAULT_LLM_PRICES: Dict[str, List[float]] = {
     "deepseek-v4-flash": [0.27, 1.10],
     "deepseek-v4-flash-vision-exp": [0.27, 1.10],
     "deepseek-v4-pro": [1.00, 4.00],
+    "MiniMax-M3": [0.30, 1.20],
     "gpt-4o": [2.50, 10.00],
     "claude-sonnet-5": [3.00, 15.00],
 }

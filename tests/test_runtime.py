@@ -11,7 +11,7 @@ from src.protocol.actions import (
     SkipStep, StartSession,
 )
 from src.protocol.session import (
-    BoardSpec, ChapterOutline, CourseStructure, QuestionSpec, SessionOutline, SessionScript, StepSpec,
+    BoardSpec, ChapterOutline, CourseStructure, IllustrationSpec, QuestionSpec, SessionOutline, SessionScript, StepSpec,
 )
 from src.runtime.session_runtime import SessionRuntime
 from src.runtime.tutor import LiveTutor
@@ -224,6 +224,53 @@ async def test_detour_is_a_mini_lesson_with_relabeled_ids(package, tmp_path, mon
     assert done["seconds"] >= 0
     await rt.handle(InterjectResume())
     assert rt.state == "teaching"
+    await rt.close()
+
+
+@pytest.mark.asyncio
+async def test_detour_draw_request_fills_illustration(package, tmp_path, monkeypatch):
+    store, _ = package
+    t = FakeTransport()
+    rt = make_runtime(t, store, tmp_path, ack_timeout_s=0.3)
+
+    async def fake_detour(ctx, question, course_id, session_id):
+        return SessionScript(session_id=session_id, course_id=course_id, title="岔路", steps=[
+            StepSpec(spoken_text="看这张图，径向分布先升后降。好，我们回到刚才的地方。",
+                     boards=[BoardSpec(title="岔路：径向分布", markdown="- 先升后降", layout="newcol")],
+                     illustration=IllustrationSpec(kind="svg", caption="径向分布", brief="画 R(r) 曲线")),
+        ])
+
+    async def fake_fill(spec, llm, image_out_path, image_url):
+        return spec.model_copy(update={"svg": '<svg viewBox="0 0 800 520"></svg>'})
+
+    rt.tutor.llm = object()
+    monkeypatch.setattr(rt.tutor, "detour_script", fake_detour)
+    monkeypatch.setattr("src.runtime.session_runtime.fill_illustration", fake_fill)
+
+    await rt.handle(StartSession(course_id="course_x", session_id="sess_1"))
+    board = await t.wait_for("board")
+    await rt.handle(ActionStepComplete(step_id=board["step_id"]))
+    main_tts = await t.wait_for("tts_segment")
+    await rt.handle(InterjectStart(step_id=main_tts["step_id"], offset_ms=100))
+    await rt.handle(InterjectQuestion(text="帮我画个径向分布的图"))
+
+    deadline = asyncio.get_event_loop().time() + 3
+    illus = detour_board = None
+    while asyncio.get_event_loop().time() < deadline and (illus is None or detour_board is None):
+        await asyncio.sleep(0.02)
+        detour_board = next((m for m in t.sent if m["type"] == "board" and m["step_id"] >= 100_000), detour_board)
+        illus = next((m for m in t.sent if m["type"] == "illustration" and m["step_id"] >= 100_000), illus)
+        if detour_board:
+            await rt.handle(ActionStepComplete(step_id=detour_board["step_id"]))
+    assert illus and "<svg" in (illus.get("svg") or "")
+    await rt.handle(ActionStepComplete(step_id=illus["step_id"]))
+    detour_tts = None
+    while detour_tts is None and asyncio.get_event_loop().time() < deadline:
+        await asyncio.sleep(0.02)
+        detour_tts = next((m for m in t.sent if m["type"] == "tts_segment" and m["step_id"] >= 100_000), None)
+    assert detour_tts
+    await rt.handle(ActionStepComplete(step_id=detour_tts["step_id"]))
+    await t.wait_for("interject_done")
     await rt.close()
 
 

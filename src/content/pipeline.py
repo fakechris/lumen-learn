@@ -101,7 +101,7 @@ class ContentPipeline:
         if mode not in ("auto", "llm", "heuristic"):
             raise ValueError("mode must be auto|llm|heuristic")
         if mode == "llm" and llm is None:
-            raise RuntimeError("mode=llm but no LLM is configured (set DEEPSEEK_API_KEY / OPENAI_API_KEY / ANTHROPIC_API_KEY)")
+            raise RuntimeError("mode=llm but no LLM is configured (set DEEPSEEK_API_KEY / MINIMAX_API_KEY / OPENAI_API_KEY / ANTHROPIC_API_KEY)")
         self.output_root = os.path.abspath(output_root)
         self.docs = DocStore(self.output_root)
         self.llm = llm if mode != "heuristic" else None

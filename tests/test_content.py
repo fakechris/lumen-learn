@@ -336,8 +336,48 @@ def test_thinking_only_for_plan_by_default(monkeypatch):
     monkeypatch.delenv("LLM_THINK_PURPOSES", raising=False)
     cfg = LLMConfig.from_env()
     assert cfg.is_deepseek and cfg.think_purposes == ("plan",)
+    assert cfg.thinking_extra_body("plan") == {"thinking": {"type": "enabled"}}
+    assert cfg.thinking_extra_body("widget") == {"thinking": {"type": "disabled"}}
     monkeypatch.setenv("LLM_THINK_PURPOSES", "plan,synth")
     assert LLMConfig.from_env().think_purposes == ("plan", "synth")
+
+
+def test_llm_config_minimax_m3(monkeypatch):
+    from src.llm.client import LLMConfig
+    for key in ("DEEPSEEK_API_KEY", "ANTHROPIC_API_KEY", "OPENAI_API_KEY", "LLM_API_KEY",
+                "LLM_PROVIDER", "LLM_MODEL", "LLM_MODEL_PRO", "LLM_MODEL_VISION", "LLM_BASE_URL"):
+        monkeypatch.delenv(key, raising=False)
+    monkeypatch.setenv("MINIMAX_API_KEY", "mm-key")
+    cfg = LLMConfig.from_env(provider="minimax")
+    assert cfg is not None
+    assert cfg.api_key == "mm-key"
+    assert cfg.model == "MiniMax-M3"
+    assert cfg.for_tier("pro") == "MiniMax-M3"
+    assert cfg.for_tier("vision") == "MiniMax-M3"
+    assert cfg.is_minimax and not cfg.is_deepseek
+    assert cfg.base_url == "https://api.minimaxi.com/v1"
+    assert cfg.think_purposes == ("plan",)
+    assert cfg.thinking_extra_body("plan") == {"thinking": {"type": "adaptive"}}
+    assert cfg.thinking_extra_body("widget") == {"thinking": {"type": "disabled"}}
+    assert cfg.thinking_extra_body("synth_repair") == {"thinking": {"type": "disabled"}}
+
+
+def test_llm_config_minimax_auto_and_priority(monkeypatch):
+    from src.llm.client import LLMConfig
+    for key in ("DEEPSEEK_API_KEY", "ANTHROPIC_API_KEY", "OPENAI_API_KEY", "LLM_API_KEY",
+                "LLM_PROVIDER", "LLM_MODEL", "LLM_BASE_URL"):
+        monkeypatch.delenv(key, raising=False)
+    monkeypatch.setenv("MINIMAX_API_KEY", "mm-key")
+    auto = LLMConfig.from_env()
+    assert auto is not None and auto.is_minimax and auto.model == "MiniMax-M3"
+
+    monkeypatch.setenv("OPENAI_API_KEY", "sk-openai")
+    openai_first = LLMConfig.from_env()
+    assert openai_first.model == "gpt-4o" and not openai_first.is_minimax
+
+    monkeypatch.setenv("DEEPSEEK_API_KEY", "ds-key")
+    deepseek_first = LLMConfig.from_env()
+    assert deepseek_first.is_deepseek and deepseek_first.model == "deepseek-v4-flash"
 
 
 def test_clean_mermaid_unescapes_and_unfences():

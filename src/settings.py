@@ -3,7 +3,7 @@
 Stored at ``<output_root>/settings.json`` — output/ is git-ignored, so keys never
 enter the repository. Values set here override the environment when building the
 LLM/TTS clients; fields left empty fall back to the usual env-var resolution
-(``DEEPSEEK_API_KEY`` / ``LLM_*`` / ``TTS_ENGINE``). GET responses always mask
+(``DEEPSEEK_API_KEY`` / ``MINIMAX_API_KEY`` / ``LLM_*`` / ``TTS_ENGINE``). GET responses always mask
 the api_key; a PUT that echoes the mask back leaves the stored key unchanged.
 """
 

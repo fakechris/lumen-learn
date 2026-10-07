@@ -7,6 +7,17 @@ from src.tts.engine import MacSayEngine, SilentEngine, choose_engine, wav_durati
 from src.tts.spoken_text import count_chars, estimate_duration_ms, to_spoken
 
 
+def test_to_spoken_classroom_row_is_hang_not_xing():
+    from src.tts.spoken_text import apply_pronunciation, to_spoken
+    spoken = to_spoken("看这一行，从这一行到下一行，圈第一行。")
+    assert "这一杭" in spoken and "下一杭" in spoken and "第一杭" in spoken
+    assert "这一行" not in spoken
+    # walking / ok-to-go senses stay 行
+    kept = to_spoken("不行，走两步再行动。行了。")
+    assert "不行" in kept and "行动" in kept
+    assert apply_pronunciation("看这行") == "看这杭"
+
+
 def test_to_spoken_reads_formulas_aloud():
     assert to_spoken("组合 $c_1 \\vec{v}_1 + c_2 \\vec{v}_2$ 是平面") == "组合 c1 v1 加 c2 v2 是平面"
     assert to_spoken("$\\frac{a}{b}$") == "b 分之 a"
