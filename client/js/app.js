@@ -10,6 +10,7 @@ import { Whiteboard } from "./board.js";
 import { renderMarkdownInto, escapeHtml } from "./markdown.js";
 import { ExerciseView } from "./exercises.js";
 import { initSettings, refreshCapsPill } from "./settings.js";
+import { armImeGuard, imeBlocksSubmit } from "./ime.js";
 
 const $ = (id) => document.getElementById(id);
 const SPEEDS = [1.0, 1.25, 1.5, 2.0];
@@ -50,6 +51,8 @@ class App {
     this.pendingKinds = new Set();
     this.pendingDecos = new Map();    // during_step -> [decoration]
     this.currentStep = null;          // step_id of playing tts
+    this.currentPlay = null;          // live utterance { stepId, start, finish }
+    this.lastPlay = null;             // last utterance, for replay after it ends
     this.interject = null;            // { id, bubble, text, audioPlayed }
 
     this.initFeynman();
@@ -273,8 +276,9 @@ class App {
         box.appendChild(opts);
       } else {
         const input = document.createElement("input"); input.placeholder = "填空，回车提交";
+        armImeGuard(input);
         input.addEventListener("keydown", async (ev) => {
-          if (ev.key !== "Enter" || input.disabled) return;
+          if (ev.key !== "Enter" || input.disabled || imeBlocksSubmit(ev)) return;
           input.disabled = true;
           const res = await grade({ answer_text: input.value });
           fb.textContent = res.correct ? "✓ 对" : `✗ 答案是「${res.answer || ""}」`;
@@ -319,9 +323,44 @@ class App {
 
   skipStep() {
     const play = this.currentPlay;
-    if (!play || !play.finish || this.state !== "teaching") return;
+    if (!play?.finish) return;
+    if (this.state === "interjecting") {
+      this.finishSpeech();
+      return;
+    }
+    if (this.state !== "teaching") return;
     this.clock.stop();
     play.finish(true);
+  }
+
+  finishSpeech() {
+    if (!this.currentPlay) return;
+    if (this.clock.segment) this.clock.skipToEnd();
+    else this.currentPlay.finish(false);
+  }
+
+  replaySegment() {
+    const play = this.currentPlay || this.lastPlay;
+    if (!play?.start) return;
+    play.start(0);
+  }
+
+  seekForward(ms = 5000) {
+    if (!this.clock.segment) return;
+    this.clock.seekBy(ms);
+  }
+
+  syncTransportControls() {
+    const live = !!this.currentPlay && !!this.clock.segment;
+    const hasLast = !!(this.currentPlay || this.lastPlay);
+    const replay = $("replayBtn");
+    const finish = $("finishSpeechBtn");
+    const ffwd = $("ffwdBtn");
+    const skip = $("skipBtn");
+    if (replay) replay.disabled = !hasLast;
+    if (finish) finish.disabled = !live;
+    if (ffwd) ffwd.disabled = !live;
+    if (skip) skip.disabled = !live || (this.state !== "teaching" && this.state !== "interjecting");
   }
 
   // ------------------------------------------------------------------ feynman round
@@ -332,6 +371,9 @@ class App {
     $("mapClose").addEventListener("click", () => $("mapView").classList.remove("open"));
     $("levelBtn").addEventListener("click", () => this.cycleLevel());
     $("skipBtn").addEventListener("click", () => this.skipStep());
+    $("replayBtn").addEventListener("click", () => this.replaySegment());
+    $("finishSpeechBtn").addEventListener("click", () => this.finishSpeech());
+    $("ffwdBtn").addEventListener("click", () => this.seekForward(5000));
     $("openMap").addEventListener("click", () => this.openConceptMap());
     $("openCheatsheet").addEventListener("click", () => {
       if (this.course) window.open(`/api/v1/courses/${this.course.course_id}/cheatsheet`, "_blank");
@@ -431,9 +473,10 @@ class App {
     $("playPauseBtn").addEventListener("click", () => this.togglePause());
     $("speedBtn").addEventListener("click", () => this.cycleSpeed());
     $("interjectBtn").addEventListener("click", () => this.beginInterject());
+    armImeGuard($("interjectInput"));
     $("interjectInput").addEventListener("keydown", (e) => {
-      if (e.key === "Enter") this.sendInterject();
-      if (e.key === "Escape") this.cancelInterject();
+      if (e.key === "Enter" && !imeBlocksSubmit(e)) this.sendInterject();
+      if (e.key === "Escape" && !imeBlocksSubmit(e)) this.cancelInterject();
     });
     $("interjectSend").addEventListener("click", () => this.sendInterject());
     $("interjectCancel").addEventListener("click", () => this.cancelInterject());
@@ -465,7 +508,11 @@ class App {
     document.addEventListener("keydown", (e) => {
       if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
       if (e.code === "Space") { e.preventDefault(); this.togglePause(); }
+      else if (e.code === "ArrowRight" && e.shiftKey) { e.preventDefault(); this.seekForward(5000); }
+      else if (e.code === "ArrowRight") { e.preventDefault(); this.finishSpeech(); }
+      else if (e.code === "KeyR" || e.code === "ArrowLeft") { e.preventDefault(); this.replaySegment(); }
     });
+    this.syncTransportControls();
   }
 
   setConn(ok) {
@@ -506,7 +553,7 @@ class App {
 
   cycleSpeed() {
     this.speed = SPEEDS[(SPEEDS.indexOf(this.speed) + 1) % SPEEDS.length];
-    $("speedBtn").textContent = `沉稳 · ${this.speed}×`;
+    $("speedBtn").textContent = `语速 ${this.speed}×`;
     this.clock.setRate(this.speed);
     this.ws.send({ type: "set_tts_config", speed: this.speed });
   }
@@ -572,6 +619,9 @@ class App {
   on_status(m) {
     this.setState(m.state);
     if (m.detail && m.detail.startsWith("variant:")) this.toast(m.detail === "variant:deeper" ? "换个讲法再讲一遍…" : "压缩成要点…");
+    if (m.detail === "drawing") this.toast("正在画示意图…");
+    if (m.detail === "illustration_failed") this.toast("示意图这次没画出来，先用板书讲", true);
+    this.syncTransportControls();
   }
 
   on_session_ready(m) {
@@ -678,6 +728,7 @@ class App {
     const decos = this.pendingDecos.get(m.step_id) || [];
     const controlUid = this.widgetControls.get(m.step_id);
     const chars = Array.from(text);
+    let acked = false;
     // marks index the JS string by UTF-16 code units; map to code points for slicing
     const start = (startMs = 0) => this.clock.play({
       url: m.audio_url,
@@ -698,12 +749,16 @@ class App {
       this.setSubtitle(text, false);
       if (this.currentPlay?.stepId === m.step_id) this.currentPlay = null;
       this.currentStep = null;
+      this.syncTransportControls();
+      if (acked) return;
+      acked = true;
       if (skipped) this.ws.send({ type: "skip_step", step_id: m.step_id });
       else this.ack(m.step_id);
     };
-    if (m.step_id < 100000 || !this.interject) this.currentPlay = { stepId: m.step_id, start, finish };
+    this.currentPlay = this.lastPlay = { stepId: m.step_id, start, finish };
     start(0);
     if (this.state === "paused") this.clock.pause();
+    this.syncTransportControls();
   }
 
   on_ask(m) {
@@ -740,7 +795,11 @@ class App {
       const input = document.createElement("input");
       input.className = "ask-input";
       input.placeholder = "写下你的想法，回车提交";
-      input.addEventListener("keydown", (e) => { if (e.key === "Enter" && input.value.trim()) finish({ answer_text: input.value.trim() }, input.value.trim()); });
+      armImeGuard(input);
+      input.addEventListener("keydown", (e) => {
+        if (e.key !== "Enter" || imeBlocksSubmit(e) || !input.value.trim()) return;
+        finish({ answer_text: input.value.trim() }, input.value.trim());
+      });
       row.appendChild(input);
       input.focus();
     }
@@ -775,8 +834,11 @@ class App {
     if (this.interject || this.state === "idle") return;
     const offset = Math.round(this.clock.currentMs);
     // Suspend the main narration; the detour is a mini lesson that reuses the same action handlers.
-    this.suspended = this.currentPlay ? { start: this.currentPlay.start, ms: offset, stepId: this.currentPlay.stepId } : null;
+    this.suspended = this.currentPlay
+      ? { start: this.currentPlay.start, ms: offset, stepId: this.currentPlay.stepId, play: this.currentPlay }
+      : null;
     this.clock.stop();
+    this.syncTransportControls();
     this.ws.send({ type: "interject_start", step_id: this.currentStep, offset_ms: offset });
     this.interject = { id: null, bubble: null, text: "", done: false };
     $("interjectBox").classList.add("open");
@@ -829,8 +891,13 @@ class App {
   resumeSuspended() {
     const s = this.suspended;
     this.suspended = null;
-    if (s) { this.currentStep = s.stepId; this.renderKeypoints(s.stepId); s.start(s.ms); }
-    else if (this.state === "paused") this.clock.resume();
+    if (s) {
+      this.currentStep = s.stepId;
+      this.currentPlay = this.lastPlay = s.play || { stepId: s.stepId, start: s.start };
+      this.renderKeypoints(s.stepId);
+      s.start(s.ms);
+      this.syncTransportControls();
+    } else if (this.state === "paused") this.clock.resume();
   }
 
   // ------------------------------------------------------------------ generation (ingest -> plan -> build)

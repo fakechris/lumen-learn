@@ -6,6 +6,7 @@
  * interactive   -> sandboxed widget above the options, then choose
  */
 import { renderMarkdownInto, escapeHtml } from "./markdown.js";
+import { armImeGuard, imeBlocksSubmit } from "./ime.js";
 import { createWidgetFrame } from "./widgets.js";
 import { playClip } from "./audio-clock.js";
 
@@ -83,7 +84,8 @@ export class ExerciseView {
       const b = document.createElement("span"); renderMarkdownInto(b, before); b.classList.add("inline-md");
       const input = document.createElement("input");
       input.className = "blank"; input.id = "exBlank"; input.placeholder = "填写答案";
-      input.addEventListener("keydown", (e) => { if (e.key === "Enter") this.check(); });
+      armImeGuard(input);
+      input.addEventListener("keydown", (e) => { if (e.key === "Enter" && !imeBlocksSubmit(e)) this.check(); });
       const a = document.createElement("span"); renderMarkdownInto(a, after); a.classList.add("inline-md");
       stem.append(b, input, a);
       if (done) { input.value = done.answer_text || ""; input.disabled = true; input.classList.add(done.correct ? "ok" : "bad"); }

@@ -54,6 +54,21 @@ def _spoken_math(tex: str) -> str:
     return re.sub(r"\s+", " ", s).strip()
 
 
+# Classroom pointing phrases use 行 = háng (row). Default TTS reads 行 as xíng.
+# Homophone 杭 is always háng; subtitles still show the original 行.
+_ROW_HANG = re.compile(
+    r"(这一行|那一行|下一行|上一行|每一行|整一行"
+    r"|第[一二三四五六七八九十百零两\d]+行"
+    r"|[一两三四五六七八九十几]+行"
+    r"|看这行|圈这行|从这行)"
+)
+
+
+def apply_pronunciation(text: str) -> str:
+    """Rewrite polyphones so TTS engines pick the classroom reading."""
+    return _ROW_HANG.sub(lambda m: m.group(0).replace("行", "杭"), text)
+
+
 def to_spoken(text: str) -> str:
     s = text
     s = re.sub(r"\$\$(.+?)\$\$", lambda m: " " + _spoken_math(m.group(1)) + " ", s, flags=re.S)
@@ -64,7 +79,7 @@ def to_spoken(text: str) -> str:
     s = re.sub(r"\[([^\]]+)\]\([^)]*\)", r"\1", s)  # links
     s = re.sub(r"[ \t]+", " ", s)
     s = re.sub(r"\n{2,}", "\n", s)
-    return s.strip()
+    return apply_pronunciation(s.strip())
 
 
 def count_chars(text: str) -> tuple[int, int]:

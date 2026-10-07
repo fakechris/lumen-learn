@@ -7,12 +7,13 @@ instead of pretending (no canned "great question!" text).
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
 from typing import AsyncIterator, List, Optional
 
 from src.llm.client import LLMClient, LLMError
 from src.protocol.actions import Ask
-from src.protocol.session import SessionScript, StepSpec
+from src.protocol.session import IllustrationSpec, SessionScript, StepSpec
 
 TUTOR_SYSTEM = """你是白板课上的苏格拉底导师，学生在听课时打断提问或回答了你的问题。
 用亲切的口语回应，2~4 句话，先肯定学生思考里对的部分，再用直观比喻或反问把学生推向正确理解，不要长篇灌输。
@@ -41,14 +42,16 @@ DETOUR_SYSTEM = """你是白板课上的苏格拉底导师。学生刚刚打断�
 - 第一步的板书 title 必须是 "岔路：<学生问题的 8 字以内概括>"，layout 用 "newcol"；后续板书 layout 用 "follow"，title 可为空。
 - 讲解指着板书说（"看这一行"），先肯定学生想法里对的部分，再用直观比喻或反问推向正确理解，不要长篇灌输。
 - 最后一步的结尾一句必须把学生带回主线，例如 "好，我们回到刚才的地方。"
-- 需要一张示意图才说得清时，可以给一个 illustration（kind "svg"，写清 brief）；不要 widget、question、reward。
+- 学生要求画图、示意图、画出来时，**必须**给 illustration（kind "svg"，brief 写清元素、数量、中文标注、对比）；板书只写关键标注，禁止只用口语或纯文字板书代替图画。讲解要指着图说（"看这张图"）。
+- 需要一张示意图才说得清时，同样必须给 illustration。不要 widget、question、reward。
 - decorations 的 snippet 必须逐字出现在该板书 markdown 中。
 - 每一步只新增 1~3 个元素（一段讲解 + 一块小板书就是一组），不要贪多。
 - 不要重画或"整理"正课已有的板书——下面给你的"当前板书"只是让你衔接和引用，别重复画已有内容；岔路只新增列。
 - 岔路结束不要写"本节到此结束"之类的收尾——正课会从断点自动继续。
 
 只输出 JSON：{"steps": [{"title": "", "spoken_text": "", "boards": [{"title": "岔路：……", "markdown": "", "layout": "newcol"}],
-  "decorations": [], "illustration": null, "widget": null, "question": null, "reward": null}]}"""
+  "decorations": [], "illustration": {"kind": "svg", "caption": "", "brief": "", "layout": "newcol"},
+  "widget": null, "question": null, "reward": null}]}"""
 
 
 VARIANT_SYSTEM = {
@@ -67,6 +70,44 @@ VARIANT_SYSTEM = {
 只输出 JSON：{"steps": [{"title": "", "spoken_text": "", "boards": [{"title": "要点：……", "markdown": "", "layout": "follow"}],
   "decorations": [], "illustration": null, "widget": null, "question": null, "reward": null}]}""",
 }
+
+
+DRAW_INTENT = re.compile(
+    r"(画图|画一下|画个|画张|画一张|画出来|示意图|图示|画一画|给我画|帮我画|画出|画个图|画张图)"
+)
+
+
+def wants_figure(question: str) -> bool:
+    """True when the interruption is asking for a drawing, not just an explanation."""
+    return bool(DRAW_INTENT.search(question or ""))
+
+
+def _figure_payload(step: StepSpec) -> bool:
+    il = step.illustration
+    return bool(il and (il.svg or il.image_url or (il.brief or "").strip() or (il.caption or "").strip()))
+
+
+def ensure_detour_figure(script: SessionScript, question: str,
+                         ctx: Optional[TutorContext] = None) -> SessionScript:
+    """If the student asked to draw and the detour has no illustration, inject one."""
+    if not wants_figure(question) or not script.steps:
+        return script
+    if any(_figure_payload(st) for st in script.steps):
+        return script
+    bits = [f"学生要求画图：{question.strip()}"]
+    if ctx and ctx.current_narration:
+        bits.append(f"当前讲解：{ctx.current_narration[:200]}")
+    if ctx and ctx.boards:
+        bits.append(f"已有板书：{ctx.boards[-1][:300]}")
+    il = IllustrationSpec(
+        kind="svg",
+        caption=(question.strip()[:24] or "示意图"),
+        brief="。".join(bits) + "。画一张手绘风教学示意图：元素、数量、中文标注都要具体，左右对比或结构示意，不要大段文字。",
+        layout="newcol",
+    )
+    steps = list(script.steps)
+    steps[0] = steps[0].model_copy(update={"illustration": il})
+    return script.model_copy(update={"steps": steps})
 
 
 class LiveTutor:
@@ -134,7 +175,7 @@ class LiveTutor:
             steps[0].boards[0] = b0.model_copy(update={"title": title, "layout": "newcol"})
         script = SessionScript(session_id=session_id, course_id=course_id, title=f"岔路：{question[:20]}", steps=steps)
         script, _ = sanitize_script(script)
-        return script
+        return ensure_detour_figure(script, question, ctx)
 
     @property
     def available(self) -> bool:

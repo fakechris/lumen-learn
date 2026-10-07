@@ -114,7 +114,7 @@ svg.wb-annotations { position: absolute; inset: 0; pointer-events: none; overflo
 .sidebar-content pre { font-size: .7rem; line-height: 1.4; white-space: pre-wrap; word-break: break-all; color: #0f172a; }
 
 /* bottom: centered subtitle, question, options (over the paper, no box) */
-.dock { position: absolute; left: 120px; right: 120px; bottom: 26px; display: flex; flex-direction: column; align-items: center; gap: 12px; z-index: 10; pointer-events: none;
+.dock { position: absolute; left: 480px; right: 24px; bottom: 26px; display: flex; flex-direction: column; align-items: center; gap: 12px; z-index: 10; pointer-events: none;
   background: linear-gradient(to top, rgba(251,250,247,.98) 60%, rgba(251,250,247,0)); padding: 40px 20px 0; }
 .dock > * { pointer-events: auto; }
 .subtitle-text { font-size: 1.35rem; line-height: 1.55; text-align: center; color: #1f2937; max-width: 1100px; min-height: 1.5em; }
@@ -137,7 +137,11 @@ svg.wb-annotations { position: absolute; inset: 0; pointer-events: none; overflo
 .ask-input { width: min(560px, 100%); padding: 10px 16px; border: 1px solid #cbd5e1; border-radius: 999px; background: #fff; }
 
 /* bottom-left controls */
-.controls { position: absolute; left: 22px; bottom: 22px; display: flex; align-items: center; gap: 10px; z-index: 12; }
+.controls { position: absolute; left: 22px; bottom: 22px; display: flex; align-items: center; flex-wrap: wrap; gap: 10px; z-index: 12; max-width: calc(100% - 36px); }
+@media (max-width: 800px) {
+  .dock { left: 12px; right: 12px; bottom: 108px; }
+  .controls { left: 12px; bottom: 12px; gap: 6px; }
+}
 .round { width: 48px; height: 48px; border-radius: 50%; border: 1px solid var(--line); background: #fff; font-size: .9rem; color: var(--ink); box-shadow: 0 3px 12px rgba(15,23,42,.08); }
 .round:hover { background: #f8fafc; }
 .round.interject { color: #5b21b6; border-color: #ddd6fe; }
@@ -350,7 +354,7 @@ svg.concept-map path.lit { stroke: #c0392b !important; }
 .pill.level[data-level="novice"] { color: #92400e; border-color: #fcd34d; background: #fffbeb; }
 .pill.level[data-level="fast"] { color: #065f46; border-color: #6ee7b7; background: #ecfdf5; }
 .round.skip { width: auto; padding: 0 14px; border-radius: 999px; font-family: var(--hand); font-size: 1.05rem; }
-.round.skip:disabled { opacity: .4; }
+.round.skip:disabled, .round:disabled { opacity: .4; cursor: default; }
 .kp.skipped { text-decoration: line-through; opacity: .45; }
 .kp .beat { font-size: .68rem; color: var(--muted); margin-right: 6px; font-family: var(--ui); }
 .entry-q { margin: 0 0 22px; }

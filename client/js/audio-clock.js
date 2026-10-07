@@ -103,6 +103,33 @@ export class AudioClock {
     this.audio.playbackRate = rate;
   }
 
+  /** Jump within the active segment. Past the end finishes it (acks as spoken). */
+  seek(ms) {
+    if (!this.segment) return;
+    const total = this.durationMs;
+    const clamped = Math.max(0, Math.min(total, ms));
+    if (clamped >= total - 40) {
+      this.skipToEnd();
+      return;
+    }
+    if (this.segment.virtual) {
+      this._virtualElapsed = clamped;
+      this._virtualStart = performance.now();
+    } else {
+      try { this.audio.currentTime = clamped / 1000; } catch {}
+    }
+    this.segment.onTick?.(clamped / Math.max(1, total), clamped);
+  }
+
+  seekBy(deltaMs) {
+    this.seek(this.currentMs + deltaMs);
+  }
+
+  skipToEnd() {
+    if (!this.segment) return;
+    this._finish();
+  }
+
   stop() {
     if (this._raf) cancelAnimationFrame(this._raf);
     this._raf = null;

@@ -52,7 +52,7 @@
     <div class="pill group" title="缩放">
       <button class="icon" id="zoomOut">−</button><span class="counter" id="zoomLabel">100%</span><button class="icon" id="zoomIn">+</button>
     </div>
-    <button class="pill btn" id="speedBtn" title="语速">沉稳 · 1×</button>
+    <button class="pill btn" id="speedBtn" title="语速（点击切换 1× / 1.25× / 1.5× / 2×）">语速 1×</button>
     <button class="pill btn level" id="levelBtn" title="讲解档位：按证据自动，也可以自己选">档位 · 自动</button>
     <button class="pill btn" id="openHome" title="课程主页">☰ 课程</button>
     <span class="pill" id="capsPill" title="服务端能力">…</span>
@@ -92,8 +92,11 @@
 
     <div class="controls">
       <button class="round" id="playPauseBtn" title="播放 / 暂停（空格）"><span id="playIcon">❚❚</span></button>
+      <button class="round" id="replayBtn" title="重听这一段（R）" disabled>↻</button>
+      <button class="round skip" id="finishSpeechBtn" title="跳到说完（→）" disabled>说完</button>
+      <button class="round skip" id="ffwdBtn" title="快进 5 秒（Shift+→）" disabled>»5s</button>
       <button class="round interject" id="interjectBtn" title="打断提问">✋</button>
-      <button class="round skip" id="skipBtn" title="我懂了：跳过这段讲解，直接到提问">懂了</button>
+      <button class="round skip" id="skipBtn" title="我懂了：跳过这段讲解，直接到提问" disabled>懂了</button>
       <span class="state" id="stateBadge" data-state="idle">空闲</span>
     </div>
   </div>
@@ -107,6 +110,7 @@
           <select id="setProvider">
             <option value="">自动（按密钥推断）</option>
             <option value="deepseek">DeepSeek</option>
+            <option value="minimax">MiniMax</option>
             <option value="openai">OpenAI 兼容（OneAPI / vLLM / Ollama…）</option>
             <option value="anthropic">Anthropic</option>
           </select>
