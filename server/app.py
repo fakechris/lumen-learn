@@ -81,7 +81,7 @@ log.info("LLM: %s   TTS: %s", f"{llm.config.provider}/{llm.model}" if llm else "
 
 
 class SettingsRequest(BaseModel):
-    provider: Optional[str] = None      # auto | deepseek | openai | anthropic（auto = 按密钥推断）
+    provider: Optional[str] = None      # auto | deepseek | minimax | openai | anthropic（auto = 按密钥推断）
     api_key: Optional[str] = None       # None=保持，""=清除；回传掩码值时忽略
     base_url: Optional[str] = None      # 任意 OpenAI 兼容端点（OneAPI/vLLM/Ollama…）
     model: Optional[str] = None

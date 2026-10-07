@@ -1,7 +1,7 @@
 """
 Thin async LLM client with structured-output helpers.
 
-Providers: any OpenAI-compatible chat API (DeepSeek, OpenAI, Qwen, Moonshot, ...)
+Providers: any OpenAI-compatible chat API (DeepSeek, MiniMax, OpenAI, Qwen, Moonshot, ...)
 and Anthropic. Configuration is explicit; nothing here silently falls back to
 canned content — if generation fails, `LLMError` propagates.
 """
@@ -54,6 +54,20 @@ class LLMConfig:
     def is_deepseek(self) -> bool:
         return bool(self.base_url and "deepseek" in self.base_url)
 
+    @property
+    def is_minimax(self) -> bool:
+        return bool(self.base_url and "minimax" in self.base_url)
+
+    def thinking_extra_body(self, purpose: str) -> Optional[dict]:
+        """Provider-specific thinking control. Widget/exercise calls disable thinking
+        so reasoning models do not spend the whole token budget before emitting JSON."""
+        think = purpose.split("_")[0] in self.think_purposes
+        if self.is_deepseek:
+            return {"thinking": {"type": "enabled" if think else "disabled"}}
+        if self.is_minimax:
+            return {"thinking": {"type": "adaptive" if think else "disabled"}}
+        return None
+
     def for_tier(self, tier: str) -> str:
         if tier == "pro" and self.model_pro:
             return self.model_pro
@@ -75,6 +89,8 @@ class LLMConfig:
                 provider = "anthropic"
             elif os.getenv("OPENAI_API_KEY"):
                 provider = "openai"
+            elif os.getenv("MINIMAX_API_KEY"):
+                provider = "minimax"
             else:
                 return None
 
@@ -84,6 +100,16 @@ class LLMConfig:
                        base_url or os.getenv("LLM_BASE_URL", "https://api.deepseek.com"),
                        model_pro=os.getenv("LLM_MODEL_PRO", "deepseek-v4-pro"),
                        model_vision=os.getenv("LLM_MODEL_VISION", "deepseek-v4-flash-vision-exp"),
+                       think_purposes=tuple(p for p in os.getenv("LLM_THINK_PURPOSES", "plan").split(",") if p))
+        if provider == "minimax":
+            key = api_key or os.getenv("MINIMAX_API_KEY")
+            if not key:
+                return None
+            return cls("openai", key,
+                       model or os.getenv("LLM_MODEL", "MiniMax-M3"),
+                       base_url or os.getenv("LLM_BASE_URL", "https://api.minimaxi.com/v1"),
+                       model_pro=os.getenv("LLM_MODEL_PRO", "MiniMax-M3"),
+                       model_vision=os.getenv("LLM_MODEL_VISION", "MiniMax-M3"),
                        think_purposes=tuple(p for p in os.getenv("LLM_THINK_PURPOSES", "plan").split(",") if p))
         if provider == "anthropic":
             key = api_key or os.getenv("ANTHROPIC_API_KEY")
@@ -231,9 +257,9 @@ class LLMClient:
             kwargs = {}
             if json_mode:
                 kwargs["response_format"] = {"type": "json_object"}
-            if self.config.is_deepseek:
-                think = purpose.split("_")[0] in self.config.think_purposes
-                kwargs["extra_body"] = {"thinking": {"type": "enabled" if think else "disabled"}}
+            extra = self.config.thinking_extra_body(purpose)
+            if extra:
+                kwargs["extra_body"] = extra
             if frequency_penalty:
                 kwargs["frequency_penalty"] = frequency_penalty
             user_content = user
@@ -306,10 +332,11 @@ class LLMClient:
                     async for delta in s.text_stream:
                         yield delta
                 return
+            extra = self.config.thinking_extra_body(purpose)
             stream = await self._openai.chat.completions.create(
                 model=model, temperature=temperature, max_tokens=1024, stream=True,
                 stream_options={"include_usage": True},
-                **({"extra_body": {"thinking": {"type": "disabled"}}} if self.config.is_deepseek else {}),
+                **({"extra_body": extra} if extra else {}),
                 messages=[{"role": "system", "content": system}, {"role": "user", "content": user}],
             )
             usage = None

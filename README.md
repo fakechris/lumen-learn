@@ -17,7 +17,7 @@
 - **Socratic gates** — the tutor pauses to ask prediction and concept-check questions; wrong answers climb a remediation ladder (re-ask → deeper retelling → prerequisite replay).
 - **Interruptions** — speak up or type at any moment; the tutor branches into a 1–3 step detour, then returns to the exact mainline beat.
 - **Adaptive teaching** — entry diagnosis, novice/standard/fast play policies, per-step deeper/compressed variants, a four-axis mastery model and a course concept graph.
-- **BYOK** — bring any OpenAI-compatible key (DeepSeek / Kimi / Ollama / vLLM…) via the in-app ⚙ settings panel; keys stay in a git-ignored local file and apply without a restart. TTS engines: macOS `say` / edge-tts / MiniMax.
+- **BYOK** — bring any OpenAI-compatible key (DeepSeek / MiniMax M3 / Kimi / Ollama / vLLM…) via the in-app ⚙ settings panel; keys stay in a git-ignored local file and apply without a restart. TTS engines: macOS `say` / edge-tts / MiniMax.
 
 Everything runs on a typed wire protocol (`src/protocol/actions.py` — the single source of truth) with an explicit `action_step_complete` handshake and reveal gating.
 
