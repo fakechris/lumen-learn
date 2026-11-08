@@ -166,7 +166,8 @@ class SessionRuntime:
             cmap = load_map(self.store._course_dir(self.session.course_id) or "")
             self._prereqs = prereq_sessions(course, cmap, self.session.session_id) if course else []
             override = requested or db.profile(self.session.course_id).get("level")
-            entry = decide_level(db, self.session.course_id, self.session.session_id, self._prereqs, override)
+            entry = decide_level(db, self.session.course_id, self.session.session_id, self._prereqs,
+                                 override, learner_id=self.learner_id)
             return entry.level, entry.reason
         except Exception as exc:  # noqa: BLE001 — never block a lesson on the learner model
             log.warning("level decision failed: %s", exc)

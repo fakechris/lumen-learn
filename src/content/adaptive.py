@@ -60,7 +60,7 @@ class Entry:
 
 
 def decide_level(db, course_id: str, session_id: str, prereqs: Sequence[str], override: Optional[str] = None,
-                 diagnosis: Optional[Dict[str, float]] = None) -> Entry:
+                 diagnosis: Optional[Dict[str, float]] = None, learner_id: str = "") -> Entry:
     """Evidence → level. An explicit override always wins.
 
     ``diagnosis`` = {"accuracy": cold-quiz accuracy 0..1, "n": items asked} from
@@ -68,7 +68,9 @@ def decide_level(db, course_id: str, session_id: str, prereqs: Sequence[str], ov
     a 2-3 item cold quiz simply cannot produce the accumulated composite that
     the thresholds below expect. Without it (returning learner), the historical
     mastery thresholds apply unchanged."""
-    rows = {r["session_id"]: r for r in db.learners(course_id)}
+    # learner_id is a first-class key: the anonymous-cookie learner's own rows
+    # must be read, otherwise historical mastery silently resolves to nobody.
+    rows = {r["session_id"]: r for r in db.learners(course_id, learner_id)}
     comps = [composite({a: r[a] for a in ("memory", "comprehension", "structure", "application")})
              for sid in prereqs for r in [rows.get(sid)] if r]
     comps = [c for c in comps if c is not None]
