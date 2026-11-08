@@ -724,8 +724,13 @@ def test_suspicious_gate_detection_exempts_hook_prediction_gates():
 # ---- INV-573: entry diagnosis placement uses cold-quiz accuracy, not composite ----
 
 class _FakeDB:
-    def learners(self, course_id):
-        return []
+    def __init__(self):
+        self.rows = []
+        self.seen_learner_ids = []
+
+    def learners(self, course_id, learner_id=""):
+        self.seen_learner_ids.append(learner_id)
+        return [r for r in self.rows if r["learner_id"] == learner_id]
 
 
 def test_decide_level_diagnosis_accuracy_path():
@@ -755,3 +760,24 @@ def test_decide_level_diagnosis_accuracy_path():
     # no diagnosis → legacy thresholds untouched (returning learner path)
     e = decide_level(db, "c", "s", [], diagnosis=None)
     assert e.level == "standard"
+
+
+def test_decide_level_scopes_history_to_the_real_learner():
+    """Regression: historical mastery must be read with the caller's learner_id,
+    not the empty anonymous bucket (INV-506). Two learners, same course, opposite
+    placement — an empty learner_id used to make both resolve to 'standard'."""
+    from src.content.adaptive import decide_level
+    db = _FakeDB()
+    db.rows = [
+        {"learner_id": "L1", "session_id": "p1", "memory": 90.0, "comprehension": 90.0,
+         "structure": 90.0, "application": 90.0},
+        {"learner_id": "L2", "session_id": "p1", "memory": 10.0, "comprehension": 10.0,
+         "structure": 10.0, "application": 10.0},
+        {"learner_id": "L1", "session_id": "s", "memory": 0.0, "comprehension": 90.0,
+         "structure": 0.0, "application": 0.0},
+    ]
+    fast = decide_level(db, "c", "s", ["p1"], learner_id="L1")
+    novice = decide_level(db, "c", "s", ["p1"], learner_id="L2")
+    assert fast.level == "fast", fast.reason
+    assert novice.level == "novice", novice.reason
+    assert set(db.seen_learner_ids) == {"L1", "L2"}

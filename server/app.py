@@ -342,12 +342,20 @@ async def grade(req: GradeRequest, request: Request, response: Response):
                          learner, attempt_id, response_id=rid, assisted=req.assisted, exercise_id=ex.exercise_id)
         return {"correct": correct, "feedback": feedback, "answer": ex.answer, "explanation": ex.explanation,
                 "graded_by": "llm" if (llm and not correct) or (llm and feedback != ex.explanation) else "match"}
-    correct = req.answer_index is not None and req.answer_index == ex.correct_index
+    # Choice grading goes through the shared assessment kernel, so live and
+    # offline consumers use the same grade_answer(). Legacy bool contract is
+    # preserved; 'unknown' answers stay False but are labelled.
+    from src.assessment.lumen import grade_lumen_exercise
+    verdict = grade_lumen_exercise(ex, answer_index=req.answer_index,
+                                   answer_text=req.answer_text, assisted=req.assisted,
+                                   learner_id=learner)
+    correct = verdict.correct is True
     rid = f"{learner}|{attempt_id or 'na'}|{ex.exercise_id}"
     _record_evidence(req.course_id, req.session_id, ex.kind, correct, None, str(req.answer_index),
                      learner, attempt_id, response_id=rid, assisted=req.assisted, exercise_id=ex.exercise_id)
     return {"correct": correct, "feedback": ex.explanation, "answer": ex.options[ex.correct_index] if ex.correct_index is not None else None,
-            "explanation": ex.explanation, "graded_by": "match"}
+            "explanation": ex.explanation, "graded_by": verdict.graded_by,
+            "needs_review": verdict.needs_review}
 
 
 def _record_evidence(course_id: str, session_id: str, kind: str, correct, quality, detail: str = "",
@@ -534,7 +542,8 @@ async def session_entry(course_id: str, session_id: str, request: Request, respo
     learner = _learner_id(request, response)
     db = get_db(OUTPUT_ROOT)
     profile = db.profile(course_id, learner)
-    entry = decide_level(db, course_id, session_id, prereqs, profile.get("level"))
+    entry = decide_level(db, course_id, session_id, prereqs, profile.get("level"),
+                         learner_id=learner)
     questions = diagnosis_questions(store, course_id, prereqs) if entry.needs_diagnosis else []
     titles = {s.session_id: s.title for s in course.all_sessions()}
     return {"level": entry.level, "reason": entry.reason, "needs_diagnosis": bool(questions),
@@ -551,7 +560,8 @@ class DiagnosisAnswer(BaseModel):
 
 
 @app.post("/api/v1/courses/{course_id}/sessions/{session_id}/entry/answer")
-async def answer_entry_diagnosis(course_id: str, session_id: str, req: DiagnosisAnswer):
+async def answer_entry_diagnosis(course_id: str, session_id: str, req: DiagnosisAnswer,
+                                 request: Request, response: Response):
     """Place the learner from their cold entry quiz: accuracy <50% → novice,
     <100% (or <3 items) → standard, perfect ≥3 → a confirmation question first,
     passing it → fast. Deterministic; no mastery writes."""
@@ -590,7 +600,8 @@ async def answer_entry_diagnosis(course_id: str, session_id: str, req: Diagnosis
     db = get_db(OUTPUT_ROOT)
     learner = _learner_id(request, response)
     profile = db.profile(course_id, learner)
-    entry = decide_level(db, course_id, session_id, prereqs, profile.get("level"), diagnosis=diagnosis)
+    entry = decide_level(db, course_id, session_id, prereqs, profile.get("level"),
+                         diagnosis=diagnosis, learner_id=learner)
     return {"level": entry.level, "reason": entry.reason, "accuracy": round(accuracy, 2), "n": len(asked),
             "needs_confirm": confirm_q is not None, "confirm_question": confirm_q, "evidence": entry.evidence}
 

@@ -17,58 +17,12 @@ from __future__ import annotations
 import time
 from typing import Any, Dict, List, Optional
 
-AXES = ("memory", "comprehension", "structure", "application")
-WEIGHTS = {"memory": 0.25, "comprehension": 0.30, "structure": 0.20, "application": 0.25}
-LABELS = {"memory": "记忆", "comprehension": "理解", "structure": "结构", "application": "应用"}
-
-# evidence kind -> {axis: gain at quality 1 on an empty axis}
-GAINS: Dict[str, Dict[str, float]] = {
-    "ask_choice": {"comprehension": 14},
-    "ask_open": {"comprehension": 18, "structure": 6},
-    "fill_blank": {"memory": 16},
-    "single_choice": {"memory": 8, "comprehension": 8},
-    "interactive": {"application": 18, "comprehension": 4},
-    "feynman_round": {"comprehension": 12, "structure": 6},
-    "feynman_summary": {"comprehension": 16, "structure": 10, "application": 8},
-    "detour": {"structure": 4},
-}
-
-Scores = Dict[str, float]
-
-
-def blank() -> Scores:
-    return {a: 0.0 for a in AXES}
-
-
-def apply_evidence(prev: Optional[Scores], kind: str, correct: Optional[bool],
-                   quality: Optional[float] = None, assisted: bool = False) -> Scores:
-    """Fold one piece of evidence into the scores. Wrong answers earn nothing;
-    `quality` (0..1) scales open evidence; gains diminish as an axis fills.
-    Hint-assisted answers earn at most 25% of the gain and never count as
-    independent coverage (INV-507)."""
-    scores = dict(prev) if prev else blank()
-    gains = GAINS.get(kind)
-    if not gains:
-        return scores
-    if correct is False:
-        return scores
-    q = 1.0 if quality is None else max(0.0, min(1.0, float(quality)))
-    if assisted:
-        q *= 0.25
-    if correct is None and quality is None:
-        q = 0.0  # engagement without judged quality is not evidence
-    for axis, base in gains.items():
-        cur = scores.get(axis, 0.0)
-        gain = base * q * (1.0 - cur / 100.0)
-        scores[axis] = round(max(cur, min(100.0, cur + gain)), 1)
-    return scores
-
-
-def composite(scores: Optional[Scores]) -> Optional[float]:
-    """Weighted sum; None when there is no evidence at all."""
-    if not scores or all(not scores.get(a) for a in AXES):
-        return None
-    return round(sum(WEIGHTS[a] * float(scores.get(a) or 0.0) for a in AXES), 1)
+# Canonical four-axis maths now lives in the shared, IO-free assessment kernel
+# (src/assessment/coverage.py). Re-exported so every existing import path and
+# all runtime behaviour stay identical; offline batch consumers reuse the very
+# same implementation. DB-backed folding stays here.
+from src.assessment.coverage import (AXES, GAINS, LABELS, WEIGHTS, Scores, apply_evidence,
+                                     blank, composite)
 
 
 def next_step_note(scores: Scores, wrong_streak: int = 0) -> str:
